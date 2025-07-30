@@ -8,6 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useArtistStore, useEventStore, useUIStore } from "@/store";
 import { useAuth } from "@/lib/auth-context";
+import { useRouter } from "next/navigation";
 import { Artist, CoffeeEvent } from "@/types";
 import MapComponent from "@/components/map/MapContainer";
 import EventDetailSidebar from "./EventDetailSidebar";
@@ -25,6 +26,7 @@ export default function MapPage() {
   } = useArtistStore();
   const { openModal } = useUIStore();
   const { user, userData, loading: authLoading, signOut } = useAuth();
+  const router = useRouter();
   const [selectedEvent, setSelectedEvent] = useState<CoffeeEvent | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -126,7 +128,7 @@ export default function MapPage() {
                       </div>
                       <button
                         onClick={() => {
-                          // TODO: 實作我的投稿頁面
+                          router.push('/my-submissions');
                           setUserMenuOpen(false);
                         }}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
