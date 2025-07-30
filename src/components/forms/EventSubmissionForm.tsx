@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CalendarIcon, MapPinIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
 import { useEventStore, useArtistStore, useUIStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
+import PlaceAutocomplete from './PlaceAutocomplete';
 
 interface EventSubmissionFormProps {
   onSuccess?: () => void;
@@ -15,8 +16,12 @@ interface EventSubmissionFormProps {
 
 export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmissionFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [locationCoordinates, setLocationCoordinates] = useState<{
+    lat: number;
+    lng: number;
+  } | null>(null);
   const { createEvent } = useEventStore();
-  const { artists, fetchArtists } = useArtistStore();
+  const { artists } = useArtistStore();
   const { addNotification } = useUIStore();
   const { user } = useAuth();
 
@@ -24,20 +29,26 @@ export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmis
     register,
     handleSubmit,
     formState: { errors },
-    setError,
     watch,
     setValue,
   } = useForm<EventSubmissionFormData>({
     resolver: zodResolver(eventSubmissionSchema),
   });
 
-  // 載入已審核的藝人列表
-  useEffect(() => {
-    fetchArtists('approved');
-  }, [fetchArtists]);
-
   // 監聽開始日期變化，自動設定結束日期最小值
   const startDate = watch('startDate');
+
+  // 處理地點選擇
+  const handlePlaceSelect = useCallback(
+    (place: { address: string; coordinates: { lat: number; lng: number } }) => {
+      setValue('address', place.address, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setLocationCoordinates(place.coordinates);
+    },
+    [setValue]
+  );
 
   const onSubmit = async (data: EventSubmissionFormData) => {
     if (!user) {
@@ -53,12 +64,10 @@ export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmis
 
     try {
       // 檢查是否能取得 token
-      const token = await user.getIdToken();
-      console.log('User token:', token ? 'Token exists' : 'No token');
-      console.log('User UID:', user.uid);
+      const _token = await user.getIdToken();
       // 找到選中的藝人
-      const selectedArtist = artists.find(artist => artist.stageName === data.artistName);
-      
+      const selectedArtist = artists.find((artist) => artist.stageName === data.artistName);
+
       // 準備活動資料
       const eventData = {
         title: data.title,
@@ -69,9 +78,9 @@ export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmis
         endDate: new Date(data.endDate).toISOString(),
         location: {
           address: data.address,
-          coordinates: {
-            // 暫時使用台北市中心座標，之後會整合地址解析
-            lat: 25.0330,
+          coordinates: locationCoordinates || {
+            // 如果沒有座標，使用台北市中心座標
+            lat: 25.033,
             lng: 121.5654,
           },
         },
@@ -92,7 +101,7 @@ export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmis
       });
 
       onSuccess?.();
-    } catch (error) {
+    } catch {
       addNotification({
         type: 'error',
         title: '投稿失敗',
@@ -123,9 +132,7 @@ export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmis
             placeholder="例：IU 生日應援咖啡活動"
             {...register('title')}
           />
-          {errors.title && (
-            <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
-          )}
+          {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
         </div>
 
         {/* 應援藝人 */}
@@ -150,9 +157,7 @@ export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmis
           {errors.artistName && (
             <p className="mt-1 text-sm text-red-600">{errors.artistName.message}</p>
           )}
-          <p className="mt-1 text-xs text-gray-500">
-            找不到想要的藝人？可以聯絡管理員新增
-          </p>
+          <p className="mt-1 text-xs text-gray-500">找不到想要的藝人？可以聯絡管理員新增</p>
         </div>
 
         {/* 活動描述 */}
@@ -210,26 +215,23 @@ export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmis
 
         {/* 活動地址 */}
         <div>
-          <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
             <MapPinIcon className="inline h-4 w-4 mr-1" />
             活動地址 *
           </label>
-          <input
-            id="address"
-            type="text"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-            placeholder="請輸入完整地址，例：台北市信義區松仁路28號"
-            {...register('address')}
+          <PlaceAutocomplete
+            onPlaceSelect={handlePlaceSelect}
+            placeholder="搜尋活動地點名稱或地址"
           />
-          {errors.address && (
-            <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>
-          )}
+          <input type="hidden" {...register('address')} />
+          {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>}
+          <p className="mt-1 text-xs text-gray-500">請從搜尋結果中選擇地點，以確保地址正確</p>
         </div>
 
         {/* 聯絡資訊 */}
         <div className="border-t border-gray-200 pt-6">
           <h3 className="text-lg font-medium text-gray-900 mb-4">聯絡資訊</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
@@ -243,9 +245,7 @@ export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmis
                 placeholder="09xxxxxxxx"
                 {...register('phone')}
               />
-              {errors.phone && (
-                <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
-              )}
+              {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
             </div>
 
             <div>

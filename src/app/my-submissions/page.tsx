@@ -3,9 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
-import { UserIcon, CalendarIcon, MapPinIcon, ClockIcon, CheckCircleIcon, XCircleIcon, ClockIcon as PendingIcon } from '@heroicons/react/24/outline';
+import {
+  UserIcon,
+  CalendarIcon,
+  MapPinIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon as PendingIcon,
+} from '@heroicons/react/24/outline';
 import { useEventStore, useArtistStore, useUIStore } from '@/store';
-import { Artist, CoffeeEvent } from '@/types';
 
 export default function MySubmissionsPage() {
   const { user, userData, loading: authLoading } = useAuth();
@@ -43,9 +49,9 @@ export default function MySubmissionsPage() {
       // 載入所有藝人和活動，然後篩選出用戶的投稿
       await Promise.all([
         fetchArtists(), // 載入所有藝人
-        fetchEvents()   // 載入所有活動
+        fetchEvents(), // 載入所有活動
       ]);
-    } catch (error) {
+    } catch {
       addNotification({
         type: 'error',
         title: '載入失敗',
@@ -57,8 +63,8 @@ export default function MySubmissionsPage() {
   };
 
   // 篩選用戶的投稿（前端篩選，後續可考慮讓後端處理）
-  const userArtists = artists.filter(artist => artist.createdBy === user?.uid);
-  const userEvents = events.filter(event => event.createdBy === user?.uid);
+  const userArtists = artists.filter((artist) => artist.createdBy === user?.uid);
+  const userEvents = events.filter((event) => event.createdBy === user?.uid);
 
   const getStatusBadge = (status: 'pending' | 'approved' | 'rejected') => {
     switch (status) {
@@ -181,11 +187,9 @@ export default function MySubmissionsPage() {
             <div className="bg-white rounded-lg shadow">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-gray-900">我投稿的藝人</h2>
-                <p className="text-sm text-gray-500">
-                  共 {userArtists.length} 位藝人投稿
-                </p>
+                <p className="text-sm text-gray-500">共 {userArtists.length} 位藝人投稿</p>
               </div>
-              
+
               {userArtists.length === 0 ? (
                 <div className="px-6 py-12 text-center">
                   <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -234,11 +238,13 @@ export default function MySubmissionsPage() {
                             </p>
                           </div>
                         </div>
-                        
+
                         <div className="text-right">
                           {getStatusBadge(artist.status)}
                           {artist.status === 'approved' && (
-                            <p className="text-xs text-green-600 mt-1">✨ 其他用戶現在可以選擇這位藝人了</p>
+                            <p className="text-xs text-green-600 mt-1">
+                              ✨ 其他用戶現在可以選擇這位藝人了
+                            </p>
                           )}
                         </div>
                       </div>
@@ -256,11 +262,9 @@ export default function MySubmissionsPage() {
             <div className="bg-white rounded-lg shadow">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-gray-900">我投稿的活動</h2>
-                <p className="text-sm text-gray-500">
-                  共 {userEvents.length} 個活動投稿
-                </p>
+                <p className="text-sm text-gray-500">共 {userEvents.length} 個活動投稿</p>
               </div>
-              
+
               {userEvents.length === 0 ? (
                 <div className="px-6 py-12 text-center">
                   <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -282,34 +286,33 @@ export default function MySubmissionsPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">
-                            <h3 className="text-lg font-medium text-gray-900">
-                              {event.title}
-                            </h3>
+                            <h3 className="text-lg font-medium text-gray-900">{event.title}</h3>
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                               {event.artistName}
                             </span>
                           </div>
-                          
+
                           {event.description && (
                             <p className="text-sm text-gray-600 mb-2">{event.description}</p>
                           )}
-                          
+
                           <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
                             <div className="flex items-center">
                               <CalendarIcon className="h-4 w-4 mr-1" />
-                              {new Date(event.startDate).toLocaleDateString('zh-TW')} - {new Date(event.endDate).toLocaleDateString('zh-TW')}
+                              {new Date(event.startDate).toLocaleDateString('zh-TW')} -{' '}
+                              {new Date(event.endDate).toLocaleDateString('zh-TW')}
                             </div>
                             <div className="flex items-center">
                               <MapPinIcon className="h-4 w-4 mr-1" />
                               {event.location.address}
                             </div>
                           </div>
-                          
+
                           <p className="text-xs text-gray-400">
                             投稿時間：{new Date(event.createdAt).toLocaleString('zh-TW')}
                           </p>
                         </div>
-                        
+
                         <div className="text-right ml-4">
                           {getStatusBadge(event.status)}
                           {event.status === 'approved' && (
@@ -339,19 +342,25 @@ export default function MySubmissionsPage() {
             </div>
             <div className="bg-white rounded-lg shadow p-6 text-center">
               <div className="text-2xl font-bold text-green-600">
-                {[...userArtists, ...userEvents].filter(item => item.status === 'approved').length}
+                {
+                  [...userArtists, ...userEvents].filter((item) => item.status === 'approved')
+                    .length
+                }
               </div>
               <div className="text-sm text-gray-600">已通過</div>
             </div>
             <div className="bg-white rounded-lg shadow p-6 text-center">
               <div className="text-2xl font-bold text-yellow-600">
-                {[...userArtists, ...userEvents].filter(item => item.status === 'pending').length}
+                {[...userArtists, ...userEvents].filter((item) => item.status === 'pending').length}
               </div>
               <div className="text-sm text-gray-600">審核中</div>
             </div>
             <div className="bg-white rounded-lg shadow p-6 text-center">
               <div className="text-2xl font-bold text-red-600">
-                {[...userArtists, ...userEvents].filter(item => item.status === 'rejected').length}
+                {
+                  [...userArtists, ...userEvents].filter((item) => item.status === 'rejected')
+                    .length
+                }
               </div>
               <div className="text-sm text-gray-600">已拒絕</div>
             </div>
