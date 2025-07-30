@@ -3,25 +3,29 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint --fix",
+    "lint:check": "next lint",
+    "type-check": "tsc -p tsconfig.json --noEmit",
+    "prepare": "husky"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.6",
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.2.1",
+    "@react-leaflet/core": "^2.1.0",
     "@types/leaflet": "^1.9.20",
     "axios": "^1.11.0",
     "clsx": "^2.1.1",
     "firebase": "^12.0.0",
     "leaflet": "^1.9.4",
-    "next": "15.4.4",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-hook-form": "^7.61.1",
-    "react-leaflet": "^5.0.0",
+    "react-leaflet": "^4.2.1",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.0.13",
     "zustand": "^5.0.6"
@@ -30,11 +34,35 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.4.4",
+    "@types/react": "^18.3.23",
+    "@types/react-dom": "^18.3.7",
+    "@typescript-eslint/eslint-plugin": "^8.38.0",
+    "@typescript-eslint/parser": "^8.38.0",
+    "eslint": "^9.32.0",
+    "eslint-config-next": "^15.4.4",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-next": "^0.0.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.2",
+    "prettier": "^3.6.2",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix"
+    ],
+    "*.{js,jsx,ts,tsx,json,css,md}": [
+      "prettier --write"
+    ],
+    "next.config.js": [
+      "prettier --write"
+    ],
+    "*": [
+      "bash -c \"npm run type-check\""
+    ]
   }
 }

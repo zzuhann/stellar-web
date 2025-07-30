@@ -3,9 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
-import { CheckCircleIcon, XCircleIcon, UserIcon, CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import {
+  CheckCircleIcon,
+  XCircleIcon,
+  UserIcon,
+  CalendarIcon,
+  MapPinIcon,
+} from '@heroicons/react/24/outline';
 import { useEventStore, useArtistStore, useUIStore } from '@/store';
-import { Artist, CoffeeEvent } from '@/types';
 
 export default function AdminPage() {
   const { user, userData, loading: authLoading } = useAuth();
@@ -39,8 +44,8 @@ export default function AdminPage() {
   }, [user, userData, fetchArtists, fetchEvents]);
 
   // 篩選待審核項目
-  const pendingArtists = artists.filter(artist => artist.status === 'pending');
-  const pendingEvents = events.filter(event => event.status === 'pending');
+  const pendingArtists = artists.filter((artist) => artist.status === 'pending');
+  const pendingEvents = events.filter((event) => event.status === 'pending');
 
   const handleApproveArtist = async (artistId: string) => {
     setLoading(true);
@@ -51,7 +56,7 @@ export default function AdminPage() {
         title: '審核成功',
         message: '藝人已通過審核',
       });
-    } catch (error) {
+    } catch {
       addNotification({
         type: 'error',
         title: '審核失敗',
@@ -71,7 +76,7 @@ export default function AdminPage() {
         title: '已拒絕',
         message: '藝人審核已拒絕',
       });
-    } catch (error) {
+    } catch {
       addNotification({
         type: 'error',
         title: '操作失敗',
@@ -91,7 +96,7 @@ export default function AdminPage() {
         title: '審核成功',
         message: '活動已通過審核並會出現在地圖上',
       });
-    } catch (error) {
+    } catch {
       addNotification({
         type: 'error',
         title: '審核失敗',
@@ -111,7 +116,7 @@ export default function AdminPage() {
         title: '已拒絕',
         message: '活動審核已拒絕',
       });
-    } catch (error) {
+    } catch {
       addNotification({
         type: 'error',
         title: '操作失敗',
@@ -198,11 +203,8 @@ export default function AdminPage() {
             <div className="bg-white rounded-lg shadow">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-gray-900">待審核藝人</h2>
-                <p className="text-sm text-gray-500">
-                  {pendingArtists.length} 位藝人等待審核
-                </p>
+                <p className="text-sm text-gray-500">{pendingArtists.length} 位藝人等待審核</p>
               </div>
-              
               {pendingArtists.length === 0 ? (
                 <div className="px-6 py-12 text-center">
                   <UserIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -243,7 +245,6 @@ export default function AdminPage() {
                             </p>
                           </div>
                         </div>
-                        
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleApproveArtist(artist.id)}
@@ -277,11 +278,8 @@ export default function AdminPage() {
             <div className="bg-white rounded-lg shadow">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-medium text-gray-900">待審核活動</h2>
-                <p className="text-sm text-gray-500">
-                  {pendingEvents.length} 個活動等待審核
-                </p>
+                <p className="text-sm text-gray-500">{pendingEvents.length} 個活動等待審核</p>
               </div>
-              
               {pendingEvents.length === 0 ? (
                 <div className="px-6 py-12 text-center">
                   <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
@@ -295,30 +293,29 @@ export default function AdminPage() {
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-2">
-                            <h3 className="text-lg font-medium text-gray-900">
-                              {event.title}
-                            </h3>
+                            <h3 className="text-lg font-medium text-gray-900">{event.title}</h3>
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                               {event.artistName}
                             </span>
                           </div>
-                          
                           {event.description && (
                             <p className="text-sm text-gray-600 mb-2">{event.description}</p>
                           )}
-                          
                           <div className="flex items-center space-x-4 text-sm text-gray-500">
                             <div className="flex items-center">
                               <CalendarIcon className="h-4 w-4 mr-1" />
-                              {new Date(event.startDate).toLocaleDateString('zh-TW')} - {new Date(event.endDate).toLocaleDateString('zh-TW')}
+                              {new Date(event.startDate).toLocaleDateString('zh-TW')} -{' '}
+                              {new Date(event.endDate).toLocaleDateString('zh-TW')}
                             </div>
                             <div className="flex items-center">
                               <MapPinIcon className="h-4 w-4 mr-1" />
                               {event.location.address}
                             </div>
                           </div>
-                          
-                          {(event.contactInfo?.phone || event.contactInfo?.instagram || event.contactInfo?.facebook) && (
+
+                          {(event.contactInfo?.phone ||
+                            event.contactInfo?.instagram ||
+                            event.contactInfo?.facebook) && (
                             <div className="mt-2 text-sm text-gray-500">
                               聯絡資訊：
                               {event.contactInfo.phone && ` 電話：${event.contactInfo.phone}`}
@@ -326,12 +323,12 @@ export default function AdminPage() {
                               {event.contactInfo.facebook && ` FB：${event.contactInfo.facebook}`}
                             </div>
                           )}
-                          
+
                           <p className="text-xs text-gray-400 mt-2">
                             投稿時間：{new Date(event.createdAt).toLocaleString('zh-TW')}
                           </p>
                         </div>
-                        
+
                         <div className="flex space-x-2 ml-4">
                           <button
                             onClick={() => handleApproveEvent(event.id)}
