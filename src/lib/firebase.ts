@@ -23,20 +23,20 @@ export const auth = getAuth(app);
 // 初始化 Firestore
 export const db = getFirestore(app);
 
-// 開發環境連接模擬器
-if (process.env.NODE_ENV === 'development') {
-  // Auth Emulator
-  if (!auth.emulatorConfig) {
-    connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
-  }
-  
-  // Firestore Emulator
-  try {
-    connectFirestoreEmulator(db, 'localhost', 8080);
-  } catch (error) {
-    // 忽略重複連接錯誤
-    console.log('Firestore emulator already connected');
-  }
-}
+// 開發環境連接模擬器（目前停用，使用正式 Firebase 服務）
+// if (process.env.NODE_ENV === 'development') {
+//   // Auth Emulator
+//   if (!auth.emulatorConfig) {
+//     connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+//   }
+//   
+//   // Firestore Emulator
+//   try {
+//     connectFirestoreEmulator(db, 'localhost', 8080);
+//   } catch (error) {
+//     // 忽略重複連接錯誤
+//     console.log('Firestore emulator already connected');
+//   }
+// }
 
 export default app;

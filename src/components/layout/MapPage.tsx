@@ -1,15 +1,22 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useEventStore } from '@/store';
+import { ChevronDownIcon, UserIcon } from '@heroicons/react/24/outline';
+import { useEventStore, useUIStore } from '@/store';
+import { useAuth } from '@/lib/auth-context';
 import { CoffeeEvent } from '@/types';
 import MapComponent from '@/components/map/MapContainer';
 import EventDetailSidebar from './EventDetailSidebar';
+import AuthModal from '@/components/auth/AuthModal';
 
 export default function MapPage() {
   const { events, loading, error, fetchEvents } = useEventStore();
+  const { openModal } = useUIStore();
+  const { user, userData, loading: authLoading, signOut } = useAuth();
   const [selectedEvent, setSelectedEvent] = useState<CoffeeEvent | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -76,9 +83,62 @@ export default function MapPage() {
               <div className="text-sm text-gray-600">
                 目前有 <span className="font-semibold text-amber-600">{activeEvents.length}</span> 個進行中活動
               </div>
-              <button className="bg-amber-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-amber-700 transition-colors">
-                登入
-              </button>
+              
+              {user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="flex items-center space-x-2 bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  >
+                    <UserIcon className="h-4 w-4" />
+                    <span>{userData?.displayName || user.email}</span>
+                    <ChevronDownIcon className="h-4 w-4" />
+                  </button>
+                  
+                  {userMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
+                      <div className="px-4 py-2 text-sm text-gray-500 border-b border-gray-100">
+                        {user.email}
+                      </div>
+                      <button
+                        onClick={() => {
+                          openModal('eventSubmission');
+                          setUserMenuOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        投稿活動
+                      </button>
+                      <button
+                        onClick={() => {
+                          // TODO: 實作我的投稿頁面
+                          setUserMenuOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        我的投稿
+                      </button>
+                      <hr className="my-1" />
+                      <button
+                        onClick={() => {
+                          signOut();
+                          setUserMenuOpen(false);
+                        }}
+                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        登出
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button 
+                  onClick={() => setAuthModalOpen(true)}
+                  className="bg-amber-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-amber-700 transition-colors"
+                >
+                  登入
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -147,6 +207,13 @@ export default function MapPage() {
         event={selectedEvent}
         isOpen={sidebarOpen}
         onClose={handleSidebarClose}
+      />
+
+      {/* 認證模態視窗 */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        initialMode="signin"
       />
     </div>
   );
