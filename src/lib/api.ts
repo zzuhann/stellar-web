@@ -46,9 +46,10 @@ api.interceptors.response.use(
 
 // 藝人相關 API
 export const artistsApi = {
-  // 取得所有已審核藝人
-  getAll: async (): Promise<Artist[]> => {
-    const response = await api.get('/artists');
+  // 取得藝人列表（可指定狀態）
+  getAll: async (status?: 'approved' | 'pending' | 'rejected'): Promise<Artist[]> => {
+    const params = status ? { status } : {};
+    const response = await api.get('/artists', { params });
     const rawArtists = response.data || [];
     
     // 轉換後端格式到前端格式
@@ -93,9 +94,10 @@ export const artistsApi = {
 
 // 活動相關 API
 export const eventsApi = {
-  // 取得所有已審核活動
-  getAll: async (): Promise<CoffeeEvent[]> => {
-    const response = await api.get('/events');
+  // 取得活動列表（可指定狀態）
+  getAll: async (status?: 'approved' | 'pending' | 'rejected'): Promise<CoffeeEvent[]> => {
+    const params = status ? { status } : {};
+    const response = await api.get('/events', { params });
     const rawEvents = response.data || [];
     
     // 轉換後端格式到前端格式

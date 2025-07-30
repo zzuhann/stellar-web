@@ -12,7 +12,7 @@ interface ArtistState {
   error: string | null;
 
   // 動作
-  fetchArtists: () => Promise<void>;
+  fetchArtists: (status?: 'approved' | 'pending' | 'rejected') => Promise<void>;
   createArtist: (artist: Omit<Artist, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>) => Promise<void>;
   approveArtist: (id: string) => Promise<void>;
   rejectArtist: (id: string) => Promise<void>;
@@ -28,11 +28,11 @@ export const useArtistStore = create<ArtistState>()(
       loading: false,
       error: null,
 
-      // 取得所有藝人
-      fetchArtists: async () => {
+      // 取得藝人列表
+      fetchArtists: async (status) => {
         set({ loading: true, error: null });
         try {
-          const artists = await artistsApi.getAll();
+          const artists = await artistsApi.getAll(status);
           set({ artists, loading: false });
         } catch (error) {
           set({ 

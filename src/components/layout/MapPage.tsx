@@ -1,29 +1,45 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { ChevronDownIcon, UserIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { useEventStore, useUIStore } from '@/store';
-import { useAuth } from '@/lib/auth-context';
-import { CoffeeEvent } from '@/types';
-import MapComponent from '@/components/map/MapContainer';
-import EventDetailSidebar from './EventDetailSidebar';
-import AuthModal from '@/components/auth/AuthModal';
-import EventSubmissionModal from '@/components/forms/EventSubmissionModal';
-import ArtistSubmissionModal from '@/components/forms/ArtistSubmissionModal';
+import { useState, useEffect } from "react";
+import {
+  ChevronDownIcon,
+  UserIcon,
+  PlusIcon,
+} from "@heroicons/react/24/outline";
+import { useArtistStore, useEventStore, useUIStore } from "@/store";
+import { useAuth } from "@/lib/auth-context";
+import { Artist, CoffeeEvent } from "@/types";
+import MapComponent from "@/components/map/MapContainer";
+import EventDetailSidebar from "./EventDetailSidebar";
+import AuthModal from "@/components/auth/AuthModal";
+import EventSubmissionModal from "@/components/forms/EventSubmissionModal";
+import ArtistSubmissionModal from "@/components/forms/ArtistSubmissionModal";
 
 export default function MapPage() {
   const { events, loading, error, fetchEvents } = useEventStore();
+  const {
+    artists,
+    loading: artistsLoading,
+    error: artistsError,
+    fetchArtists,
+  } = useArtistStore();
   const { openModal } = useUIStore();
   const { user, userData, loading: authLoading, signOut } = useAuth();
   const [selectedEvent, setSelectedEvent] = useState<CoffeeEvent | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [eventSubmissionModalOpen, setEventSubmissionModalOpen] = useState(false);
-  const [artistSubmissionModalOpen, setArtistSubmissionModalOpen] = useState(false);
+  const [eventSubmissionModalOpen, setEventSubmissionModalOpen] =
+    useState(false);
+  const [artistSubmissionModalOpen, setArtistSubmissionModalOpen] =
+    useState(false);
 
   useEffect(() => {
-    fetchEvents();
+    fetchArtists("approved");
+  }, [fetchArtists]);
+
+  useEffect(() => {
+    fetchEvents("approved"); // 只載入已審核的活動
   }, [fetchEvents]);
 
   const handleEventSelect = (event: CoffeeEvent) => {
@@ -36,7 +52,7 @@ export default function MapPage() {
     setSelectedEvent(null);
   };
 
-  if (loading) {
+  if (loading || artistsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
         <div className="text-center">
@@ -47,7 +63,7 @@ export default function MapPage() {
     );
   }
 
-  if (error) {
+  if (error || artistsError) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
         <div className="text-center bg-white rounded-lg shadow-lg p-8 max-w-md">
@@ -66,7 +82,7 @@ export default function MapPage() {
   }
 
   // 篩選未結束的活動
-  const activeEvents = events.filter(event => {
+  const activeEvents = events.filter((event) => {
     const now = new Date();
     const endDate = new Date(event.endDate);
     return endDate >= now;
@@ -82,12 +98,16 @@ export default function MapPage() {
               <h1 className="text-2xl font-bold text-gray-900">台灣生咖地圖</h1>
               <span className="text-2xl">☕</span>
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">
-                目前有 <span className="font-semibold text-amber-600">{activeEvents.length}</span> 個進行中活動
+                目前有{" "}
+                <span className="font-semibold text-amber-600">
+                  {activeEvents.length}
+                </span>{" "}
+                個進行中活動
               </div>
-              
+
               {user ? (
                 <div className="relative">
                   <button
@@ -98,7 +118,7 @@ export default function MapPage() {
                     <span>{userData?.displayName || user.email}</span>
                     <ChevronDownIcon className="h-4 w-4" />
                   </button>
-                  
+
                   {userMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
                       <div className="px-4 py-2 text-sm text-gray-500 border-b border-gray-100">
@@ -113,6 +133,17 @@ export default function MapPage() {
                       >
                         我的投稿
                       </button>
+                      {userData?.role === "admin" && (
+                        <button
+                          onClick={() => {
+                            window.open("/admin", "_blank");
+                            setUserMenuOpen(false);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 font-medium"
+                        >
+                          ⚖️ 管理員審核
+                        </button>
+                      )}
                       <hr className="my-1" />
                       <button
                         onClick={() => {
@@ -127,7 +158,7 @@ export default function MapPage() {
                   )}
                 </div>
               ) : (
-                <button 
+                <button
                   onClick={() => setAuthModalOpen(true)}
                   className="bg-amber-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-amber-700 transition-colors"
                 >
@@ -152,10 +183,7 @@ export default function MapPage() {
 
         {/* 地圖區域 */}
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <MapComponent 
-            events={events} 
-            onEventSelect={handleEventSelect}
-          />
+          <MapComponent events={events} onEventSelect={handleEventSelect} />
         </div>
 
         {/* 投稿區域 */}
@@ -168,7 +196,7 @@ export default function MapPage() {
               幫助我們建立更完整的 K-pop 應援活動資料庫
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
             {/* 藝人投稿按鈕 */}
             <button
@@ -234,18 +262,24 @@ export default function MapPage() {
         {activeEvents.length > 0 && (
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-2xl font-bold text-amber-600">{activeEvents.length}</div>
+              <div className="text-2xl font-bold text-amber-600">
+                {activeEvents.length}
+              </div>
               <div className="text-sm text-gray-600">進行中活動</div>
             </div>
             <div className="bg-white rounded-lg shadow p-6 text-center">
               <div className="text-2xl font-bold text-green-600">
-                {new Set(activeEvents.map(e => e.artistName)).size}
+                {artists.length}
               </div>
               <div className="text-sm text-gray-600">應援藝人</div>
             </div>
             <div className="bg-white rounded-lg shadow p-6 text-center">
               <div className="text-2xl font-bold text-blue-600">
-                {new Set(activeEvents.map(e => e.location.address.split(' ')[0])).size}
+                {
+                  new Set(
+                    activeEvents.map((e) => e.location.address.split(" ")[0])
+                  ).size
+                }
               </div>
               <div className="text-sm text-gray-600">涵蓋縣市</div>
             </div>
@@ -259,9 +293,7 @@ export default function MapPage() {
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
               目前沒有進行中的活動
             </h3>
-            <p className="text-gray-600 mb-4">
-              請稍後再回來查看，或者
-            </p>
+            <p className="text-gray-600 mb-4">請稍後再回來查看，或者</p>
             <button className="bg-amber-600 text-white px-6 py-2 rounded-md font-medium hover:bg-amber-700 transition-colors">
               投稿新活動
             </button>

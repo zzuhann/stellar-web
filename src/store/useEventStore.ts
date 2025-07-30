@@ -14,7 +14,7 @@ interface EventState {
   searchParams: EventSearchParams;
 
   // 動作
-  fetchEvents: () => Promise<void>;
+  fetchEvents: (status?: 'approved' | 'pending' | 'rejected') => Promise<void>;
   fetchEventById: (id: string) => Promise<void>;
   searchEvents: (params: EventSearchParams) => Promise<void>;
   createEvent: (event: Omit<CoffeeEvent, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>) => Promise<void>;
@@ -36,18 +36,17 @@ export const useEventStore = create<EventState>()(
       error: null,
       searchParams: {},
 
-      // 取得所有活動
-      fetchEvents: async () => {
+      // 取得活動列表
+      fetchEvents: async (status) => {
         set({ loading: true, error: null });
         try {
           const [events, artists] = await Promise.all([
-            eventsApi.getAll(),
-            artistsApi.getAll()
+            eventsApi.getAll(status),
+            artistsApi.getAll('approved') // 只取得已審核的藝人來填入 artistName
           ]);
           
-          // 只顯示已審核的活動，並補充 artistName
-          const approvedEvents = events.filter(event => event.status === 'approved');
-          const eventsWithArtistNames = approvedEvents.map(event => {
+          // 補充 artistName
+          const eventsWithArtistNames = events.map(event => {
             const artist = artists.find(a => a.id === event.artistId);
             return {
               ...event,

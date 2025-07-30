@@ -31,9 +31,9 @@ export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmis
     resolver: zodResolver(eventSubmissionSchema),
   });
 
-  // 載入藝人列表
+  // 載入已審核的藝人列表
   useEffect(() => {
-    fetchArtists();
+    fetchArtists('approved');
   }, [fetchArtists]);
 
   // 監聽開始日期變化，自動設定結束日期最小值
@@ -140,14 +140,12 @@ export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmis
             {...register('artistName')}
           >
             <option value="">請選擇藝人</option>
-            {artists
-              .filter(artist => artist.status === 'approved')
-              .map((artist) => (
-                <option key={artist.id} value={artist.stageName}>
-                  {artist.stageName}
-                  {artist.realName && ` (${artist.realName})`}
-                </option>
-              ))}
+            {artists.map((artist) => (
+              <option key={artist.id} value={artist.stageName}>
+                {artist.stageName}
+                {artist.realName && ` (${artist.realName})`}
+              </option>
+            ))}
           </select>
           {errors.artistName && (
             <p className="mt-1 text-sm text-red-600">{errors.artistName.message}</p>
