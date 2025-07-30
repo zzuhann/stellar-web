@@ -3,8 +3,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { CoffeeEvent, EventSearchParams } from '@/types';
-import { eventsApi, handleApiError } from '@/lib/api';
-import { mockEvents } from '@/lib/mock-data';
+import { eventsApi, artistsApi, handleApiError } from '@/lib/api';
 
 interface EventState {
   // 狀態
@@ -41,15 +40,22 @@ export const useEventStore = create<EventState>()(
       fetchEvents: async () => {
         set({ loading: true, error: null });
         try {
-          // 暫時使用模擬資料進行測試
-          // TODO: 之後改為使用實際 API
-          // const events = await eventsApi.getAll();
+          const [events, artists] = await Promise.all([
+            eventsApi.getAll(),
+            artistsApi.getAll()
+          ]);
           
-          // 模擬 API 延遲
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          const events = mockEvents;
+          // 只顯示已審核的活動，並補充 artistName
+          const approvedEvents = events.filter(event => event.status === 'approved');
+          const eventsWithArtistNames = approvedEvents.map(event => {
+            const artist = artists.find(a => a.id === event.artistId);
+            return {
+              ...event,
+              artistName: artist?.stageName || event.artistName || 'Unknown Artist'
+            };
+          });
           
-          set({ events, loading: false });
+          set({ events: eventsWithArtistNames, loading: false });
         } catch (error) {
           set({ 
             error: handleApiError(error), 
@@ -91,10 +97,9 @@ export const useEventStore = create<EventState>()(
         set({ loading: true, error: null });
         try {
           const newEvent = await eventsApi.create(eventData);
-          set((state) => ({
-            events: [...state.events, newEvent],
-            loading: false,
-          }));
+          // 新活動狀態為 pending，不加入到顯示列表中
+          // 只有 approved 狀態的活動才會在地圖上顯示
+          set({ loading: false });
         } catch (error) {
           set({ 
             error: handleApiError(error), 

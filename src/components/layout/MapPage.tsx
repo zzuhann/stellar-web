@@ -1,13 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronDownIcon, UserIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, UserIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { useEventStore, useUIStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { CoffeeEvent } from '@/types';
 import MapComponent from '@/components/map/MapContainer';
 import EventDetailSidebar from './EventDetailSidebar';
 import AuthModal from '@/components/auth/AuthModal';
+import EventSubmissionModal from '@/components/forms/EventSubmissionModal';
+import ArtistSubmissionModal from '@/components/forms/ArtistSubmissionModal';
 
 export default function MapPage() {
   const { events, loading, error, fetchEvents } = useEventStore();
@@ -17,6 +19,8 @@ export default function MapPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [eventSubmissionModalOpen, setEventSubmissionModalOpen] = useState(false);
+  const [artistSubmissionModalOpen, setArtistSubmissionModalOpen] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -102,15 +106,6 @@ export default function MapPage() {
                       </div>
                       <button
                         onClick={() => {
-                          openModal('eventSubmission');
-                          setUserMenuOpen(false);
-                        }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        投稿活動
-                      </button>
-                      <button
-                        onClick={() => {
                           // TODO: 實作我的投稿頁面
                           setUserMenuOpen(false);
                         }}
@@ -161,6 +156,78 @@ export default function MapPage() {
             events={events} 
             onEventSelect={handleEventSelect}
           />
+        </div>
+
+        {/* 投稿區域 */}
+        <div className="mt-6 bg-white rounded-lg shadow-lg p-6">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              參與社群貢獻
+            </h3>
+            <p className="text-gray-600">
+              幫助我們建立更完整的 K-pop 應援活動資料庫
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+            {/* 藝人投稿按鈕 */}
+            <button
+              onClick={() => {
+                if (!user) {
+                  setAuthModalOpen(true);
+                } else {
+                  setArtistSubmissionModalOpen(true);
+                }
+              }}
+              className="group relative bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              <div className="flex items-center justify-center mb-3">
+                <UserIcon className="h-8 w-8" />
+              </div>
+              <h4 className="text-lg font-semibold mb-2">投稿藝人</h4>
+              <p className="text-sm opacity-90">
+                新增 K-pop 藝人到資料庫，讓其他用戶可以為他們建立應援活動
+              </p>
+              <div className="absolute top-2 right-2">
+                <PlusIcon className="h-5 w-5 opacity-75 group-hover:opacity-100" />
+              </div>
+            </button>
+
+            {/* 活動投稿按鈕 */}
+            <button
+              onClick={() => {
+                if (!user) {
+                  setAuthModalOpen(true);
+                } else {
+                  setEventSubmissionModalOpen(true);
+                }
+              }}
+              className="group relative bg-gradient-to-r from-amber-500 to-orange-500 text-white p-6 rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              <div className="flex items-center justify-center mb-3">
+                <span className="text-2xl">☕</span>
+              </div>
+              <h4 className="text-lg font-semibold mb-2">投稿活動</h4>
+              <p className="text-sm opacity-90">
+                分享您發現的應援咖啡活動，讓更多粉絲一起參與
+              </p>
+              <div className="absolute top-2 right-2">
+                <PlusIcon className="h-5 w-5 opacity-75 group-hover:opacity-100" />
+              </div>
+            </button>
+          </div>
+
+          {!user && (
+            <p className="text-center text-sm text-gray-500 mt-4">
+              需要登入後才能投稿，
+              <button
+                onClick={() => setAuthModalOpen(true)}
+                className="text-amber-600 hover:text-amber-700 font-medium"
+              >
+                立即登入
+              </button>
+            </p>
+          )}
         </div>
 
         {/* 活動統計 */}
@@ -214,6 +281,18 @@ export default function MapPage() {
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
         initialMode="signin"
+      />
+
+      {/* 活動投稿模態視窗 */}
+      <EventSubmissionModal
+        isOpen={eventSubmissionModalOpen}
+        onClose={() => setEventSubmissionModalOpen(false)}
+      />
+
+      {/* 藝人投稿模態視窗 */}
+      <ArtistSubmissionModal
+        isOpen={artistSubmissionModalOpen}
+        onClose={() => setArtistSubmissionModalOpen(false)}
       />
     </div>
   );
