@@ -8,9 +8,14 @@ import EventSubmissionForm from './EventSubmissionForm';
 interface EventSubmissionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  embedded?: boolean;
 }
 
-export default function EventSubmissionModal({ isOpen, onClose }: EventSubmissionModalProps) {
+export default function EventSubmissionModal({
+  isOpen,
+  onClose,
+  embedded = false,
+}: EventSubmissionModalProps) {
   const handleSuccess = () => {
     onClose();
   };
@@ -18,6 +23,11 @@ export default function EventSubmissionModal({ isOpen, onClose }: EventSubmissio
   const handleClose = () => {
     onClose();
   };
+
+  // 如果是 embedded 模式，直接返回表單內容
+  if (embedded) {
+    return <EventSubmissionForm onSuccess={handleSuccess} onCancel={handleClose} />;
+  }
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
@@ -60,10 +70,7 @@ export default function EventSubmissionModal({ isOpen, onClose }: EventSubmissio
 
                 {/* 內容區域 */}
                 <div className="mt-3">
-                  <EventSubmissionForm
-                    onSuccess={handleSuccess}
-                    onCancel={handleClose}
-                  />
+                  <EventSubmissionForm onSuccess={handleSuccess} onCancel={handleClose} />
                 </div>
               </Dialog.Panel>
             </Transition.Child>

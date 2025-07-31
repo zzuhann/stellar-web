@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import { Icon, LatLngTuple, DivIcon, Point } from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
@@ -29,6 +29,21 @@ const coffeeIcon = new Icon({
   popupAnchor: [0, -32],
 });
 
+// 用戶位置圖標
+const userLocationIcon = new Icon({
+  iconUrl:
+    'data:image/svg+xml;base64,' +
+    btoa(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#3B82F6" width="24" height="24">
+      <circle cx="12" cy="12" r="8" fill="#3B82F6" opacity="0.3"/>
+      <circle cx="12" cy="12" r="4" fill="#3B82F6"/>
+    </svg>
+  `),
+  iconSize: [24, 24],
+  iconAnchor: [12, 12],
+  popupAnchor: [0, -12],
+});
+
 interface MapEvent {
   id: string;
   title: string;
@@ -38,12 +53,68 @@ interface MapEvent {
   thumbnail?: string;
 }
 
+// 地圖事件監聽器組件
+function MapEventHandler() {
+  const { setCenter } = useMapStore();
+  const [isUserDragging, setIsUserDragging] = useState(false);
+
+  useMapEvents({
+    dragstart: () => {
+      setIsUserDragging(true);
+    },
+    moveend: (e) => {
+      // 只有在用戶手動拖動後才更新 store
+      if (isUserDragging) {
+        const map = e.target;
+        const center = map.getCenter();
+        const zoom = map.getZoom();
+
+        // 同步更新 store 中的 center 狀態
+        setCenter({
+          lat: center.lat,
+          lng: center.lng,
+          zoom: zoom,
+        });
+
+        setIsUserDragging(false);
+      }
+    },
+  });
+
+  return null;
+}
+
+// 地圖視圖更新組件
+function MapViewController({
+  center,
+  zoom,
+}: {
+  center: { lat: number; lng: number };
+  zoom: number;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    // 使用 flyTo 提供平滑的動畫效果
+    map.flyTo([center.lat, center.lng], zoom, {
+      duration: 1.5, // 動畫持續時間
+    });
+  }, [map, center.lat, center.lng, zoom]);
+
+  return null;
+}
+
 interface MapComponentProps {
   events?: MapEvent[];
   onEventSelect?: (event: { id: string }) => void;
+  userLocation?: { lat: number; lng: number } | null;
 }
 
-export default function MapComponent({ events = [], onEventSelect }: MapComponentProps) {
+export default function MapComponent({
+  events = [],
+  onEventSelect,
+  userLocation,
+}: MapComponentProps) {
   const { center, selectMarker } = useMapStore();
   const [isMounted, setIsMounted] = useState(false);
 
@@ -83,6 +154,28 @@ export default function MapComponent({ events = [], onEventSelect }: MapComponen
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
+        {/* 地圖事件監聽器 */}
+        <MapEventHandler />
+
+        {/* 地圖視圖控制器 */}
+        <MapViewController center={center} zoom={center.zoom} />
+
+        {/* 用戶位置標記 */}
+        {userLocation && (
+          <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
+            <Popup>
+              <div className="min-w-[150px]">
+                <h3 className="font-semibold text-sm mb-1 text-blue-600">您的位置</h3>
+                <div className="text-xs text-gray-600">
+                  緯度: {userLocation.lat.toFixed(6)}
+                  <br />
+                  經度: {userLocation.lng.toFixed(6)}
+                </div>
+              </div>
+            </Popup>
+          </Marker>
+        )}
 
         {/* Marker 聚合群組 */}
         <MarkerClusterGroup

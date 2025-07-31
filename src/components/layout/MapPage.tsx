@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronDownIcon, UserIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { useArtistStore } from '@/store';
+import { ChevronDownIcon, UserIcon, PlusIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { useArtistStore, useMapStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { CoffeeEvent } from '@/types';
@@ -10,22 +10,29 @@ import MapComponent from '@/components/map/MapContainer';
 import MapFilters from '@/components/map/MapFilters';
 import EventDetailSidebar from './EventDetailSidebar';
 import AuthModal from '@/components/auth/AuthModal';
-import EventSubmissionModal from '@/components/forms/EventSubmissionModal';
-import ArtistSubmissionModal from '@/components/forms/ArtistSubmissionModal';
 import { useEventFilters } from '@/hooks/useEventFilters';
 import { useMapData } from '@/hooks/useMapData';
+import { useGeolocation } from '@/hooks/useGeolocation';
 import api from '@/lib/api';
 
 export default function MapPage() {
   const { artists, loading: artistsLoading, error: artistsError, fetchArtists } = useArtistStore();
+  const { setCenter } = useMapStore();
   const { user, userData, signOut } = useAuth();
   const router = useRouter();
   const [selectedEvent, setSelectedEvent] = useState<CoffeeEvent | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const [eventSubmissionModalOpen, setEventSubmissionModalOpen] = useState(false);
-  const [artistSubmissionModalOpen, setArtistSubmissionModalOpen] = useState(false);
+
+  // 地理位置功能
+  const {
+    latitude,
+    longitude,
+    isLoading: locationLoading,
+    error: locationError,
+    getCurrentPosition,
+  } = useGeolocation({ autoGetPosition: true });
 
   // 篩選狀態
   const [filters, setFilters] = useState({
@@ -49,6 +56,39 @@ export default function MapPage() {
   useEffect(() => {
     fetchArtists('approved');
   }, [fetchArtists]);
+
+  // 標記是否應該自動定位到用戶位置
+  const [shouldAutoCenter, setShouldAutoCenter] = useState(true);
+
+  // 當獲取到用戶位置時，自動更新地圖中心（僅第一次）
+  useEffect(() => {
+    if (latitude && longitude && setCenter && shouldAutoCenter) {
+      setCenter({ lat: latitude, lng: longitude, zoom: 12 });
+      setShouldAutoCenter(false); // 只自動定位一次
+    }
+  }, [latitude, longitude, setCenter, shouldAutoCenter]);
+
+  // 處理定位到我的位置
+  const handleLocateMe = () => {
+    if (latitude && longitude) {
+      // 強制設置地圖中心到用戶位置
+      // 添加一個小的隨機偏移來確保 center 值發生變化
+      const randomOffset = 0.0001 * Math.random();
+      setCenter({
+        lat: latitude + randomOffset,
+        lng: longitude + randomOffset,
+        zoom: 12,
+      });
+
+      // 立即設置回準確位置
+      setTimeout(() => {
+        setCenter({ lat: latitude, lng: longitude, zoom: 12 });
+      }, 100);
+    } else {
+      // 如果沒有位置信息，重新獲取
+      getCurrentPosition();
+    }
+  };
 
   const handleEventSelect = async (event: CoffeeEvent | { id: string }) => {
     // 如果是地圖標記（只有 id），需要載入完整資料
@@ -193,8 +233,56 @@ export default function MapPage() {
         <MapFilters artists={artists} onFiltersChange={setFilters} />
 
         {/* 地圖區域 */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <MapComponent events={mapEvents} onEventSelect={handleEventSelect} />
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden relative">
+          <MapComponent
+            events={mapEvents}
+            onEventSelect={handleEventSelect}
+            userLocation={latitude && longitude ? { lat: latitude, lng: longitude } : null}
+          />
+
+          {/* 定位到我的位置按鈕 */}
+          <div className="absolute top-4 right-4 z-10">
+            <button
+              onClick={handleLocateMe}
+              disabled={locationLoading}
+              className={`flex items-center space-x-2 px-3 py-2 rounded-lg shadow-lg transition-all duration-200 ${
+                locationLoading
+                  ? 'bg-gray-400 text-white cursor-not-allowed'
+                  : latitude && longitude
+                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+              }`}
+              title={
+                latitude && longitude
+                  ? '重新定位到我的位置'
+                  : locationLoading
+                    ? '正在獲取位置...'
+                    : '定位到我的位置'
+              }
+            >
+              {locationLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                <MapPinIcon className="h-4 w-4" />
+              )}
+              <span className="text-sm font-medium">
+                {locationLoading ? '定位中...' : latitude && longitude ? '重新定位' : '我的位置'}
+              </span>
+            </button>
+          </div>
+
+          {/* 地理位置錯誤提示 */}
+          {locationError && (
+            <div className="absolute top-4 left-4 z-10 bg-red-50 border border-red-200 rounded-lg p-3 max-w-sm">
+              <div className="flex items-start space-x-2">
+                <div className="text-red-500 text-sm">⚠️</div>
+                <div className="text-sm text-red-700">
+                  <div className="font-medium">定位失敗</div>
+                  <div className="text-xs mt-1">{locationError}</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 投稿區域 */}
@@ -211,7 +299,7 @@ export default function MapPage() {
                 if (!user) {
                   setAuthModalOpen(true);
                 } else {
-                  setArtistSubmissionModalOpen(true);
+                  router.push('/submit-artist');
                 }
               }}
               className="group relative bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
@@ -234,7 +322,7 @@ export default function MapPage() {
                 if (!user) {
                   setAuthModalOpen(true);
                 } else {
-                  setEventSubmissionModalOpen(true);
+                  router.push('/submit-event');
                 }
               }}
               className="group relative bg-gradient-to-r from-amber-500 to-orange-500 text-white p-6 rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
@@ -314,18 +402,6 @@ export default function MapPage() {
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
         initialMode="signin"
-      />
-
-      {/* 活動投稿模態視窗 */}
-      <EventSubmissionModal
-        isOpen={eventSubmissionModalOpen}
-        onClose={() => setEventSubmissionModalOpen(false)}
-      />
-
-      {/* 藝人投稿模態視窗 */}
-      <ArtistSubmissionModal
-        isOpen={artistSubmissionModalOpen}
-        onClose={() => setArtistSubmissionModalOpen(false)}
       />
     </div>
   );

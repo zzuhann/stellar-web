@@ -8,9 +8,14 @@ import ArtistSubmissionForm from './ArtistSubmissionForm';
 interface ArtistSubmissionModalProps {
   isOpen: boolean;
   onClose: () => void;
+  embedded?: boolean;
 }
 
-export default function ArtistSubmissionModal({ isOpen, onClose }: ArtistSubmissionModalProps) {
+export default function ArtistSubmissionModal({
+  isOpen,
+  onClose,
+  embedded = false,
+}: ArtistSubmissionModalProps) {
   const handleSuccess = () => {
     onClose();
   };
@@ -18,6 +23,11 @@ export default function ArtistSubmissionModal({ isOpen, onClose }: ArtistSubmiss
   const handleClose = () => {
     onClose();
   };
+
+  // 如果是 embedded 模式，直接返回表單內容
+  if (embedded) {
+    return <ArtistSubmissionForm onSuccess={handleSuccess} onCancel={handleClose} />;
+  }
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
@@ -60,10 +70,7 @@ export default function ArtistSubmissionModal({ isOpen, onClose }: ArtistSubmiss
 
                 {/* 內容區域 */}
                 <div className="mt-3">
-                  <ArtistSubmissionForm
-                    onSuccess={handleSuccess}
-                    onCancel={handleClose}
-                  />
+                  <ArtistSubmissionForm onSuccess={handleSuccess} onCancel={handleClose} />
                 </div>
               </Dialog.Panel>
             </Transition.Child>
