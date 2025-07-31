@@ -1,4 +1,5 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+@import '../styles/marker-cluster.css';
 
 :root {
   --background: #ffffff;

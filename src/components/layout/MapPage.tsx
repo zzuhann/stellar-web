@@ -2,18 +2,21 @@
 
 import { useState, useEffect } from 'react';
 import { ChevronDownIcon, UserIcon, PlusIcon } from '@heroicons/react/24/outline';
-import { useArtistStore, useEventStore } from '@/store';
+import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { CoffeeEvent } from '@/types';
 import MapComponent from '@/components/map/MapContainer';
+import MapFilters from '@/components/map/MapFilters';
 import EventDetailSidebar from './EventDetailSidebar';
 import AuthModal from '@/components/auth/AuthModal';
 import EventSubmissionModal from '@/components/forms/EventSubmissionModal';
 import ArtistSubmissionModal from '@/components/forms/ArtistSubmissionModal';
+import { useEventFilters } from '@/hooks/useEventFilters';
+import { useMapData } from '@/hooks/useMapData';
+import api from '@/lib/api';
 
 export default function MapPage() {
-  const { events, loading, error, fetchEvents } = useEventStore();
   const { artists, loading: artistsLoading, error: artistsError, fetchArtists } = useArtistStore();
   const { user, userData, signOut } = useAuth();
   const router = useRouter();
@@ -24,16 +27,41 @@ export default function MapPage() {
   const [eventSubmissionModalOpen, setEventSubmissionModalOpen] = useState(false);
   const [artistSubmissionModalOpen, setArtistSubmissionModalOpen] = useState(false);
 
+  // 篩選狀態
+  const [filters, setFilters] = useState({
+    search: '',
+    artistId: '',
+    status: 'active' as 'all' | 'active' | 'upcoming' | 'ended', // 預設顯示進行中的活動
+    region: '',
+    page: 1,
+    limit: 50,
+  });
+
+  // 使用新的 API hooks
+  const { data: eventsData, isLoading, error } = useEventFilters(filters);
+  const { data: mapData, isLoading: mapLoading } = useMapData({
+    status: filters.status === 'all' ? 'all' : (filters.status as 'active' | 'upcoming'),
+    search: filters.search,
+    artistId: filters.artistId,
+    region: filters.region,
+  });
+
   useEffect(() => {
     fetchArtists('approved');
   }, [fetchArtists]);
 
-  useEffect(() => {
-    fetchEvents('approved'); // 只載入已審核的活動
-  }, [fetchEvents]);
-
-  const handleEventSelect = (event: CoffeeEvent) => {
-    setSelectedEvent(event);
+  const handleEventSelect = async (event: CoffeeEvent | { id: string }) => {
+    // 如果是地圖標記（只有 id），需要載入完整資料
+    if (!('title' in event)) {
+      try {
+        const response = await api.get(`/events/${event.id}`);
+        setSelectedEvent(response.data);
+      } catch {
+        return;
+      }
+    } else {
+      setSelectedEvent(event);
+    }
     setSidebarOpen(true);
   };
 
@@ -42,7 +70,7 @@ export default function MapPage() {
     setSelectedEvent(null);
   };
 
-  if (loading || artistsLoading) {
+  if (isLoading || artistsLoading || mapLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
         <div className="text-center">
@@ -59,9 +87,9 @@ export default function MapPage() {
         <div className="text-center bg-white rounded-lg shadow-lg p-8 max-w-md">
           <div className="text-red-500 text-5xl mb-4">⚠️</div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">載入失敗</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-gray-600 mb-4">{error?.message || '未知錯誤'}</p>
           <button
-            onClick={() => fetchEvents()}
+            onClick={() => window.location.reload()}
             className="bg-amber-600 text-white px-4 py-2 rounded-md hover:bg-amber-700 transition-colors"
           >
             重新載入
@@ -71,12 +99,9 @@ export default function MapPage() {
     );
   }
 
-  // 篩選未結束的活動
-  const activeEvents = events.filter((event) => {
-    const now = new Date();
-    const endDate = new Date(event.endDate);
-    return endDate >= now;
-  });
+  // 使用新的資料結構
+  const mapEvents = mapData?.events || [];
+  const totalEvents = eventsData?.pagination?.total || 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
@@ -91,8 +116,8 @@ export default function MapPage() {
 
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">
-                目前有 <span className="font-semibold text-amber-600">{activeEvents.length}</span>{' '}
-                個進行中活動
+                目前有 <span className="font-semibold text-amber-600">{totalEvents}</span>{' '}
+                個符合條件的活動
               </div>
 
               {user ? (
@@ -164,9 +189,12 @@ export default function MapPage() {
           <p className="text-gray-600">地圖上顯示所有進行中的應援咖啡活動，點擊標記查看詳細資訊</p>
         </div>
 
+        {/* 篩選區域 */}
+        <MapFilters artists={artists} onFiltersChange={setFilters} />
+
         {/* 地圖區域 */}
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <MapComponent events={events} onEventSelect={handleEventSelect} />
+          <MapComponent events={mapEvents} onEventSelect={handleEventSelect} />
         </div>
 
         {/* 投稿區域 */}
@@ -236,33 +264,43 @@ export default function MapPage() {
         </div>
 
         {/* 活動統計 */}
-        {activeEvents.length > 0 && (
+        {totalEvents > 0 && (
           <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-2xl font-bold text-amber-600">{activeEvents.length}</div>
-              <div className="text-sm text-gray-600">進行中活動</div>
+              <div className="text-2xl font-bold text-amber-600">{totalEvents}</div>
+              <div className="text-sm text-gray-600">符合條件活動</div>
             </div>
             <div className="bg-white rounded-lg shadow p-6 text-center">
               <div className="text-2xl font-bold text-green-600">{artists.length}</div>
               <div className="text-sm text-gray-600">應援藝人</div>
             </div>
             <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {new Set(activeEvents.map((e) => e.location.address.split(' ')[0])).size}
-              </div>
-              <div className="text-sm text-gray-600">涵蓋縣市</div>
+              <div className="text-2xl font-bold text-blue-600">{mapData?.total || 0}</div>
+              <div className="text-sm text-gray-600">地圖顯示</div>
             </div>
           </div>
         )}
 
         {/* 空狀態 */}
-        {activeEvents.length === 0 && (
+        {totalEvents === 0 && !isLoading && (
           <div className="mt-8 bg-white rounded-lg shadow-lg p-12 text-center">
-            <div className="text-6xl mb-4">😔</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">目前沒有進行中的活動</h3>
-            <p className="text-gray-600 mb-4">請稍後再回來查看，或者</p>
-            <button className="bg-amber-600 text-white px-6 py-2 rounded-md font-medium hover:bg-amber-700 transition-colors">
-              投稿新活動
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">沒有符合條件的活動</h3>
+            <p className="text-gray-600 mb-4">請調整篩選條件，或者</p>
+            <button
+              onClick={() =>
+                setFilters({
+                  search: '',
+                  artistId: '',
+                  status: 'active',
+                  region: '',
+                  page: 1,
+                  limit: 50,
+                })
+              }
+              className="bg-amber-600 text-white px-6 py-2 rounded-md font-medium hover:bg-amber-700 transition-colors"
+            >
+              清除所有篩選
             </button>
           </div>
         )}

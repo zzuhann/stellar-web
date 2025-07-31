@@ -1,0 +1,61 @@
+/* Marker Cluster 樣式 */
+.marker-cluster-small {
+  background-color: rgba(181, 226, 140, 0.8);
+  border: 2px solid rgba(110, 204, 57, 0.8);
+}
+
+.marker-cluster-small div {
+  background-color: rgba(110, 204, 57, 0.8);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-cluster-medium {
+  background-color: rgba(241, 211, 87, 0.8);
+  border: 2px solid rgba(240, 194, 12, 0.8);
+}
+
+.marker-cluster-medium div {
+  background-color: rgba(240, 194, 12, 0.8);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-cluster-large {
+  background-color: rgba(253, 156, 115, 0.8);
+  border: 2px solid rgba(241, 128, 23, 0.8);
+}
+
+.marker-cluster-large div {
+  background-color: rgba(241, 128, 23, 0.8);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.marker-cluster span {
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+/* 聚合動畫效果 */
+.marker-cluster {
+  transition: all 0.3s ease;
+}
+
+.marker-cluster:hover {
+  transform: scale(1.1);
+}

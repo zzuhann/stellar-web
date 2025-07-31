@@ -10,7 +10,7 @@ interface UIState {
   searchOpen: boolean;
   modalOpen: boolean;
   modalType: string | null;
-  modalData: any;
+  modalData: unknown;
   loading: boolean;
   notifications: Notification[];
 
@@ -21,7 +21,7 @@ interface UIState {
   setMobileMenuOpen: (open: boolean) => void;
   toggleSearch: () => void;
   setSearchOpen: (open: boolean) => void;
-  openModal: (type: string, data?: any) => void;
+  openModal: (type: string, data?: unknown) => void;
   closeModal: () => void;
   setLoading: (loading: boolean) => void;
   addNotification: (notification: Omit<Notification, 'id'>) => void;
@@ -109,7 +109,7 @@ export const useUIStore = create<UIState>()(
           id: Date.now().toString(),
           ...notificationData,
         };
-        
+
         set((state) => ({
           notifications: [...state.notifications, notification],
         }));

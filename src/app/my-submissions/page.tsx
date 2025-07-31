@@ -12,6 +12,7 @@ import {
   ClockIcon as PendingIcon,
 } from '@heroicons/react/24/outline';
 import { useEventStore, useArtistStore, useUIStore } from '@/store';
+import { firebaseTimestampToDate } from '@/utils';
 
 export default function MySubmissionsPage() {
   const { user, userData, loading: authLoading } = useAuth();
@@ -299,8 +300,13 @@ export default function MySubmissionsPage() {
                           <div className="flex items-center space-x-4 text-sm text-gray-500 mb-2">
                             <div className="flex items-center">
                               <CalendarIcon className="h-4 w-4 mr-1" />
-                              {new Date(event.startDate).toLocaleDateString('zh-TW')} -{' '}
-                              {new Date(event.endDate).toLocaleDateString('zh-TW')}
+                              {firebaseTimestampToDate(event.datetime.start).toLocaleDateString(
+                                'zh-TW'
+                              )}{' '}
+                              -{' '}
+                              {firebaseTimestampToDate(event.datetime.end).toLocaleDateString(
+                                'zh-TW'
+                              )}
                             </div>
                             <div className="flex items-center">
                               <MapPinIcon className="h-4 w-4 mr-1" />
@@ -309,7 +315,8 @@ export default function MySubmissionsPage() {
                           </div>
 
                           <p className="text-xs text-gray-400">
-                            投稿時間：{new Date(event.createdAt).toLocaleString('zh-TW')}
+                            投稿時間：
+                            {firebaseTimestampToDate(event.createdAt).toLocaleString('zh-TW')}
                           </p>
                         </div>
 

@@ -54,12 +54,7 @@ export function isValidPhoneNumber(phone: string): boolean {
 }
 
 // 距離計算 (Haversine formula)
-export function calculateDistance(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number
-): number {
+export function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371; // 地球半徑（公里）
   const dLat = (lat2 - lat1) * (Math.PI / 180);
   const dLng = (lng2 - lng1) * (Math.PI / 180);
@@ -89,3 +84,18 @@ export function deepClone<T>(obj: T): T {
 export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+// Firebase Timestamp 轉換工具
+export const firebaseTimestampToDate = (timestamp: {
+  _seconds: number;
+  _nanoseconds: number;
+}): Date => {
+  return new Date(timestamp._seconds * 1000);
+};
+
+export const firebaseTimestampToISOString = (timestamp: {
+  _seconds: number;
+  _nanoseconds: number;
+}): string => {
+  return new Date(timestamp._seconds * 1000).toISOString();
+};

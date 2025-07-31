@@ -2,9 +2,15 @@
 
 import { Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
-import { XMarkIcon, MapPinIcon, CalendarIcon, UserIcon, PhoneIcon } from '@heroicons/react/24/outline';
+import {
+  XMarkIcon,
+  MapPinIcon,
+  CalendarIcon,
+  UserIcon,
+  PhoneIcon,
+} from '@heroicons/react/24/outline';
 import { CoffeeEvent } from '@/types';
-import { formatDate, formatRelativeTime } from '@/utils';
+import { formatDate, formatRelativeTime, firebaseTimestampToDate } from '@/utils';
 
 interface EventDetailSidebarProps {
   event: CoffeeEvent | null;
@@ -15,7 +21,10 @@ interface EventDetailSidebarProps {
 export default function EventDetailSidebar({ event, isOpen, onClose }: EventDetailSidebarProps) {
   if (!event) return null;
 
-  const remainingDays = Math.ceil((new Date(event.endDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+  const remainingDays = Math.ceil(
+    (firebaseTimestampToDate(event.datetime.end).getTime() - new Date().getTime()) /
+      (1000 * 60 * 60 * 24)
+  );
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
@@ -88,9 +97,7 @@ export default function EventDetailSidebar({ event, isOpen, onClose }: EventDeta
 
                       {/* 活動標題 */}
                       <div className="mb-6">
-                        <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                          {event.title}
-                        </h1>
+                        <h1 className="text-2xl font-bold text-gray-900 mb-2">{event.title}</h1>
                         {remainingDays > 0 && (
                           <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                             還有 {remainingDays} 天
@@ -113,11 +120,19 @@ export default function EventDetailSidebar({ event, isOpen, onClose }: EventDeta
                           <div>
                             <p className="text-sm font-medium text-gray-900">活動時間</p>
                             <p className="text-sm text-gray-600">
-                              {formatDate(event.startDate, { month: 'short', day: 'numeric' })} - 
-                              {formatDate(event.endDate, { month: 'short', day: 'numeric' })}
+                              {formatDate(firebaseTimestampToDate(event.datetime.start), {
+                                month: 'short',
+                                day: 'numeric',
+                              })}{' '}
+                              -
+                              {formatDate(firebaseTimestampToDate(event.datetime.end), {
+                                month: 'short',
+                                day: 'numeric',
+                              })}
                             </p>
                             <p className="text-xs text-gray-500">
-                              ({formatRelativeTime(event.endDate)} 結束)
+                              ({formatRelativeTime(firebaseTimestampToDate(event.datetime.end))}{' '}
+                              結束)
                             </p>
                           </div>
                         </div>
@@ -149,7 +164,7 @@ export default function EventDetailSidebar({ event, isOpen, onClose }: EventDeta
                             {event.contactInfo.phone && (
                               <div className="flex items-center space-x-2">
                                 <PhoneIcon className="h-4 w-4 text-gray-400" />
-                                <a 
+                                <a
                                   href={`tel:${event.contactInfo.phone}`}
                                   className="text-sm text-blue-600 hover:text-blue-800"
                                 >
@@ -160,7 +175,7 @@ export default function EventDetailSidebar({ event, isOpen, onClose }: EventDeta
                             {event.contactInfo.instagram && (
                               <div className="flex items-center space-x-2">
                                 <span className="text-sm text-gray-500">IG:</span>
-                                <a 
+                                <a
                                   href={`https://instagram.com/${event.contactInfo.instagram.replace('@', '')}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
@@ -173,7 +188,7 @@ export default function EventDetailSidebar({ event, isOpen, onClose }: EventDeta
                             {event.contactInfo.facebook && (
                               <div className="flex items-center space-x-2">
                                 <span className="text-sm text-gray-500">FB:</span>
-                                <a 
+                                <a
                                   href={event.contactInfo.facebook}
                                   target="_blank"
                                   rel="noopener noreferrer"
@@ -199,14 +214,14 @@ export default function EventDetailSidebar({ event, isOpen, onClose }: EventDeta
                         >
                           前往 Google 地圖
                         </button>
-                        
+
                         <button
                           type="button"
                           className="w-full bg-white text-amber-600 border border-amber-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors"
                           onClick={() => {
                             const text = `${event.title} - ${event.artistName} 應援咖啡活動\n${event.location.address}\n${window.location.href}`;
-                            navigator.share?.({ title: event.title, text }) || 
-                            navigator.clipboard?.writeText(text);
+                            navigator.share?.({ title: event.title, text }) ||
+                              navigator.clipboard?.writeText(text);
                           }}
                         >
                           分享活動

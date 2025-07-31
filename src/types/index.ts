@@ -1,11 +1,17 @@
 // 基本型別定義
 
+// Firebase Timestamp 型別
+export interface FirebaseTimestamp {
+  _seconds: number;
+  _nanoseconds: number;
+}
+
 export interface Artist {
   id: string;
-  stageName: string;          // 藝名（主要顯示）
-  realName?: string;          // 本名（可選）
-  birthday?: string;          // 生日 (YYYY-MM-DD)
-  profileImage?: string;      // 照片 URL
+  stageName: string; // 藝名（主要顯示）
+  realName?: string; // 本名（可選）
+  birthday?: string; // 生日 (YYYY-MM-DD)
+  profileImage?: string; // 照片 URL
   status: 'pending' | 'approved' | 'rejected';
   createdBy: string;
   createdAt: string; // ISO string format
@@ -14,29 +20,39 @@ export interface Artist {
 
 export interface CoffeeEvent {
   id: string;
-  title: string;              // 活動標題
-  artistId: string;           // 關聯藝人 ID
-  artistName: string;         // 藝人名稱（冗餘儲存）
-  description?: string;       // 活動描述
-  startDate: string;          // 開始時間 (ISO string)
-  endDate: string;            // 結束時間 (ISO string)
+  title: string; // 活動標題
+  artistId: string; // 關聯藝人 ID
+  artistName: string; // 藝人名稱（冗餘儲存）
+  description?: string; // 活動描述
+  datetime: {
+    start: FirebaseTimestamp;
+    end: FirebaseTimestamp;
+  };
   location: {
-    address: string;          // 地址
+    address: string; // 地址
     coordinates: {
       lat: number;
       lng: number;
     };
   };
+  socialMedia?: {
+    instagram?: string;
+    twitter?: string;
+  };
   contactInfo?: {
+    // 向後相容
     phone?: string;
     instagram?: string;
     facebook?: string;
   };
-  images?: string[];          // 活動照片 URLs
+  images?: string[]; // 活動照片 URLs
+  thumbnail?: string; // 縮圖 URL
+  markerImage?: string; // 地圖標記圖片 URL
   status: 'pending' | 'approved' | 'rejected';
+  isDeleted: boolean;
   createdBy: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: FirebaseTimestamp;
+  updatedAt: FirebaseTimestamp;
 }
 
 export interface User {
@@ -49,7 +65,7 @@ export interface User {
 }
 
 // API 回應型別
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   message?: string;
@@ -72,6 +88,21 @@ export interface MapCenter {
   zoom: number;
 }
 
-export interface EventMarker extends Pick<CoffeeEvent, 'id' | 'title' | 'artistName' | 'location' | 'startDate' | 'endDate'> {
-  // 地圖標記專用的簡化資料
+export interface EventMarker {
+  id: string;
+  title: string;
+  artistName: string;
+  location: {
+    address: string;
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
+  };
+  datetime: {
+    start: FirebaseTimestamp;
+    end: FirebaseTimestamp;
+  };
+  thumbnail?: string;
+  markerImage?: string;
 }

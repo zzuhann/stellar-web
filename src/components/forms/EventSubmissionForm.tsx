@@ -74,8 +74,16 @@ export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmis
         artistId: selectedArtist?.id || '',
         artistName: data.artistName,
         description: data.description || '',
-        startDate: new Date(data.startDate).toISOString(),
-        endDate: new Date(data.endDate).toISOString(),
+        datetime: {
+          start: {
+            _seconds: Math.floor(new Date(data.startDate).getTime() / 1000),
+            _nanoseconds: 0,
+          },
+          end: {
+            _seconds: Math.floor(new Date(data.endDate).getTime() / 1000),
+            _nanoseconds: 0,
+          },
+        },
         location: {
           address: data.address,
           coordinates: locationCoordinates || {
@@ -90,6 +98,7 @@ export default function EventSubmissionForm({ onSuccess, onCancel }: EventSubmis
           facebook: data.facebook || undefined,
         },
         images: [], // 暫時不支援圖片上傳
+        isDeleted: false,
       };
 
       await createEvent(eventData);

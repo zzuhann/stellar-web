@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // API 呼叫工具函數
 
 import axios, { AxiosResponse, AxiosError } from 'axios';
@@ -51,9 +52,9 @@ export const artistsApi = {
     const params = status ? { status } : {};
     const response = await api.get('/artists', { params });
     const rawArtists = response.data || [];
-    
+
     // 轉換後端格式到前端格式
-    return rawArtists.map((artist: any) => ({
+    return rawArtists.map((artist: Record<string, unknown>) => ({
       id: artist.id,
       stageName: artist.stageName,
       realName: artist.realName,
@@ -61,17 +62,19 @@ export const artistsApi = {
       profileImage: artist.profileImage,
       status: artist.status,
       createdBy: artist.createdBy,
-      createdAt: artist.createdAt?._seconds 
-        ? new Date(artist.createdAt._seconds * 1000).toISOString()
+      createdAt: (artist.createdAt as { _seconds?: number })?._seconds
+        ? new Date((artist.createdAt as { _seconds: number })._seconds * 1000).toISOString()
         : new Date().toISOString(),
-      updatedAt: artist.updatedAt?._seconds
-        ? new Date(artist.updatedAt._seconds * 1000).toISOString()
+      updatedAt: (artist.updatedAt as { _seconds?: number })?._seconds
+        ? new Date((artist.updatedAt as { _seconds: number })._seconds * 1000).toISOString()
         : new Date().toISOString(),
     }));
   },
 
   // 新增藝人
-  create: async (artist: Omit<Artist, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>): Promise<Artist> => {
+  create: async (
+    artist: Omit<Artist, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>
+  ): Promise<Artist> => {
     const response = await api.post<ApiResponse<Artist>>('/artists', artist);
     return response.data.data!;
   },
@@ -99,40 +102,46 @@ export const eventsApi = {
     const params = status ? { status } : {};
     const response = await api.get('/events', { params });
     const rawEvents = response.data || [];
-    
+
     // 轉換後端格式到前端格式
-    return rawEvents.map((event: any) => ({
+    return rawEvents.map((event: Record<string, unknown>) => ({
       id: event.id,
       title: event.title,
       artistId: event.artistId,
       artistName: event.artistName || '', // 需要從 artistId 查詢
-      description: event.description || '',
-      startDate: event.datetime?.start 
-        ? new Date(event.datetime.start._seconds * 1000).toISOString()
+      description: (event.description as string) || '',
+      startDate: (event.datetime as { start?: { _seconds: number } })?.start
+        ? new Date(
+            (event.datetime as { start: { _seconds: number } }).start._seconds * 1000
+          ).toISOString()
         : new Date().toISOString(),
-      endDate: event.datetime?.end
-        ? new Date(event.datetime.end._seconds * 1000).toISOString()
+      endDate: (event.datetime as { end?: { _seconds: number } })?.end
+        ? new Date(
+            (event.datetime as { end: { _seconds: number } }).end._seconds * 1000
+          ).toISOString()
         : new Date().toISOString(),
       location: {
-        address: event.location?.address || '',
+        address: (event.location as { address?: string })?.address || '',
         coordinates: {
-          lat: event.location?.coordinates?.lat || 0,
-          lng: event.location?.coordinates?.lng || 0,
+          lat: (event.location as { coordinates?: { lat: number } })?.coordinates?.lat || 0,
+          lng: (event.location as { coordinates?: { lng: number } })?.coordinates?.lng || 0,
         },
       },
       contactInfo: {
-        phone: event.contactInfo?.phone,
-        instagram: event.socialMedia?.instagram,
-        facebook: event.socialMedia?.facebook || event.socialMedia?.twitter,
+        phone: (event.contactInfo as { phone?: string })?.phone,
+        instagram: (event.socialMedia as { instagram?: string })?.instagram,
+        facebook:
+          (event.socialMedia as { facebook?: string; twitter?: string })?.facebook ||
+          (event.socialMedia as { twitter?: string })?.twitter,
       },
       images: event.images || [],
       status: event.status,
       createdBy: event.createdBy,
-      createdAt: event.createdAt?._seconds 
-        ? new Date(event.createdAt._seconds * 1000).toISOString()
+      createdAt: (event.createdAt as { _seconds?: number })?._seconds
+        ? new Date((event.createdAt as { _seconds: number })._seconds * 1000).toISOString()
         : new Date().toISOString(),
-      updatedAt: event.updatedAt?._seconds
-        ? new Date(event.updatedAt._seconds * 1000).toISOString()
+      updatedAt: (event.updatedAt as { _seconds?: number })?._seconds
+        ? new Date((event.updatedAt as { _seconds: number })._seconds * 1000).toISOString()
         : new Date().toISOString(),
     }));
   },
@@ -142,7 +151,7 @@ export const eventsApi = {
     try {
       const response = await api.get<ApiResponse<CoffeeEvent>>(`/events/${id}`);
       return response.data.data || null;
-    } catch (error) {
+    } catch {
       return null;
     }
   },
@@ -156,7 +165,9 @@ export const eventsApi = {
   },
 
   // 新增活動
-  create: async (event: Omit<CoffeeEvent, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>): Promise<CoffeeEvent> => {
+  create: async (
+    event: Omit<CoffeeEvent, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>
+  ): Promise<CoffeeEvent> => {
     // 取得當前用戶 ID
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -169,8 +180,8 @@ export const eventsApi = {
       artistId: event.artistId,
       description: event.description,
       datetime: {
-        start: new Date(event.startDate),
-        end: new Date(event.endDate),
+        start: new Date(event.datetime.start._seconds * 1000),
+        end: new Date(event.datetime.end._seconds * 1000),
       },
       location: {
         address: event.location.address,
@@ -188,11 +199,11 @@ export const eventsApi = {
       isDeleted: false,
       createdBy: currentUser.uid,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     console.log('Sending event data to backend:', JSON.stringify(backendEvent, null, 2));
-    
+
     let response;
     try {
       response = await api.post('/events', backendEvent);
@@ -213,7 +224,7 @@ export const eventsApi = {
       }
       throw error;
     }
-    
+
     // 轉換回前端格式
     const rawEvent = response.data;
     return {
@@ -222,23 +233,24 @@ export const eventsApi = {
       artistId: rawEvent.artistId,
       artistName: event.artistName, // 保留原本的 artistName
       description: rawEvent.description || '',
-      startDate: rawEvent.datetime?.start 
-        ? new Date(rawEvent.datetime.start._seconds * 1000).toISOString()
-        : event.startDate,
-      endDate: rawEvent.datetime?.end
-        ? new Date(rawEvent.datetime.end._seconds * 1000).toISOString()
-        : event.endDate,
+      datetime: {
+        start: rawEvent.datetime?.start || {
+          _seconds: Math.floor(Date.now() / 1000),
+          _nanoseconds: 0,
+        },
+        end: rawEvent.datetime?.end || { _seconds: Math.floor(Date.now() / 1000), _nanoseconds: 0 },
+      },
       location: event.location,
+      socialMedia: event.socialMedia,
       contactInfo: event.contactInfo,
       images: rawEvent.images || [],
+      thumbnail: rawEvent.thumbnail,
+      markerImage: rawEvent.markerImage,
       status: rawEvent.status || 'pending',
+      isDeleted: rawEvent.isDeleted || false,
       createdBy: rawEvent.createdBy || '',
-      createdAt: rawEvent.createdAt?._seconds 
-        ? new Date(rawEvent.createdAt._seconds * 1000).toISOString()
-        : new Date().toISOString(),
-      updatedAt: rawEvent.updatedAt?._seconds
-        ? new Date(rawEvent.updatedAt._seconds * 1000).toISOString()
-        : new Date().toISOString(),
+      createdAt: rawEvent.createdAt || { _seconds: Math.floor(Date.now() / 1000), _nanoseconds: 0 },
+      updatedAt: rawEvent.updatedAt || { _seconds: Math.floor(Date.now() / 1000), _nanoseconds: 0 },
     };
   },
 
@@ -261,13 +273,13 @@ export const eventsApi = {
 // 統一錯誤處理函數
 export function handleApiError(error: unknown): string {
   console.error('API Error:', error);
-  
+
   if (axios.isAxiosError(error)) {
     // 記錄詳細錯誤資訊
     console.error('Response status:', error.response?.status);
     console.error('Response data:', error.response?.data);
     console.error('Request config:', error.config);
-    
+
     if (error.response?.data?.message) {
       return error.response.data.message;
     }
@@ -295,7 +307,7 @@ export async function checkApiConnection(): Promise<boolean> {
   try {
     await api.get('/health');
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 }
