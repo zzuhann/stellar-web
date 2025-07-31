@@ -7,6 +7,8 @@ import { UserIcon, CalendarIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import * as z from 'zod';
 import { useArtistStore, useUIStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
+import { useAuthToken } from '@/hooks/useAuthToken';
+import ImageUpload from '@/components/ui/ImageUpload';
 
 // 藝人投稿表單驗證
 const artistSubmissionSchema = z.object({
@@ -15,20 +17,9 @@ const artistSubmissionSchema = z.object({
     .min(1, '請輸入藝名')
     .min(2, '藝名至少需要2個字元')
     .max(50, '藝名不能超過50個字元'),
-  realName: z
-    .string()
-    .max(50, '本名不能超過50個字元')
-    .optional()
-    .or(z.literal('')),
-  birthday: z
-    .string()
-    .optional()
-    .or(z.literal('')),
-  profileImage: z
-    .string()
-    .url('請輸入正確的圖片連結格式')
-    .optional()
-    .or(z.literal('')),
+  realName: z.string().max(50, '本名不能超過50個字元').optional().or(z.literal('')),
+  birthday: z.string().optional().or(z.literal('')),
+  profileImage: z.string().url('請輸入正確的圖片連結格式').optional().or(z.literal('')),
 });
 
 type ArtistSubmissionFormData = z.infer<typeof artistSubmissionSchema>;
@@ -40,9 +31,11 @@ interface ArtistSubmissionFormProps {
 
 export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubmissionFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
   const { createArtist } = useArtistStore();
   const { addNotification } = useUIStore();
   const { user } = useAuth();
+  const { token } = useAuthToken();
 
   const {
     register,
@@ -71,7 +64,7 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
         stageName: data.stageName,
         realName: data.realName || undefined,
         birthday: data.birthday || undefined,
-        profileImage: data.profileImage || undefined,
+        profileImage: uploadedImageUrl || data.profileImage || undefined,
       };
 
       await createArtist(artistData);
@@ -84,7 +77,7 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
 
       reset();
       onSuccess?.();
-    } catch (error) {
+    } catch {
       addNotification({
         type: 'error',
         title: '投稿失敗',
@@ -154,30 +147,55 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
           {errors.birthday && (
             <p className="mt-1 text-sm text-red-600">{errors.birthday.message}</p>
           )}
-          <p className="mt-1 text-xs text-gray-500">
-            個人藝人填生日，團體可填出道日期
-          </p>
+          <p className="mt-1 text-xs text-gray-500">個人藝人填生日，團體可填出道日期</p>
         </div>
 
         {/* 個人照片/團體照 */}
         <div>
-          <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-700 mb-3">
             <PhotoIcon className="inline h-4 w-4 mr-1" />
-            個人照片 / 團體照連結
+            個人照片 / 團體照
           </label>
-          <input
-            id="profileImage"
-            type="url"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-            placeholder="https://example.com/image.jpg"
-            {...register('profileImage')}
+
+          <ImageUpload
+            onUploadComplete={(imageUrl) => {
+              setUploadedImageUrl(imageUrl);
+              addNotification({
+                type: 'success',
+                title: '圖片上傳成功',
+                message: '圖片已成功上傳並壓縮',
+              });
+            }}
+            onImageRemove={() => {
+              setUploadedImageUrl('');
+            }}
+            placeholder="點擊上傳藝人照片或拖拽至此"
+            maxSizeMB={3}
+            disabled={isLoading}
+            authToken={token || undefined}
+            useRealAPI={!!token} // 有 token 時使用真實 API，否則使用模擬
           />
-          {errors.profileImage && (
-            <p className="mt-1 text-sm text-red-600">{errors.profileImage.message}</p>
-          )}
-          <p className="mt-1 text-xs text-gray-500">
-            可選填，請提供公開的圖片連結
-          </p>
+
+          {/* 仍保留手動輸入連結的選項 */}
+          <div className="mt-4">
+            <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 mb-1">
+              或手動輸入圖片連結
+            </label>
+            <input
+              id="profileImage"
+              type="url"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+              placeholder="https://example.com/image.jpg"
+              {...register('profileImage')}
+              disabled={!!uploadedImageUrl}
+            />
+            {errors.profileImage && (
+              <p className="mt-1 text-sm text-red-600">{errors.profileImage.message}</p>
+            )}
+            <p className="mt-1 text-xs text-gray-500">
+              {uploadedImageUrl ? '已使用上傳的圖片' : '可選填，上傳圖片或提供公開的圖片連結'}
+            </p>
+          </div>
         </div>
 
         {/* 說明區塊 */}
