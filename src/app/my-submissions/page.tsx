@@ -13,9 +13,9 @@ import {
   PencilIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
-import { useEventStore, useArtistStore, useUIStore } from '@/store';
+import { useUIStore } from '@/store';
 import { firebaseTimestampToDate } from '@/utils';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { eventsApi } from '@/lib/api';
 import { CoffeeEvent } from '@/types';
 import EventEditForm from '@/components/forms/EventEditForm';
@@ -25,13 +25,15 @@ export default function MySubmissionsPage() {
   const { addNotification } = useUIStore();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'artists' | 'events'>('artists');
-  const [loading, setLoading] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CoffeeEvent | null>(null);
   const queryClient = useQueryClient();
 
-  // 狀態管理
-  const { artists, fetchArtists } = useArtistStore();
-  const { events, fetchEvents } = useEventStore();
+  // 使用新的 /me API 取得用戶投稿
+  const { data: userSubmissions, isLoading: loading } = useQuery({
+    queryKey: ['user-submissions'],
+    queryFn: eventsApi.getMySubmissions,
+    enabled: !!user,
+  });
 
   // 刪除活動 mutation
   const deleteEventMutation = useMutation({
@@ -39,7 +41,7 @@ export default function MySubmissionsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['map-data'] });
-      loadUserSubmissions(); // 重新載入用戶投稿
+      queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
       addNotification({
         type: 'success',
         title: '刪除成功',
@@ -67,28 +69,9 @@ export default function MySubmissionsPage() {
     }
   }, [user, authLoading, router, addNotification]);
 
-  const loadUserSubmissions = async () => {
-    setLoading(true);
-    try {
-      // 載入所有藝人和活動，然後篩選出用戶的投稿
-      await Promise.all([
-        fetchArtists(), // 載入所有藝人
-        fetchEvents(), // 載入所有活動
-      ]);
-    } catch {
-      addNotification({
-        type: 'error',
-        title: '載入失敗',
-        message: '無法載入投稿資料',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 篩選用戶的投稿（前端篩選，後續可考慮讓後端處理）
-  const userArtists = artists.filter((artist) => artist.createdBy === user?.uid);
-  const userEvents = events.filter((event) => event.createdBy === user?.uid);
+  // 從 API 取得的資料
+  const userArtists = userSubmissions?.artists || [];
+  const userEvents = userSubmissions?.events || [];
 
   // 處理編輯活動
   const handleEditEvent = (event: CoffeeEvent) => {
@@ -105,7 +88,7 @@ export default function MySubmissionsPage() {
   // 編輯成功後的處理
   const handleEditSuccess = () => {
     setEditingEvent(null);
-    loadUserSubmissions(); // 重新載入數據
+    queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
     addNotification({
       type: 'success',
       title: '更新成功',
@@ -139,13 +122,6 @@ export default function MySubmissionsPage() {
         );
     }
   };
-
-  // 載入用戶的投稿資料
-  useEffect(() => {
-    if (user) {
-      loadUserSubmissions();
-    }
-  }, [user]);
 
   if (authLoading || loading) {
     return (
@@ -413,40 +389,40 @@ export default function MySubmissionsPage() {
         )}
 
         {/* Summary Stats */}
-        {(userArtists.length > 0 || userEvents.length > 0) && (
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-2xl font-bold text-amber-600">
-                {userArtists.length + userEvents.length}
+        {userSubmissions &&
+          (userSubmissions.summary.totalArtists > 0 || userSubmissions.summary.totalEvents > 0) && (
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-white rounded-lg shadow p-6 text-center">
+                <div className="text-2xl font-bold text-amber-600">
+                  {userSubmissions.summary.totalArtists + userSubmissions.summary.totalEvents}
+                </div>
+                <div className="text-sm text-gray-600">總投稿數</div>
               </div>
-              <div className="text-sm text-gray-600">總投稿數</div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {
-                  [...userArtists, ...userEvents].filter((item) => item.status === 'approved')
-                    .length
-                }
+              <div className="bg-white rounded-lg shadow p-6 text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {userSubmissions.summary.approvedArtists + userSubmissions.summary.approvedEvents}
+                </div>
+                <div className="text-sm text-gray-600">已通過</div>
               </div>
-              <div className="text-sm text-gray-600">已通過</div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-2xl font-bold text-yellow-600">
-                {[...userArtists, ...userEvents].filter((item) => item.status === 'pending').length}
+              <div className="bg-white rounded-lg shadow p-6 text-center">
+                <div className="text-2xl font-bold text-yellow-600">
+                  {userSubmissions.summary.pendingArtists + userSubmissions.summary.pendingEvents}
+                </div>
+                <div className="text-sm text-gray-600">審核中</div>
               </div>
-              <div className="text-sm text-gray-600">審核中</div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-2xl font-bold text-red-600">
-                {
-                  [...userArtists, ...userEvents].filter((item) => item.status === 'rejected')
-                    .length
-                }
+              <div className="bg-white rounded-lg shadow p-6 text-center">
+                <div className="text-2xl font-bold text-red-600">
+                  {userSubmissions.summary.totalArtists -
+                    userSubmissions.summary.approvedArtists -
+                    userSubmissions.summary.pendingArtists +
+                    (userSubmissions.summary.totalEvents -
+                      userSubmissions.summary.approvedEvents -
+                      userSubmissions.summary.pendingEvents)}
+                </div>
+                <div className="text-sm text-gray-600">已拒絕</div>
               </div>
-              <div className="text-sm text-gray-600">已拒絕</div>
             </div>
-          </div>
-        )}
+          )}
       </div>
 
       {/* 編輯活動模態框 */}

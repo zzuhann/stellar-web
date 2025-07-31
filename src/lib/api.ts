@@ -124,6 +124,20 @@ export const artistsApi = {
   },
 };
 
+// 用戶投稿資料格式
+export interface UserSubmissionsResponse {
+  artists: Artist[];
+  events: CoffeeEvent[];
+  summary: {
+    totalArtists: number;
+    totalEvents: number;
+    pendingArtists: number;
+    pendingEvents: number;
+    approvedArtists: number;
+    approvedEvents: number;
+  };
+}
+
 // 活動相關 API
 export const eventsApi = {
   // 取得活動列表（可指定狀態）
@@ -328,6 +342,66 @@ export const eventsApi = {
   // 軟刪除活動（管理員）
   delete: async (id: string): Promise<void> => {
     await api.delete(`/events/${id}`);
+  },
+
+  // 取得當前用戶的所有投稿
+  getMySubmissions: async (): Promise<UserSubmissionsResponse> => {
+    const response = await api.get('/events/me');
+    const rawData = response.data;
+
+    // 轉換藝人資料格式
+    const artists: Artist[] = rawData.artists.map((artist: Record<string, unknown>) => ({
+      id: artist.id as string,
+      stageName: artist.stageName as string,
+      realName: artist.realName as string,
+      birthday: artist.birthday as string,
+      profileImage: artist.profileImage as string,
+      status: artist.status as 'pending' | 'approved' | 'rejected',
+      createdBy: artist.createdBy as string,
+      createdAt: artist.createdAt as string,
+      updatedAt: artist.updatedAt as string,
+    }));
+
+    // 轉換活動資料格式
+    const events: CoffeeEvent[] = rawData.events.map((event: Record<string, unknown>) => ({
+      id: event.id as string,
+      title: event.title as string,
+      artistId: event.artistId as string,
+      artistName: event.artistName as string,
+      description: (event.description as string) || '',
+      datetime: {
+        start: (event.datetime as { start: unknown }).start,
+        end: (event.datetime as { end: unknown }).end,
+      },
+      location: {
+        address: (event.location as { address?: string })?.address || '',
+        coordinates: {
+          lat: (event.location as { coordinates?: { lat: number } })?.coordinates?.lat || 0,
+          lng: (event.location as { coordinates?: { lng: number } })?.coordinates?.lng || 0,
+        },
+      },
+      contactInfo: {
+        phone: (event.contactInfo as { phone?: string })?.phone,
+        instagram: (event.socialMedia as { instagram?: string })?.instagram,
+        facebook:
+          (event.socialMedia as { facebook?: string; twitter?: string })?.facebook ||
+          (event.socialMedia as { twitter?: string })?.twitter,
+      },
+      images: (event.images as string[]) || [],
+      thumbnail: event.thumbnail as string,
+      markerImage: event.markerImage as string,
+      status: event.status as 'pending' | 'approved' | 'rejected',
+      isDeleted: (event.isDeleted as boolean) || false,
+      createdBy: event.createdBy as string,
+      createdAt: event.createdAt as string,
+      updatedAt: event.updatedAt as string,
+    }));
+
+    return {
+      artists,
+      events,
+      summary: rawData.summary,
+    };
   },
 };
 
