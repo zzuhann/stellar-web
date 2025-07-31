@@ -13,7 +13,9 @@ interface ArtistState {
 
   // 動作
   fetchArtists: (status?: 'approved' | 'pending' | 'rejected') => Promise<void>;
-  createArtist: (artist: Omit<Artist, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>) => Promise<void>;
+  createArtist: (
+    artist: Omit<Artist, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>
+  ) => Promise<void>;
   approveArtist: (id: string) => Promise<void>;
   rejectArtist: (id: string) => Promise<void>;
   deleteArtist: (id: string) => Promise<void>;
@@ -22,7 +24,7 @@ interface ArtistState {
 
 export const useArtistStore = create<ArtistState>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       // 初始狀態
       artists: [],
       loading: false,
@@ -35,9 +37,9 @@ export const useArtistStore = create<ArtistState>()(
           const artists = await artistsApi.getAll(status);
           set({ artists, loading: false });
         } catch (error) {
-          set({ 
-            error: handleApiError(error), 
-            loading: false 
+          set({
+            error: handleApiError(error),
+            loading: false,
           });
         }
       },
@@ -52,9 +54,9 @@ export const useArtistStore = create<ArtistState>()(
             loading: false,
           }));
         } catch (error) {
-          set({ 
-            error: handleApiError(error), 
-            loading: false 
+          set({
+            error: handleApiError(error),
+            loading: false,
           });
           throw error;
         }
@@ -66,9 +68,7 @@ export const useArtistStore = create<ArtistState>()(
           await artistsApi.approve(id);
           set((state) => ({
             artists: state.artists.map((artist) =>
-              artist.id === id 
-                ? { ...artist, status: 'approved' as const }
-                : artist
+              artist.id === id ? { ...artist, status: 'approved' as const } : artist
             ),
           }));
         } catch (error) {
@@ -83,9 +83,7 @@ export const useArtistStore = create<ArtistState>()(
           await artistsApi.reject(id);
           set((state) => ({
             artists: state.artists.map((artist) =>
-              artist.id === id 
-                ? { ...artist, status: 'rejected' as const }
-                : artist
+              artist.id === id ? { ...artist, status: 'rejected' as const } : artist
             ),
           }));
         } catch (error) {

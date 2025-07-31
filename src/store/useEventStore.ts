@@ -17,7 +17,9 @@ interface EventState {
   fetchEvents: (status?: 'approved' | 'pending' | 'rejected') => Promise<void>;
   fetchEventById: (id: string) => Promise<void>;
   searchEvents: (params: EventSearchParams) => Promise<void>;
-  createEvent: (event: Omit<CoffeeEvent, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>) => Promise<void>;
+  createEvent: (
+    event: Omit<CoffeeEvent, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>
+  ) => Promise<void>;
   approveEvent: (id: string) => Promise<void>;
   rejectEvent: (id: string) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
@@ -28,7 +30,7 @@ interface EventState {
 
 export const useEventStore = create<EventState>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       // 初始狀態
       events: [],
       currentEvent: null,
@@ -42,23 +44,23 @@ export const useEventStore = create<EventState>()(
         try {
           const [events, artists] = await Promise.all([
             eventsApi.getAll(status),
-            artistsApi.getAll('approved') // 只取得已審核的藝人來填入 artistName
+            artistsApi.getAll('approved'), // 只取得已審核的藝人來填入 artistName
           ]);
-          
+
           // 補充 artistName
-          const eventsWithArtistNames = events.map(event => {
-            const artist = artists.find(a => a.id === event.artistId);
+          const eventsWithArtistNames = events.map((event) => {
+            const artist = artists.find((a) => a.id === event.artistId);
             return {
               ...event,
-              artistName: artist?.stageName || event.artistName || 'Unknown Artist'
+              artistName: artist?.stageName || event.artistName || 'Unknown Artist',
             };
           });
-          
+
           set({ events: eventsWithArtistNames, loading: false });
         } catch (error) {
-          set({ 
-            error: handleApiError(error), 
-            loading: false 
+          set({
+            error: handleApiError(error),
+            loading: false,
           });
         }
       },
@@ -70,9 +72,9 @@ export const useEventStore = create<EventState>()(
           const event = await eventsApi.getById(id);
           set({ currentEvent: event, loading: false });
         } catch (error) {
-          set({ 
-            error: handleApiError(error), 
-            loading: false 
+          set({
+            error: handleApiError(error),
+            loading: false,
           });
         }
       },
@@ -84,9 +86,9 @@ export const useEventStore = create<EventState>()(
           const events = await eventsApi.search(params);
           set({ events, loading: false });
         } catch (error) {
-          set({ 
-            error: handleApiError(error), 
-            loading: false 
+          set({
+            error: handleApiError(error),
+            loading: false,
           });
         }
       },
@@ -95,14 +97,14 @@ export const useEventStore = create<EventState>()(
       createEvent: async (eventData) => {
         set({ loading: true, error: null });
         try {
-          const newEvent = await eventsApi.create(eventData);
+          await eventsApi.create(eventData);
           // 新活動狀態為 pending，不加入到顯示列表中
           // 只有 approved 狀態的活動才會在地圖上顯示
           set({ loading: false });
         } catch (error) {
-          set({ 
-            error: handleApiError(error), 
-            loading: false 
+          set({
+            error: handleApiError(error),
+            loading: false,
           });
           throw error;
         }
@@ -114,13 +116,12 @@ export const useEventStore = create<EventState>()(
           await eventsApi.approve(id);
           set((state) => ({
             events: state.events.map((event) =>
-              event.id === id 
-                ? { ...event, status: 'approved' as const }
-                : event
+              event.id === id ? { ...event, status: 'approved' as const } : event
             ),
-            currentEvent: state.currentEvent?.id === id
-              ? { ...state.currentEvent, status: 'approved' as const }
-              : state.currentEvent,
+            currentEvent:
+              state.currentEvent?.id === id
+                ? { ...state.currentEvent, status: 'approved' as const }
+                : state.currentEvent,
           }));
         } catch (error) {
           set({ error: handleApiError(error) });
@@ -134,13 +135,12 @@ export const useEventStore = create<EventState>()(
           await eventsApi.reject(id);
           set((state) => ({
             events: state.events.map((event) =>
-              event.id === id 
-                ? { ...event, status: 'rejected' as const }
-                : event
+              event.id === id ? { ...event, status: 'rejected' as const } : event
             ),
-            currentEvent: state.currentEvent?.id === id
-              ? { ...state.currentEvent, status: 'rejected' as const }
-              : state.currentEvent,
+            currentEvent:
+              state.currentEvent?.id === id
+                ? { ...state.currentEvent, status: 'rejected' as const }
+                : state.currentEvent,
           }));
         } catch (error) {
           set({ error: handleApiError(error) });

@@ -10,9 +10,15 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   ClockIcon as PendingIcon,
+  PencilIcon,
+  TrashIcon,
 } from '@heroicons/react/24/outline';
 import { useEventStore, useArtistStore, useUIStore } from '@/store';
 import { firebaseTimestampToDate } from '@/utils';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { eventsApi } from '@/lib/api';
+import { CoffeeEvent } from '@/types';
+import EventEditForm from '@/components/forms/EventEditForm';
 
 export default function MySubmissionsPage() {
   const { user, userData, loading: authLoading } = useAuth();
@@ -20,10 +26,34 @@ export default function MySubmissionsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'artists' | 'events'>('artists');
   const [loading, setLoading] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<CoffeeEvent | null>(null);
+  const queryClient = useQueryClient();
 
   // 狀態管理
   const { artists, fetchArtists } = useArtistStore();
   const { events, fetchEvents } = useEventStore();
+
+  // 刪除活動 mutation
+  const deleteEventMutation = useMutation({
+    mutationFn: (eventId: string) => eventsApi.delete(eventId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['map-data'] });
+      loadUserSubmissions(); // 重新載入用戶投稿
+      addNotification({
+        type: 'success',
+        title: '刪除成功',
+        message: '活動已成功刪除',
+      });
+    },
+    onError: (error) => {
+      addNotification({
+        type: 'error',
+        title: '刪除失敗',
+        message: error instanceof Error ? error.message : '刪除活動時發生錯誤',
+      });
+    },
+  });
 
   // 權限檢查
   useEffect(() => {
@@ -36,13 +66,6 @@ export default function MySubmissionsPage() {
       router.push('/');
     }
   }, [user, authLoading, router, addNotification]);
-
-  // 載入用戶的投稿資料
-  useEffect(() => {
-    if (user) {
-      loadUserSubmissions();
-    }
-  }, [user]);
 
   const loadUserSubmissions = async () => {
     setLoading(true);
@@ -66,6 +89,29 @@ export default function MySubmissionsPage() {
   // 篩選用戶的投稿（前端篩選，後續可考慮讓後端處理）
   const userArtists = artists.filter((artist) => artist.createdBy === user?.uid);
   const userEvents = events.filter((event) => event.createdBy === user?.uid);
+
+  // 處理編輯活動
+  const handleEditEvent = (event: CoffeeEvent) => {
+    setEditingEvent(event);
+  };
+
+  // 處理刪除活動
+  const handleDeleteEvent = (event: CoffeeEvent) => {
+    if (window.confirm(`確定要刪除活動「${event.title}」嗎？此操作無法復原。`)) {
+      deleteEventMutation.mutate(event.id);
+    }
+  };
+
+  // 編輯成功後的處理
+  const handleEditSuccess = () => {
+    setEditingEvent(null);
+    loadUserSubmissions(); // 重新載入數據
+    addNotification({
+      type: 'success',
+      title: '更新成功',
+      message: '活動資訊已成功更新',
+    });
+  };
 
   const getStatusBadge = (status: 'pending' | 'approved' | 'rejected') => {
     switch (status) {
@@ -93,6 +139,13 @@ export default function MySubmissionsPage() {
         );
     }
   };
+
+  // 載入用戶的投稿資料
+  useEffect(() => {
+    if (user) {
+      loadUserSubmissions();
+    }
+  }, [user]);
 
   if (authLoading || loading) {
     return (
@@ -328,6 +381,27 @@ export default function MySubmissionsPage() {
                           {event.status === 'pending' && (
                             <p className="text-xs text-yellow-600 mt-1">⏳ 等待管理員審核</p>
                           )}
+
+                          {/* 操作按鈕 */}
+                          <div className="flex justify-end space-x-2 mt-3">
+                            <button
+                              onClick={() => handleEditEvent(event)}
+                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition-colors"
+                              title="編輯活動"
+                            >
+                              <PencilIcon className="h-3 w-3 mr-1" />
+                              編輯
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEvent(event)}
+                              disabled={deleteEventMutation.isPending}
+                              className="inline-flex items-center px-2 py-1 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="刪除活動"
+                            >
+                              <TrashIcon className="h-3 w-3 mr-1" />
+                              {deleteEventMutation.isPending ? '刪除中...' : '刪除'}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -374,6 +448,19 @@ export default function MySubmissionsPage() {
           </div>
         )}
       </div>
+
+      {/* 編輯活動模態框 */}
+      {editingEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <EventEditForm
+              event={editingEvent}
+              onSuccess={handleEditSuccess}
+              onCancel={() => setEditingEvent(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

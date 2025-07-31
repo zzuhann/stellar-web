@@ -11,7 +11,7 @@ interface FilterOptions {
   limit?: number;
 }
 
-interface EventsResponse {
+export interface EventsResponse {
   events: CoffeeEvent[];
   pagination: {
     page: number;

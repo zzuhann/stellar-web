@@ -4,6 +4,35 @@
 import axios, { AxiosResponse, AxiosError } from 'axios';
 import { auth } from './firebase';
 import { Artist, CoffeeEvent, ApiResponse, EventSearchParams } from '@/types';
+import { EventsResponse } from '@/hooks/useEventFilters';
+
+// 編輯活動資料格式
+export interface UpdateEventData {
+  title?: string;
+  description?: string;
+  location?: {
+    address: string;
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
+  };
+  datetime?: {
+    start: string; // ISO format
+    end: string; // ISO format
+  };
+  socialMedia?: {
+    instagram?: string;
+    twitter?: string;
+    threads?: string;
+  };
+  supportProvided?: boolean;
+  requiresReservation?: boolean;
+  onSiteReservation?: boolean;
+  amenities?: string[];
+  thumbnail?: string;
+  markerImage?: string;
+}
 
 // 建立 Axios 實例
 const api = axios.create({
@@ -101,25 +130,20 @@ export const eventsApi = {
   getAll: async (status?: 'approved' | 'pending' | 'rejected'): Promise<CoffeeEvent[]> => {
     const params = status ? { status } : {};
     const response = await api.get('/events', { params });
-    const rawEvents = response.data || [];
+    const rawEvents: EventsResponse = response.data;
 
     // 轉換後端格式到前端格式
-    return rawEvents.map((event: Record<string, unknown>) => ({
+    return rawEvents.events.map((event) => ({
       id: event.id,
       title: event.title,
       artistId: event.artistId,
       artistName: event.artistName || '', // 需要從 artistId 查詢
       description: (event.description as string) || '',
-      startDate: (event.datetime as { start?: { _seconds: number } })?.start
-        ? new Date(
-            (event.datetime as { start: { _seconds: number } }).start._seconds * 1000
-          ).toISOString()
-        : new Date().toISOString(),
-      endDate: (event.datetime as { end?: { _seconds: number } })?.end
-        ? new Date(
-            (event.datetime as { end: { _seconds: number } }).end._seconds * 1000
-          ).toISOString()
-        : new Date().toISOString(),
+      datetime: {
+        start: event.datetime.start,
+        end: event.datetime.end,
+      },
+      isDeleted: event.isDeleted,
       location: {
         address: (event.location as { address?: string })?.address || '',
         coordinates: {
@@ -137,12 +161,8 @@ export const eventsApi = {
       images: event.images || [],
       status: event.status,
       createdBy: event.createdBy,
-      createdAt: (event.createdAt as { _seconds?: number })?._seconds
-        ? new Date((event.createdAt as { _seconds: number })._seconds * 1000).toISOString()
-        : new Date().toISOString(),
-      updatedAt: (event.updatedAt as { _seconds?: number })?._seconds
-        ? new Date((event.updatedAt as { _seconds: number })._seconds * 1000).toISOString()
-        : new Date().toISOString(),
+      createdAt: event.createdAt,
+      updatedAt: event.updatedAt,
     }));
   },
 
@@ -262,6 +282,47 @@ export const eventsApi = {
   // 拒絕活動（管理員）
   reject: async (id: string): Promise<void> => {
     await api.put(`/events/${id}/reject`);
+  },
+
+  // 編輯活動
+  update: async (id: string, updateData: UpdateEventData): Promise<CoffeeEvent> => {
+    const response = await api.put(`/events/${id}`, updateData);
+    const rawEvent = response.data;
+
+    // 轉換回前端格式
+    return {
+      id: rawEvent.id,
+      title: rawEvent.title,
+      artistId: rawEvent.artistId,
+      artistName: rawEvent.artistName,
+      description: rawEvent.description || '',
+      datetime: {
+        start: rawEvent.datetime?.start,
+        end: rawEvent.datetime?.end,
+      },
+      location: {
+        address: (rawEvent.location as { address?: string })?.address || '',
+        coordinates: {
+          lat: (rawEvent.location as { coordinates?: { lat: number } })?.coordinates?.lat || 0,
+          lng: (rawEvent.location as { coordinates?: { lng: number } })?.coordinates?.lng || 0,
+        },
+      },
+      contactInfo: {
+        phone: (rawEvent.contactInfo as { phone?: string })?.phone,
+        instagram: (rawEvent.socialMedia as { instagram?: string })?.instagram,
+        facebook:
+          (rawEvent.socialMedia as { facebook?: string; twitter?: string })?.facebook ||
+          (rawEvent.socialMedia as { twitter?: string })?.twitter,
+      },
+      images: rawEvent.images || [],
+      thumbnail: rawEvent.thumbnail,
+      markerImage: rawEvent.markerImage,
+      status: rawEvent.status || 'pending',
+      isDeleted: rawEvent.isDeleted || false,
+      createdBy: rawEvent.createdBy || '',
+      createdAt: rawEvent.createdAt,
+      updatedAt: rawEvent.updatedAt,
+    };
   },
 
   // 軟刪除活動（管理員）
