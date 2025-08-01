@@ -163,7 +163,7 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
               addNotification({
                 type: 'success',
                 title: '圖片上傳成功',
-                message: '圖片已成功上傳並壓縮',
+                message: '圖片已成功上傳並裁切',
               });
             }}
             onImageRemove={() => {
@@ -173,7 +173,12 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
             maxSizeMB={3}
             disabled={isLoading}
             authToken={token || undefined}
-            useRealAPI={!!token} // 有 token 時使用真實 API，否則使用模擬
+            useRealAPI={!!token}
+            // 啟用裁切功能
+            enableCrop={true}
+            cropAspectRatio={1} // 正方形
+            cropShape="square"
+            cropOutputSize={400} // 400x400px 輸出
           />
 
           {/* 仍保留手動輸入連結的選項 */}
