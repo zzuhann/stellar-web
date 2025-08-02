@@ -19,6 +19,7 @@ const HeaderContainer = styled.header`
   align-items: center;
   border-bottom: 1px solid var(--color-border-medium);
   box-shadow: var(--shadow-md);
+  background-color: #fff;
 `;
 
 const Logo = styled.div`

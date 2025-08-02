@@ -10,7 +10,6 @@ export interface Artist {
   id: string;
   stageName: string; // 藝名（主要顯示）
   realName?: string; // 本名（可選）
-  groupName?: string; // 團體名稱（新增）
   birthday?: string; // 生日 (YYYY-MM-DD)
   profileImage?: string; // 照片 URL
   status: 'pending' | 'approved' | 'rejected';

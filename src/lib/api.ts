@@ -109,7 +109,6 @@ export const artistsApi = {
       id: artist.id,
       stageName: artist.stageName,
       realName: artist.realName,
-      groupName: artist.groupName, // 新增欄位
       birthday: artist.birthday,
       profileImage: artist.profileImage,
       status: artist.status,

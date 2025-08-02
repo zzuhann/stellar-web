@@ -285,7 +285,7 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
               <EmptyState>
                 <div className="icon">😔</div>
                 <h3>找不到相關藝人</h3>
-                <p>試試其他關鍵字、檢查拼寫是否正確或點擊按鈕新增偶像</p>
+                <p>試試其他關鍵字、檢查拼寫是否正確</p>
               </EmptyState>
               <CTAButton
                 onClick={() => {
@@ -296,7 +296,7 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
                   }
                 }}
               >
-                新增偶像
+                找不到偶像? 點擊前往新增偶像
               </CTAButton>
             </>
           )}

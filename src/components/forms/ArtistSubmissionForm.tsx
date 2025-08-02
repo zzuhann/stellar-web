@@ -5,37 +5,39 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UserIcon, CalendarIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import * as z from 'zod';
+import styled from 'styled-components';
 import { useArtistStore, useUIStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import ImageUpload from '@/components/ui/ImageUpload';
-import styled from 'styled-components';
+import { useRouter } from 'next/navigation';
 
-// Styled Components (reuse from EventEditForm)
+// Styled Components - 與其他組件保持一致的設計風格
 const FormContainer = styled.div`
+  width: 100%;
   max-width: 800px;
   margin: 0 auto;
-  background: #fff;
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e9ecef;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 32px;
 
   @media (min-width: 768px) {
-    padding: 32px;
+    padding: 40px;
   }
 `;
 
 const FormHeader = styled.div`
   text-align: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--color-border-light);
 
   h2 {
     font-size: 24px;
     font-weight: 700;
-    color: #333;
+    color: var(--color-text-primary);
     margin: 0 0 8px 0;
 
     @media (min-width: 768px) {
@@ -45,7 +47,7 @@ const FormHeader = styled.div`
 
   p {
     font-size: 14px;
-    color: #666;
+    color: var(--color-text-secondary);
     margin: 0;
 
     @media (min-width: 768px) {
@@ -69,44 +71,45 @@ const FormGroup = styled.div`
 const Label = styled.label`
   font-size: 14px;
   font-weight: 500;
-  color: #333;
+  color: var(--color-text-primary);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
 
   @media (min-width: 768px) {
     font-size: 15px;
   }
 
   svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
+    color: var(--color-text-secondary);
   }
 `;
 
 const Input = styled.input`
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
   font-size: 14px;
-  color: #333;
-  background: #fff;
   transition: all 0.2s ease;
+
+  &::placeholder {
+    color: var(--color-text-secondary);
+  }
 
   &:focus {
     outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-  }
-
-  &::placeholder {
-    color: #999;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(90, 125, 154, 0.1);
   }
 
   &:disabled {
-    background: #f8f9fa;
-    color: #6c757d;
+    background: var(--color-bg-secondary);
+    color: var(--color-text-disabled);
     cursor: not-allowed;
   }
 
@@ -118,7 +121,7 @@ const Input = styled.input`
 
 const HelperText = styled.p`
   font-size: 12px;
-  color: #888;
+  color: var(--color-text-secondary);
   margin: 0;
 
   @media (min-width: 768px) {
@@ -127,32 +130,33 @@ const HelperText = styled.p`
 `;
 
 const ErrorText = styled.p`
-  font-size: 13px;
-  color: #dc3545;
-  margin: 0;
+  font-size: 12px;
+  color: #ef4444;
+  margin: 4px 0 0 0;
 `;
 
 const InfoBox = styled.div`
-  background: #e7f3ff;
-  border: 1px solid #b3d9ff;
-  border-radius: 6px;
-  padding: 16px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: var(--radius-lg);
+  padding: 20px;
 
   .title {
     font-size: 14px;
     font-weight: 600;
-    color: #0066cc;
-    margin: 0 0 8px 0;
+    color: #0369a1;
+    margin: 0 0 12px 0;
   }
 
   ul {
     font-size: 13px;
-    color: #0066cc;
+    color: #0369a1;
     margin: 0;
     padding-left: 16px;
 
     li {
-      margin-bottom: 4px;
+      margin-bottom: 6px;
+      line-height: 1.5;
     }
   }
 
@@ -178,7 +182,7 @@ const ButtonGroup = styled.div`
   flex-direction: column;
   gap: 12px;
   padding-top: 24px;
-  border-top: 1px solid #e9ecef;
+  border-top: 1px solid var(--color-border-light);
 
   @media (min-width: 480px) {
     flex-direction: row;
@@ -187,10 +191,10 @@ const ButtonGroup = styled.div`
 `;
 
 const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
-  padding: 12px 24px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 500;
+  padding: 14px 24px;
+  border-radius: var(--radius-lg);
+  font-size: 16px;
+  font-weight: 600;
   transition: all 0.2s ease;
   cursor: pointer;
   border: 1px solid;
@@ -202,40 +206,40 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   ${(props) =>
     props.variant === 'primary'
       ? `
-    background: #007bff;
-    border-color: #007bff;
+    background: var(--color-primary);
+    border-color: var(--color-primary);
     color: white;
     flex: 1;
     
     &:hover:not(:disabled) {
-      background: #0056b3;
-      border-color: #0056b3;
+      background: #3a5d7a;
+      border-color: #3a5d7a;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+      box-shadow: var(--shadow-md);
     }
     
     &:disabled {
-      background: #6c757d;
-      border-color: #6c757d;
+      background: var(--color-text-disabled);
+      border-color: var(--color-text-disabled);
       cursor: not-allowed;
       transform: none;
       box-shadow: none;
     }
   `
       : `
-    background: #fff;
-    border-color: #ddd;
-    color: #666;
+    background: var(--color-bg-primary);
+    border-color: var(--color-border-light);
+    color: var(--color-text-primary);
     
     &:hover {
-      background: #f8f9fa;
-      border-color: #adb5bd;
+      background: var(--color-bg-secondary);
+      border-color: var(--color-border-medium);
     }
   `}
 
   @media (min-width: 768px) {
-    padding: 14px 28px;
-    font-size: 15px;
+    padding: 16px 28px;
+    font-size: 16px;
   }
 `;
 
@@ -271,14 +275,10 @@ const artistSubmissionSchema = z.object({
 
 type ArtistSubmissionFormData = z.infer<typeof artistSubmissionSchema>;
 
-interface ArtistSubmissionFormProps {
-  onSuccess?: () => void;
-  onCancel?: () => void;
-}
-
-export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubmissionFormProps) {
+export default function ArtistSubmissionForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
+  const router = useRouter();
   const { createArtist } = useArtistStore();
   const { addNotification } = useUIStore();
   const { user } = useAuth();
@@ -323,7 +323,6 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
       });
 
       reset();
-      onSuccess?.();
     } catch {
       addNotification({
         type: 'error',
@@ -338,8 +337,8 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
   return (
     <FormContainer>
       <FormHeader>
-        <h2>投稿藝人</h2>
-        <p>新增 K-pop 藝人到我們的資料庫</p>
+        <h2>投稿偶像</h2>
+        <p>新增偶像到我們的資料庫，審核通過後其他用戶可以為他們建立應援活動!</p>
       </FormHeader>
 
       <Form onSubmit={handleSubmit(onSubmit)}>
@@ -347,12 +346,12 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
         <FormGroup>
           <Label htmlFor="stageName">
             <UserIcon />
-            藝名 / 團體名稱 *
+            藝名（偶像活動名稱、中譯名稱）*
           </Label>
           <Input
             id="stageName"
             type="text"
-            placeholder="例：IU、BTS、BLACKPINK"
+            placeholder="例：泰山、明宰鉉、S.COUPS"
             {...register('stageName')}
           />
           {errors.stageName && <ErrorText>{errors.stageName.message}</ErrorText>}
@@ -360,26 +359,24 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
 
         {/* 本名 */}
         <FormGroup>
-          <Label htmlFor="realName">本名 / 韓文名稱</Label>
+          <Label htmlFor="realName">本名（中譯名稱）*</Label>
           <Input
             id="realName"
             type="text"
-            placeholder="例：이지은 (李知恩)、방탄소년단"
+            placeholder="例：漢東旼、明宰鉉、崔勝哲"
             {...register('realName')}
           />
           {errors.realName && <ErrorText>{errors.realName.message}</ErrorText>}
-          <HelperText>可選填，有助於其他用戶識別</HelperText>
         </FormGroup>
 
         {/* 生日 */}
         <FormGroup>
           <Label htmlFor="birthday">
             <CalendarIcon />
-            生日 / 出道日期
+            生日*
           </Label>
           <Input id="birthday" type="date" {...register('birthday')} />
           {errors.birthday && <ErrorText>{errors.birthday.message}</ErrorText>}
-          <HelperText>個人藝人填生日，團體可填出道日期</HelperText>
         </FormGroup>
 
         {/* 個人照片/團體照 */}
@@ -387,8 +384,11 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
           <FormGroup>
             <Label>
               <PhotoIcon />
-              個人照片 / 團體照
+              偶像照片*
             </Label>
+            <HelperText>
+              請注意來源、是否可公開使用，避免侵權(若未來有爭議將直接下架替換其他照片)
+            </HelperText>
 
             <ImageUpload
               onUploadComplete={(imageUrl) => {
@@ -412,22 +412,6 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
               cropShape="square"
               cropOutputSize={400}
             />
-
-            {/* 仍保留手動輸入連結的選項 */}
-            <div className="manual-input">
-              <Label htmlFor="profileImage">或手動輸入圖片連結</Label>
-              <Input
-                id="profileImage"
-                type="url"
-                placeholder="https://example.com/image.jpg"
-                {...register('profileImage')}
-                disabled={!!uploadedImageUrl}
-              />
-              {errors.profileImage && <ErrorText>{errors.profileImage.message}</ErrorText>}
-              <HelperText>
-                {uploadedImageUrl ? '已使用上傳的圖片' : '可選填，上傳圖片或提供公開的圖片連結'}
-              </HelperText>
-            </div>
           </FormGroup>
         </ImageSection>
 
@@ -435,10 +419,10 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
         <InfoBox>
           <div className="title">投稿說明：</div>
           <ul>
-            <li>投稿的藝人將經過管理員審核</li>
-            <li>審核通過後，所有用戶都可以選擇這位藝人來投稿活動</li>
-            <li>請確保藝人資訊的正確性</li>
-            <li>重複的藝人投稿將被拒絕</li>
+            <li>投稿的偶像將經過管理員審核</li>
+            <li>審核通過後，所有用戶都可以選擇這位偶像來投稿應援活動</li>
+            <li>請確保偶像資訊的正確性以及照片來源是否可公開使用</li>
+            <li>資料錯誤、重複的偶像投稿將被拒絕</li>
           </ul>
         </InfoBox>
 
@@ -455,11 +439,9 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
             )}
           </Button>
 
-          {onCancel && (
-            <Button type="button" variant="secondary" onClick={onCancel}>
-              取消
-            </Button>
-          )}
+          <Button type="button" variant="secondary" onClick={() => router.push('/')}>
+            取消
+          </Button>
         </ButtonGroup>
       </Form>
     </FormContainer>

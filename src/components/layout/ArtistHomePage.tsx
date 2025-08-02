@@ -183,7 +183,7 @@ const EmptyState = styled.div`
 const CTAButton = styled.button`
   padding: 12px 24px;
   border-radius: var(--radius-lg);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -191,8 +191,8 @@ const CTAButton = styled.button`
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
-  max-width: 50%;
-  margin: 32px auto 0;
+  max-width: 60%;
+  margin: 0 auto;
 `;
 
 const LoadingContainer = styled.div`
@@ -366,6 +366,19 @@ export default function ArtistHomePage() {
           <PageTitle>
             <p>篩選偶像以尋找附近的生咖活動</p>
           </PageTitle>
+          <CTAButton
+            onClick={() => {
+              if (!user) {
+                toggleAuthModal();
+              } else {
+                router.push('/submit-event');
+              }
+            }}
+          >
+            生咖主辦 ✨
+            <br />
+            點擊前往新增生咖 ➡️
+          </CTAButton>
 
           {/* 週導航 */}
           <WeekNavigationContainer>
@@ -425,24 +438,11 @@ export default function ArtistHomePage() {
               <p>可以切換到其他週查看，或點擊上方搜尋框尋找特定藝人</p>
             </EmptyState>
           )}
-
-          {/* CTA 按鈕 */}
-          <CTAButton
-            onClick={() => {
-              if (!user) {
-                toggleAuthModal();
-              } else {
-                router.push('/submit-event');
-              }
-            }}
-          >
-            新增生咖
-          </CTAButton>
         </ContentWrapper>
       </MainContainer>
 
       {/* 認證模態視窗 */}
-      <AuthModal isOpen={authModalOpen} onClose={() => toggleAuthModal()} initialMode="signin" />
+      <AuthModal isOpen={authModalOpen} onClose={toggleAuthModal} initialMode="signin" />
 
       {/* 搜尋模態視窗 */}
       <ArtistSearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
