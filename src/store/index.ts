@@ -4,3 +4,4 @@ export { useArtistStore } from './useArtistStore';
 export { useEventStore } from './useEventStore';
 export { useMapStore } from './useMapStore';
 export { useUIStore } from './useUIStore';
+export { useSearchStore } from './useSearchStore';

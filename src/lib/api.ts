@@ -74,12 +74,34 @@ api.interceptors.response.use(
   }
 );
 
+// 藝人 API 查詢參數
+export interface ArtistSearchParams {
+  status?: 'approved' | 'pending' | 'rejected';
+  createdBy?: string;
+  birthdayStartDate?: string; // YYYY-MM-DD
+  birthdayEndDate?: string; // YYYY-MM-DD
+  search?: string;
+  includeStats?: boolean;
+  sortBy?: 'stageName' | 'coffeeEventCount' | 'createdAt';
+  sortOrder?: 'asc' | 'desc';
+}
+
 // 藝人相關 API
 export const artistsApi = {
-  // 取得藝人列表（可指定狀態）
-  getAll: async (status?: 'approved' | 'pending' | 'rejected'): Promise<Artist[]> => {
-    const params = status ? { status } : {};
-    const response = await api.get('/artists', { params });
+  // 取得藝人列表（支援新的查詢參數）
+  getAll: async (params?: ArtistSearchParams): Promise<Artist[]> => {
+    const queryParams: Record<string, string> = {};
+
+    if (params?.status) queryParams.status = params.status;
+    if (params?.createdBy) queryParams.createdBy = params.createdBy;
+    if (params?.birthdayStartDate) queryParams.birthdayStartDate = params.birthdayStartDate;
+    if (params?.birthdayEndDate) queryParams.birthdayEndDate = params.birthdayEndDate;
+    if (params?.search) queryParams.search = params.search;
+    if (params?.includeStats) queryParams.includeStats = 'true';
+    if (params?.sortBy) queryParams.sortBy = params.sortBy;
+    if (params?.sortOrder) queryParams.sortOrder = params.sortOrder;
+
+    const response = await api.get('/artists', { params: queryParams });
     const rawArtists = response.data || [];
 
     // 轉換後端格式到前端格式
@@ -87,6 +109,7 @@ export const artistsApi = {
       id: artist.id,
       stageName: artist.stageName,
       realName: artist.realName,
+      groupName: artist.groupName, // 新增欄位
       birthday: artist.birthday,
       profileImage: artist.profileImage,
       status: artist.status,
@@ -97,12 +120,16 @@ export const artistsApi = {
       updatedAt: (artist.updatedAt as { _seconds?: number })?._seconds
         ? new Date((artist.updatedAt as { _seconds: number })._seconds * 1000).toISOString()
         : new Date().toISOString(),
+      coffeeEventCount: artist.coffeeEventCount, // 新增統計欄位
     }));
   },
 
   // 新增藝人
   create: async (
-    artist: Omit<Artist, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>
+    artist: Omit<
+      Artist,
+      'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status' | 'coffeeEventCount'
+    >
   ): Promise<Artist> => {
     const response = await api.post<ApiResponse<Artist>>('/artists', artist);
     return response.data.data!;

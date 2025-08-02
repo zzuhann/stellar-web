@@ -6,6 +6,269 @@ import { eventsApi, UpdateEventData } from '@/lib/api';
 import { CoffeeEvent } from '@/types';
 import PlaceAutocomplete from './PlaceAutocomplete';
 import { firebaseTimestampToDate } from '@/utils';
+import styled from 'styled-components';
+
+// Styled Components
+const FormContainer = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+
+  @media (min-width: 768px) {
+    padding: 32px;
+  }
+`;
+
+const FormHeader = styled.div`
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e9ecef;
+
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 8px 0;
+
+    @media (min-width: 768px) {
+      font-size: 28px;
+    }
+  }
+
+  p {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 4px 0;
+
+    @media (min-width: 768px) {
+      font-size: 16px;
+    }
+  }
+
+  .note {
+    font-size: 12px;
+    color: #888;
+    margin: 0;
+
+    @media (min-width: 768px) {
+      font-size: 13px;
+    }
+  }
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const FormSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const SectionTitle = styled.h3`
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid #f1f3f5;
+
+  @media (min-width: 768px) {
+    font-size: 20px;
+  }
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const Label = styled.label`
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+
+  @media (min-width: 768px) {
+    font-size: 15px;
+  }
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+  background: #fff;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+
+  @media (min-width: 768px) {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+  background: #fff;
+  transition: all 0.2s ease;
+  resize: vertical;
+  min-height: 100px;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+
+  @media (min-width: 768px) {
+    padding: 14px 18px;
+    font-size: 15px;
+    min-height: 120px;
+  }
+`;
+
+const GridContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+`;
+
+const TimeGridContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+`;
+
+const CheckboxGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+`;
+
+const CheckboxItem = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+
+  input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    accent-color: #007bff;
+  }
+
+  @media (min-width: 768px) {
+    font-size: 15px;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid #e9ecef;
+
+  @media (min-width: 480px) {
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 16px;
+  }
+`;
+
+const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid;
+
+  ${(props) =>
+    props.variant === 'primary'
+      ? `
+    background: #007bff;
+    border-color: #007bff;
+    color: white;
+    
+    &:hover:not(:disabled) {
+      background: #0056b3;
+      border-color: #0056b3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    }
+    
+    &:disabled {
+      background: #6c757d;
+      border-color: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  `
+      : `
+    background: #fff;
+    border-color: #ddd;
+    color: #666;
+    
+    &:hover {
+      background: #f8f9fa;
+      border-color: #adb5bd;
+    }
+  `}
+
+  @media (min-width: 768px) {
+    padding: 14px 28px;
+    font-size: 15px;
+  }
+`;
+
+const ErrorMessage = styled.div`
+  margin-top: 16px;
+  padding: 16px;
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 6px;
+  color: #721c24;
+  font-size: 14px;
+`;
 
 interface EventEditFormProps {
   event: CoffeeEvent;
@@ -96,221 +359,191 @@ export default function EventEditForm({ event, onSuccess, onCancel }: EventEditF
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">編輯活動</h2>
-        <p className="text-gray-600">
-          編輯 <span className="font-medium text-purple-600">{event.artistName}</span> 的應援活動
+    <FormContainer>
+      <FormHeader>
+        <h2>編輯活動</h2>
+        <p>
+          編輯 <span style={{ fontWeight: 600, color: '#6f42c1' }}>{event.artistName}</span>{' '}
+          的應援活動
         </p>
-        <p className="text-sm text-gray-500 mt-1">注意：無法修改活動的藝人資訊</p>
-      </div>
+        <p className="note">注意：無法修改活動的藝人資訊</p>
+      </FormHeader>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <Form onSubmit={handleSubmit}>
         {/* 活動標題 */}
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-            活動標題 *
-          </label>
-          <input
+        <FormGroup>
+          <Label htmlFor="title">活動標題 *</Label>
+          <Input
             type="text"
             id="title"
             value={formData.title}
             onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             required
             placeholder="例：IU 生日應援咖啡"
           />
-        </div>
+        </FormGroup>
 
         {/* 活動描述 */}
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
-            活動描述 *
-          </label>
-          <textarea
+        <FormGroup>
+          <Label htmlFor="description">活動描述 *</Label>
+          <TextArea
             id="description"
             value={formData.description}
             onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
-            rows={4}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             required
             placeholder="詳細描述活動內容、特色等..."
           />
-        </div>
+        </FormGroup>
 
         {/* 地點 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">活動地點 *</label>
+        <FormGroup>
+          <Label>活動地點 *</Label>
           <PlaceAutocomplete
             defaultValue={formData.address}
             onPlaceSelect={handleLocationSelect}
             placeholder="搜尋咖啡廳或活動地點"
           />
-        </div>
+        </FormGroup>
 
         {/* 時間設定 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">開始時間 *</label>
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="date"
-                value={formData.startDate}
-                onChange={(e) => setFormData((prev) => ({ ...prev, startDate: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                required
-              />
-              <input
-                type="time"
-                value={formData.startTime}
-                onChange={(e) => setFormData((prev) => ({ ...prev, startTime: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                required
-              />
-            </div>
-          </div>
+        <FormSection>
+          <GridContainer>
+            <FormGroup>
+              <Label>開始時間 *</Label>
+              <TimeGridContainer>
+                <Input
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, startDate: e.target.value }))}
+                  required
+                />
+                <Input
+                  type="time"
+                  value={formData.startTime}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, startTime: e.target.value }))}
+                  required
+                />
+              </TimeGridContainer>
+            </FormGroup>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">結束時間 *</label>
-            <div className="grid grid-cols-2 gap-2">
-              <input
-                type="date"
-                value={formData.endDate}
-                onChange={(e) => setFormData((prev) => ({ ...prev, endDate: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                required
-              />
-              <input
-                type="time"
-                value={formData.endTime}
-                onChange={(e) => setFormData((prev) => ({ ...prev, endTime: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-                required
-              />
-            </div>
-          </div>
-        </div>
+            <FormGroup>
+              <Label>結束時間 *</Label>
+              <TimeGridContainer>
+                <Input
+                  type="date"
+                  value={formData.endDate}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, endDate: e.target.value }))}
+                  required
+                />
+                <Input
+                  type="time"
+                  value={formData.endTime}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, endTime: e.target.value }))}
+                  required
+                />
+              </TimeGridContainer>
+            </FormGroup>
+          </GridContainer>
+        </FormSection>
 
         {/* 社群媒體 */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900">社群媒體連結</h3>
+        <FormSection>
+          <SectionTitle>社群媒體連結</SectionTitle>
 
-          <div>
-            <label htmlFor="instagram" className="block text-sm font-medium text-gray-700 mb-2">
-              Instagram
-            </label>
-            <input
+          <FormGroup>
+            <Label htmlFor="instagram">Instagram</Label>
+            <Input
               type="text"
               id="instagram"
               value={formData.instagram}
               onChange={(e) => setFormData((prev) => ({ ...prev, instagram: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
               placeholder="@username 或完整網址"
             />
-          </div>
+          </FormGroup>
 
-          <div>
-            <label htmlFor="twitter" className="block text-sm font-medium text-gray-700 mb-2">
-              Twitter / X
-            </label>
-            <input
+          <FormGroup>
+            <Label htmlFor="twitter">Twitter / X</Label>
+            <Input
               type="text"
               id="twitter"
               value={formData.twitter}
               onChange={(e) => setFormData((prev) => ({ ...prev, twitter: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
               placeholder="@username 或完整網址"
             />
-          </div>
+          </FormGroup>
 
-          <div>
-            <label htmlFor="threads" className="block text-sm font-medium text-gray-700 mb-2">
-              Threads
-            </label>
-            <input
+          <FormGroup>
+            <Label htmlFor="threads">Threads</Label>
+            <Input
               type="text"
               id="threads"
               value={formData.threads}
               onChange={(e) => setFormData((prev) => ({ ...prev, threads: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
               placeholder="@username 或完整網址"
             />
-          </div>
-        </div>
+          </FormGroup>
+        </FormSection>
 
         {/* 活動選項 */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-medium text-gray-900">活動設定</h3>
+        <FormSection>
+          <SectionTitle>活動設定</SectionTitle>
 
-          <div className="space-y-3">
-            <label className="flex items-center">
+          <CheckboxGroup>
+            <CheckboxItem>
               <input
                 type="checkbox"
                 checked={formData.supportProvided}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, supportProvided: e.target.checked }))
                 }
-                className="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
               />
-              <span className="ml-2 text-sm text-gray-700">提供應援物品</span>
-            </label>
+              提供應援物品
+            </CheckboxItem>
 
-            <label className="flex items-center">
+            <CheckboxItem>
               <input
                 type="checkbox"
                 checked={formData.requiresReservation}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, requiresReservation: e.target.checked }))
                 }
-                className="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
               />
-              <span className="ml-2 text-sm text-gray-700">需要預約</span>
-            </label>
+              需要預約
+            </CheckboxItem>
 
-            <label className="flex items-center">
+            <CheckboxItem>
               <input
                 type="checkbox"
                 checked={formData.onSiteReservation}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, onSiteReservation: e.target.checked }))
                 }
-                className="rounded border-gray-300 text-amber-600 focus:ring-amber-500"
               />
-              <span className="ml-2 text-sm text-gray-700">接受現場候位</span>
-            </label>
-          </div>
-        </div>
+              接受現場候位
+            </CheckboxItem>
+          </CheckboxGroup>
+        </FormSection>
 
         {/* 表單按鈕 */}
-        <div className="flex justify-end space-x-4 pt-6 border-t">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
-          >
+        <ButtonGroup>
+          <Button type="button" variant="secondary" onClick={onCancel}>
             取消
-          </button>
-          <button
-            type="submit"
-            disabled={updateEventMutation.isPending}
-            className="px-4 py-2 text-sm font-medium text-white bg-amber-600 border border-transparent rounded-md shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
+          </Button>
+          <Button type="submit" variant="primary" disabled={updateEventMutation.isPending}>
             {updateEventMutation.isPending ? '更新中...' : '更新活動'}
-          </button>
-        </div>
+          </Button>
+        </ButtonGroup>
 
         {/* 錯誤訊息 */}
         {updateEventMutation.isError && (
-          <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-600">
-              更新失敗：
-              {updateEventMutation.error instanceof Error
-                ? updateEventMutation.error.message
-                : '未知錯誤'}
-            </p>
-          </div>
+          <ErrorMessage>
+            更新失敗：
+            {updateEventMutation.error instanceof Error
+              ? updateEventMutation.error.message
+              : '未知錯誤'}
+          </ErrorMessage>
         )}
-      </form>
-    </div>
+      </Form>
+    </FormContainer>
   );
 }

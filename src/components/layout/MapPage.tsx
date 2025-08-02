@@ -1,29 +1,547 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ChevronDownIcon, UserIcon, PlusIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import { useArtistStore, useMapStore } from '@/store';
+import { useSearchParams } from 'next/navigation';
+import styled from 'styled-components';
+import { MapPinIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { useMapStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { CoffeeEvent } from '@/types';
 import MapComponent from '@/components/map/MapContainer';
-import MapFilters from '@/components/map/MapFilters';
 import EventDetailSidebar from './EventDetailSidebar';
 import AuthModal from '@/components/auth/AuthModal';
-import { useEventFilters } from '@/hooks/useEventFilters';
 import { useMapData } from '@/hooks/useMapData';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import api from '@/lib/api';
+import Header from './Header';
 
-export default function MapPage() {
-  const { artists, loading: artistsLoading, error: artistsError, fetchArtists } = useArtistStore();
+// Styled Components
+const PageContainer = styled.div`
+  min-height: 100vh;
+  background: #ffffff;
+`;
+
+const MainContainer = styled.div`
+  padding-top: 100px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 100px 16px 40px;
+
+  @media (min-width: 768px) {
+    padding: 100px 24px 60px;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 100px 32px 80px;
+  }
+`;
+
+const ContentWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  @media (min-width: 768px) {
+    gap: 32px;
+  }
+
+  @media (min-width: 1024px) {
+    gap: 40px;
+  }
+`;
+
+const BackButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 16px;
+  max-width: 120px;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: var(--color-bg-secondary);
+    border-color: var(--color-primary);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  @media (min-width: 768px) {
+    font-size: 15px;
+    padding: 14px 20px;
+    max-width: 140px;
+  }
+`;
+
+const SearchContainer = styled.div`
+  position: relative;
+  background: #fff;
+  border: 1px solid rgba(190, 190, 190);
+  border-radius: 0.375rem;
+  padding: 1rem 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #333;
+  font-size: 16px;
+  outline: none;
+
+  &::placeholder {
+    color: #666;
+    font-size: 16px;
+  }
+
+  @media (min-width: 768px) {
+    font-size: 18px;
+
+    &::placeholder {
+      font-size: 18px;
+    }
+  }
+`;
+
+const MapAndListSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  @media (min-width: 1024px) {
+    flex-direction: row;
+    gap: 32px;
+    min-height: 600px;
+  }
+`;
+
+const MapSection = styled.div`
+  @media (min-width: 1024px) {
+    flex: 1;
+    min-width: 0; /* 防止 flex item 溢出 */
+  }
+`;
+
+const MapContainer = styled.div`
+  height: 300px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  @media (min-width: 480px) {
+    height: 350px;
+  }
+
+  @media (min-width: 768px) {
+    height: 450px;
+  }
+
+  @media (min-width: 1024px) {
+    height: 100%;
+    min-height: 600px;
+  }
+`;
+
+const ListSection = styled.div`
+  @media (min-width: 1024px) {
+    flex: 0 0 400px; /* 固定寬度 400px */
+    display: flex;
+    flex-direction: column;
+  }
+`;
+
+const EventList = styled.div`
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  @media (min-width: 1024px) {
+    height: 100%;
+    min-height: 600px;
+    overflow-y: auto;
+  }
+`;
+
+const ListHeader = styled.div`
+  padding: 16px 20px;
+  border-bottom: 1px solid #e9ecef;
+  background: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+
+    @media (min-width: 768px) {
+      font-size: 18px;
+    }
+  }
+
+  p {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: #666;
+  }
+`;
+
+const EventItem = styled.div`
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f3f5;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #f8f9fa;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const EventTitle = styled.h4`
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  line-height: 1.4;
+`;
+
+const EventArtist = styled.span`
+  display: inline-block;
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 8px;
+`;
+
+const EventLocation = styled.p`
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.3;
+`;
+
+const EventDate = styled.p`
+  margin: 0;
+  font-size: 12px;
+  color: #888;
+`;
+
+const EmptyState = styled.div`
+  padding: 40px 20px;
+  text-align: center;
+  color: #666;
+
+  p {
+    margin: 0;
+    font-size: 14px;
+  }
+`;
+
+const MapInner = styled.div`
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  overflow: hidden;
+`;
+
+const LocationButton = styled.button<{ loading?: boolean; hasLocation?: boolean }>`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: #fff;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  cursor: ${(props) => (props.loading ? 'not-allowed' : 'pointer')};
+  color: #333;
+
+  &:hover {
+    background: #f8f9fa;
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const ErrorAlert = styled.div`
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  padding: 12px;
+  max-width: 336px;
+  border-radius: 16px;
+  background: rgba(254, 242, 242, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(252, 165, 165, 0.4);
+`;
+
+const ErrorContent = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+`;
+
+const ErrorIcon = styled.div`
+  color: #ef4444;
+  font-size: 14px;
+`;
+
+const ErrorText = styled.div`
+  font-size: 14px;
+  color: #b91c1c;
+
+  .title {
+    font-weight: 500;
+  }
+
+  .message {
+    font-size: 12px;
+    margin-top: 4px;
+  }
+`;
+
+const ActionsSection = styled.section`
+  /* 移除額外 padding，使用 ContentWrapper 的 gap */
+`;
+
+const MobileActions = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+
+  @media (min-width: 768px) {
+    display: none;
+  }
+`;
+
+const DesktopActions = styled.div`
+  display: none;
+
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+`;
+
+const ActionButton = styled.button<{ variant?: 'default' | 'purple' | 'amber' }>`
+  padding: 20px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  &:hover {
+    background: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  @media (min-width: 768px) {
+    padding: 24px;
+    min-height: 140px;
+  }
+`;
+
+const SimpleActionButton = styled.button`
+  padding: 14px 32px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  background: #007bff;
+  border: 1px solid #007bff;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 200px;
+
+  &:hover {
+    background: #0056b3;
+    border-color: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  }
+
+  @media (min-width: 480px) {
+    min-width: 250px;
+    font-size: 18px;
+    padding: 16px 40px;
+  }
+`;
+
+const ActionContent = styled.div`
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+`;
+
+const ActionIcon = styled.div`
+  font-size: 36px;
+  margin-bottom: 8px;
+
+  @media (min-width: 768px) {
+    font-size: 42px;
+    margin-bottom: 12px;
+  }
+`;
+
+const ActionTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+
+  @media (min-width: 768px) {
+    font-size: 18px;
+  }
+`;
+
+const ActionDescription = styled.p`
+  font-size: 13px;
+  color: #666;
+  margin: 0;
+  line-height: 1.4;
+
+  @media (min-width: 768px) {
+    font-size: 14px;
+  }
+`;
+
+const LoginPrompt = styled.div`
+  text-align: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+
+  p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+
+    @media (min-width: 768px) {
+      font-size: 16px;
+    }
+  }
+
+  button {
+    color: #007bff;
+    font-weight: 500;
+    margin-left: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.2s;
+    text-decoration: underline;
+
+    &:hover {
+      color: #0056b3;
+    }
+  }
+`;
+
+const LoadingContainer = styled.div`
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  color: #333;
+`;
+
+const LoadingContent = styled.div`
+  text-align: center;
+`;
+
+const LoadingSpinnerLarge = styled.div`
+  width: 48px;
+  height: 48px;
+  border: 2px solid transparent;
+  border-top: 2px solid #60a5fa;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+export default function MapPageStyled() {
   const { setCenter } = useMapStore();
-  const { user, userData, signOut } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedEvent, setSelectedEvent] = useState<CoffeeEvent | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   // 地理位置功能
   const {
@@ -31,31 +549,25 @@ export default function MapPage() {
     longitude,
     isLoading: locationLoading,
     error: locationError,
-    getCurrentPosition,
   } = useGeolocation({ autoGetPosition: true });
 
-  // 篩選狀態
+  // 從 URL 參數初始化篩選狀態
   const [filters, setFilters] = useState({
-    search: '',
-    artistId: '',
-    status: 'active' as 'all' | 'active' | 'upcoming' | 'ended', // 預設顯示進行中的活動
+    search: searchParams?.get('search') || '',
+    artistId: searchParams?.get('artistId') || '',
+    status: 'active' as 'all' | 'active' | 'upcoming' | 'ended',
     region: '',
     page: 1,
     limit: 50,
   });
 
   // 使用新的 API hooks
-  const { data: eventsData, isLoading, error } = useEventFilters(filters);
   const { data: mapData, isLoading: mapLoading } = useMapData({
     status: filters.status === 'all' ? 'all' : (filters.status as 'active' | 'upcoming'),
     search: filters.search,
     artistId: filters.artistId,
     region: filters.region,
   });
-
-  useEffect(() => {
-    fetchArtists('approved');
-  }, [fetchArtists]);
 
   // 標記是否應該自動定位到用戶位置
   const [shouldAutoCenter, setShouldAutoCenter] = useState(true);
@@ -84,9 +596,6 @@ export default function MapPage() {
       setTimeout(() => {
         setCenter({ lat: latitude, lng: longitude, zoom: 12 });
       }, 100);
-    } else {
-      // 如果沒有位置信息，重新獲取
-      getCurrentPosition();
     }
   };
 
@@ -110,289 +619,210 @@ export default function MapPage() {
     setSelectedEvent(null);
   };
 
-  if (isLoading || artistsLoading || mapLoading) {
+  if (mapLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">載入活動資料中...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || artistsError) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center">
-        <div className="text-center bg-white rounded-lg shadow-lg p-8 max-w-md">
-          <div className="text-red-500 text-5xl mb-4">⚠️</div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">載入失敗</h2>
-          <p className="text-gray-600 mb-4">{error?.message || '未知錯誤'}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-amber-600 text-white px-4 py-2 rounded-md hover:bg-amber-700 transition-colors"
-          >
-            重新載入
-          </button>
-        </div>
-      </div>
+      <LoadingContainer>
+        <LoadingContent>
+          <LoadingSpinnerLarge />
+          <p>載入中...</p>
+        </LoadingContent>
+      </LoadingContainer>
     );
   }
 
   // 使用新的資料結構
   const mapEvents = mapData?.events || [];
-  const totalEvents = eventsData?.pagination?.total || 0;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100">
+    <PageContainer>
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <h1 className="text-2xl font-bold text-gray-900">台灣生咖地圖</h1>
-              <span className="text-2xl">☕</span>
-            </div>
+      <Header />
 
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-600">
-                目前有 <span className="font-semibold text-amber-600">{totalEvents}</span>{' '}
-                個符合條件的活動
-              </div>
+      {/* 主容器 */}
+      <MainContainer>
+        <ContentWrapper>
+          {/* 返回按鈕 */}
+          <BackButton onClick={() => router.push('/')}>
+            <ArrowLeftIcon />
+            返回首頁
+          </BackButton>
 
-              {user ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center space-x-2 bg-white border border-gray-300 rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  >
-                    <UserIcon className="h-4 w-4" />
-                    <span>{userData?.displayName || user.email}</span>
-                    <ChevronDownIcon className="h-4 w-4" />
-                  </button>
+          {/* 搜尋區域 */}
+          <SearchContainer>
+            <SearchInput
+              type="text"
+              placeholder="搜尋地點、藝人"
+              value={filters.search}
+              onChange={(e) => setFilters((prev) => ({ ...prev, search: e.target.value, page: 1 }))}
+            />
+          </SearchContainer>
 
-                  {userMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
-                      <div className="px-4 py-2 text-sm text-gray-500 border-b border-gray-100">
-                        {user.email}
-                      </div>
-                      <button
-                        onClick={() => {
-                          router.push('/my-submissions');
-                          setUserMenuOpen(false);
-                        }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        我的投稿
-                      </button>
-                      {userData?.role === 'admin' && (
-                        <button
-                          onClick={() => {
-                            window.open('/admin', '_blank');
-                            setUserMenuOpen(false);
-                          }}
-                          className="block w-full text-left px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 font-medium"
-                        >
-                          ⚖️ 管理員審核
-                        </button>
-                      )}
-                      <hr className="my-1" />
-                      <button
-                        onClick={() => {
-                          signOut();
-                          setUserMenuOpen(false);
-                        }}
-                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                      >
-                        登出
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <button
-                  onClick={() => setAuthModalOpen(true)}
-                  className="bg-amber-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-amber-700 transition-colors"
+          {/* 地圖和列表區域 */}
+          <MapAndListSection>
+            {/* 地圖區域 */}
+            <MapSection>
+              <MapContainer>
+                <MapInner>
+                  <MapComponent
+                    events={mapEvents}
+                    onEventSelect={handleEventSelect}
+                    userLocation={latitude && longitude ? { lat: latitude, lng: longitude } : null}
+                  />
+                </MapInner>
+
+                <LocationButton
+                  onClick={handleLocateMe}
+                  disabled={locationLoading}
+                  loading={locationLoading}
+                  hasLocation={!!(latitude && longitude)}
                 >
-                  登入
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+                  {locationLoading ? (
+                    <LoadingSpinner />
+                  ) : (
+                    <MapPinIcon style={{ width: '16px', height: '16px' }} />
+                  )}
+                  <span>
+                    {locationLoading
+                      ? '定位中...'
+                      : latitude && longitude
+                        ? '重新定位'
+                        : '我的位置'}
+                  </span>
+                </LocationButton>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">探索 K-pop 藝人應援咖啡活動</h2>
-          <p className="text-gray-600">地圖上顯示所有進行中的應援咖啡活動，點擊標記查看詳細資訊</p>
-        </div>
+                {locationError && (
+                  <ErrorAlert>
+                    <ErrorContent>
+                      <ErrorIcon>⚠️</ErrorIcon>
+                      <ErrorText>
+                        <div className="title">定位失敗</div>
+                        <div className="message">{locationError}</div>
+                      </ErrorText>
+                    </ErrorContent>
+                  </ErrorAlert>
+                )}
+              </MapContainer>
+            </MapSection>
 
-        {/* 篩選區域 */}
-        <MapFilters artists={artists} onFiltersChange={setFilters} />
+            {/* 列表區域 */}
+            <ListSection>
+              <EventList>
+                <ListHeader>
+                  <h3>活動列表</h3>
+                  <p>共 {mapEvents.length} 個活動</p>
+                </ListHeader>
 
-        {/* 地圖區域 */}
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden relative">
-          <MapComponent
-            events={mapEvents}
-            onEventSelect={handleEventSelect}
-            userLocation={latitude && longitude ? { lat: latitude, lng: longitude } : null}
-          />
+                {mapEvents.length > 0 ? (
+                  mapEvents.map((event) => (
+                    <EventItem key={event.id} onClick={() => handleEventSelect(event)}>
+                      <EventArtist>{event.artistName}</EventArtist>
+                      <EventTitle>{event.title}</EventTitle>
+                      <EventLocation>
+                        📍{' '}
+                        {event.coordinates
+                          ? `${event.coordinates.lat.toFixed(3)}, ${event.coordinates.lng.toFixed(3)}`
+                          : '位置未知'}
+                      </EventLocation>
+                      <EventDate>
+                        {event.status === 'active'
+                          ? '🔴 進行中'
+                          : event.status === 'upcoming'
+                            ? '🟡 即將開始'
+                            : '⚪ 其他'}
+                      </EventDate>
+                    </EventItem>
+                  ))
+                ) : (
+                  <EmptyState>
+                    <p>目前沒有符合條件的活動</p>
+                  </EmptyState>
+                )}
+              </EventList>
+            </ListSection>
+          </MapAndListSection>
 
-          {/* 定位到我的位置按鈕 */}
-          <div className="absolute top-4 right-4 z-10">
-            <button
-              onClick={handleLocateMe}
-              disabled={locationLoading}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg shadow-lg transition-all duration-200 ${
-                locationLoading
-                  ? 'bg-gray-400 text-white cursor-not-allowed'
-                  : latitude && longitude
-                    ? 'bg-blue-500 text-white hover:bg-blue-600'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
-              }`}
-              title={
-                latitude && longitude
-                  ? '重新定位到我的位置'
-                  : locationLoading
-                    ? '正在獲取位置...'
-                    : '定位到我的位置'
-              }
-            >
-              {locationLoading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              ) : (
-                <MapPinIcon className="h-4 w-4" />
-              )}
-              <span className="text-sm font-medium">
-                {locationLoading ? '定位中...' : latitude && longitude ? '重新定位' : '我的位置'}
-              </span>
-            </button>
-          </div>
-
-          {/* 地理位置錯誤提示 */}
-          {locationError && (
-            <div className="absolute top-4 left-4 z-10 bg-red-50 border border-red-200 rounded-lg p-3 max-w-sm">
-              <div className="flex items-start space-x-2">
-                <div className="text-red-500 text-sm">⚠️</div>
-                <div className="text-sm text-red-700">
-                  <div className="font-medium">定位失敗</div>
-                  <div className="text-xs mt-1">{locationError}</div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 投稿區域 */}
-        <div className="mt-6 bg-white rounded-lg shadow-lg p-6">
-          <div className="text-center mb-6">
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">參與社群貢獻</h3>
-            <p className="text-gray-600">幫助我們建立更完整的 K-pop 應援活動資料庫</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
-            {/* 藝人投稿按鈕 */}
-            <button
-              onClick={() => {
-                if (!user) {
-                  setAuthModalOpen(true);
-                } else {
-                  router.push('/submit-artist');
-                }
-              }}
-              className="group relative bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
-            >
-              <div className="flex items-center justify-center mb-3">
-                <UserIcon className="h-8 w-8" />
-              </div>
-              <h4 className="text-lg font-semibold mb-2">投稿藝人</h4>
-              <p className="text-sm opacity-90">
-                新增 K-pop 藝人到資料庫，讓其他用戶可以為他們建立應援活動
-              </p>
-              <div className="absolute top-2 right-2">
-                <PlusIcon className="h-5 w-5 opacity-75 group-hover:opacity-100" />
-              </div>
-            </button>
-
-            {/* 活動投稿按鈕 */}
-            <button
-              onClick={() => {
-                if (!user) {
-                  setAuthModalOpen(true);
-                } else {
-                  router.push('/submit-event');
-                }
-              }}
-              className="group relative bg-gradient-to-r from-amber-500 to-orange-500 text-white p-6 rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
-            >
-              <div className="flex items-center justify-center mb-3">
-                <span className="text-2xl">☕</span>
-              </div>
-              <h4 className="text-lg font-semibold mb-2">投稿活動</h4>
-              <p className="text-sm opacity-90">分享您發現的應援咖啡活動，讓更多粉絲一起參與</p>
-              <div className="absolute top-2 right-2">
-                <PlusIcon className="h-5 w-5 opacity-75 group-hover:opacity-100" />
-              </div>
-            </button>
-          </div>
-
-          {!user && (
-            <p className="text-center text-sm text-gray-500 mt-4">
-              需要登入後才能投稿，
-              <button
-                onClick={() => setAuthModalOpen(true)}
-                className="text-amber-600 hover:text-amber-700 font-medium"
+          {/* 手機版：簡單按鈕 / 電腦版：多功能區域 */}
+          <ActionsSection>
+            {/* 手機版 - 簡單按鈕 */}
+            <MobileActions>
+              <SimpleActionButton
+                onClick={() => {
+                  if (!user) {
+                    setAuthModalOpen(true);
+                  } else {
+                    router.push('/submit-artist');
+                  }
+                }}
+                style={{ background: '#6f42c1', borderColor: '#6f42c1' }}
               >
-                立即登入
-              </button>
-            </p>
-          )}
-        </div>
+                投稿藝人
+              </SimpleActionButton>
 
-        {/* 活動統計 */}
-        {totalEvents > 0 && (
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-2xl font-bold text-amber-600">{totalEvents}</div>
-              <div className="text-sm text-gray-600">符合條件活動</div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-2xl font-bold text-green-600">{artists.length}</div>
-              <div className="text-sm text-gray-600">應援藝人</div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <div className="text-2xl font-bold text-blue-600">{mapData?.total || 0}</div>
-              <div className="text-sm text-gray-600">地圖顯示</div>
-            </div>
-          </div>
-        )}
+              <SimpleActionButton
+                onClick={() => {
+                  if (!user) {
+                    setAuthModalOpen(true);
+                  } else {
+                    router.push('/submit-event');
+                  }
+                }}
+                style={{ background: '#fd7e14', borderColor: '#fd7e14' }}
+              >
+                投稿活動
+              </SimpleActionButton>
+            </MobileActions>
 
-        {/* 空狀態 */}
-        {totalEvents === 0 && !isLoading && (
-          <div className="mt-8 bg-white rounded-lg shadow-lg p-12 text-center">
-            <div className="text-6xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">沒有符合條件的活動</h3>
-            <p className="text-gray-600 mb-4">請調整篩選條件，或者</p>
-            <button
-              onClick={() =>
-                setFilters({
-                  search: '',
-                  artistId: '',
-                  status: 'active',
-                  region: '',
-                  page: 1,
-                  limit: 50,
-                })
-              }
-              className="bg-amber-600 text-white px-6 py-2 rounded-md font-medium hover:bg-amber-700 transition-colors"
-            >
-              清除所有篩選
-            </button>
-          </div>
-        )}
-      </main>
+            {/* 電腦版 - 功能卡片區 */}
+            <DesktopActions>
+              {/* 投稿藝人 */}
+              <ActionButton
+                variant="purple"
+                onClick={() => {
+                  if (!user) {
+                    setAuthModalOpen(true);
+                  } else {
+                    router.push('/submit-artist');
+                  }
+                }}
+              >
+                <ActionContent>
+                  <ActionIcon>⭐</ActionIcon>
+                  <ActionTitle>投稿藝人</ActionTitle>
+                  <ActionDescription>新增 K-pop 藝人到資料庫</ActionDescription>
+                </ActionContent>
+              </ActionButton>
+
+              {/* 投稿活動 */}
+              <ActionButton
+                variant="amber"
+                onClick={() => {
+                  if (!user) {
+                    setAuthModalOpen(true);
+                  } else {
+                    router.push('/submit-event');
+                  }
+                }}
+              >
+                <ActionContent>
+                  <ActionIcon>☕</ActionIcon>
+                  <ActionTitle>投稿活動</ActionTitle>
+                  <ActionDescription>分享應援咖啡活動資訊</ActionDescription>
+                </ActionContent>
+              </ActionButton>
+            </DesktopActions>
+
+            {/* 未登入提示 */}
+            {!user && (
+              <LoginPrompt>
+                <p>
+                  需要登入後才能投稿，
+                  <button onClick={() => setAuthModalOpen(true)}>立即登入</button>
+                </p>
+              </LoginPrompt>
+            )}
+          </ActionsSection>
+        </ContentWrapper>
+      </MainContainer>
 
       {/* 活動詳情側邊欄 */}
       <EventDetailSidebar event={selectedEvent} isOpen={sidebarOpen} onClose={handleSidebarClose} />
@@ -403,6 +833,6 @@ export default function MapPage() {
         onClose={() => setAuthModalOpen(false)}
         initialMode="signin"
       />
-    </div>
+    </PageContainer>
   );
 }

@@ -1,8 +1,8 @@
 'use client';
 
-import { Fragment, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import styled from 'styled-components';
 import SignInForm from './SignInForm';
 import SignUpForm from './SignUpForm';
 import ResetPasswordForm from './ResetPasswordForm';
@@ -13,11 +13,86 @@ interface AuthModalProps {
   initialMode?: 'signin' | 'signup' | 'reset';
 }
 
-export default function AuthModal({ 
-  isOpen, 
-  onClose, 
-  initialMode = 'signin' 
-}: AuthModalProps) {
+// Styled Components
+const ModalOverlay = styled.div<{ isOpen: boolean }>`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: ${(props) => (props.isOpen ? 1 : 0)};
+  visibility: ${(props) => (props.isOpen ? 'visible' : 'hidden')};
+  transition:
+    opacity 0.3s ease-out,
+    visibility 0.3s ease-out;
+
+  @media (min-width: 768px) {
+    align-items: center;
+  }
+`;
+
+const ModalContent = styled.div<{ isOpen: boolean }>`
+  background: var(--color-bg-primary);
+  width: 100%;
+  max-width: 480px;
+  height: 85vh;
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: ${(props) => (props.isOpen ? 'translateY(0)' : 'translateY(100%)')};
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+
+  @media (min-width: 768px) {
+    border-radius: 16px;
+    margin: 0 16px;
+    min-height: auto;
+    max-height: 80vh;
+    transform: ${(props) =>
+      props.isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(20px)'};
+    transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+`;
+
+const ModalHeader = styled.div`
+  padding: 20px 20px 0;
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+`;
+
+const CloseButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+const ContentContainer = styled.div`
+  flex: 1;
+  padding: 0 20px 20px;
+  overflow-y: auto;
+  min-height: 0;
+`;
+
+export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) {
   const [mode, setMode] = useState<'signin' | 'signup' | 'reset'>(initialMode);
 
   const handleSuccess = () => {
@@ -31,74 +106,57 @@ export default function AuthModal({
     setTimeout(() => setMode('signin'), 300);
   };
 
+  // 關閉 modal 時重置模式
+  useEffect(() => {
+    if (!isOpen) {
+      const timer = setTimeout(() => setMode('signin'), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  // 阻止背景滾動
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   return (
-    <Transition.Root show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-[9999]" onClose={handleClose}>
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-        </Transition.Child>
+    <ModalOverlay isOpen={isOpen} onClick={handleClose}>
+      <ModalContent isOpen={isOpen} onClick={(e) => e.stopPropagation()}>
+        <ModalHeader>
+          <CloseButton onClick={handleClose}>
+            <XMarkIcon />
+          </CloseButton>
+        </ModalHeader>
 
-        <div className="fixed inset-0 z-10 overflow-y-auto">
-          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enterTo="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            >
-              <Dialog.Panel className="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-                {/* 關閉按鈕 */}
-                <div className="absolute right-0 top-0 pr-4 pt-4">
-                  <button
-                    type="button"
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2"
-                    onClick={handleClose}
-                  >
-                    <span className="sr-only">關閉</span>
-                    <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-                  </button>
-                </div>
+        <ContentContainer>
+          {mode === 'signin' && (
+            <SignInForm
+              onSuccess={handleSuccess}
+              onSwitchToSignUp={() => setMode('signup')}
+              onSwitchToReset={() => setMode('reset')}
+            />
+          )}
 
-                {/* 內容區域 */}
-                <div className="mt-3">
-                  {mode === 'signin' && (
-                    <SignInForm
-                      onSuccess={handleSuccess}
-                      onSwitchToSignUp={() => setMode('signup')}
-                      onSwitchToReset={() => setMode('reset')}
-                    />
-                  )}
+          {mode === 'signup' && (
+            <SignUpForm onSuccess={handleSuccess} onSwitchToSignIn={() => setMode('signin')} />
+          )}
 
-                  {mode === 'signup' && (
-                    <SignUpForm
-                      onSuccess={handleSuccess}
-                      onSwitchToSignIn={() => setMode('signin')}
-                    />
-                  )}
-
-                  {mode === 'reset' && (
-                    <ResetPasswordForm
-                      onSuccess={() => setMode('signin')}
-                      onSwitchToSignIn={() => setMode('signin')}
-                    />
-                  )}
-                </div>
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
-        </div>
-      </Dialog>
-    </Transition.Root>
+          {mode === 'reset' && (
+            <ResetPasswordForm
+              onSuccess={() => setMode('signin')}
+              onSwitchToSignIn={() => setMode('signin')}
+            />
+          )}
+        </ContentContainer>
+      </ModalContent>
+    </ModalOverlay>
   );
 }

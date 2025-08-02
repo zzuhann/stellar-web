@@ -44,7 +44,7 @@ export const useEventStore = create<EventState>()(
         try {
           const [events, artists] = await Promise.all([
             eventsApi.getAll(status),
-            artistsApi.getAll('approved'), // 只取得已審核的藝人來填入 artistName
+            artistsApi.getAll({ status: 'approved' }), // 只取得已審核的藝人來填入 artistName
           ]);
 
           // 補充 artistName

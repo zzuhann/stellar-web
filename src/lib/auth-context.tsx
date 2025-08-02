@@ -11,6 +11,8 @@ interface AuthContextType {
   userData: AppUser | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  authModalOpen: boolean;
+  toggleAuthModal: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,11 +21,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [userData, setUserData] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
-      
+
       if (firebaseUser) {
         // 取得使用者詳細資料
         const appUserData = await getUserData(firebaseUser.uid);
@@ -31,19 +34,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else {
         setUserData(null);
       }
-      
+
       setLoading(false);
     });
 
     return unsubscribe;
   }, []);
 
+  const toggleAuthModal = () => {
+    setAuthModalOpen(!authModalOpen);
+  };
+
   const handleSignOut = async () => {
     try {
       await auth.signOut();
-    } catch (error) {
-      console.error('Sign out error:', error);
-    }
+    } catch {}
   };
 
   const value = {
@@ -51,13 +56,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     userData,
     loading,
     signOut: handleSignOut,
+    authModalOpen,
+    toggleAuthModal,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

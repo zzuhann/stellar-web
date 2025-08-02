@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import styled from 'styled-components';
 import { signUpSchema, SignUpFormData } from '@/lib/validations';
 import { signUp } from '@/lib/auth';
 import { useUIStore } from '@/store';
@@ -12,6 +13,200 @@ interface SignUpFormProps {
   onSuccess?: () => void;
   onSwitchToSignIn?: () => void;
 }
+
+// Styled Components
+const FormContainer = styled.div`
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+`;
+
+const FormHeader = styled.div`
+  text-align: center;
+  margin-bottom: 32px;
+`;
+
+const Title = styled.h2`
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+`;
+
+const Subtitle = styled.p`
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+`;
+
+const FormField = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const Label = styled.label`
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+`;
+
+const InputWrapper = styled.div`
+  position: relative;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  transition: all 0.2s ease;
+
+  &::placeholder {
+    color: var(--color-text-secondary);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(90, 125, 154, 0.1);
+  }
+
+  &:disabled {
+    background: var(--color-bg-secondary);
+    cursor: not-allowed;
+  }
+`;
+
+const PasswordInput = styled(Input)`
+  padding-right: 48px;
+`;
+
+const PasswordToggle = styled.button`
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: var(--color-text-primary);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+const ErrorMessage = styled.p`
+  font-size: 12px;
+  color: #ef4444;
+  margin: 4px 0 0 0;
+`;
+
+const ErrorBox = styled.div`
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-lg);
+  padding: 12px 16px;
+
+  p {
+    font-size: 14px;
+    color: #dc2626;
+    margin: 0;
+  }
+`;
+
+const SubmitButton = styled.button<{ loading?: boolean }>`
+  width: 100%;
+  padding: 14px 24px;
+  border-radius: var(--radius-lg);
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: ${(props) => (props.loading ? 'not-allowed' : 'pointer')};
+  opacity: ${(props) => (props.loading ? 0.7 : 1)};
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: #3a5d7a;
+    border-color: #3a5d7a;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+  }
+`;
+
+const LoadingContent = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+`;
+
+const Spinner = styled.div`
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const ActionsContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+`;
+
+const TextWithLink = styled.div`
+  font-size: 14px;
+  color: var(--color-text-secondary);
+
+  button {
+    color: var(--color-primary);
+    font-weight: 500;
+    margin-left: 4px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #3a5d7a;
+    }
+  }
+`;
 
 export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormProps) {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,10 +225,10 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
 
   const onSubmit = async (data: SignUpFormData) => {
     setIsLoading(true);
-    
+
     try {
       const { user, error } = await signUp(data.email, data.password, data.displayName);
-      
+
       if (error) {
         setError('root', { message: error });
         addNotification({
@@ -49,7 +244,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
         });
         onSuccess?.();
       }
-    } catch (error) {
+    } catch {
       const errorMessage = '註冊時發生未知錯誤';
       setError('root', { message: errorMessage });
       addNotification({
@@ -63,150 +258,109 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">建立帳號</h2>
-        <p className="text-gray-600 mt-2">加入我們，開始分享咖啡活動！</p>
-      </div>
+    <FormContainer>
+      <FormHeader>
+        <Title>建立帳號</Title>
+        <Subtitle>加入我們，開始分享咖啡活動！</Subtitle>
+      </FormHeader>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <Form onSubmit={handleSubmit(onSubmit)}>
         {/* 顯示名稱 */}
-        <div>
-          <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-1">
-            顯示名稱
-          </label>
-          <input
+        <FormField>
+          <Label htmlFor="displayName">顯示名稱</Label>
+          <Input
             id="displayName"
             type="text"
             autoComplete="name"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             placeholder="請輸入您的顯示名稱"
             {...register('displayName')}
           />
-          {errors.displayName && (
-            <p className="mt-1 text-sm text-red-600">{errors.displayName.message}</p>
-          )}
-        </div>
+          {errors.displayName && <ErrorMessage>{errors.displayName.message}</ErrorMessage>}
+        </FormField>
 
         {/* 電子郵件 */}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            電子郵件
-          </label>
-          <input
+        <FormField>
+          <Label htmlFor="email">電子郵件</Label>
+          <Input
             id="email"
             type="email"
             autoComplete="email"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             placeholder="請輸入您的電子郵件"
             {...register('email')}
           />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-          )}
-        </div>
+          {errors.email && <ErrorMessage>{errors.email.message}</ErrorMessage>}
+        </FormField>
 
         {/* 密碼 */}
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-            密碼
-          </label>
-          <div className="relative">
-            <input
+        <FormField>
+          <Label htmlFor="password">密碼</Label>
+          <InputWrapper>
+            <PasswordInput
               id="password"
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
-              className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
               placeholder="請輸入密碼（至少6個字元）"
               {...register('password')}
             />
-            <button
-              type="button"
-              className="absolute inset-y-0 right-0 flex items-center pr-3"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? (
-                <EyeSlashIcon className="h-5 w-5 text-gray-400" />
-              ) : (
-                <EyeIcon className="h-5 w-5 text-gray-400" />
-              )}
-            </button>
-          </div>
-          {errors.password && (
-            <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
-          )}
-        </div>
+            <PasswordToggle type="button" onClick={() => setShowPassword(!showPassword)}>
+              {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
+            </PasswordToggle>
+          </InputWrapper>
+          {errors.password && <ErrorMessage>{errors.password.message}</ErrorMessage>}
+        </FormField>
 
         {/* 確認密碼 */}
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
-            確認密碼
-          </label>
-          <div className="relative">
-            <input
+        <FormField>
+          <Label htmlFor="confirmPassword">確認密碼</Label>
+          <InputWrapper>
+            <PasswordInput
               id="confirmPassword"
               type={showConfirmPassword ? 'text' : 'password'}
               autoComplete="new-password"
-              className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
               placeholder="請再次輸入密碼"
               {...register('confirmPassword')}
             />
-            <button
+            <PasswordToggle
               type="button"
-              className="absolute inset-y-0 right-0 flex items-center pr-3"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
             >
-              {showConfirmPassword ? (
-                <EyeSlashIcon className="h-5 w-5 text-gray-400" />
-              ) : (
-                <EyeIcon className="h-5 w-5 text-gray-400" />
-              )}
-            </button>
-          </div>
-          {errors.confirmPassword && (
-            <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message}</p>
-          )}
-        </div>
+              {showConfirmPassword ? <EyeSlashIcon /> : <EyeIcon />}
+            </PasswordToggle>
+          </InputWrapper>
+          {errors.confirmPassword && <ErrorMessage>{errors.confirmPassword.message}</ErrorMessage>}
+        </FormField>
 
         {/* 錯誤訊息 */}
         {errors.root && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-3">
-            <p className="text-sm text-red-600">{errors.root.message}</p>
-          </div>
+          <ErrorBox>
+            <p>{errors.root.message}</p>
+          </ErrorBox>
         )}
 
         {/* 註冊按鈕 */}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-amber-600 text-white py-2 px-4 rounded-md font-medium hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
+        <SubmitButton type="submit" loading={isLoading} disabled={isLoading}>
           {isLoading ? (
-            <div className="flex items-center justify-center space-x-2">
-              <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+            <LoadingContent>
+              <Spinner />
               <span>註冊中...</span>
-            </div>
+            </LoadingContent>
           ) : (
             '建立帳號'
           )}
-        </button>
+        </SubmitButton>
 
         {/* 其他操作 */}
         {onSwitchToSignIn && (
-          <div className="text-center">
-            <div className="text-sm text-gray-600">
+          <ActionsContainer>
+            <TextWithLink>
               已經有帳號了？
-              <button
-                type="button"
-                onClick={onSwitchToSignIn}
-                className="ml-1 text-amber-600 hover:text-amber-700 font-medium"
-              >
+              <button type="button" onClick={onSwitchToSignIn}>
                 立即登入
               </button>
-            </div>
-          </div>
+            </TextWithLink>
+          </ActionsContainer>
         )}
-      </form>
-    </div>
+      </Form>
+    </FormContainer>
   );
 }

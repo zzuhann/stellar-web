@@ -8,6 +8,8 @@ import {
   updateProfile,
   User,
   AuthError,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
@@ -28,19 +30,38 @@ export async function signIn(email: string, password: string) {
   }
 }
 
+// Google 登入
+export async function signInWithGoogle() {
+  try {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+
+    // 在 Firestore 中建立或更新使用者資料
+    await createUserDocument(result.user);
+
+    return { user: result.user, error: null };
+  } catch (error) {
+    const authError = error as AuthError;
+    return {
+      user: null,
+      error: FIREBASE_ERROR_MESSAGES[authError.code] || 'Google 登入失敗',
+    };
+  }
+}
+
 // 註冊
 export async function signUp(email: string, password: string, displayName?: string) {
   try {
     const result = await createUserWithEmailAndPassword(auth, email, password);
-    
+
     // 更新顯示名稱
     if (displayName) {
       await updateProfile(result.user, { displayName });
     }
-    
+
     // 在 Firestore 中建立使用者資料
     await createUserDocument(result.user);
-    
+
     return { user: result.user, error: null };
   } catch (error) {
     const authError = error as AuthError;
@@ -56,7 +77,7 @@ export async function signOutUser() {
   try {
     await signOut(auth);
     return { error: null };
-  } catch (error) {
+  } catch {
     return { error: '登出失敗' };
   }
 }
@@ -77,13 +98,13 @@ export async function resetPassword(email: string) {
 // 建立使用者文件
 async function createUserDocument(user: User): Promise<void> {
   const userDocRef = doc(db, 'users', user.uid);
-  
+
   // 檢查使用者是否已存在
   const userDoc = await getDoc(userDocRef);
   if (userDoc.exists()) {
     return;
   }
-  
+
   // 建立使用者資料
   const userData: Omit<AppUser, 'id'> = {
     email: user.email!,
@@ -92,7 +113,7 @@ async function createUserDocument(user: User): Promise<void> {
     role: 'user', // 預設角色
     createdAt: new Date().toISOString(),
   };
-  
+
   await setDoc(userDocRef, userData);
 }
 
@@ -101,17 +122,16 @@ export async function getUserData(uid: string): Promise<AppUser | null> {
   try {
     const userDocRef = doc(db, 'users', uid);
     const userDoc = await getDoc(userDocRef);
-    
+
     if (!userDoc.exists()) {
       return null;
     }
-    
+
     return {
       id: uid,
       ...userDoc.data(),
     } as AppUser;
-  } catch (error) {
-    console.error('Error fetching user data:', error);
+  } catch {
     return null;
   }
 }

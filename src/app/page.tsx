@@ -1,5 +1,5 @@
-import MapPage from '@/components/layout/MapPage';
+import ArtistHomePage from '@/components/layout/ArtistHomePage';
 
 export default function Home() {
-  return <MapPage />;
+  return <ArtistHomePage />;
 }

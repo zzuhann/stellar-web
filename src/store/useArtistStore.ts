@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { Artist } from '@/types';
-import { artistsApi, handleApiError } from '@/lib/api';
+import { artistsApi, handleApiError, ArtistSearchParams } from '@/lib/api';
 
 interface ArtistState {
   // 狀態
@@ -12,9 +12,12 @@ interface ArtistState {
   error: string | null;
 
   // 動作
-  fetchArtists: (status?: 'approved' | 'pending' | 'rejected') => Promise<void>;
+  fetchArtists: (params?: ArtistSearchParams) => Promise<void>;
   createArtist: (
-    artist: Omit<Artist, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>
+    artist: Omit<
+      Artist,
+      'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status' | 'coffeeEventCount'
+    >
   ) => Promise<void>;
   approveArtist: (id: string) => Promise<void>;
   rejectArtist: (id: string) => Promise<void>;
@@ -31,10 +34,10 @@ export const useArtistStore = create<ArtistState>()(
       error: null,
 
       // 取得藝人列表
-      fetchArtists: async (status) => {
+      fetchArtists: async (params) => {
         set({ loading: true, error: null });
         try {
-          const artists = await artistsApi.getAll(status);
+          const artists = await artistsApi.getAll(params);
           set({ artists, loading: false });
         } catch (error) {
           set({

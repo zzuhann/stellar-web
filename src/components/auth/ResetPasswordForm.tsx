@@ -12,10 +12,7 @@ interface ResetPasswordFormProps {
   onSwitchToSignIn?: () => void;
 }
 
-export default function ResetPasswordForm({ 
-  onSuccess, 
-  onSwitchToSignIn 
-}: ResetPasswordFormProps) {
+export default function ResetPasswordForm({ onSuccess, onSwitchToSignIn }: ResetPasswordFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
   const { addNotification } = useUIStore();
@@ -32,10 +29,10 @@ export default function ResetPasswordForm({
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     setIsLoading(true);
-    
+
     try {
       const { error } = await resetPassword(data.email);
-      
+
       if (error) {
         setError('root', { message: error });
         addNotification({
@@ -51,7 +48,7 @@ export default function ResetPasswordForm({
           message: `請檢查您的信箱 ${data.email}`,
         });
       }
-    } catch (error) {
+    } catch {
       const errorMessage = '發送重設密碼郵件時發生未知錯誤';
       setError('root', { message: errorMessage });
       addNotification({
@@ -74,14 +71,22 @@ export default function ResetPasswordForm({
       <div className="w-full max-w-md mx-auto text-center">
         <div className="mb-6">
           <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-            <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="h-6 w-6 text-green-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900">郵件已發送</h2>
-          <p className="text-gray-600 mt-2">
-            我們已經發送重設密碼的郵件到
-          </p>
+          <p className="text-gray-600 mt-2">我們已經發送重設密碼的郵件到</p>
           <p className="font-medium text-amber-600">{getValues('email')}</p>
         </div>
 
@@ -123,9 +128,7 @@ export default function ResetPasswordForm({
     <div className="w-full max-w-md mx-auto">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">重設密碼</h2>
-        <p className="text-gray-600 mt-2">
-          請輸入您的電子郵件地址，我們將發送重設密碼的連結給您
-        </p>
+        <p className="text-gray-600 mt-2">請輸入您的電子郵件地址，我們將發送重設密碼的連結給您</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -142,9 +145,7 @@ export default function ResetPasswordForm({
             placeholder="請輸入您的電子郵件"
             {...register('email')}
           />
-          {errors.email && (
-            <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
-          )}
+          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
         </div>
 
         {/* 錯誤訊息 */}

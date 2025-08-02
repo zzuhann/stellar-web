@@ -9,6 +9,253 @@ import { useArtistStore, useUIStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import ImageUpload from '@/components/ui/ImageUpload';
+import styled from 'styled-components';
+
+// Styled Components (reuse from EventEditForm)
+const FormContainer = styled.div`
+  max-width: 800px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+
+  @media (min-width: 768px) {
+    padding: 32px;
+  }
+`;
+
+const FormHeader = styled.div`
+  text-align: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e9ecef;
+
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 8px 0;
+
+    @media (min-width: 768px) {
+      font-size: 28px;
+    }
+  }
+
+  p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+
+    @media (min-width: 768px) {
+      font-size: 16px;
+    }
+  }
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+`;
+
+const FormGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const Label = styled.label`
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  @media (min-width: 768px) {
+    font-size: 15px;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+  background: #fff;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  }
+
+  &::placeholder {
+    color: #999;
+  }
+
+  &:disabled {
+    background: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+  }
+
+  @media (min-width: 768px) {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+`;
+
+const HelperText = styled.p`
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+
+  @media (min-width: 768px) {
+    font-size: 13px;
+  }
+`;
+
+const ErrorText = styled.p`
+  font-size: 13px;
+  color: #dc3545;
+  margin: 0;
+`;
+
+const InfoBox = styled.div`
+  background: #e7f3ff;
+  border: 1px solid #b3d9ff;
+  border-radius: 6px;
+  padding: 16px;
+
+  .title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0066cc;
+    margin: 0 0 8px 0;
+  }
+
+  ul {
+    font-size: 13px;
+    color: #0066cc;
+    margin: 0;
+    padding-left: 16px;
+
+    li {
+      margin-bottom: 4px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .title {
+      font-size: 15px;
+    }
+
+    ul {
+      font-size: 14px;
+    }
+  }
+`;
+
+const ImageSection = styled.div`
+  .manual-input {
+    margin-top: 16px;
+  }
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid #e9ecef;
+
+  @media (min-width: 480px) {
+    flex-direction: row;
+    gap: 16px;
+  }
+`;
+
+const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  ${(props) =>
+    props.variant === 'primary'
+      ? `
+    background: #007bff;
+    border-color: #007bff;
+    color: white;
+    flex: 1;
+    
+    &:hover:not(:disabled) {
+      background: #0056b3;
+      border-color: #0056b3;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    }
+    
+    &:disabled {
+      background: #6c757d;
+      border-color: #6c757d;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  `
+      : `
+    background: #fff;
+    border-color: #ddd;
+    color: #666;
+    
+    &:hover {
+      background: #f8f9fa;
+      border-color: #adb5bd;
+    }
+  `}
+
+  @media (min-width: 768px) {
+    padding: 14px 28px;
+    font-size: 15px;
+  }
+`;
+
+const LoadingSpinner = styled.div`
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
 
 // 藝人投稿表單驗證
 const artistSubmissionSchema = z.object({
@@ -89,161 +336,132 @@ export default function ArtistSubmissionForm({ onSuccess, onCancel }: ArtistSubm
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">投稿藝人</h2>
-        <p className="text-gray-600 mt-2">新增 K-pop 藝人到我們的資料庫</p>
-      </div>
+    <FormContainer>
+      <FormHeader>
+        <h2>投稿藝人</h2>
+        <p>新增 K-pop 藝人到我們的資料庫</p>
+      </FormHeader>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <Form onSubmit={handleSubmit(onSubmit)}>
         {/* 藝名 */}
-        <div>
-          <label htmlFor="stageName" className="block text-sm font-medium text-gray-700 mb-1">
-            <UserIcon className="inline h-4 w-4 mr-1" />
+        <FormGroup>
+          <Label htmlFor="stageName">
+            <UserIcon />
             藝名 / 團體名稱 *
-          </label>
-          <input
+          </Label>
+          <Input
             id="stageName"
             type="text"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             placeholder="例：IU、BTS、BLACKPINK"
             {...register('stageName')}
           />
-          {errors.stageName && (
-            <p className="mt-1 text-sm text-red-600">{errors.stageName.message}</p>
-          )}
-        </div>
+          {errors.stageName && <ErrorText>{errors.stageName.message}</ErrorText>}
+        </FormGroup>
 
         {/* 本名 */}
-        <div>
-          <label htmlFor="realName" className="block text-sm font-medium text-gray-700 mb-1">
-            本名 / 韓文名稱
-          </label>
-          <input
+        <FormGroup>
+          <Label htmlFor="realName">本名 / 韓文名稱</Label>
+          <Input
             id="realName"
             type="text"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
             placeholder="例：이지은 (李知恩)、방탄소년단"
             {...register('realName')}
           />
-          {errors.realName && (
-            <p className="mt-1 text-sm text-red-600">{errors.realName.message}</p>
-          )}
-          <p className="mt-1 text-xs text-gray-500">可選填，有助於其他用戶識別</p>
-        </div>
+          {errors.realName && <ErrorText>{errors.realName.message}</ErrorText>}
+          <HelperText>可選填，有助於其他用戶識別</HelperText>
+        </FormGroup>
 
         {/* 生日 */}
-        <div>
-          <label htmlFor="birthday" className="block text-sm font-medium text-gray-700 mb-1">
-            <CalendarIcon className="inline h-4 w-4 mr-1" />
+        <FormGroup>
+          <Label htmlFor="birthday">
+            <CalendarIcon />
             生日 / 出道日期
-          </label>
-          <input
-            id="birthday"
-            type="date"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-            {...register('birthday')}
-          />
-          {errors.birthday && (
-            <p className="mt-1 text-sm text-red-600">{errors.birthday.message}</p>
-          )}
-          <p className="mt-1 text-xs text-gray-500">個人藝人填生日，團體可填出道日期</p>
-        </div>
+          </Label>
+          <Input id="birthday" type="date" {...register('birthday')} />
+          {errors.birthday && <ErrorText>{errors.birthday.message}</ErrorText>}
+          <HelperText>個人藝人填生日，團體可填出道日期</HelperText>
+        </FormGroup>
 
         {/* 個人照片/團體照 */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            <PhotoIcon className="inline h-4 w-4 mr-1" />
-            個人照片 / 團體照
-          </label>
+        <ImageSection>
+          <FormGroup>
+            <Label>
+              <PhotoIcon />
+              個人照片 / 團體照
+            </Label>
 
-          <ImageUpload
-            onUploadComplete={(imageUrl) => {
-              setUploadedImageUrl(imageUrl);
-              addNotification({
-                type: 'success',
-                title: '圖片上傳成功',
-                message: '圖片已成功上傳並裁切',
-              });
-            }}
-            onImageRemove={() => {
-              setUploadedImageUrl('');
-            }}
-            placeholder="點擊上傳藝人照片或拖拽至此"
-            maxSizeMB={3}
-            disabled={isLoading}
-            authToken={token || undefined}
-            useRealAPI={!!token}
-            // 啟用裁切功能
-            enableCrop={true}
-            cropAspectRatio={1} // 正方形
-            cropShape="square"
-            cropOutputSize={400} // 400x400px 輸出
-          />
-
-          {/* 仍保留手動輸入連結的選項 */}
-          <div className="mt-4">
-            <label htmlFor="profileImage" className="block text-sm font-medium text-gray-700 mb-1">
-              或手動輸入圖片連結
-            </label>
-            <input
-              id="profileImage"
-              type="url"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
-              placeholder="https://example.com/image.jpg"
-              {...register('profileImage')}
-              disabled={!!uploadedImageUrl}
+            <ImageUpload
+              onUploadComplete={(imageUrl) => {
+                setUploadedImageUrl(imageUrl);
+                addNotification({
+                  type: 'success',
+                  title: '圖片上傳成功',
+                  message: '圖片已成功上傳並裁切',
+                });
+              }}
+              onImageRemove={() => {
+                setUploadedImageUrl('');
+              }}
+              placeholder="點擊上傳藝人照片或拖拽至此"
+              maxSizeMB={3}
+              disabled={isLoading}
+              authToken={token || undefined}
+              useRealAPI={!!token}
+              enableCrop={true}
+              cropAspectRatio={1}
+              cropShape="square"
+              cropOutputSize={400}
             />
-            {errors.profileImage && (
-              <p className="mt-1 text-sm text-red-600">{errors.profileImage.message}</p>
-            )}
-            <p className="mt-1 text-xs text-gray-500">
-              {uploadedImageUrl ? '已使用上傳的圖片' : '可選填，上傳圖片或提供公開的圖片連結'}
-            </p>
-          </div>
-        </div>
+
+            {/* 仍保留手動輸入連結的選項 */}
+            <div className="manual-input">
+              <Label htmlFor="profileImage">或手動輸入圖片連結</Label>
+              <Input
+                id="profileImage"
+                type="url"
+                placeholder="https://example.com/image.jpg"
+                {...register('profileImage')}
+                disabled={!!uploadedImageUrl}
+              />
+              {errors.profileImage && <ErrorText>{errors.profileImage.message}</ErrorText>}
+              <HelperText>
+                {uploadedImageUrl ? '已使用上傳的圖片' : '可選填，上傳圖片或提供公開的圖片連結'}
+              </HelperText>
+            </div>
+          </FormGroup>
+        </ImageSection>
 
         {/* 說明區塊 */}
-        <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-          <div className="text-sm text-blue-800">
-            <p className="font-medium mb-2">投稿說明：</p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>投稿的藝人將經過管理員審核</li>
-              <li>審核通過後，所有用戶都可以選擇這位藝人來投稿活動</li>
-              <li>請確保藝人資訊的正確性</li>
-              <li>重複的藝人投稿將被拒絕</li>
-            </ul>
-          </div>
-        </div>
+        <InfoBox>
+          <div className="title">投稿說明：</div>
+          <ul>
+            <li>投稿的藝人將經過管理員審核</li>
+            <li>審核通過後，所有用戶都可以選擇這位藝人來投稿活動</li>
+            <li>請確保藝人資訊的正確性</li>
+            <li>重複的藝人投稿將被拒絕</li>
+          </ul>
+        </InfoBox>
 
         {/* 提交按鈕 */}
-        <div className="flex space-x-4 pt-6 border-t border-gray-200">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="flex-1 bg-amber-600 text-white py-2 px-4 rounded-md font-medium hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
+        <ButtonGroup>
+          <Button type="submit" variant="primary" disabled={isLoading}>
             {isLoading ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                <span>投稿中...</span>
-              </div>
+              <>
+                <LoadingSpinner />
+                投稿中...
+              </>
             ) : (
               '提交投稿'
             )}
-          </button>
+          </Button>
 
           {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="px-6 py-2 border border-gray-300 rounded-md font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors"
-            >
+            <Button type="button" variant="secondary" onClick={onCancel}>
               取消
-            </button>
+            </Button>
           )}
-        </div>
-      </form>
-    </div>
+        </ButtonGroup>
+      </Form>
+    </FormContainer>
   );
 }
