@@ -76,7 +76,7 @@ export default function ImageUpload({
 
       try {
         // 壓縮圖片
-        const compressedFile = await compressImage(file);
+        const compressedFile = await compressImage(file, 800, 800, 0.8);
 
         // 產生預覽
         const url = URL.createObjectURL(compressedFile);
@@ -251,7 +251,15 @@ export default function ImageUpload({
           </div>
         ) : previewUrl ? (
           <div className="relative">
-            <img src={previewUrl} alt="預覽" className="w-full h-48 object-cover rounded-lg" />
+            <img
+              src={previewUrl}
+              alt="預覽"
+              className="w-full max-h-48 rounded-lg"
+              style={{
+                objectFit: 'contain',
+                backgroundColor: '#f3f4f6',
+              }}
+            />
             <div className="absolute top-2 right-2 flex space-x-1">
               {/* 重新裁切按鈕（如果啟用裁切功能） */}
               {enableCrop && originalFile && (

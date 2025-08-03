@@ -21,36 +21,33 @@ export interface Artist {
 
 export interface CoffeeEvent {
   id: string;
-  title: string; // 活動標題
-  artistId: string; // 關聯藝人 ID
-  artistName: string; // 藝人名稱（冗餘儲存）
-  description?: string; // 活動描述
-  datetime: {
-    start: FirebaseTimestamp;
-    end: FirebaseTimestamp;
-  };
+  artists: Array<{
+    id: string;
+    name: string;
+    profileImage?: string;
+  }>; // 支援聯合應援
+  title: string;
+  description: string;
   location: {
-    address: string; // 地址
+    name: string; // 地點名稱
+    address: string;
     coordinates: {
       lat: number;
       lng: number;
     };
   };
-  socialMedia?: {
-    instagram?: string;
-    twitter?: string;
+  datetime: {
+    start: FirebaseTimestamp;
+    end: FirebaseTimestamp;
   };
-  contactInfo?: {
-    // 向後相容
-    phone?: string;
+  socialMedia: {
     instagram?: string;
-    facebook?: string;
+    x?: string; // X (前 Twitter)
+    threads?: string;
   };
-  images?: string[]; // 活動照片 URLs
-  thumbnail?: string; // 縮圖 URL
-  markerImage?: string; // 地圖標記圖片 URL
+  mainImage?: string; // 主要圖片 URL
+  detailImage?: string; // 詳細圖片 URL
   status: 'pending' | 'approved' | 'rejected';
-  isDeleted: boolean;
   createdBy: string;
   createdAt: FirebaseTimestamp;
   updatedAt: FirebaseTimestamp;
@@ -73,13 +70,51 @@ export interface ApiResponse<T = unknown> {
   error?: string;
 }
 
+// Events API 回應格式
+export interface EventsResponse {
+  events: CoffeeEvent[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  filters: {
+    search?: string;
+    artistId?: string;
+    status?: string;
+    region?: string;
+  };
+}
+
+// 地圖資料回應格式
+export interface MapDataResponse {
+  events: Array<{
+    id: string;
+    title: string;
+    mainImage?: string;
+    location: {
+      name: string;
+      address: string;
+      coordinates: { lat: number; lng: number };
+    };
+    datetime: {
+      start: FirebaseTimestamp;
+      end: FirebaseTimestamp;
+    };
+  }>;
+  total: number;
+}
+
 // 搜尋參數
 export interface EventSearchParams {
-  artistName?: string;
-  location?: string;
-  startDate?: string;
-  endDate?: string;
-  status?: 'pending' | 'approved' | 'rejected';
+  search?: string; // 搜尋標題、藝人名稱、地址、描述
+  artistId?: string; // 特定藝人ID
+  status?: 'all' | 'pending' | 'approved' | 'rejected'; // 預設 'approved' (審核狀態)
+  region?: string; // 地區名稱（台北市、新北市等）
+  createdBy?: string; // 創建者 UID（篩選用戶自己的投稿）
+  page?: number; // 頁數，預設1
+  limit?: number; // 每頁筆數，預設50，最大100
 }
 
 // 地圖相關型別
@@ -92,8 +127,26 @@ export interface MapCenter {
 export interface EventMarker {
   id: string;
   title: string;
-  artistName: string;
+  mainImage?: string;
   location: {
+    name: string;
+    address: string;
+    coordinates: { lat: number; lng: number };
+  };
+  datetime: {
+    start: FirebaseTimestamp;
+    end: FirebaseTimestamp;
+  };
+}
+
+// 建立活動的請求格式
+export interface CreateEventRequest {
+  artistIds: string[]; // 必填，藝人ID陣列（支援聯合應援）
+  title: string; // 必填
+  description: string; // 必填
+  location: {
+    // 必填
+    name: string; // 地點名稱
     address: string;
     coordinates: {
       lat: number;
@@ -101,9 +154,41 @@ export interface EventMarker {
     };
   };
   datetime: {
+    // 必填
     start: FirebaseTimestamp;
     end: FirebaseTimestamp;
   };
-  thumbnail?: string;
-  markerImage?: string;
+  socialMedia?: {
+    // 可選
+    instagram?: string;
+    x?: string;
+    threads?: string;
+  };
+  mainImage?: string; // 主要圖片 URL
+  detailImage?: string; // 詳細圖片 URL
+}
+
+// 編輯活動的請求格式
+export interface UpdateEventRequest {
+  title?: string;
+  description?: string;
+  location?: {
+    name: string;
+    address: string;
+    coordinates: {
+      lat: number;
+      lng: number;
+    };
+  };
+  datetime?: {
+    start: FirebaseTimestamp;
+    end: FirebaseTimestamp;
+  };
+  socialMedia?: {
+    instagram?: string;
+    x?: string;
+    threads?: string;
+  };
+  mainImage?: string;
+  detailImage?: string;
 }

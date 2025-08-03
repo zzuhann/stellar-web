@@ -2,8 +2,14 @@
 
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { CoffeeEvent, EventSearchParams } from '@/types';
-import { eventsApi, artistsApi, handleApiError } from '@/lib/api';
+import {
+  CoffeeEvent,
+  EventSearchParams,
+  EventsResponse,
+  CreateEventRequest,
+  UpdateEventRequest,
+} from '@/types';
+import { eventsApi, handleApiError } from '@/lib/api';
 
 interface EventState {
   // 狀態
@@ -12,20 +18,35 @@ interface EventState {
   loading: boolean;
   error: string | null;
   searchParams: EventSearchParams;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  } | null;
 
   // 動作
-  fetchEvents: (status?: 'approved' | 'pending' | 'rejected') => Promise<void>;
+  fetchEvents: (params?: EventSearchParams) => Promise<void>;
   fetchEventById: (id: string) => Promise<void>;
-  searchEvents: (params: EventSearchParams) => Promise<void>;
-  createEvent: (
-    event: Omit<CoffeeEvent, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>
-  ) => Promise<void>;
-  approveEvent: (id: string) => Promise<void>;
-  rejectEvent: (id: string) => Promise<void>;
+  searchEvents: (params: {
+    query?: string;
+    artistName?: string;
+    location?: string;
+  }) => Promise<void>;
+  createEvent: (eventData: CreateEventRequest) => Promise<void>;
+  updateEvent: (id: string, updateData: UpdateEventRequest) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   setSearchParams: (params: Partial<EventSearchParams>) => void;
   clearError: () => void;
   clearCurrentEvent: () => void;
+
+  // 管理員功能
+  admin: {
+    fetchPendingEvents: () => Promise<void>;
+    approveEvent: (id: string) => Promise<void>;
+    rejectEvent: (id: string) => Promise<void>;
+    reviewEvent: (id: string, status: 'approved' | 'rejected') => Promise<void>;
+  };
 }
 
 export const useEventStore = create<EventState>()(
@@ -37,26 +58,19 @@ export const useEventStore = create<EventState>()(
       loading: false,
       error: null,
       searchParams: {},
+      pagination: null,
 
       // 取得活動列表
-      fetchEvents: async (status) => {
+      fetchEvents: async (params) => {
         set({ loading: true, error: null });
         try {
-          const [events, artists] = await Promise.all([
-            eventsApi.getAll(status),
-            artistsApi.getAll({ status: 'approved' }), // 只取得已審核的藝人來填入 artistName
-          ]);
-
-          // 補充 artistName
-          const eventsWithArtistNames = events.map((event) => {
-            const artist = artists.find((a) => a.id === event.artistId);
-            return {
-              ...event,
-              artistName: artist?.stageName || event.artistName || 'Unknown Artist',
-            };
+          const response: EventsResponse = await eventsApi.getAll(params);
+          set({
+            events: response.events,
+            pagination: response.pagination,
+            searchParams: params || {},
+            loading: false,
           });
-
-          set({ events: eventsWithArtistNames, loading: false });
         } catch (error) {
           set({
             error: handleApiError(error),
@@ -81,7 +95,7 @@ export const useEventStore = create<EventState>()(
 
       // 搜尋活動
       searchEvents: async (params) => {
-        set({ loading: true, error: null, searchParams: params });
+        set({ loading: true, error: null });
         try {
           const events = await eventsApi.search(params);
           set({ events, loading: false });
@@ -97,10 +111,12 @@ export const useEventStore = create<EventState>()(
       createEvent: async (eventData) => {
         set({ loading: true, error: null });
         try {
-          await eventsApi.create(eventData);
-          // 新活動狀態為 pending，不加入到顯示列表中
-          // 只有 approved 狀態的活動才會在地圖上顯示
-          set({ loading: false });
+          const newEvent = await eventsApi.create(eventData);
+          // 新活動狀態為 pending，加入到列表中但可能不會顯示在地圖上
+          set((state) => ({
+            events: [newEvent, ...state.events],
+            loading: false,
+          }));
         } catch (error) {
           set({
             error: handleApiError(error),
@@ -110,40 +126,21 @@ export const useEventStore = create<EventState>()(
         }
       },
 
-      // 審核活動
-      approveEvent: async (id) => {
+      // 更新活動
+      updateEvent: async (id, updateData) => {
+        set({ loading: true, error: null });
         try {
-          await eventsApi.approve(id);
+          const updatedEvent = await eventsApi.update(id, updateData);
           set((state) => ({
-            events: state.events.map((event) =>
-              event.id === id ? { ...event, status: 'approved' as const } : event
-            ),
-            currentEvent:
-              state.currentEvent?.id === id
-                ? { ...state.currentEvent, status: 'approved' as const }
-                : state.currentEvent,
+            events: state.events.map((event) => (event.id === id ? updatedEvent : event)),
+            currentEvent: state.currentEvent?.id === id ? updatedEvent : state.currentEvent,
+            loading: false,
           }));
         } catch (error) {
-          set({ error: handleApiError(error) });
-          throw error;
-        }
-      },
-
-      // 拒絕活動
-      rejectEvent: async (id) => {
-        try {
-          await eventsApi.reject(id);
-          set((state) => ({
-            events: state.events.map((event) =>
-              event.id === id ? { ...event, status: 'rejected' as const } : event
-            ),
-            currentEvent:
-              state.currentEvent?.id === id
-                ? { ...state.currentEvent, status: 'rejected' as const }
-                : state.currentEvent,
-          }));
-        } catch (error) {
-          set({ error: handleApiError(error) });
+          set({
+            error: handleApiError(error),
+            loading: false,
+          });
           throw error;
         }
       },
@@ -174,6 +171,65 @@ export const useEventStore = create<EventState>()(
 
       // 清除當前活動
       clearCurrentEvent: () => set({ currentEvent: null }),
+
+      // 管理員功能
+      admin: {
+        // 獲取待審核活動
+        fetchPendingEvents: async () => {
+          set({ loading: true, error: null });
+          try {
+            const events = await eventsApi.admin.getPending();
+            set({ events, loading: false });
+          } catch (error) {
+            set({
+              error: handleApiError(error),
+              loading: false,
+            });
+          }
+        },
+
+        // 審核活動
+        reviewEvent: async (id, status) => {
+          try {
+            const updatedEvent = await eventsApi.admin.review(id, status);
+            set((state) => ({
+              events: state.events.map((event) => (event.id === id ? updatedEvent : event)),
+              currentEvent: state.currentEvent?.id === id ? updatedEvent : state.currentEvent,
+            }));
+          } catch (error) {
+            set({ error: handleApiError(error) });
+            throw error;
+          }
+        },
+
+        // 快速通過
+        approveEvent: async (id) => {
+          try {
+            const updatedEvent = await eventsApi.admin.approve(id);
+            set((state) => ({
+              events: state.events.map((event) => (event.id === id ? updatedEvent : event)),
+              currentEvent: state.currentEvent?.id === id ? updatedEvent : state.currentEvent,
+            }));
+          } catch (error) {
+            set({ error: handleApiError(error) });
+            throw error;
+          }
+        },
+
+        // 快速拒絕
+        rejectEvent: async (id) => {
+          try {
+            const updatedEvent = await eventsApi.admin.reject(id);
+            set((state) => ({
+              events: state.events.map((event) => (event.id === id ? updatedEvent : event)),
+              currentEvent: state.currentEvent?.id === id ? updatedEvent : state.currentEvent,
+            }));
+          } catch (error) {
+            set({ error: handleApiError(error) });
+            throw error;
+          }
+        },
+      },
     }),
     {
       name: 'event-store',

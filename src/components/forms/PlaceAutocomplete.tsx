@@ -8,7 +8,11 @@ import api from '@/lib/api';
 import { useDebounce } from '@/hooks/useDebounce';
 
 interface PlaceAutocompleteProps {
-  onPlaceSelect: (place: { address: string; coordinates: { lat: number; lng: number } }) => void;
+  onPlaceSelect: (place: {
+    address: string;
+    coordinates: { lat: number; lng: number };
+    name: string;
+  }) => void;
   placeholder?: string;
   defaultValue?: string;
 }
@@ -76,7 +80,7 @@ export default function PlaceAutocomplete({
 
       setSelectedPlace(prediction);
       setIsSelectedState(true); // 設定為選擇狀態
-      setQuery(prediction.description);
+      setQuery(prediction.structured_formatting?.main_text || prediction.description);
 
       try {
         // 取得地點詳情
@@ -90,15 +94,13 @@ export default function PlaceAutocomplete({
               lat: result.geometry.location.lat,
               lng: result.geometry.location.lng,
             },
+            name: result.name,
           };
           onPlaceSelect(placeData);
         }
       } catch {
         // 如果地點詳情取得失敗，使用預設座標
-        onPlaceSelect({
-          address: prediction.description,
-          coordinates: { lat: 25.033, lng: 121.5654 }, // 台北市中心
-        });
+        window.alert('地點詳情取得失敗');
       }
     },
     [onPlaceSelect, isDisabled]
@@ -117,7 +119,9 @@ export default function PlaceAutocomplete({
                   : 'bg-white text-gray-900 ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-purple-600'
             }`}
             displayValue={(prediction: PlacePrediction | null) =>
-              prediction ? prediction.description : query
+              prediction
+                ? prediction.structured_formatting?.main_text || prediction.description
+                : query
             }
             onChange={(event) => {
               setQuery(event.target.value);

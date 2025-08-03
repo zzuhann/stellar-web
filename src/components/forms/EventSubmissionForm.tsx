@@ -3,13 +3,24 @@
 import { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CalendarIcon, MapPinIcon, PhoneIcon, UserIcon } from '@heroicons/react/24/outline';
+import {
+  CalendarIcon,
+  MapPinIcon,
+  UserIcon,
+  ChevronDownIcon,
+  XMarkIcon,
+  PhotoIcon,
+} from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
-import { useEventStore, useArtistStore, useUIStore } from '@/store';
+import { useEventStore, useUIStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
+import { useAuthToken } from '@/hooks/useAuthToken';
 import PlaceAutocomplete from './PlaceAutocomplete';
+import ArtistSelectionModal from './ArtistSelectionModal';
+import ImageUpload from '@/components/ui/ImageUpload';
 import { useRouter } from 'next/navigation';
+import { CreateEventRequest, Artist } from '@/types';
 
 // Styled Components - 與其他組件保持一致的設計風格
 const FormContainer = styled.div`
@@ -99,34 +110,6 @@ const Input = styled.input`
   &::placeholder {
     color: var(--color-text-secondary);
   }
-
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(90, 125, 154, 0.1);
-  }
-
-  &:disabled {
-    background: var(--color-bg-secondary);
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-  }
-
-  @media (min-width: 768px) {
-    padding: 14px 18px;
-    font-size: 15px;
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-size: 14px;
-  transition: all 0.2s ease;
 
   &:focus {
     outline: none;
@@ -303,16 +286,92 @@ const LoadingSpinner = styled.div`
   }
 `;
 
+const ArtistSelectionButton = styled.button`
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-border-medium);
+    background: var(--color-bg-secondary);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(90, 125, 154, 0.1);
+  }
+
+  @media (min-width: 768px) {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+`;
+
+const SelectedArtistInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: space-between;
+`;
+
+const ArtistName = styled.span`
+  font-weight: 500;
+`;
+
+const ArtistRealName = styled.span`
+  color: var(--color-text-secondary);
+  font-size: 13px;
+`;
+
+const PlaceholderText = styled.span`
+  color: var(--color-text-secondary);
+`;
+
+const IconContainer = styled.div`
+  width: 16px;
+  height: 16px;
+`;
+
+const ImageContainer = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 8px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
 export default function EventSubmissionForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [locationCoordinates, setLocationCoordinates] = useState<{
     lat: number;
     lng: number;
   } | null>(null);
+  const [locationAddress, setLocationAddress] = useState('');
+  const [artistSelectionModalOpen, setArtistSelectionModalOpen] = useState(false);
+  const [selectedArtists, setSelectedArtists] = useState<Artist[]>([]);
+  const [mainImageUrl, setMainImageUrl] = useState<string>('');
+  const [detailImageUrl, setDetailImageUrl] = useState<string>('');
   const { createEvent } = useEventStore();
-  const { artists } = useArtistStore();
   const { addNotification } = useUIStore();
   const { user } = useAuth();
+  const { token } = useAuthToken();
   const router = useRouter();
   const {
     register,
@@ -329,15 +388,62 @@ export default function EventSubmissionForm() {
 
   // 處理地點選擇
   const handlePlaceSelect = useCallback(
-    (place: { address: string; coordinates: { lat: number; lng: number } }) => {
-      setValue('address', place.address, {
+    (place: { address: string; coordinates: { lat: number; lng: number }; name: string }) => {
+      setValue('addressName', place.name, {
         shouldValidate: true,
         shouldDirty: true,
       });
       setLocationCoordinates(place.coordinates);
+      setLocationAddress(place.address);
     },
     [setValue]
   );
+
+  // 處理藝人選擇
+  const handleArtistSelect = useCallback(
+    (artist: Artist) => {
+      // 檢查是否已經選擇過這個藝人
+      const isAlreadySelected = selectedArtists.some((selected) => selected.id === artist.id);
+      if (!isAlreadySelected) {
+        const newSelectedArtists = [...selectedArtists, artist];
+        setSelectedArtists(newSelectedArtists);
+        // 更新表單值，使用藝人ID陣列
+        const artistIds = newSelectedArtists.map((a) => a.id);
+        setValue('artistIds', artistIds, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+    },
+    [selectedArtists, setValue]
+  );
+
+  // 移除藝人
+  const removeArtist = useCallback(
+    (artistId: string) => {
+      const newSelectedArtists = selectedArtists.filter((artist) => artist.id !== artistId);
+      setSelectedArtists(newSelectedArtists);
+
+      if (newSelectedArtists.length > 0) {
+        const artistIds = newSelectedArtists.map((a) => a.id);
+        setValue('artistIds', artistIds, {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      } else {
+        setValue('artistIds', [], {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+    },
+    [selectedArtists, setValue]
+  );
+
+  // 打開藝人選擇 modal
+  const openArtistSelectionModal = () => {
+    setArtistSelectionModalOpen(true);
+  };
 
   const onSubmit = async (data: EventSubmissionFormData) => {
     if (!user) {
@@ -352,16 +458,10 @@ export default function EventSubmissionForm() {
     setIsLoading(true);
 
     try {
-      // 檢查是否能取得 token
-      const _token = await user.getIdToken();
-      // 找到選中的藝人
-      const selectedArtist = artists.find((artist) => artist.stageName === data.artistName);
-
       // 準備活動資料
-      const eventData = {
+      const eventData: CreateEventRequest = {
         title: data.title,
-        artistId: selectedArtist?.id || '',
-        artistName: data.artistName, // TODO: 拿掉
+        artistIds: selectedArtists.map((artist) => artist.id),
         description: data.description || '',
         datetime: {
           start: {
@@ -374,20 +474,21 @@ export default function EventSubmissionForm() {
           },
         },
         location: {
-          address: data.address,
+          name: data.addressName,
+          address: locationAddress,
           coordinates: locationCoordinates || {
             // 如果沒有座標，使用台北市中心座標
             lat: 25.033,
             lng: 121.5654,
           },
         },
-        contactInfo: {
-          phone: data.phone || undefined,
+        socialMedia: {
           instagram: data.instagram || undefined,
-          facebook: data.facebook || undefined,
+          x: data.x || undefined,
+          threads: data.threads || undefined,
         },
-        images: [], // 暫時不支援圖片上傳
-        isDeleted: false,
+        mainImage: mainImageUrl || undefined,
+        detailImage: detailImageUrl || undefined,
       };
 
       await createEvent(eventData);
@@ -429,28 +530,90 @@ export default function EventSubmissionForm() {
             <UserIcon />
             應援偶像*
           </Label>
-          <Select id="artistName" {...register('artistName')}>
-            <option value="">請選擇偶像</option>
-            {artists.map((artist) => (
-              <option key={artist.id} value={artist.stageName}>
-                {artist.stageName}
-                {artist.realName && ` (${artist.realName})`}
-              </option>
+          <HelperText>若為聯合應援，可選擇多個偶像</HelperText>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {/* 已選擇的藝人按鈕 */}
+            {selectedArtists.map((artist) => (
+              <ArtistSelectionButton
+                key={artist.id}
+                type="button"
+                onClick={openArtistSelectionModal}
+                className={errors.artistIds ? 'error' : ''}
+              >
+                <SelectedArtistInfo>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ImageContainer>
+                      <img src={artist.profileImage} alt={artist.stageName} />
+                    </ImageContainer>
+                    <div>
+                      <ArtistName>{artist.stageName}</ArtistName>
+                      {artist.realName && <ArtistRealName>({artist.realName})</ArtistRealName>}
+                    </div>
+                  </div>
+                  <IconContainer>
+                    <XMarkIcon
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeArtist(artist.id);
+                      }}
+                    />
+                  </IconContainer>
+                </SelectedArtistInfo>
+              </ArtistSelectionButton>
             ))}
-          </Select>
-          {errors.artistName && <ErrorText>{errors.artistName.message}</ErrorText>}
+
+            {/* 新增藝人的按鈕 */}
+            <ArtistSelectionButton
+              type="button"
+              onClick={openArtistSelectionModal}
+              className={errors.artistIds ? 'error' : ''}
+            >
+              <PlaceholderText>請選擇偶像</PlaceholderText>
+              <IconContainer>
+                <ChevronDownIcon />
+              </IconContainer>
+            </ArtistSelectionButton>
+          </div>
+          <input type="hidden" {...register('artistIds')} />
+          {errors.artistIds && <ErrorText>{errors.artistIds.message}</ErrorText>}
         </FormGroup>
 
-        {/* 活動描述 */}
+        {/* 主視覺圖片 */}
         <FormGroup>
-          <Label htmlFor="description">活動描述</Label>
-          <Textarea
-            id="description"
-            rows={4}
-            placeholder="描述活動內容、特色、提供的飲品或周邊等..."
-            {...register('description')}
+          <Label>
+            <PhotoIcon />
+            主視覺圖片*
+          </Label>
+          <HelperText>活動的主要宣傳圖片</HelperText>
+          <ImageUpload
+            onUploadComplete={(imageUrl) => {
+              setMainImageUrl(imageUrl);
+              setValue('mainImage', imageUrl, {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+              addNotification({
+                type: 'success',
+                title: '主視覺圖片上傳成功',
+                message: '圖片已成功上傳',
+              });
+            }}
+            onImageRemove={() => {
+              setMainImageUrl('');
+              setValue('mainImage', '', {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+            }}
+            placeholder="點擊上傳主視覺圖片或拖拽至此"
+            maxSizeMB={5}
+            disabled={isLoading}
+            authToken={token || undefined}
+            useRealAPI={!!token}
+            enableCrop={false}
           />
-          {errors.description && <ErrorText>{errors.description.message}</ErrorText>}
+          <input type="hidden" {...register('mainImage')} />
+          {errors.mainImage && <ErrorText>{errors.mainImage.message}</ErrorText>}
         </FormGroup>
 
         {/* 活動時間 */}
@@ -458,7 +621,7 @@ export default function EventSubmissionForm() {
           <FormGroup>
             <Label htmlFor="startDate">
               <CalendarIcon />
-              開始日期 *
+              開始日期*
             </Label>
             <Input id="startDate" type="date" {...register('startDate')} />
             {errors.startDate && <ErrorText>{errors.startDate.message}</ErrorText>}
@@ -467,7 +630,7 @@ export default function EventSubmissionForm() {
           <FormGroup>
             <Label htmlFor="endDate">
               <CalendarIcon />
-              結束日期 *
+              結束日期*
             </Label>
             <Input id="endDate" type="date" min={startDate} {...register('endDate')} />
             {errors.endDate && <ErrorText>{errors.endDate.message}</ErrorText>}
@@ -478,53 +641,90 @@ export default function EventSubmissionForm() {
         <FormGroup>
           <Label>
             <MapPinIcon />
-            活動地址 *
+            活動地點*
           </Label>
           <PlaceAutocomplete
             onPlaceSelect={handlePlaceSelect}
             placeholder="搜尋活動地點名稱或地址"
           />
-          <input type="hidden" {...register('address')} />
-          {errors.address && <ErrorText>{errors.address.message}</ErrorText>}
-          <HelperText>請從搜尋結果中選擇地點，以確保地址正確</HelperText>
+          <input type="hidden" {...register('addressName')} />
+          {errors.addressName && <ErrorText>{errors.addressName.message}</ErrorText>}
+        </FormGroup>
+
+        {/* 活動描述 */}
+        <FormGroup>
+          <Label htmlFor="description">說明</Label>
+          <Textarea
+            id="description"
+            rows={10}
+            placeholder="描述活動內容與資訊，例如：活動時間/領取應援/注意事項等等"
+            {...register('description')}
+          />
+          {errors.description && <ErrorText>{errors.description.message}</ErrorText>}
+        </FormGroup>
+
+        {/* 詳細說明圖片 */}
+        <FormGroup>
+          <Label>
+            <PhotoIcon />
+            詳細說明圖片
+          </Label>
+          <HelperText>活動的詳細說明圖片，可包含活動流程、注意事項等詳細資訊</HelperText>
+          <ImageUpload
+            onUploadComplete={(imageUrl) => {
+              setDetailImageUrl(imageUrl);
+              setValue('detailImage', imageUrl, {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+              addNotification({
+                type: 'success',
+                title: '詳細說明圖片上傳成功',
+                message: '圖片已成功上傳',
+              });
+            }}
+            onImageRemove={() => {
+              setDetailImageUrl('');
+              setValue('detailImage', '', {
+                shouldValidate: true,
+                shouldDirty: true,
+              });
+            }}
+            placeholder="點擊上傳詳細說明圖片或拖拽至此"
+            maxSizeMB={5}
+            disabled={isLoading}
+            authToken={token || undefined}
+            useRealAPI={!!token}
+            enableCrop={false}
+          />
+          <input type="hidden" {...register('detailImage')} />
+          {errors.detailImage && <ErrorText>{errors.detailImage.message}</ErrorText>}
         </FormGroup>
 
         {/* 聯絡資訊 */}
         <SectionDivider>
-          <SectionTitle>聯絡資訊</SectionTitle>
+          <div>
+            <SectionTitle>社群媒體</SectionTitle>
+            <HelperText>請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗</HelperText>
+          </div>
 
           <GridContainer>
             <FormGroup>
-              <Label htmlFor="phone">
-                <PhoneIcon />
-                電話號碼
-              </Label>
-              <Input id="phone" type="tel" placeholder="09xxxxxxxx" {...register('phone')} />
-              {errors.phone && <ErrorText>{errors.phone.message}</ErrorText>}
-            </FormGroup>
-
-            <FormGroup>
               <Label htmlFor="instagram">Instagram</Label>
-              <Input
-                id="instagram"
-                type="text"
-                placeholder="@username"
-                {...register('instagram')}
-              />
+              <Input id="instagram" type="text" {...register('instagram')} />
               {errors.instagram && <ErrorText>{errors.instagram.message}</ErrorText>}
             </FormGroup>
+            <FormGroup>
+              <Label htmlFor="x">X</Label>
+              <Input id="x" type="text" {...register('x')} />
+              {errors.x && <ErrorText>{errors.x.message}</ErrorText>}
+            </FormGroup>
+            <FormGroup>
+              <Label htmlFor="threads">Threads</Label>
+              <Input id="threads" type="text" {...register('threads')} />
+              {errors.threads && <ErrorText>{errors.threads.message}</ErrorText>}
+            </FormGroup>
           </GridContainer>
-
-          <FormGroup>
-            <Label htmlFor="facebook">Facebook 連結</Label>
-            <Input
-              id="facebook"
-              type="url"
-              placeholder="https://facebook.com/..."
-              {...register('facebook')}
-            />
-            {errors.facebook && <ErrorText>{errors.facebook.message}</ErrorText>}
-          </FormGroup>
         </SectionDivider>
 
         {/* 提交按鈕 */}
@@ -545,6 +745,14 @@ export default function EventSubmissionForm() {
           </Button>
         </ButtonGroup>
       </Form>
+
+      {/* 藝人選擇 Modal */}
+      <ArtistSelectionModal
+        isOpen={artistSelectionModalOpen}
+        onClose={() => setArtistSelectionModalOpen(false)}
+        onArtistSelect={handleArtistSelect}
+        selectedArtistIds={selectedArtists.map((artist) => artist.id)}
+      />
     </FormContainer>
   );
 }

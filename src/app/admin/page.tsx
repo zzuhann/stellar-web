@@ -21,8 +21,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false);
 
   // 狀態管理
-  const { artists, fetchArtists, approveArtist, rejectArtist } = useArtistStore();
-  const { events, fetchEvents, approveEvent, rejectEvent } = useEventStore();
+  const { artists: pendingArtists, fetchArtists, approveArtist, rejectArtist } = useArtistStore();
+  const { events: pendingEvents, fetchEvents, admin } = useEventStore();
 
   // 權限檢查
   useEffect(() => {
@@ -39,14 +39,10 @@ export default function AdminPage() {
   // 載入資料
   useEffect(() => {
     if (user && userData?.role === 'admin') {
-      fetchArtists();
-      fetchEvents();
+      fetchArtists({ status: 'pending' });
+      fetchEvents({ status: 'pending' });
     }
   }, [user, userData, fetchArtists, fetchEvents]);
-
-  // 篩選待審核項目
-  const pendingArtists = artists.filter((artist) => artist.status === 'pending');
-  const pendingEvents = events.filter((event) => event.status === 'pending');
 
   const handleApproveArtist = async (artistId: string) => {
     setLoading(true);
@@ -91,7 +87,7 @@ export default function AdminPage() {
   const handleApproveEvent = async (eventId: string) => {
     setLoading(true);
     try {
-      await approveEvent(eventId);
+      await admin.approveEvent(eventId);
       addNotification({
         type: 'success',
         title: '審核成功',
@@ -111,7 +107,7 @@ export default function AdminPage() {
   const handleRejectEvent = async (eventId: string) => {
     setLoading(true);
     try {
-      await rejectEvent(eventId);
+      await admin.rejectEvent(eventId);
       addNotification({
         type: 'success',
         title: '已拒絕',
@@ -296,7 +292,7 @@ export default function AdminPage() {
                           <div className="flex items-center space-x-2 mb-2">
                             <h3 className="text-lg font-medium text-gray-900">{event.title}</h3>
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                              {event.artistName}
+                              {event.artists.map((artist) => artist.name).join(', ')}
                             </span>
                           </div>
                           {event.description && (
@@ -319,14 +315,15 @@ export default function AdminPage() {
                             </div>
                           </div>
 
-                          {(event.contactInfo?.phone ||
-                            event.contactInfo?.instagram ||
-                            event.contactInfo?.facebook) && (
+                          {(event.socialMedia?.instagram ||
+                            event.socialMedia?.x ||
+                            event.socialMedia?.threads) && (
                             <div className="mt-2 text-sm text-gray-500">
                               聯絡資訊：
-                              {event.contactInfo.phone && ` 電話：${event.contactInfo.phone}`}
-                              {event.contactInfo.instagram && ` IG：${event.contactInfo.instagram}`}
-                              {event.contactInfo.facebook && ` FB：${event.contactInfo.facebook}`}
+                              {event.socialMedia.instagram && ` IG：${event.socialMedia.instagram}`}
+                              {event.socialMedia.x && ` X：${event.socialMedia.x}`}
+                              {event.socialMedia.threads &&
+                                ` Threads：${event.socialMedia.threads}`}
                             </div>
                           )}
 

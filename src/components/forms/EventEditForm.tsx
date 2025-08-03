@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { eventsApi, UpdateEventData } from '@/lib/api';
-import { CoffeeEvent } from '@/types';
+import { eventsApi } from '@/lib/api';
+import { CoffeeEvent, UpdateEventRequest } from '@/types';
 import PlaceAutocomplete from './PlaceAutocomplete';
-import { firebaseTimestampToDate } from '@/utils';
 import styled from 'styled-components';
+import { firebaseTimestampToDate } from '@/utils';
 
 // Styled Components
 const FormContainer = styled.div`
@@ -173,31 +173,6 @@ const TimeGridContainer = styled.div`
   gap: 8px;
 `;
 
-const CheckboxGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const CheckboxItem = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-
-  input[type='checkbox'] {
-    width: 16px;
-    height: 16px;
-    accent-color: #007bff;
-  }
-
-  @media (min-width: 768px) {
-    font-size: 15px;
-  }
-`;
-
 const ButtonGroup = styled.div`
   display: flex;
   flex-direction: column;
@@ -283,30 +258,21 @@ export default function EventEditForm({ event, onSuccess, onCancel }: EventEditF
   const [formData, setFormData] = useState({
     title: event.title,
     description: event.description,
+    locationName: event.location.name,
     address: event.location.address,
     coordinates: event.location.coordinates,
     startDate: firebaseTimestampToDate(event.datetime.start).toISOString().split('T')[0],
-    startTime:
-      firebaseTimestampToDate(event.datetime.start).toISOString().split('T')[1]?.substring(0, 5) ||
-      '10:00',
     endDate: firebaseTimestampToDate(event.datetime.end).toISOString().split('T')[0],
-    endTime:
-      firebaseTimestampToDate(event.datetime.end).toISOString().split('T')[1]?.substring(0, 5) ||
-      '18:00',
-    instagram: event.contactInfo?.instagram || '',
-    twitter: '',
-    threads: '',
-    supportProvided: false,
-    requiresReservation: false,
-    onSiteReservation: false,
-    amenities: [] as string[],
-    thumbnail: '',
-    markerImage: '',
+    instagram: event.socialMedia.instagram || '',
+    x: event.socialMedia.x || '',
+    threads: event.socialMedia.threads || '',
+    mainImage: event.mainImage || '',
+    detailImage: event.detailImage || '',
   });
 
   // 編輯活動 mutation
   const updateEventMutation = useMutation({
-    mutationFn: (updateData: UpdateEventData) => eventsApi.update(event.id, updateData),
+    mutationFn: (updateData: UpdateEventRequest) => eventsApi.update(event.id, updateData),
     onSuccess: (updatedEvent) => {
       // 清除相關的查詢快取
       queryClient.invalidateQueries({ queryKey: ['events'] });
@@ -320,39 +286,46 @@ export default function EventEditForm({ event, onSuccess, onCancel }: EventEditF
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const updateData: UpdateEventData = {
+    const updateData: UpdateEventRequest = {
       title: formData.title,
       description: formData.description,
       location: {
+        name: formData.locationName,
         address: formData.address,
         coordinates: formData.coordinates,
       },
       datetime: {
-        start: new Date(`${formData.startDate}T${formData.startTime}:00.000Z`).toISOString(),
-        end: new Date(`${formData.endDate}T${formData.endTime}:00.000Z`).toISOString(),
+        start: {
+          // startTime 為 00:00:00
+          _seconds: new Date(`${formData.startDate}T00:00:00.000Z`).getTime() / 1000,
+          _nanoseconds: 0,
+        },
+        end: {
+          // endTime 為 23:59:59
+          _seconds: new Date(`${formData.endDate}T23:59:59.000Z`).getTime() / 1000,
+          _nanoseconds: 0,
+        },
       },
       socialMedia: {
         instagram: formData.instagram || undefined,
-        twitter: formData.twitter || undefined,
+        x: formData.x || undefined,
         threads: formData.threads || undefined,
       },
-      supportProvided: formData.supportProvided,
-      requiresReservation: formData.requiresReservation,
-      onSiteReservation: formData.onSiteReservation,
-      amenities: formData.amenities,
-      thumbnail: formData.thumbnail || undefined,
-      markerImage: formData.markerImage || undefined,
+      mainImage: formData.mainImage || undefined,
+      detailImage: formData.detailImage || undefined,
     };
 
     updateEventMutation.mutate(updateData);
   };
 
   const handleLocationSelect = (place: {
+    name?: string;
     address: string;
     coordinates: { lat: number; lng: number };
   }) => {
     setFormData((prev) => ({
       ...prev,
+      locationName: place.name || place.address,
       address: place.address,
       coordinates: place.coordinates,
     }));
@@ -363,7 +336,10 @@ export default function EventEditForm({ event, onSuccess, onCancel }: EventEditF
       <FormHeader>
         <h2>編輯活動</h2>
         <p>
-          編輯 <span style={{ fontWeight: 600, color: '#6f42c1' }}>{event.artistName}</span>{' '}
+          編輯{' '}
+          <span style={{ fontWeight: 600, color: '#6f42c1' }}>
+            {event.artists.map((artist) => artist.name).join(', ')}
+          </span>{' '}
           的應援活動
         </p>
         <p className="note">注意：無法修改活動的藝人資訊</p>
@@ -395,13 +371,26 @@ export default function EventEditForm({ event, onSuccess, onCancel }: EventEditF
           />
         </FormGroup>
 
+        {/* 地點名稱 */}
+        <FormGroup>
+          <Label htmlFor="locationName">地點名稱 *</Label>
+          <Input
+            type="text"
+            id="locationName"
+            value={formData.locationName}
+            onChange={(e) => setFormData((prev) => ({ ...prev, locationName: e.target.value }))}
+            required
+            placeholder="例：星巴克信義店"
+          />
+        </FormGroup>
+
         {/* 地點 */}
         <FormGroup>
-          <Label>活動地點 *</Label>
+          <Label>活動地址 *</Label>
           <PlaceAutocomplete
             defaultValue={formData.address}
             onPlaceSelect={handleLocationSelect}
-            placeholder="搜尋咖啡廳或活動地點"
+            placeholder="搜尋咖啡廳或活動地址"
           />
         </FormGroup>
 
@@ -417,12 +406,6 @@ export default function EventEditForm({ event, onSuccess, onCancel }: EventEditF
                   onChange={(e) => setFormData((prev) => ({ ...prev, startDate: e.target.value }))}
                   required
                 />
-                <Input
-                  type="time"
-                  value={formData.startTime}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, startTime: e.target.value }))}
-                  required
-                />
               </TimeGridContainer>
             </FormGroup>
 
@@ -433,12 +416,6 @@ export default function EventEditForm({ event, onSuccess, onCancel }: EventEditF
                   type="date"
                   value={formData.endDate}
                   onChange={(e) => setFormData((prev) => ({ ...prev, endDate: e.target.value }))}
-                  required
-                />
-                <Input
-                  type="time"
-                  value={formData.endTime}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, endTime: e.target.value }))}
                   required
                 />
               </TimeGridContainer>
@@ -462,12 +439,12 @@ export default function EventEditForm({ event, onSuccess, onCancel }: EventEditF
           </FormGroup>
 
           <FormGroup>
-            <Label htmlFor="twitter">Twitter / X</Label>
+            <Label htmlFor="x">X (前 Twitter)</Label>
             <Input
               type="text"
-              id="twitter"
-              value={formData.twitter}
-              onChange={(e) => setFormData((prev) => ({ ...prev, twitter: e.target.value }))}
+              id="x"
+              value={formData.x}
+              onChange={(e) => setFormData((prev) => ({ ...prev, x: e.target.value }))}
               placeholder="@username 或完整網址"
             />
           </FormGroup>
@@ -484,44 +461,31 @@ export default function EventEditForm({ event, onSuccess, onCancel }: EventEditF
           </FormGroup>
         </FormSection>
 
-        {/* 活動選項 */}
+        {/* 活動圖片 */}
         <FormSection>
-          <SectionTitle>活動設定</SectionTitle>
+          <SectionTitle>活動圖片</SectionTitle>
 
-          <CheckboxGroup>
-            <CheckboxItem>
-              <input
-                type="checkbox"
-                checked={formData.supportProvided}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, supportProvided: e.target.checked }))
-                }
-              />
-              提供應援物品
-            </CheckboxItem>
+          <FormGroup>
+            <Label htmlFor="mainImage">主要圖片 URL</Label>
+            <Input
+              type="url"
+              id="mainImage"
+              value={formData.mainImage}
+              onChange={(e) => setFormData((prev) => ({ ...prev, mainImage: e.target.value }))}
+              placeholder="https://example.com/main-image.jpg"
+            />
+          </FormGroup>
 
-            <CheckboxItem>
-              <input
-                type="checkbox"
-                checked={formData.requiresReservation}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, requiresReservation: e.target.checked }))
-                }
-              />
-              需要預約
-            </CheckboxItem>
-
-            <CheckboxItem>
-              <input
-                type="checkbox"
-                checked={formData.onSiteReservation}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, onSiteReservation: e.target.checked }))
-                }
-              />
-              接受現場候位
-            </CheckboxItem>
-          </CheckboxGroup>
+          <FormGroup>
+            <Label htmlFor="detailImage">詳細圖片 URL</Label>
+            <Input
+              type="url"
+              id="detailImage"
+              value={formData.detailImage}
+              onChange={(e) => setFormData((prev) => ({ ...prev, detailImage: e.target.value }))}
+              placeholder="https://example.com/detail-image.jpg"
+            />
+          </FormGroup>
         </FormSection>
 
         {/* 表單按鈕 */}

@@ -10,7 +10,7 @@ import {
   PhoneIcon,
 } from '@heroicons/react/24/outline';
 import { CoffeeEvent } from '@/types';
-import { formatDate, formatRelativeTime, firebaseTimestampToDate } from '@/utils';
+import { firebaseTimestampToDate, formatDate, formatRelativeTime } from '@/utils';
 
 interface EventDetailSidebarProps {
   event: CoffeeEvent | null;
@@ -85,10 +85,10 @@ export default function EventDetailSidebar({ event, isOpen, onClose }: EventDeta
 
                     <div className="relative mt-6 flex-1 px-4 sm:px-6">
                       {/* 活動圖片 */}
-                      {event.images && event.images.length > 0 && (
+                      {event.mainImage && (
                         <div className="mb-6">
                           <img
-                            src={event.images[0]}
+                            src={event.mainImage}
                             alt={event.title}
                             className="w-full h-48 object-cover rounded-lg"
                           />
@@ -111,7 +111,9 @@ export default function EventDetailSidebar({ event, isOpen, onClose }: EventDeta
                           <UserIcon className="h-5 w-5 text-gray-400 mt-0.5" />
                           <div>
                             <p className="text-sm font-medium text-gray-900">應援藝人</p>
-                            <p className="text-sm text-gray-600">{event.artistName}</p>
+                            <p className="text-sm text-gray-600">
+                              {event.artists.map((artist) => artist.name).join(', ')}
+                            </p>
                           </div>
                         </div>
 
@@ -131,7 +133,7 @@ export default function EventDetailSidebar({ event, isOpen, onClose }: EventDeta
                               })}
                             </p>
                             <p className="text-xs text-gray-500">
-                              ({formatRelativeTime(firebaseTimestampToDate(event.datetime.end))}{' '}
+                              ({formatRelativeTime(firebaseTimestampToDate(event.datetime.end))}
                               結束)
                             </p>
                           </div>
@@ -157,44 +159,44 @@ export default function EventDetailSidebar({ event, isOpen, onClose }: EventDeta
                       )}
 
                       {/* 聯絡資訊 */}
-                      {event.contactInfo && (
+                      {event.socialMedia && (
                         <div className="mb-6">
-                          <h3 className="text-sm font-medium text-gray-900 mb-3">聯絡資訊</h3>
+                          <h3 className="text-sm font-medium text-gray-900 mb-3">社群媒體</h3>
                           <div className="space-y-2">
-                            {event.contactInfo.phone && (
+                            {event.socialMedia.instagram && (
                               <div className="flex items-center space-x-2">
                                 <PhoneIcon className="h-4 w-4 text-gray-400" />
                                 <a
-                                  href={`tel:${event.contactInfo.phone}`}
+                                  href={`https://instagram.com/${event.socialMedia.instagram.replace('@', '')}`}
                                   className="text-sm text-blue-600 hover:text-blue-800"
                                 >
-                                  {event.contactInfo.phone}
+                                  {event.socialMedia.instagram}
                                 </a>
                               </div>
                             )}
-                            {event.contactInfo.instagram && (
+                            {event.socialMedia.x && (
                               <div className="flex items-center space-x-2">
-                                <span className="text-sm text-gray-500">IG:</span>
+                                <span className="text-sm text-gray-500">X:</span>
                                 <a
-                                  href={`https://instagram.com/${event.contactInfo.instagram.replace('@', '')}`}
+                                  href={`https://x.com/${event.socialMedia.x.replace('@', '')}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-sm text-blue-600 hover:text-blue-800"
                                 >
-                                  {event.contactInfo.instagram}
+                                  {event.socialMedia.x}
                                 </a>
                               </div>
                             )}
-                            {event.contactInfo.facebook && (
+                            {event.socialMedia.threads && (
                               <div className="flex items-center space-x-2">
-                                <span className="text-sm text-gray-500">FB:</span>
+                                <span className="text-sm text-gray-500">Threads:</span>
                                 <a
-                                  href={event.contactInfo.facebook}
+                                  href={`https://threads.net/${event.socialMedia.threads.replace('@', '')}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-sm text-blue-600 hover:text-blue-800"
                                 >
-                                  Facebook
+                                  Threads
                                 </a>
                               </div>
                             )}
@@ -219,7 +221,7 @@ export default function EventDetailSidebar({ event, isOpen, onClose }: EventDeta
                           type="button"
                           className="w-full bg-white text-amber-600 border border-amber-600 px-4 py-2 rounded-md text-sm font-medium hover:bg-amber-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 transition-colors"
                           onClick={() => {
-                            const text = `${event.title} - ${event.artistName} 應援咖啡活動\n${event.location.address}\n${window.location.href}`;
+                            const text = `${event.title} - ${event.artists.map((artist) => artist.name).join(', ')} 應援咖啡活動\n${event.location.address}\n${window.location.href}`;
                             navigator.share?.({ title: event.title, text }) ||
                               navigator.clipboard?.writeText(text);
                           }}

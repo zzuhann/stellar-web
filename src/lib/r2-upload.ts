@@ -77,7 +77,12 @@ export async function checkImageServiceStatus(): Promise<{ available: boolean; m
 }
 
 // 圖片壓縮功能
-export function compressImage(file: File, maxWidth = 800, quality = 0.8): Promise<File> {
+export function compressImage(
+  file: File,
+  maxWidth = 800,
+  maxHeight = 800,
+  quality = 0.8
+): Promise<File> {
   return new Promise((resolve) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -86,9 +91,15 @@ export function compressImage(file: File, maxWidth = 800, quality = 0.8): Promis
     img.onload = () => {
       // 計算新尺寸，保持寬高比
       let { width, height } = img;
-      if (width > maxWidth) {
-        height = (height * maxWidth) / width;
-        width = maxWidth;
+
+      // 計算縮放比例，取寬度和高度的較小值
+      const scaleX = maxWidth / width;
+      const scaleY = maxHeight / height;
+      const scale = Math.min(scaleX, scaleY, 1); // 不放大，只縮小
+
+      if (scale < 1) {
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
       }
 
       canvas.width = width;
@@ -121,7 +132,7 @@ export function compressImage(file: File, maxWidth = 800, quality = 0.8): Promis
 export async function mockUpload(file: File): Promise<UploadResponse> {
   try {
     // 壓縮圖片
-    const compressedFile = await compressImage(file);
+    const compressedFile = await compressImage(file, 800, 800, 0.8);
 
     // 轉換為 Base64（臨時存儲方案）
     const base64 = await convertToBase64(compressedFile);

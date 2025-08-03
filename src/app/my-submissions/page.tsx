@@ -14,11 +14,11 @@ import {
   TrashIcon,
 } from '@heroicons/react/24/outline';
 import { useUIStore } from '@/store';
-import { firebaseTimestampToDate } from '@/utils';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { eventsApi } from '@/lib/api';
 import { CoffeeEvent } from '@/types';
 import EventEditForm from '@/components/forms/EventEditForm';
+import { firebaseTimestampToDate } from '@/utils';
 
 export default function MySubmissionsPage() {
   const { user, userData, loading: authLoading } = useAuth();
@@ -315,11 +315,18 @@ export default function MySubmissionsPage() {
                     <div key={event.id} className="px-6 py-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
+                          <div className="flex items-start space-x-2 mb-2">
                             <h3 className="text-lg font-medium text-gray-900">{event.title}</h3>
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                              {event.artistName}
-                            </span>
+                            <div className="flex flex-wrap gap-1">
+                              {event.artists.map((artist, index) => (
+                                <span
+                                  key={index}
+                                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
+                                >
+                                  {artist.name}
+                                </span>
+                              ))}
+                            </div>
                           </div>
 
                           {event.description && (
@@ -339,6 +346,7 @@ export default function MySubmissionsPage() {
                             </div>
                             <div className="flex items-center">
                               <MapPinIcon className="h-4 w-4 mr-1" />
+                              {event.location.name && `${event.location.name} - `}
                               {event.location.address}
                             </div>
                           </div>

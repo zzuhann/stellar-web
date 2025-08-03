@@ -3,36 +3,16 @@
 
 import axios, { AxiosResponse, AxiosError } from 'axios';
 import { auth } from './firebase';
-import { Artist, CoffeeEvent, ApiResponse, EventSearchParams } from '@/types';
-import { EventsResponse } from '@/hooks/useEventFilters';
-
-// 編輯活動資料格式
-export interface UpdateEventData {
-  title?: string;
-  description?: string;
-  location?: {
-    address: string;
-    coordinates: {
-      lat: number;
-      lng: number;
-    };
-  };
-  datetime?: {
-    start: string; // ISO format
-    end: string; // ISO format
-  };
-  socialMedia?: {
-    instagram?: string;
-    twitter?: string;
-    threads?: string;
-  };
-  supportProvided?: boolean;
-  requiresReservation?: boolean;
-  onSiteReservation?: boolean;
-  amenities?: string[];
-  thumbnail?: string;
-  markerImage?: string;
-}
+import {
+  Artist,
+  CoffeeEvent,
+  ApiResponse,
+  EventSearchParams,
+  EventsResponse,
+  MapDataResponse,
+  CreateEventRequest,
+  UpdateEventRequest,
+} from '@/types';
 
 // 建立 Axios 實例
 const api = axios.create({
@@ -166,268 +146,115 @@ export interface UserSubmissionsResponse {
 
 // 活動相關 API
 export const eventsApi = {
-  // 取得活動列表（可指定狀態）
-  getAll: async (status?: 'approved' | 'pending' | 'rejected'): Promise<CoffeeEvent[]> => {
-    const params = status ? { status } : {};
-    const response = await api.get('/events', { params });
-    const rawEvents: EventsResponse = response.data;
+  // 獲取活動列表（支援新的查詢參數）
+  getAll: async (params?: EventSearchParams): Promise<EventsResponse> => {
+    const queryParams: Record<string, string> = {};
 
-    // 轉換後端格式到前端格式
-    return rawEvents.events.map((event) => ({
-      id: event.id,
-      title: event.title,
-      artistId: event.artistId,
-      artistName: event.artistName || '', // 需要從 artistId 查詢
-      description: (event.description as string) || '',
-      datetime: {
-        start: event.datetime.start,
-        end: event.datetime.end,
-      },
-      isDeleted: event.isDeleted,
-      location: {
-        address: (event.location as { address?: string })?.address || '',
-        coordinates: {
-          lat: (event.location as { coordinates?: { lat: number } })?.coordinates?.lat || 0,
-          lng: (event.location as { coordinates?: { lng: number } })?.coordinates?.lng || 0,
-        },
-      },
-      contactInfo: {
-        phone: (event.contactInfo as { phone?: string })?.phone,
-        instagram: (event.socialMedia as { instagram?: string })?.instagram,
-        facebook:
-          (event.socialMedia as { facebook?: string; twitter?: string })?.facebook ||
-          (event.socialMedia as { twitter?: string })?.twitter,
-      },
-      images: event.images || [],
-      status: event.status,
-      createdBy: event.createdBy,
-      createdAt: event.createdAt,
-      updatedAt: event.updatedAt,
-    }));
+    if (params?.search) queryParams.search = params.search;
+    if (params?.artistId) queryParams.artistId = params.artistId;
+    if (params?.status) queryParams.status = params.status;
+    if (params?.region) queryParams.region = params.region;
+    if (params?.createdBy) queryParams.createdBy = params.createdBy;
+    if (params?.page) queryParams.page = params.page.toString();
+    if (params?.limit) queryParams.limit = params.limit.toString();
+
+    const response = await api.get('/events', { params: queryParams });
+    return response.data as EventsResponse;
   },
 
-  // 取得單一活動詳情
-  getById: async (id: string): Promise<CoffeeEvent | null> => {
-    try {
-      const response = await api.get<ApiResponse<CoffeeEvent>>(`/events/${id}`);
-      return response.data.data || null;
-    } catch {
-      return null;
-    }
+  // 獲取地圖資料
+  getMapData: async (params?: {
+    status?: 'active' | 'upcoming' | 'all';
+    bounds?: string;
+    zoom?: number;
+    search?: string;
+    artistId?: string;
+    region?: string;
+  }): Promise<MapDataResponse> => {
+    const queryParams: Record<string, string> = {};
+
+    if (params?.status) queryParams.status = params.status;
+    if (params?.bounds) queryParams.bounds = params.bounds;
+    if (params?.zoom) queryParams.zoom = params.zoom.toString();
+    if (params?.search) queryParams.search = params.search;
+    if (params?.artistId) queryParams.artistId = params.artistId;
+    if (params?.region) queryParams.region = params.region;
+
+    const response = await api.get('/events/map-data', { params: queryParams });
+    return response.data as MapDataResponse;
   },
 
   // 搜尋活動
-  search: async (params: EventSearchParams): Promise<CoffeeEvent[]> => {
-    const response = await api.get<ApiResponse<CoffeeEvent[]>>('/events/search', {
-      params,
-    });
-    return response.data.data || [];
+  search: async (params: {
+    query?: string;
+    artistName?: string;
+    location?: string;
+  }): Promise<CoffeeEvent[]> => {
+    const response = await api.get('/events/search', { params });
+    return response.data as CoffeeEvent[];
   },
 
-  // 新增活動
-  create: async (
-    event: Omit<CoffeeEvent, 'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status'>
-  ): Promise<CoffeeEvent> => {
-    // 取得當前用戶 ID
-    const currentUser = auth.currentUser;
-    if (!currentUser) {
-      throw new Error('請先登入後再投稿活動');
-    }
-
-    // 轉換前端格式到後端格式 - 符合 Firestore 結構
-    const backendEvent = {
-      title: event.title,
-      artistId: event.artistId,
-      description: event.description,
-      datetime: {
-        start: new Date(event.datetime.start._seconds * 1000),
-        end: new Date(event.datetime.end._seconds * 1000),
-      },
-      location: {
-        address: event.location.address,
-        coordinates: {
-          lat: event.location.coordinates.lat,
-          lng: event.location.coordinates.lng,
-        },
-      },
-      socialMedia: {
-        instagram: event.contactInfo?.instagram || '',
-        twitter: event.contactInfo?.facebook || '',
-      },
-      images: event.images && event.images.length > 0 ? event.images : [''],
-      status: 'pending',
-      isDeleted: false,
-      createdBy: currentUser.uid,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    console.log('Sending event data to backend:', JSON.stringify(backendEvent, null, 2));
-
-    let response;
+  // 獲取單一活動詳情
+  getById: async (id: string): Promise<CoffeeEvent | null> => {
     try {
-      response = await api.post('/events', backendEvent);
-      console.log('Backend response:', response.data);
+      const response = await api.get(`/events/${id}`);
+      return response.data as CoffeeEvent;
     } catch (error) {
-      console.error('=== Event Creation Error Details ===');
-      if (axios.isAxiosError(error)) {
-        console.error('Status:', error.response?.status);
-        console.error('Status Text:', error.response?.statusText);
-        console.error('Response Headers:', error.response?.headers);
-        console.error('Response Data:', JSON.stringify(error.response?.data, null, 2));
-        console.error('Request URL:', error.config?.url);
-        console.error('Request Method:', error.config?.method);
-        console.error('Request Headers:', error.config?.headers);
-        console.error('Request Data:', error.config?.data);
-      } else {
-        console.error('Non-Axios Error:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 404) {
+        return null;
       }
       throw error;
     }
-
-    // 轉換回前端格式
-    const rawEvent = response.data;
-    return {
-      id: rawEvent.id,
-      title: rawEvent.title,
-      artistId: rawEvent.artistId,
-      artistName: event.artistName, // 保留原本的 artistName
-      description: rawEvent.description || '',
-      datetime: {
-        start: rawEvent.datetime?.start || {
-          _seconds: Math.floor(Date.now() / 1000),
-          _nanoseconds: 0,
-        },
-        end: rawEvent.datetime?.end || { _seconds: Math.floor(Date.now() / 1000), _nanoseconds: 0 },
-      },
-      location: event.location,
-      socialMedia: event.socialMedia,
-      contactInfo: event.contactInfo,
-      images: rawEvent.images || [],
-      thumbnail: rawEvent.thumbnail,
-      markerImage: rawEvent.markerImage,
-      status: rawEvent.status || 'pending',
-      isDeleted: rawEvent.isDeleted || false,
-      createdBy: rawEvent.createdBy || '',
-      createdAt: rawEvent.createdAt || { _seconds: Math.floor(Date.now() / 1000), _nanoseconds: 0 },
-      updatedAt: rawEvent.updatedAt || { _seconds: Math.floor(Date.now() / 1000), _nanoseconds: 0 },
-    };
   },
 
-  // 審核活動（管理員）
-  approve: async (id: string): Promise<void> => {
-    await api.put(`/events/${id}/approve`);
+  // 獲取用戶投稿
+  getMySubmissions: async (): Promise<UserSubmissionsResponse> => {
+    const response = await api.get('/events/me');
+    return response.data as UserSubmissionsResponse;
   },
 
-  // 拒絕活動（管理員）
-  reject: async (id: string): Promise<void> => {
-    await api.put(`/events/${id}/reject`);
+  // 建立活動
+  create: async (eventData: CreateEventRequest): Promise<CoffeeEvent> => {
+    const response = await api.post('/events', eventData);
+    return response.data as CoffeeEvent;
   },
 
   // 編輯活動
-  update: async (id: string, updateData: UpdateEventData): Promise<CoffeeEvent> => {
+  update: async (id: string, updateData: UpdateEventRequest): Promise<CoffeeEvent> => {
     const response = await api.put(`/events/${id}`, updateData);
-    const rawEvent = response.data;
-
-    // 轉換回前端格式
-    return {
-      id: rawEvent.id,
-      title: rawEvent.title,
-      artistId: rawEvent.artistId,
-      artistName: rawEvent.artistName,
-      description: rawEvent.description || '',
-      datetime: {
-        start: rawEvent.datetime?.start,
-        end: rawEvent.datetime?.end,
-      },
-      location: {
-        address: (rawEvent.location as { address?: string })?.address || '',
-        coordinates: {
-          lat: (rawEvent.location as { coordinates?: { lat: number } })?.coordinates?.lat || 0,
-          lng: (rawEvent.location as { coordinates?: { lng: number } })?.coordinates?.lng || 0,
-        },
-      },
-      contactInfo: {
-        phone: (rawEvent.contactInfo as { phone?: string })?.phone,
-        instagram: (rawEvent.socialMedia as { instagram?: string })?.instagram,
-        facebook:
-          (rawEvent.socialMedia as { facebook?: string; twitter?: string })?.facebook ||
-          (rawEvent.socialMedia as { twitter?: string })?.twitter,
-      },
-      images: rawEvent.images || [],
-      thumbnail: rawEvent.thumbnail,
-      markerImage: rawEvent.markerImage,
-      status: rawEvent.status || 'pending',
-      isDeleted: rawEvent.isDeleted || false,
-      createdBy: rawEvent.createdBy || '',
-      createdAt: rawEvent.createdAt,
-      updatedAt: rawEvent.updatedAt,
-    };
+    return response.data as CoffeeEvent;
   },
 
-  // 軟刪除活動（管理員）
+  // 刪除活動
   delete: async (id: string): Promise<void> => {
     await api.delete(`/events/${id}`);
   },
 
-  // 取得當前用戶的所有投稿
-  getMySubmissions: async (): Promise<UserSubmissionsResponse> => {
-    const response = await api.get('/events/me');
-    const rawData = response.data;
+  // 管理員專用 API
+  admin: {
+    // 獲取待審核活動
+    getPending: async (): Promise<CoffeeEvent[]> => {
+      const response = await api.get('/events/admin/pending');
+      return response.data as CoffeeEvent[];
+    },
 
-    // 轉換藝人資料格式
-    const artists: Artist[] = rawData.artists.map((artist: Record<string, unknown>) => ({
-      id: artist.id as string,
-      stageName: artist.stageName as string,
-      realName: artist.realName as string,
-      birthday: artist.birthday as string,
-      profileImage: artist.profileImage as string,
-      status: artist.status as 'pending' | 'approved' | 'rejected',
-      createdBy: artist.createdBy as string,
-      createdAt: artist.createdAt as string,
-      updatedAt: artist.updatedAt as string,
-    }));
+    // 審核活動
+    review: async (id: string, status: 'approved' | 'rejected'): Promise<CoffeeEvent> => {
+      const response = await api.patch(`/events/${id}/review`, { status });
+      return response.data as CoffeeEvent;
+    },
 
-    // 轉換活動資料格式
-    const events: CoffeeEvent[] = rawData.events.map((event: Record<string, unknown>) => ({
-      id: event.id as string,
-      title: event.title as string,
-      artistId: event.artistId as string,
-      artistName: event.artistName as string,
-      description: (event.description as string) || '',
-      datetime: {
-        start: (event.datetime as { start: unknown }).start,
-        end: (event.datetime as { end: unknown }).end,
-      },
-      location: {
-        address: (event.location as { address?: string })?.address || '',
-        coordinates: {
-          lat: (event.location as { coordinates?: { lat: number } })?.coordinates?.lat || 0,
-          lng: (event.location as { coordinates?: { lng: number } })?.coordinates?.lng || 0,
-        },
-      },
-      contactInfo: {
-        phone: (event.contactInfo as { phone?: string })?.phone,
-        instagram: (event.socialMedia as { instagram?: string })?.instagram,
-        facebook:
-          (event.socialMedia as { facebook?: string; twitter?: string })?.facebook ||
-          (event.socialMedia as { twitter?: string })?.twitter,
-      },
-      images: (event.images as string[]) || [],
-      thumbnail: event.thumbnail as string,
-      markerImage: event.markerImage as string,
-      status: event.status as 'pending' | 'approved' | 'rejected',
-      isDeleted: (event.isDeleted as boolean) || false,
-      createdBy: event.createdBy as string,
-      createdAt: event.createdAt as string,
-      updatedAt: event.updatedAt as string,
-    }));
+    // 快速通過
+    approve: async (id: string): Promise<CoffeeEvent> => {
+      const response = await api.put(`/events/${id}/approve`);
+      return response.data as CoffeeEvent;
+    },
 
-    return {
-      artists,
-      events,
-      summary: rawData.summary,
-    };
+    // 快速拒絕
+    reject: async (id: string): Promise<CoffeeEvent> => {
+      const response = await api.put(`/events/${id}/reject`);
+      return response.data as CoffeeEvent;
+    },
   },
 };
 
