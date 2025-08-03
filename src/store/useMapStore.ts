@@ -11,7 +11,7 @@ interface MapState {
   markers: EventMarker[];
   selectedMarkerId: string | null;
   zoom: number;
-  
+
   // 動作
   setCenter: (center: Partial<MapCenter>) => void;
   setMarkers: (markers: EventMarker[]) => void;
@@ -23,7 +23,7 @@ interface MapState {
 export const useMapStore = create<MapState>()(
   devtools(
     persist(
-      (set, get) => ({
+      (set) => ({
         // 初始狀態
         center: TAIWAN_MAP_CENTER,
         markers: [],

@@ -87,22 +87,20 @@ export interface EventsResponse {
   };
 }
 
+export interface MapEvent {
+  id: string;
+  location: {
+    address: string; // 地址
+    coordinates: { lat: number; lng: number };
+    name: string; // 店家名稱
+  };
+  title: string;
+  mainImage: string;
+}
+
 // 地圖資料回應格式
 export interface MapDataResponse {
-  events: Array<{
-    id: string;
-    title: string;
-    mainImage?: string;
-    location: {
-      name: string;
-      address: string;
-      coordinates: { lat: number; lng: number };
-    };
-    datetime: {
-      start: FirebaseTimestamp;
-      end: FirebaseTimestamp;
-    };
-  }>;
+  events: Array<MapEvent>;
   total: number;
 }
 

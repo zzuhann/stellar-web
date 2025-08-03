@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
+import { MapEvent } from '@/types';
 
 interface MapDataOptions {
   status?: 'active' | 'upcoming' | 'all';
@@ -9,15 +10,6 @@ interface MapDataOptions {
   search?: string;
   artistId?: string;
   region?: string;
-}
-
-interface MapEvent {
-  id: string;
-  title: string;
-  artistName: string;
-  coordinates: { lat: number; lng: number };
-  status: 'active' | 'upcoming';
-  thumbnail?: string;
 }
 
 interface MapDataResponse {

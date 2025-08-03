@@ -6,6 +6,8 @@ import { Icon, LatLngTuple, DivIcon, Point } from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
 import { useMapStore } from '@/store';
+import { MapEvent } from '@/types';
+import styled from 'styled-components';
 
 // 修復 Leaflet 預設圖標問題
 delete (Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
@@ -44,14 +46,85 @@ const userLocationIcon = new Icon({
   popupAnchor: [0, -12],
 });
 
-interface MapEvent {
-  id: string;
-  title: string;
-  artistName: string;
-  coordinates: { lat: number; lng: number };
-  status: 'active' | 'upcoming';
-  thumbnail?: string;
-}
+// Styled Components
+const MapWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  z-index: 0;
+`;
+
+const LoadingContainer = styled.div`
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+`;
+
+const PopupContent = styled.div`
+  min-width: 200px;
+  max-width: 300px;
+  font-family: inherit;
+`;
+
+const PopupTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+  line-height: 1.4;
+`;
+
+const PopupInfo = styled.div`
+  margin-bottom: 12px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+`;
+
+const PopupButton = styled.button`
+  width: 100%;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #3a5d7a;
+    transform: translateY(-1px);
+  }
+`;
+
+const UserLocationPopup = styled.div`
+  min-width: 150px;
+  font-family: inherit;
+`;
+
+const UserLocationTitle = styled.h3`
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  margin: 0 0 4px 0;
+`;
+
+const UserLocationInfo = styled.div`
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.3;
+`;
 
 // 地圖事件監聽器組件
 function MapEventHandler() {
@@ -123,9 +196,6 @@ export default function MapComponent({
     setIsMounted(true);
   }, []);
 
-  // 使用傳入的 events，不再在這裡篩選（篩選邏輯移到父組件）
-  const displayEvents = events;
-
   const handleMarkerClick = (event: MapEvent) => {
     selectMarker(event.id);
     onEventSelect?.({ id: event.id });
@@ -136,14 +206,14 @@ export default function MapComponent({
 
   if (!isMounted) {
     return (
-      <div className="w-full h-96 bg-gray-100 rounded-lg flex items-center justify-center">
-        <div className="text-gray-500">載入地圖中...</div>
-      </div>
+      <LoadingContainer>
+        <div>載入地圖中...</div>
+      </LoadingContainer>
     );
   }
 
   return (
-    <div className="w-full h-96 rounded-lg overflow-hidden shadow-lg relative z-0">
+    <MapWrapper>
       <MapContainer
         center={position}
         zoom={center.zoom}
@@ -166,14 +236,14 @@ export default function MapComponent({
         {userLocation && (
           <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
             <Popup>
-              <div className="min-w-[150px]">
-                <h3 className="font-semibold text-sm mb-1 text-blue-600">您的位置</h3>
-                <div className="text-xs text-gray-600">
+              <UserLocationPopup>
+                <UserLocationTitle>您的位置</UserLocationTitle>
+                <UserLocationInfo>
                   緯度: {userLocation.lat.toFixed(6)}
                   <br />
                   經度: {userLocation.lng.toFixed(6)}
-                </div>
-              </div>
+                </UserLocationInfo>
+              </UserLocationPopup>
             </Popup>
           </Marker>
         )}
@@ -200,50 +270,33 @@ export default function MapComponent({
             });
           }}
         >
-          {displayEvents.map((event) => {
+          {events.map((event) => {
             return (
               <Marker
                 key={event.id}
-                position={[event.coordinates.lat, event.coordinates.lng]}
+                position={[event.location.coordinates.lat, event.location.coordinates.lng]}
                 icon={coffeeIcon}
                 eventHandlers={{
                   click: () => handleMarkerClick(event),
                 }}
               >
                 <Popup>
-                  <div className="min-w-[200px] max-w-[300px]">
-                    <h3 className="font-semibold text-lg mb-2 text-gray-900">{event.title}</h3>
-                    <div className="space-y-2 text-sm">
-                      <div>
-                        <span className="font-medium text-purple-600">藝人：</span>
-                        {event.artistName}
-                      </div>
-                      <div>
-                        <span className="font-medium text-blue-600">狀態：</span>
-                        <span
-                          className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${
-                            event.status === 'active'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-blue-100 text-blue-800'
-                          }`}
-                        >
-                          {event.status === 'active' ? '進行中' : '即將開始'}
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleMarkerClick(event)}
-                      className="mt-3 w-full bg-amber-600 text-white px-3 py-1 rounded text-sm hover:bg-amber-700 transition-colors"
-                    >
-                      查看詳情
-                    </button>
-                  </div>
+                  <PopupContent>
+                    <PopupTitle>{event.title}</PopupTitle>
+                    <PopupInfo>
+                      <span style={{ fontWeight: '500', color: 'var(--color-primary)' }}>
+                        地址：
+                      </span>
+                      {event.location.address}
+                    </PopupInfo>
+                    <PopupButton onClick={() => handleMarkerClick(event)}>查看詳情</PopupButton>
+                  </PopupContent>
                 </Popup>
               </Marker>
             );
           })}
         </MarkerClusterGroup>
       </MapContainer>
-    </div>
+    </MapWrapper>
   );
 }
