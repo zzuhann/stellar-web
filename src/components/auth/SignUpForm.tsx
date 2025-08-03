@@ -33,12 +33,6 @@ const Title = styled.h2`
   margin: 0 0 8px 0;
 `;
 
-const Subtitle = styled.p`
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  margin: 0;
-`;
-
 const Form = styled.form`
   display: flex;
   flex-direction: column;
@@ -248,7 +242,6 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
     <FormContainer>
       <FormHeader>
         <Title>建立帳號</Title>
-        <Subtitle>加入我們，開始分享咖啡活動！</Subtitle>
       </FormHeader>
 
       <Form onSubmit={handleSubmit(onSubmit)}>
@@ -270,7 +263,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
           <Label htmlFor="email">電子郵件</Label>
           <Input
             id="email"
-            type="email"
+            type="text"
             autoComplete="email"
             placeholder="請輸入您的電子郵件"
             {...register('email')}

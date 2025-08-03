@@ -4,7 +4,10 @@ import { z } from 'zod';
 
 // 登入表單驗證
 export const signInSchema = z.object({
-  email: z.string().min(1, '請輸入電子郵件').email('請輸入正確的電子郵件格式'),
+  email: z
+    .string()
+    .min(1, '請輸入電子郵件')
+    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, '請輸入正確的電子郵件格式'),
   password: z.string().min(1, '請輸入密碼').min(6, '密碼至少需要6個字元'),
 });
 
@@ -16,7 +19,10 @@ export const signUpSchema = z
       .min(1, '請輸入顯示名稱')
       .min(2, '顯示名稱至少需要2個字元')
       .max(50, '顯示名稱不能超過50個字元'),
-    email: z.string().min(1, '請輸入電子郵件').email('請輸入正確的電子郵件格式'),
+    email: z
+      .string()
+      .min(1, '請輸入電子郵件')
+      .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, '請輸入正確的電子郵件格式'),
     password: z
       .string()
       .min(1, '請輸入密碼')
@@ -31,7 +37,10 @@ export const signUpSchema = z
 
 // 重設密碼表單驗證
 export const resetPasswordSchema = z.object({
-  email: z.string().min(1, '請輸入電子郵件').email('請輸入正確的電子郵件格式'),
+  email: z
+    .string()
+    .min(1, '請輸入電子郵件')
+    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, '請輸入正確的電子郵件格式'),
 });
 
 // 活動投稿表單驗證

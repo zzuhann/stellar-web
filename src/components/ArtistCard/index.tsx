@@ -1,5 +1,4 @@
 import { Artist } from '@/types';
-import { getDaysUntilBirthday } from '@/utils';
 import styled from 'styled-components';
 
 const ArtistCardContainer = styled.div`
@@ -81,18 +80,9 @@ const EventStatus = styled.div`
 
 const getBirthdayText = (birthday: string): { text: string; isToday: boolean } => {
   if (!birthday) return { text: '', isToday: false };
-  const daysUntil = getDaysUntilBirthday(birthday);
 
-  if (daysUntil === 0) {
-    return { text: '今天！', isToday: true };
-  } else if (daysUntil === 1) {
-    return { text: '明天', isToday: false };
-  } else if (daysUntil <= 7) {
-    return { text: `${daysUntil}天後`, isToday: false };
-  } else {
-    const date = new Date(birthday);
-    return { text: `${date.getMonth() + 1}月${date.getDate()}日`, isToday: false };
-  }
+  const date = new Date(birthday);
+  return { text: `${date.getMonth() + 1}月${date.getDate()}日`, isToday: false };
 };
 
 interface ArtistCardProps {

@@ -388,7 +388,7 @@ export default function SignInForm({
           <Label htmlFor="email">電子郵件</Label>
           <Input
             id="email"
-            type="email"
+            type="text"
             autoComplete="email"
             placeholder="請輸入您的電子郵件"
             {...register('email')}

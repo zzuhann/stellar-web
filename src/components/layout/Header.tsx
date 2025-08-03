@@ -57,22 +57,11 @@ const UserIcon16 = styled(UserIcon)`
 `;
 
 const MemberButton = styled.button`
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
   font-size: 14px;
-  background: var(--color-accent);
-  border: 1px solid var(--color-accent);
   color: var(--color-text-primary);
   cursor: pointer;
   transition: all 0.2s ease;
   font-weight: 500;
-
-  &:hover {
-    background: #e5c378;
-    border-color: #e5c378;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-sm);
-  }
 `;
 
 const UserMenu = styled.div`
@@ -181,7 +170,7 @@ const Header = () => {
           )}
         </UserSection>
       ) : (
-        <MemberButton onClick={toggleAuthModal}>member</MemberButton>
+        <MemberButton onClick={toggleAuthModal}>登入 / 註冊</MemberButton>
       )}
     </HeaderContainer>
   );
