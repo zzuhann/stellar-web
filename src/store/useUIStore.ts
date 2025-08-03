@@ -24,9 +24,6 @@ interface UIState {
   openModal: (type: string, data?: unknown) => void;
   closeModal: () => void;
   setLoading: (loading: boolean) => void;
-  addNotification: (notification: Omit<Notification, 'id'>) => void;
-  removeNotification: (id: string) => void;
-  clearNotifications: () => void;
 }
 
 interface Notification {
@@ -39,7 +36,7 @@ interface Notification {
 
 export const useUIStore = create<UIState>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       // 初始狀態
       sidebarOpen: false,
       mobileMenuOpen: false,
@@ -101,36 +98,6 @@ export const useUIStore = create<UIState>()(
       // 設定載入狀態
       setLoading: (loading) => {
         set({ loading });
-      },
-
-      // 新增通知
-      addNotification: (notificationData) => {
-        const notification: Notification = {
-          id: Date.now().toString(),
-          ...notificationData,
-        };
-
-        set((state) => ({
-          notifications: [...state.notifications, notification],
-        }));
-
-        // 自動移除通知
-        const duration = notification.duration || 5000;
-        setTimeout(() => {
-          get().removeNotification(notification.id);
-        }, duration);
-      },
-
-      // 移除通知
-      removeNotification: (id) => {
-        set((state) => ({
-          notifications: state.notifications.filter((n) => n.id !== id),
-        }));
-      },
-
-      // 清除所有通知
-      clearNotifications: () => {
-        set({ notifications: [] });
       },
     }),
     {

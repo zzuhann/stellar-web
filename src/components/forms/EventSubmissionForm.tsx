@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
-import { useEventStore, useUIStore } from '@/store';
+import { useEventStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import PlaceAutocomplete from './PlaceAutocomplete';
@@ -21,6 +21,7 @@ import ArtistSelectionModal from './ArtistSelectionModal';
 import ImageUpload from '@/components/ui/ImageUpload';
 import { useRouter } from 'next/navigation';
 import { CreateEventRequest, Artist } from '@/types';
+import showToast from '@/lib/toast';
 
 // Styled Components - 與其他組件保持一致的設計風格
 const FormContainer = styled.div`
@@ -369,7 +370,6 @@ export default function EventSubmissionForm() {
   const [mainImageUrl, setMainImageUrl] = useState<string>('');
   const [detailImageUrl, setDetailImageUrl] = useState<string>('');
   const { createEvent } = useEventStore();
-  const { addNotification } = useUIStore();
   const { user } = useAuth();
   const { token } = useAuthToken();
   const router = useRouter();
@@ -447,11 +447,7 @@ export default function EventSubmissionForm() {
 
   const onSubmit = async (data: EventSubmissionFormData) => {
     if (!user) {
-      addNotification({
-        type: 'error',
-        title: '請先登入',
-        message: '您需要登入後才能投稿活動',
-      });
+      showToast.warning('請先登入');
       return;
     }
 
@@ -493,17 +489,9 @@ export default function EventSubmissionForm() {
 
       await createEvent(eventData);
 
-      addNotification({
-        type: 'success',
-        title: '投稿成功',
-        message: '您的活動已送出審核，審核通過後將會出現在地圖上',
-      });
+      showToast.success('投稿成功');
     } catch {
-      addNotification({
-        type: 'error',
-        title: '投稿失敗',
-        message: '投稿時發生錯誤，請稍後再試',
-      });
+      showToast.error('投稿失敗');
     } finally {
       setIsLoading(false);
     }
@@ -592,11 +580,7 @@ export default function EventSubmissionForm() {
                 shouldValidate: true,
                 shouldDirty: true,
               });
-              addNotification({
-                type: 'success',
-                title: '主視覺圖片上傳成功',
-                message: '圖片已成功上傳',
-              });
+              showToast.success('主視覺圖片上傳成功');
             }}
             onImageRemove={() => {
               setMainImageUrl('');
@@ -677,11 +661,7 @@ export default function EventSubmissionForm() {
                 shouldValidate: true,
                 shouldDirty: true,
               });
-              addNotification({
-                type: 'success',
-                title: '詳細說明圖片上傳成功',
-                message: '圖片已成功上傳',
-              });
+              showToast.success('詳細說明圖片上傳成功');
             }}
             onImageRemove={() => {
               setDetailImageUrl('');

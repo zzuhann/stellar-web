@@ -10,12 +10,12 @@ import {
   CalendarIcon,
   MapPinIcon,
 } from '@heroicons/react/24/outline';
-import { useEventStore, useArtistStore, useUIStore } from '@/store';
+import { useEventStore, useArtistStore } from '@/store';
 import { firebaseTimestampToDate } from '@/utils';
+import showToast from '@/lib/toast';
 
 export default function AdminPage() {
   const { user, userData, loading: authLoading } = useAuth();
-  const { addNotification } = useUIStore();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'artists' | 'events'>('artists');
   const [loading, setLoading] = useState(false);
@@ -27,14 +27,10 @@ export default function AdminPage() {
   // 權限檢查
   useEffect(() => {
     if (!authLoading && (!user || userData?.role !== 'admin')) {
-      addNotification({
-        type: 'error',
-        title: '權限不足',
-        message: '您沒有管理員權限',
-      });
+      showToast.error('權限不足');
       router.push('/');
     }
-  }, [user, userData, authLoading, router, addNotification]);
+  }, [user, userData, authLoading, router]);
 
   // 載入資料
   useEffect(() => {
@@ -48,17 +44,9 @@ export default function AdminPage() {
     setLoading(true);
     try {
       await approveArtist(artistId);
-      addNotification({
-        type: 'success',
-        title: '審核成功',
-        message: '藝人已通過審核',
-      });
+      showToast.success('審核成功');
     } catch {
-      addNotification({
-        type: 'error',
-        title: '審核失敗',
-        message: '操作時發生錯誤',
-      });
+      showToast.error('審核失敗');
     } finally {
       setLoading(false);
     }
@@ -68,17 +56,9 @@ export default function AdminPage() {
     setLoading(true);
     try {
       await rejectArtist(artistId);
-      addNotification({
-        type: 'success',
-        title: '已拒絕',
-        message: '藝人審核已拒絕',
-      });
+      showToast.success('已拒絕此投稿');
     } catch {
-      addNotification({
-        type: 'error',
-        title: '操作失敗',
-        message: '操作時發生錯誤',
-      });
+      showToast.error('操作失敗');
     } finally {
       setLoading(false);
     }
@@ -88,17 +68,9 @@ export default function AdminPage() {
     setLoading(true);
     try {
       await admin.approveEvent(eventId);
-      addNotification({
-        type: 'success',
-        title: '審核成功',
-        message: '活動已通過審核並會出現在地圖上',
-      });
+      showToast.success('審核成功');
     } catch {
-      addNotification({
-        type: 'error',
-        title: '審核失敗',
-        message: '操作時發生錯誤',
-      });
+      showToast.error('操作失敗');
     } finally {
       setLoading(false);
     }
@@ -108,17 +80,9 @@ export default function AdminPage() {
     setLoading(true);
     try {
       await admin.rejectEvent(eventId);
-      addNotification({
-        type: 'success',
-        title: '已拒絕',
-        message: '活動審核已拒絕',
-      });
+      showToast.success('已拒絕此投稿');
     } catch {
-      addNotification({
-        type: 'error',
-        title: '操作失敗',
-        message: '操作時發生錯誤',
-      });
+      showToast.error('操作失敗');
     } finally {
       setLoading(false);
     }

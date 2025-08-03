@@ -7,7 +7,7 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { signInSchema, SignInFormData } from '@/lib/validations';
 import { signIn, signInWithGoogle } from '@/lib/auth';
-import { useUIStore } from '@/store';
+import showToast from '@/lib/toast';
 
 interface SignInFormProps {
   onSuccess?: () => void;
@@ -283,7 +283,6 @@ export default function SignInForm({
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const { addNotification } = useUIStore();
 
   const {
     register,
@@ -302,27 +301,15 @@ export default function SignInForm({
 
       if (error) {
         setError('root', { message: error });
-        addNotification({
-          type: 'error',
-          title: '登入失敗',
-          message: error,
-        });
+        showToast.error('登入失敗');
       } else if (user) {
-        addNotification({
-          type: 'success',
-          title: '登入成功',
-          message: `歡迎回來，${user.displayName || user.email}！`,
-        });
+        showToast.success('登入成功');
         onSuccess?.();
       }
     } catch {
       const errorMessage = '登入時發生未知錯誤';
       setError('root', { message: errorMessage });
-      addNotification({
-        type: 'error',
-        title: '登入失敗',
-        message: errorMessage,
-      });
+      showToast.error('登入失敗');
     } finally {
       setIsLoading(false);
     }
@@ -335,25 +322,13 @@ export default function SignInForm({
       const { user, error } = await signInWithGoogle();
 
       if (error) {
-        addNotification({
-          type: 'error',
-          title: 'Google 登入失敗',
-          message: error,
-        });
+        showToast.error('Google 登入失敗');
       } else if (user) {
-        addNotification({
-          type: 'success',
-          title: '登入成功',
-          message: `歡迎回來，${user.displayName || user.email}！`,
-        });
+        showToast.success('登入成功');
         onSuccess?.();
       }
     } catch {
-      addNotification({
-        type: 'error',
-        title: 'Google 登入失敗',
-        message: '登入時發生未知錯誤',
-      });
+      showToast.error('Google 登入失敗');
     } finally {
       setIsGoogleLoading(false);
     }

@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { resetPasswordSchema, ResetPasswordFormData } from '@/lib/validations';
 import { resetPassword } from '@/lib/auth';
-import { useUIStore } from '@/store';
+import showToast from '@/lib/toast';
 
 interface ResetPasswordFormProps {
   onSuccess?: () => void;
@@ -15,7 +15,6 @@ interface ResetPasswordFormProps {
 export default function ResetPasswordForm({ onSuccess, onSwitchToSignIn }: ResetPasswordFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
-  const { addNotification } = useUIStore();
 
   const {
     register,
@@ -35,27 +34,15 @@ export default function ResetPasswordForm({ onSuccess, onSwitchToSignIn }: Reset
 
       if (error) {
         setError('root', { message: error });
-        addNotification({
-          type: 'error',
-          title: '重設密碼失敗',
-          message: error,
-        });
+        showToast.error('重設密碼失敗');
       } else {
         setIsEmailSent(true);
-        addNotification({
-          type: 'success',
-          title: '重設密碼郵件已發送',
-          message: `請檢查您的信箱 ${data.email}`,
-        });
+        showToast.success('重設密碼郵件已發送');
       }
     } catch {
       const errorMessage = '發送重設密碼郵件時發生未知錯誤';
       setError('root', { message: errorMessage });
-      addNotification({
-        type: 'error',
-        title: '重設密碼失敗',
-        message: errorMessage,
-      });
+      showToast.error('重設密碼失敗');
     } finally {
       setIsLoading(false);
     }

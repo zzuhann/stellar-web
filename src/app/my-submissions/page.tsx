@@ -13,16 +13,15 @@ import {
   PencilIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
-import { useUIStore } from '@/store';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { eventsApi } from '@/lib/api';
 import { CoffeeEvent } from '@/types';
 import EventEditForm from '@/components/forms/EventEditForm';
+import { showToast } from '@/lib/toast';
 import { firebaseTimestampToDate } from '@/utils';
 
 export default function MySubmissionsPage() {
   const { user, userData, loading: authLoading } = useAuth();
-  const { addNotification } = useUIStore();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'artists' | 'events'>('artists');
   const [editingEvent, setEditingEvent] = useState<CoffeeEvent | null>(null);
@@ -42,32 +41,20 @@ export default function MySubmissionsPage() {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['map-data'] });
       queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
-      addNotification({
-        type: 'success',
-        title: '刪除成功',
-        message: '活動已成功刪除',
-      });
+      showToast.success('活動刪除成功');
     },
     onError: (error) => {
-      addNotification({
-        type: 'error',
-        title: '刪除失敗',
-        message: error instanceof Error ? error.message : '刪除活動時發生錯誤',
-      });
+      showToast.error(error instanceof Error ? error.message : '刪除活動時發生錯誤');
     },
   });
 
   // 權限檢查
   useEffect(() => {
     if (!authLoading && !user) {
-      addNotification({
-        type: 'error',
-        title: '請先登入',
-        message: '您需要登入後才能查看投稿狀態',
-      });
+      showToast.warning('請先登入後才能查看投稿狀態');
       router.push('/');
     }
-  }, [user, authLoading, router, addNotification]);
+  }, [user, authLoading, router]);
 
   // 從 API 取得的資料
   const userArtists = userSubmissions?.artists || [];
@@ -89,11 +76,7 @@ export default function MySubmissionsPage() {
   const handleEditSuccess = () => {
     setEditingEvent(null);
     queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
-    addNotification({
-      type: 'success',
-      title: '更新成功',
-      message: '活動資訊已成功更新',
-    });
+    showToast.success('活動資訊更新成功');
   };
 
   const getStatusBadge = (status: 'pending' | 'approved' | 'rejected') => {

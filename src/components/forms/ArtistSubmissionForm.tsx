@@ -6,11 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { UserIcon, CalendarIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import * as z from 'zod';
 import styled from 'styled-components';
-import { useArtistStore, useUIStore } from '@/store';
+import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import ImageUpload from '@/components/ui/ImageUpload';
 import { useRouter } from 'next/navigation';
+import showToast from '@/lib/toast';
 
 // Styled Components - 與其他組件保持一致的設計風格
 const FormContainer = styled.div`
@@ -280,7 +281,6 @@ export default function ArtistSubmissionForm() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
   const router = useRouter();
   const { createArtist } = useArtistStore();
-  const { addNotification } = useUIStore();
   const { user } = useAuth();
   const { token } = useAuthToken();
 
@@ -295,11 +295,7 @@ export default function ArtistSubmissionForm() {
 
   const onSubmit = async (data: ArtistSubmissionFormData) => {
     if (!user) {
-      addNotification({
-        type: 'error',
-        title: '請先登入',
-        message: '您需要登入後才能投稿藝人',
-      });
+      showToast.warning('請先登入');
       return;
     }
 
@@ -316,19 +312,11 @@ export default function ArtistSubmissionForm() {
 
       await createArtist(artistData);
 
-      addNotification({
-        type: 'success',
-        title: '藝人投稿成功',
-        message: '您投稿的藝人已送出審核，審核通過後其他用戶就可以選擇了',
-      });
+      showToast.success('藝人投稿成功');
 
       reset();
     } catch {
-      addNotification({
-        type: 'error',
-        title: '投稿失敗',
-        message: '投稿時發生錯誤，請稍後再試',
-      });
+      showToast.error('投稿失敗');
     } finally {
       setIsLoading(false);
     }
@@ -393,11 +381,7 @@ export default function ArtistSubmissionForm() {
             <ImageUpload
               onUploadComplete={(imageUrl) => {
                 setUploadedImageUrl(imageUrl);
-                addNotification({
-                  type: 'success',
-                  title: '圖片上傳成功',
-                  message: '圖片已成功上傳並裁切',
-                });
+                showToast.success('圖片上傳成功');
               }}
               onImageRemove={() => {
                 setUploadedImageUrl('');

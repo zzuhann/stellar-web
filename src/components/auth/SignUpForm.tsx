@@ -7,7 +7,7 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { signUpSchema, SignUpFormData } from '@/lib/validations';
 import { signUp } from '@/lib/auth';
-import { useUIStore } from '@/store';
+import showToast from '@/lib/toast';
 
 interface SignUpFormProps {
   onSuccess?: () => void;
@@ -212,7 +212,6 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { addNotification } = useUIStore();
 
   const {
     register,
@@ -231,27 +230,15 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
 
       if (error) {
         setError('root', { message: error });
-        addNotification({
-          type: 'error',
-          title: '註冊失敗',
-          message: error,
-        });
+        showToast.error('註冊失敗');
       } else if (user) {
-        addNotification({
-          type: 'success',
-          title: '註冊成功',
-          message: `歡迎加入，${data.displayName}！`,
-        });
+        showToast.success('註冊成功');
         onSuccess?.();
       }
     } catch {
       const errorMessage = '註冊時發生未知錯誤';
       setError('root', { message: errorMessage });
-      addNotification({
-        type: 'error',
-        title: '註冊失敗',
-        message: errorMessage,
-      });
+      showToast.error('註冊失敗');
     } finally {
       setIsLoading(false);
     }
