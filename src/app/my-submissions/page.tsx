@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import {
@@ -16,7 +16,7 @@ import {
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { eventsApi } from '@/lib/api';
 import { CoffeeEvent } from '@/types';
-import EventEditForm from '@/components/forms/EventEditForm';
+import EventSubmissionForm from '@/components/forms/EventSubmissionForm';
 import { showToast } from '@/lib/toast';
 import { firebaseTimestampToDate } from '@/utils';
 
@@ -57,29 +57,32 @@ export default function MySubmissionsPage() {
   }, [user, authLoading, router]);
 
   // 從 API 取得的資料
-  const userArtists = userSubmissions?.artists || [];
-  const userEvents = userSubmissions?.events || [];
+  const userArtists = useMemo(() => userSubmissions?.artists || [], [userSubmissions?.artists]);
+  const userEvents = useMemo(() => userSubmissions?.events || [], [userSubmissions?.events]);
 
   // 處理編輯活動
-  const handleEditEvent = (event: CoffeeEvent) => {
+  const handleEditEvent = useCallback((event: CoffeeEvent) => {
     setEditingEvent(event);
-  };
+  }, []);
 
   // 處理刪除活動
-  const handleDeleteEvent = (event: CoffeeEvent) => {
-    if (window.confirm(`確定要刪除活動「${event.title}」嗎？此操作無法復原。`)) {
-      deleteEventMutation.mutate(event.id);
-    }
-  };
+  const handleDeleteEvent = useCallback(
+    (event: CoffeeEvent) => {
+      if (window.confirm(`確定要刪除活動「${event.title}」嗎？此操作無法復原。`)) {
+        deleteEventMutation.mutate(event.id);
+      }
+    },
+    [deleteEventMutation]
+  );
 
   // 編輯成功後的處理
-  const handleEditSuccess = () => {
+  const handleEditSuccess = useCallback(() => {
     setEditingEvent(null);
     queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
     showToast.success('活動資訊更新成功');
-  };
+  }, [queryClient]);
 
-  const getStatusBadge = (status: 'pending' | 'approved' | 'rejected') => {
+  const getStatusBadge = useCallback((status: 'pending' | 'approved' | 'rejected') => {
     switch (status) {
       case 'approved':
         return (
@@ -104,7 +107,7 @@ export default function MySubmissionsPage() {
           </span>
         );
     }
-  };
+  }, []);
 
   if (authLoading || loading) {
     return (
@@ -270,7 +273,7 @@ export default function MySubmissionsPage() {
         )}
 
         {/* Events Tab */}
-        {activeTab === 'events' && (
+        {activeTab === 'events' && userSubmissions && (
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow">
               <div className="px-6 py-4 border-b border-gray-200">
@@ -301,9 +304,9 @@ export default function MySubmissionsPage() {
                           <div className="flex items-start space-x-2 mb-2">
                             <h3 className="text-lg font-medium text-gray-900">{event.title}</h3>
                             <div className="flex flex-wrap gap-1">
-                              {event.artists.map((artist, index) => (
+                              {event.artists.map((artist) => (
                                 <span
-                                  key={index}
+                                  key={artist.id}
                                   className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800"
                                 >
                                   {artist.name}
@@ -420,8 +423,9 @@ export default function MySubmissionsPage() {
       {editingEvent && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <EventEditForm
-              event={editingEvent}
+            <EventSubmissionForm
+              mode="edit"
+              existingEvent={editingEvent}
               onSuccess={handleEditSuccess}
               onCancel={() => setEditingEvent(null)}
             />

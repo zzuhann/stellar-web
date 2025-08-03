@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import { Combobox } from '@headlessui/react';
 import { ChevronUpDownIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/20/solid';
 import { useQuery } from '@tanstack/react-query';
+import styled from 'styled-components';
 import api from '@/lib/api';
 import { useDebounce } from '@/hooks/useDebounce';
 
@@ -26,20 +27,208 @@ interface PlacePrediction {
   };
 }
 
+// Styled Components - 與 EventSubmissionForm 保持一致的設計風格
+const Container = styled.div`
+  width: 100%;
+`;
+
+const ComboboxContainer = styled.div`
+  position: relative;
+`;
+
+const ComboboxInput = styled(Combobox.Input)<{ isDisabled: boolean; isError: boolean }>`
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  padding-right: 40px;
+
+  &::placeholder {
+    color: var(--color-text-secondary);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(90, 125, 154, 0.1);
+  }
+
+  &:disabled {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+  }
+
+  ${(props) =>
+    props.isDisabled &&
+    `
+    background: var(--color-bg-secondary);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+  `}
+
+  ${(props) =>
+    props.isError &&
+    `
+    border-color: #ef4444;
+    background: #fef2f2;
+    color: #991b1b;
+    
+    &:focus {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+  `}
+
+  @media (min-width: 768px) {
+    padding: 14px 18px;
+    font-size: 15px;
+    padding-right: 44px;
+  }
+`;
+
+const ComboboxButton = styled(Combobox.Button)`
+  position: absolute;
+  inset-y: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  padding-right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+
+  &:hover {
+    color: var(--color-text-primary);
+  }
+
+  @media (min-width: 768px) {
+    padding-right: 14px;
+  }
+`;
+
+const ComboboxOptions = styled(Combobox.Options)`
+  position: absolute;
+  z-index: 10;
+  margin-top: 4px;
+  max-height: 240px;
+  width: 100%;
+  overflow-y: auto;
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-md);
+  padding: 8px 0;
+`;
+
+const LoadingOption = styled.div`
+  position: relative;
+  cursor-default;
+  select-none;
+  padding: 12px 16px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  text-align: center;
+
+  @media (min-width: 768px) {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+`;
+
+const ComboboxOption = styled(Combobox.Option)`
+  position: relative;
+  cursor-default;
+  select-none;
+  padding: 12px 16px;
+  padding-left: 48px;
+  transition: all 0.2s ease;
+  color: var(--color-text-primary);
+  
+  &:hover {
+    background: var(--color-bg-secondary);
+  }
+
+  &[data-headlessui-state="active"] {
+    background: var(--color-primary);
+    color: white;
+  }
+
+  @media (min-width: 768px) {
+    padding: 14px 18px;
+    padding-left: 52px;
+  }
+`;
+
+const OptionContent = styled.div<{ isSelected: boolean }>`
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: ${(props) => (props.isSelected ? '600' : '400')};
+`;
+
+const OptionMainText = styled.div`
+  font-weight: 500;
+  margin-bottom: 2px;
+`;
+
+const OptionSecondaryText = styled.div<{ isActive: boolean }>`
+  font-size: 13px;
+  color: ${(props) =>
+    props.isActive ? 'rgba(255, 255, 255, 0.8)' : 'var(--color-text-secondary)'};
+`;
+
+const CheckIconContainer = styled.span<{ isActive: boolean }>`
+  position: absolute;
+  inset-y: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 16px;
+  color: ${(props) => (props.isActive ? 'white' : 'var(--color-primary)')};
+
+  @media (min-width: 768px) {
+    padding-left: 18px;
+  }
+`;
+
+const ErrorMessage = styled.p`
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: #ef4444;
+
+  @media (min-width: 768px) {
+    font-size: 13px;
+  }
+`;
+
+const DisabledMessage = styled.p`
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: #f59e0b;
+
+  @media (min-width: 768px) {
+    font-size: 13px;
+  }
+`;
+
 export default function PlaceAutocomplete({
   onPlaceSelect,
-  placeholder = '活動地點名稱',
   defaultValue = '',
 }: PlaceAutocompleteProps) {
   const [query, setQuery] = useState(defaultValue);
   const [selectedPlace, setSelectedPlace] = useState<PlacePrediction | null>(null);
   const [isDisabled, setIsDisabled] = useState(false);
-  const [isSelectedState, setIsSelectedState] = useState(false); // 追蹤是否為選擇狀態
+  const [isSelectedState, setIsSelectedState] = useState(false);
 
-  // 使用 debounce 來減少 API 請求
   const debouncedQuery = useDebounce(query, 500);
 
-  // 使用 React Query 進行自動完成搜尋，帶有快取
   const {
     data: predictions = [],
     isLoading,
@@ -56,12 +245,10 @@ export default function PlaceAutocomplete({
       return response.data.predictions || [];
     },
     enabled: debouncedQuery.length >= 2 && !isDisabled && !isSelectedState,
-    staleTime: 1000 * 60 * 5, // 5 分鐘快取
+    staleTime: 1000 * 60 * 5,
     retry: (failureCount) => {
-      // 如果連續失敗 3 次，暫時禁用搜尋
       if (failureCount >= 2) {
         setIsDisabled(true);
-        // 30 秒後重新啟用
         setTimeout(() => setIsDisabled(false), 30000);
         return false;
       }
@@ -69,21 +256,19 @@ export default function PlaceAutocomplete({
     },
   });
 
-  // 處理地點選擇
   const handlePlaceSelect = useCallback(
     async (prediction: PlacePrediction | null) => {
       if (!prediction || isDisabled) {
         setSelectedPlace(null);
-        setIsSelectedState(false); // 清除選擇時重置狀態
+        setIsSelectedState(false);
         return;
       }
 
       setSelectedPlace(prediction);
-      setIsSelectedState(true); // 設定為選擇狀態
+      setIsSelectedState(true);
       setQuery(prediction.structured_formatting?.main_text || prediction.description);
 
       try {
-        // 取得地點詳情
         const response = await api.get(`/places/details/${prediction.place_id}`);
         const result = response.data;
 
@@ -99,7 +284,6 @@ export default function PlaceAutocomplete({
           onPlaceSelect(placeData);
         }
       } catch {
-        // 如果地點詳情取得失敗，使用預設座標
         window.alert('地點詳情取得失敗');
       }
     },
@@ -107,17 +291,12 @@ export default function PlaceAutocomplete({
   );
 
   return (
-    <div>
+    <Container>
       <Combobox value={selectedPlace} onChange={handlePlaceSelect}>
-        <div className="relative">
-          <Combobox.Input
-            className={`w-full rounded-md border-0 py-1.5 pl-3 pr-10 shadow-sm ring-1 ring-inset sm:text-sm sm:leading-6 ${
-              isDisabled
-                ? 'bg-gray-100 text-gray-500 ring-gray-200 cursor-not-allowed'
-                : isError
-                  ? 'bg-red-50 text-gray-900 ring-red-300 focus:ring-2 focus:ring-inset focus:ring-red-600'
-                  : 'bg-white text-gray-900 ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-purple-600'
-            }`}
+        <ComboboxContainer>
+          <ComboboxInput
+            isDisabled={isDisabled}
+            isError={isError}
             displayValue={(prediction: PlacePrediction | null) =>
               prediction
                 ? prediction.structured_formatting?.main_text || prediction.description
@@ -125,79 +304,57 @@ export default function PlaceAutocomplete({
             }
             onChange={(event) => {
               setQuery(event.target.value);
-              setIsSelectedState(false); // 手動輸入時重置選擇狀態
-              setSelectedPlace(null); // 清除已選擇的地點
+              setIsSelectedState(false);
+              setSelectedPlace(null);
             }}
-            placeholder={isDisabled ? '搜尋暫時無法使用，請稍後再試' : placeholder}
             disabled={isDisabled}
           />
-          <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2">
+          <ComboboxButton>
             {isError && !isDisabled ? (
               <ExclamationTriangleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
             ) : (
-              <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+              <ChevronUpDownIcon className="h-5 w-5" aria-hidden="true" />
             )}
-          </Combobox.Button>
+          </ComboboxButton>
 
           {(predictions.length > 0 || isLoading) && !isDisabled && (
-            <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-              {isLoading && (
-                <div className="relative cursor-default select-none py-2 px-4 text-gray-700">
-                  搜尋中...
-                </div>
-              )}
+            <ComboboxOptions>
+              {isLoading && <LoadingOption>搜尋中...</LoadingOption>}
               {predictions.map((prediction: PlacePrediction) => (
-                <Combobox.Option
-                  key={prediction.place_id}
-                  className={({ active }) =>
-                    `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                      active ? 'bg-purple-600 text-white' : 'text-gray-900'
-                    }`
-                  }
-                  value={prediction}
-                >
+                <ComboboxOption key={prediction.place_id} value={prediction}>
                   {({ selected, active }) => (
                     <>
-                      <div className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                      <OptionContent isSelected={selected}>
                         {prediction.structured_formatting ? (
                           <>
-                            <div className="font-medium">
+                            <OptionMainText>
                               {prediction.structured_formatting.main_text}
-                            </div>
-                            <div className="text-sm text-gray-500">
+                            </OptionMainText>
+                            <OptionSecondaryText isActive={active}>
                               {prediction.structured_formatting.secondary_text}
-                            </div>
+                            </OptionSecondaryText>
                           </>
                         ) : (
                           <span>{prediction.description}</span>
                         )}
-                      </div>
-                      {selected ? (
-                        <span
-                          className={`absolute inset-y-0 left-0 flex items-center pl-3 ${
-                            active ? 'text-white' : 'text-purple-600'
-                          }`}
-                        >
+                      </OptionContent>
+                      {selected && (
+                        <CheckIconContainer isActive={active}>
                           <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                        </span>
-                      ) : null}
+                        </CheckIconContainer>
+                      )}
                     </>
                   )}
-                </Combobox.Option>
+                </ComboboxOption>
               ))}
-            </Combobox.Options>
+            </ComboboxOptions>
           )}
-        </div>
+        </ComboboxContainer>
       </Combobox>
 
-      {/* 錯誤訊息 */}
-      {isError && !isDisabled && (
-        <p className="mt-1 text-sm text-red-600">搜尋服務暫時無法使用，請稍後再試</p>
-      )}
+      {isError && !isDisabled && <ErrorMessage>搜尋服務暫時無法使用，請稍後再試</ErrorMessage>}
 
-      {isDisabled && (
-        <p className="mt-1 text-sm text-yellow-600">搜尋服務暫時停用中，30 秒後自動重新啟用</p>
-      )}
-    </div>
+      {isDisabled && <DisabledMessage>搜尋服務暫時停用中，30 秒後自動重新啟用</DisabledMessage>}
+    </Container>
   );
 }

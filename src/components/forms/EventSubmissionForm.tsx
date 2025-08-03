@@ -13,15 +13,17 @@ import {
 } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
-import { useEventStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import PlaceAutocomplete from './PlaceAutocomplete';
 import ArtistSelectionModal from './ArtistSelectionModal';
 import ImageUpload from '@/components/ui/ImageUpload';
 import { useRouter } from 'next/navigation';
-import { CreateEventRequest, Artist } from '@/types';
+import { CreateEventRequest, UpdateEventRequest, Artist, CoffeeEvent } from '@/types';
 import showToast from '@/lib/toast';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { eventsApi } from '@/lib/api';
+import { firebaseTimestampToDate } from '@/utils';
 
 // Styled Components - 與其他組件保持一致的設計風格
 const FormContainer = styled.div`
@@ -358,21 +360,47 @@ const ImageContainer = styled.div`
   }
 `;
 
-export default function EventSubmissionForm() {
-  const [isLoading, setIsLoading] = useState(false);
+interface EventSubmissionFormProps {
+  mode?: 'create' | 'edit';
+  existingEvent?: CoffeeEvent;
+  onSuccess?: (event: CoffeeEvent) => void;
+  onCancel?: () => void;
+}
+
+export default function EventSubmissionForm({
+  mode = 'create',
+  existingEvent,
+  onSuccess,
+  onCancel,
+}: EventSubmissionFormProps) {
   const [locationCoordinates, setLocationCoordinates] = useState<{
     lat: number;
     lng: number;
-  } | null>(null);
-  const [locationAddress, setLocationAddress] = useState('');
+  } | null>(existingEvent?.location.coordinates || null);
+  const [locationAddress, setLocationAddress] = useState(existingEvent?.location.address || '');
   const [artistSelectionModalOpen, setArtistSelectionModalOpen] = useState(false);
-  const [selectedArtists, setSelectedArtists] = useState<Artist[]>([]);
-  const [mainImageUrl, setMainImageUrl] = useState<string>('');
-  const [detailImageUrl, setDetailImageUrl] = useState<string>('');
-  const { createEvent } = useEventStore();
+  const [selectedArtists, setSelectedArtists] = useState<Artist[]>(() => {
+    if (existingEvent?.artists) {
+      // 將 CoffeeEvent.artists 轉換為 Artist 格式（用於顯示）
+      return existingEvent.artists.map((artist) => ({
+        id: artist.id,
+        stageName: artist.name,
+        realName: undefined,
+        profileImage: artist.profileImage,
+        status: 'approved' as const,
+        createdBy: '',
+        createdAt: '',
+        updatedAt: '',
+      }));
+    }
+    return [];
+  });
+  const [mainImageUrl, setMainImageUrl] = useState<string>(existingEvent?.mainImage || '');
+  const [detailImageUrl, setDetailImageUrl] = useState<string>(existingEvent?.detailImage || '');
   const { user } = useAuth();
   const { token } = useAuthToken();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
@@ -381,6 +409,23 @@ export default function EventSubmissionForm() {
     setValue,
   } = useForm<EventSubmissionFormData>({
     resolver: zodResolver(eventSubmissionSchema),
+    defaultValues: existingEvent
+      ? {
+          title: existingEvent.title,
+          description: existingEvent.description,
+          addressName: existingEvent.location.name,
+          startDate: firebaseTimestampToDate(existingEvent.datetime.start)
+            .toISOString()
+            .split('T')[0],
+          endDate: firebaseTimestampToDate(existingEvent.datetime.end).toISOString().split('T')[0],
+          instagram: existingEvent.socialMedia.instagram || '',
+          x: existingEvent.socialMedia.x || '',
+          threads: existingEvent.socialMedia.threads || '',
+          mainImage: existingEvent.mainImage || '',
+          detailImage: existingEvent.detailImage || '',
+          artistIds: existingEvent.artists.map((artist) => artist.id),
+        }
+      : undefined,
   });
 
   // 監聽開始日期變化，自動設定結束日期最小值
@@ -445,16 +490,46 @@ export default function EventSubmissionForm() {
     setArtistSelectionModalOpen(true);
   };
 
+  const createEventMutation = useMutation({
+    mutationFn: (eventData: CreateEventRequest) => eventsApi.create(eventData),
+    onSuccess: (newEvent) => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['map-data'] });
+      queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
+      showToast.success('投稿成功');
+      onSuccess?.(newEvent);
+      if (!onSuccess) {
+        router.push('/my-submissions');
+      }
+    },
+    onError: () => {
+      showToast.error('投稿失敗');
+    },
+  });
+
+  const updateEventMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateEventRequest }) =>
+      eventsApi.update(id, data),
+    onSuccess: (updatedEvent) => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['map-data'] });
+      queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
+      showToast.success('活動更新成功');
+      onSuccess?.(updatedEvent);
+    },
+    onError: () => {
+      showToast.error('活動更新失敗');
+    },
+  });
+
   const onSubmit = async (data: EventSubmissionFormData) => {
     if (!user) {
       showToast.warning('請先登入');
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      // 準備活動資料
+    if (mode === 'create') {
+      // 準備新增活動資料
       const eventData: CreateEventRequest = {
         title: data.title,
         artistIds: selectedArtists.map((artist) => artist.id),
@@ -487,21 +562,54 @@ export default function EventSubmissionForm() {
         detailImage: detailImageUrl || undefined,
       };
 
-      await createEvent(eventData);
+      createEventMutation.mutate(eventData);
+    } else if (mode === 'edit' && existingEvent) {
+      // 準備編輯活動資料
+      const updateData: UpdateEventRequest = {
+        title: data.title,
+        description: data.description || '',
+        datetime: {
+          start: {
+            _seconds: Math.floor(new Date(data.startDate).getTime() / 1000),
+            _nanoseconds: 0,
+          },
+          end: {
+            _seconds: Math.floor(new Date(data.endDate).getTime() / 1000),
+            _nanoseconds: 0,
+          },
+        },
+        location: {
+          name: data.addressName,
+          address: locationAddress,
+          coordinates: locationCoordinates || existingEvent.location.coordinates,
+        },
+        socialMedia: {
+          instagram: data.instagram || undefined,
+          x: data.x || undefined,
+          threads: data.threads || undefined,
+        },
+        mainImage: mainImageUrl || undefined,
+        detailImage: detailImageUrl || undefined,
+      };
 
-      showToast.success('投稿成功');
-    } catch {
-      showToast.error('投稿失敗');
-    } finally {
-      setIsLoading(false);
+      updateEventMutation.mutate({ id: existingEvent.id, data: updateData });
     }
   };
 
   return (
     <FormContainer>
       <FormHeader>
-        <h2>投稿生咖應援</h2>
-        <p>新增生咖應援，審核通過之後其他用戶可以在地圖/列表上看到此活動!</p>
+        <h2>{mode === 'edit' ? '編輯生咖應援' : '投稿生咖應援'}</h2>
+        <p>
+          {mode === 'edit'
+            ? '編輯活動資訊，更新後需要重新審核'
+            : '新增生咖應援，審核通過之後其他用戶可以在地圖/列表上看到此活動!'}
+        </p>
+        {mode === 'edit' && (
+          <p style={{ fontSize: '12px', color: '#888', margin: '8px 0 0 0' }}>
+            注意：無法修改活動的藝人資訊
+          </p>
+        )}
       </FormHeader>
 
       <Form onSubmit={handleSubmit(onSubmit)}>
@@ -518,15 +626,23 @@ export default function EventSubmissionForm() {
             <UserIcon />
             應援偶像*
           </Label>
-          <HelperText>若為聯合應援，可選擇多個偶像</HelperText>
+          <HelperText>
+            {mode === 'edit' ? '編輯模式下無法修改藝人資訊' : '若為聯合應援，可選擇多個偶像'}
+          </HelperText>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {/* 已選擇的藝人按鈕 */}
             {selectedArtists.map((artist) => (
               <ArtistSelectionButton
                 key={artist.id}
                 type="button"
-                onClick={openArtistSelectionModal}
+                onClick={mode === 'edit' ? undefined : openArtistSelectionModal}
                 className={errors.artistIds ? 'error' : ''}
+                style={{
+                  opacity: mode === 'edit' ? 0.7 : 1,
+                  cursor: mode === 'edit' ? 'not-allowed' : 'pointer',
+                  background:
+                    mode === 'edit' ? 'var(--color-bg-secondary)' : 'var(--color-bg-primary)',
+                }}
               >
                 <SelectedArtistInfo>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -538,29 +654,33 @@ export default function EventSubmissionForm() {
                       {artist.realName && <ArtistRealName>({artist.realName})</ArtistRealName>}
                     </div>
                   </div>
-                  <IconContainer>
-                    <XMarkIcon
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeArtist(artist.id);
-                      }}
-                    />
-                  </IconContainer>
+                  {mode === 'create' && (
+                    <IconContainer>
+                      <XMarkIcon
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeArtist(artist.id);
+                        }}
+                      />
+                    </IconContainer>
+                  )}
                 </SelectedArtistInfo>
               </ArtistSelectionButton>
             ))}
 
-            {/* 新增藝人的按鈕 */}
-            <ArtistSelectionButton
-              type="button"
-              onClick={openArtistSelectionModal}
-              className={errors.artistIds ? 'error' : ''}
-            >
-              <PlaceholderText>請選擇偶像</PlaceholderText>
-              <IconContainer>
-                <ChevronDownIcon />
-              </IconContainer>
-            </ArtistSelectionButton>
+            {/* 新增藝人的按鈕 - 只在創建模式顯示 */}
+            {mode === 'create' && (
+              <ArtistSelectionButton
+                type="button"
+                onClick={openArtistSelectionModal}
+                className={errors.artistIds ? 'error' : ''}
+              >
+                <PlaceholderText>請選擇偶像</PlaceholderText>
+                <IconContainer>
+                  <ChevronDownIcon />
+                </IconContainer>
+              </ArtistSelectionButton>
+            )}
           </div>
           <input type="hidden" {...register('artistIds')} />
           {errors.artistIds && <ErrorText>{errors.artistIds.message}</ErrorText>}
@@ -574,6 +694,7 @@ export default function EventSubmissionForm() {
           </Label>
           <HelperText>活動的主要宣傳圖片</HelperText>
           <ImageUpload
+            currentImageUrl={mainImageUrl}
             onUploadComplete={(imageUrl) => {
               setMainImageUrl(imageUrl);
               setValue('mainImage', imageUrl, {
@@ -591,7 +712,7 @@ export default function EventSubmissionForm() {
             }}
             placeholder="點擊上傳主視覺圖片或拖拽至此"
             maxSizeMB={5}
-            disabled={isLoading}
+            disabled={createEventMutation.isPending || updateEventMutation.isPending}
             authToken={token || undefined}
             useRealAPI={!!token}
             enableCrop={false}
@@ -627,9 +748,10 @@ export default function EventSubmissionForm() {
             <MapPinIcon />
             活動地點*
           </Label>
+          <HelperText>搜尋店家名稱或地址</HelperText>
           <PlaceAutocomplete
             onPlaceSelect={handlePlaceSelect}
-            placeholder="搜尋活動地點名稱或地址"
+            defaultValue={existingEvent?.location.address}
           />
           <input type="hidden" {...register('addressName')} />
           {errors.addressName && <ErrorText>{errors.addressName.message}</ErrorText>}
@@ -655,6 +777,7 @@ export default function EventSubmissionForm() {
           </Label>
           <HelperText>活動的詳細說明圖片，可包含活動流程、注意事項等詳細資訊</HelperText>
           <ImageUpload
+            currentImageUrl={detailImageUrl}
             onUploadComplete={(imageUrl) => {
               setDetailImageUrl(imageUrl);
               setValue('detailImage', imageUrl, {
@@ -672,7 +795,7 @@ export default function EventSubmissionForm() {
             }}
             placeholder="點擊上傳詳細說明圖片或拖拽至此"
             maxSizeMB={5}
-            disabled={isLoading}
+            disabled={createEventMutation.isPending || updateEventMutation.isPending}
             authToken={token || undefined}
             useRealAPI={!!token}
             enableCrop={false}
@@ -709,30 +832,38 @@ export default function EventSubmissionForm() {
 
         {/* 提交按鈕 */}
         <ButtonGroup>
-          <Button type="submit" variant="primary" disabled={isLoading}>
-            {isLoading ? (
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={createEventMutation.isPending || updateEventMutation.isPending}
+          >
+            {createEventMutation.isPending || updateEventMutation.isPending ? (
               <>
                 <LoadingSpinner />
-                投稿中...
+                {mode === 'edit' ? '更新中...' : '投稿中...'}
               </>
+            ) : mode === 'edit' ? (
+              '更新活動'
             ) : (
               '提交投稿'
             )}
           </Button>
 
-          <Button type="button" variant="secondary" onClick={() => router.push('/')}>
+          <Button type="button" variant="secondary" onClick={onCancel || (() => router.push('/'))}>
             取消
           </Button>
         </ButtonGroup>
       </Form>
 
-      {/* 藝人選擇 Modal */}
-      <ArtistSelectionModal
-        isOpen={artistSelectionModalOpen}
-        onClose={() => setArtistSelectionModalOpen(false)}
-        onArtistSelect={handleArtistSelect}
-        selectedArtistIds={selectedArtists.map((artist) => artist.id)}
-      />
+      {/* 藝人選擇 Modal - 只在創建模式顯示 */}
+      {mode === 'create' && (
+        <ArtistSelectionModal
+          isOpen={artistSelectionModalOpen}
+          onClose={() => setArtistSelectionModalOpen(false)}
+          onArtistSelect={handleArtistSelect}
+          selectedArtistIds={selectedArtists.map((artist) => artist.id)}
+        />
+      )}
     </FormContainer>
   );
 }
