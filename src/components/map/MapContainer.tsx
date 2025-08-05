@@ -188,7 +188,7 @@ export default function MapComponent({
   onEventSelect,
   userLocation,
 }: MapComponentProps) {
-  const { center, selectMarker } = useMapStore();
+  const { center, selectMarker, setCenter } = useMapStore();
   const [isMounted, setIsMounted] = useState(false);
 
   // 確保在客戶端渲染
@@ -197,6 +197,11 @@ export default function MapComponent({
   }, []);
 
   const handleMarkerClick = (event: MapEvent) => {
+    setCenter({
+      lat: event.location.coordinates.lat,
+      lng: event.location.coordinates.lng,
+      zoom: 12,
+    });
     selectMarker(event.id);
     onEventSelect?.({ id: event.id });
   };

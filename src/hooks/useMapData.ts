@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { eventsApi } from '@/lib/api';
 import { MapEvent } from '@/types';
 
 interface MapDataOptions {
   status?: 'active' | 'upcoming' | 'all';
   bounds?: string; // "lat1,lng1,lat2,lng2"
+  center?: string; // "lat,lng" - 新增地圖中心點參數
   zoom?: number;
-  // 新增篩選參數
+  // 篩選參數
   search?: string;
   artistId?: string;
   region?: string;
@@ -21,18 +22,16 @@ export function useMapData(options: MapDataOptions = {}) {
   return useQuery({
     queryKey: ['map-data', options],
     queryFn: async (): Promise<MapDataResponse> => {
-      const params = new URLSearchParams();
-
-      if (options.status && options.status !== 'all') params.append('status', options.status);
-      if (options.bounds) params.append('bounds', options.bounds);
-      if (options.zoom) params.append('zoom', options.zoom.toString());
-      // 新增篩選參數
-      if (options.search?.trim()) params.append('search', options.search.trim());
-      if (options.artistId) params.append('artistId', options.artistId);
-      if (options.region) params.append('region', options.region);
-
-      const response = await api.get(`/events/map-data?${params.toString()}`);
-      return response.data;
+      // 使用統一的 API 函數
+      return eventsApi.getMapData({
+        status: options.status,
+        bounds: options.bounds,
+        center: options.center, // 新增 center 支援
+        zoom: options.zoom,
+        search: options.search?.trim(),
+        artistId: options.artistId,
+        region: options.region,
+      });
     },
     staleTime: 1000 * 60 * 5, // 5 分鐘快取（地圖資料更新頻率較低）
     enabled: true,

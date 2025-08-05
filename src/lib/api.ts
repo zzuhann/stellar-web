@@ -124,6 +124,30 @@ export const artistsApi = {
     await api.put(`/artists/${id}/reject`);
   },
 
+  // 獲取單一藝人詳細資料
+  getById: async (id: string): Promise<Artist> => {
+    const response = await api.get(`/artists/${id}`);
+    const artist = response.data;
+
+    // 轉換後端格式到前端格式
+    return {
+      id: artist.id,
+      stageName: artist.stageName,
+      realName: artist.realName,
+      birthday: artist.birthday,
+      profileImage: artist.profileImage,
+      status: artist.status,
+      createdBy: artist.createdBy,
+      createdAt: artist.createdAt?._seconds
+        ? new Date(artist.createdAt._seconds * 1000).toISOString()
+        : new Date().toISOString(),
+      updatedAt: artist.updatedAt?._seconds
+        ? new Date(artist.updatedAt._seconds * 1000).toISOString()
+        : new Date().toISOString(),
+      coffeeEventCount: artist.coffeeEventCount,
+    };
+  },
+
   // 軟刪除藝人（管理員）
   delete: async (id: string): Promise<void> => {
     await api.delete(`/artists/${id}`);
@@ -166,6 +190,7 @@ export const eventsApi = {
   getMapData: async (params?: {
     status?: 'active' | 'upcoming' | 'all';
     bounds?: string;
+    center?: string; // 新增：地圖中心點 "lat,lng"
     zoom?: number;
     search?: string;
     artistId?: string;
@@ -175,6 +200,7 @@ export const eventsApi = {
 
     if (params?.status) queryParams.status = params.status;
     if (params?.bounds) queryParams.bounds = params.bounds;
+    if (params?.center) queryParams.center = params.center; // 新增 center 參數
     if (params?.zoom) queryParams.zoom = params.zoom.toString();
     if (params?.search) queryParams.search = params.search;
     if (params?.artistId) queryParams.artistId = params.artistId;
