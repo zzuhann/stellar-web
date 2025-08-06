@@ -9,13 +9,15 @@ import { useMapStore } from '@/store';
 import { MapEvent } from '@/types';
 import styled from 'styled-components';
 
-// 修復 Leaflet 預設圖標問題
-delete (Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
-Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
+// 修復 Leaflet 預設圖標問題 - 只在客戶端執行
+if (typeof window !== 'undefined') {
+  delete (Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
+  Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  });
+}
 
 // 創建自定義圖片 marker 的函數
 const createImageIcon = (imageUrl?: string, isSelected = false) => {

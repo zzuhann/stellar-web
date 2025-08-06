@@ -376,7 +376,7 @@ export default function ImageCropper({
   // 檢查是否點擊在調整大小的控制點上
   const getResizeHandle = useCallback(
     (x: number, y: number) => {
-      const handleSize = window.innerWidth <= 768 ? 12 : 10; // 手機上使用更大的檢測範圍
+      const handleSize = typeof window !== 'undefined' && window.innerWidth <= 768 ? 12 : 10; // 手機上使用更大的檢測範圍
       const { x: cropX, y: cropY, width, height } = cropArea;
 
       // 檢查四個角落

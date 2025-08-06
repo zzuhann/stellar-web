@@ -382,10 +382,17 @@ export default function MapPageStyled() {
   // 三段高度設定
   const COLLAPSED_HEIGHT = 75; // 收合高度
   const SINGLE_ITEM_HEIGHT = 250; // 單一活動顯示高度（調高讓效果更明顯）
-  const EXPANDED_HEIGHT = typeof window !== 'undefined' ? window.innerHeight * 0.75 : 500; // 完全展開高度
+  const [expandedHeight, setExpandedHeight] = useState(500); // 預設值，會在客戶端更新
+
+  // 在客戶端設置展開高度
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setExpandedHeight(window.innerHeight * 0.75);
+    }
+  }, []);
 
   // 根據選中狀態決定目標展開高度
-  const getTargetExpandedHeight = () => (selectedEventId ? SINGLE_ITEM_HEIGHT : EXPANDED_HEIGHT);
+  const getTargetExpandedHeight = () => (selectedEventId ? SINGLE_ITEM_HEIGHT : expandedHeight);
 
   // React Spring 動畫 - 使用內建 config
   const [springs, api] = useSpring(() => ({
@@ -564,7 +571,7 @@ export default function MapPageStyled() {
       const currentHeight = springs.height.get();
       if (currentHeight > COLLAPSED_HEIGHT + 50) {
         api.start({
-          height: EXPANDED_HEIGHT,
+          height: expandedHeight,
           config: config.gentle,
           immediate: false,
         });
@@ -583,7 +590,7 @@ export default function MapPageStyled() {
       const currentHeight = springs.height.get();
       if (currentHeight > COLLAPSED_HEIGHT + 50) {
         api.start({
-          height: EXPANDED_HEIGHT,
+          height: expandedHeight,
           config: config.gentle,
           immediate: false,
         });

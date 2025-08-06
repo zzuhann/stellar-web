@@ -667,7 +667,10 @@ export default function MySubmissionsPage() {
   // 處理刪除活動
   const handleDeleteEvent = useCallback(
     (event: CoffeeEvent) => {
-      if (window.confirm(`確定要刪除活動「${event.title}」嗎？此操作無法復原。`)) {
+      if (
+        typeof window !== 'undefined' &&
+        window.confirm(`確定要刪除活動「${event.title}」嗎？此操作無法復原。`)
+      ) {
         deleteEventMutation.mutate(event.id);
       }
     },
