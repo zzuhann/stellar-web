@@ -16,7 +16,8 @@ import { firebaseTimestampToDate } from '@/utils';
 import showToast from '@/lib/toast';
 import styled from 'styled-components';
 import EventPreviewModal from '@/components/events/EventPreviewModal';
-import { CoffeeEvent } from '@/types';
+import RejectModal from '@/components/admin/RejectModal';
+import { CoffeeEvent, Artist } from '@/types';
 import Header from '@/components/layout/Header';
 import { InstagramIcon, ThreadsIcon, XIcon } from '@/components/ui/SocialMediaIcons';
 
@@ -29,11 +30,7 @@ const PageContainer = styled.div`
 const MainContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
-  padding: 90px 16px;
-
-  @media (min-width: 768px) {
-    padding: 40px 24px;
-  }
+  padding: 100px 16px;
 `;
 
 const TabContainer = styled.div`
@@ -109,17 +106,15 @@ const EmptyState = styled.div`
   text-align: center;
   padding: 60px 20px;
   color: var(--color-text-secondary);
-
-  .icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
 
   h3 {
     font-size: 18px;
     font-weight: 600;
     color: var(--color-text-primary);
-    margin: 0 0 8px 0;
   }
 
   p {
@@ -363,6 +358,8 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<'artists' | 'events'>('artists');
   const [loading, setLoading] = useState(false);
   const [previewingEvent, setPreviewingEvent] = useState<CoffeeEvent | null>(null);
+  const [rejectingArtist, setRejectingArtist] = useState<Artist | null>(null);
+  const [rejectingEvent, setRejectingEvent] = useState<CoffeeEvent | null>(null);
 
   // 狀態管理
   const { artists: pendingArtists, fetchArtists, approveArtist, rejectArtist } = useArtistStore();
@@ -396,11 +393,12 @@ export default function AdminPage() {
     }
   };
 
-  const handleRejectArtist = async (artistId: string) => {
+  const handleRejectArtist = async (artistId: string, reason: string) => {
     setLoading(true);
     try {
-      await rejectArtist(artistId);
+      await rejectArtist(artistId, reason);
       showToast.success('已拒絕此投稿');
+      setRejectingArtist(null);
     } catch {
       showToast.error('操作失敗');
     } finally {
@@ -420,11 +418,12 @@ export default function AdminPage() {
     }
   };
 
-  const handleRejectEvent = async (eventId: string) => {
+  const handleRejectEvent = async (eventId: string, reason: string) => {
     setLoading(true);
     try {
-      await admin.rejectEvent(eventId);
+      await admin.rejectEvent(eventId, reason);
       showToast.success('已拒絕此投稿');
+      setRejectingEvent(null);
     } catch {
       showToast.error('操作失敗');
     } finally {
@@ -481,7 +480,7 @@ export default function AdminPage() {
             </CardHeader>
             {pendingArtists.length === 0 ? (
               <EmptyState>
-                <UserIcon className="icon" />
+                <UserIcon className="icon" width={48} height={48} />
                 <h3>沒有待審核偶像</h3>
                 <p>所有偶像投稿都已處理完成</p>
               </EmptyState>
@@ -514,7 +513,7 @@ export default function AdminPage() {
                         </ActionButton>
                         <ActionButton
                           variant="reject"
-                          onClick={() => handleRejectArtist(artist.id)}
+                          onClick={() => setRejectingArtist(artist)}
                           disabled={loading}
                         >
                           <XCircleIcon />
@@ -538,7 +537,7 @@ export default function AdminPage() {
             </CardHeader>
             {pendingEvents.length === 0 ? (
               <EmptyState>
-                <CalendarIcon className="icon" />
+                <CalendarIcon className="icon" width={48} height={48} />
                 <h3>沒有待審核活動</h3>
                 <p>所有活動投稿都已處理完成</p>
               </EmptyState>
@@ -551,6 +550,22 @@ export default function AdminPage() {
                         <EventTitle>{event.title}</EventTitle>
                         <EventDetails>
                           <DetailItem>
+                            <UserIcon width={16} height={16} />
+                            {event.artists.map((artist) => artist.name).join(', ')}
+                          </DetailItem>
+                        </EventDetails>
+
+                        <EventDetails>
+                          <DetailItem>
+                            <div style={{ flexShrink: 0 }}>
+                              <MapPinIcon width={16} height={16} />
+                            </div>
+                            {event.location.name}({event.location.address})
+                          </DetailItem>
+                        </EventDetails>
+
+                        <EventDetails>
+                          <DetailItem>
                             <CalendarIcon width={16} height={16} />
                             {firebaseTimestampToDate(event.datetime.start).toLocaleDateString(
                               'zh-TW'
@@ -559,12 +574,6 @@ export default function AdminPage() {
                             {firebaseTimestampToDate(event.datetime.end).toLocaleDateString(
                               'zh-TW'
                             )}
-                          </DetailItem>
-                          <DetailItem>
-                            <div style={{ flexShrink: 0 }}>
-                              <MapPinIcon width={16} height={16} />
-                            </div>
-                            {event.location.name}({event.location.address})
                           </DetailItem>
                         </EventDetails>
 
@@ -614,7 +623,7 @@ export default function AdminPage() {
                         </ActionButton>
                         <ActionButton
                           variant="reject"
-                          onClick={() => handleRejectEvent(event.id)}
+                          onClick={() => setRejectingEvent(event)}
                           disabled={loading}
                         >
                           <XCircleIcon />
@@ -636,6 +645,30 @@ export default function AdminPage() {
           event={previewingEvent}
           isOpen={true}
           onClose={() => setPreviewingEvent(null)}
+        />
+      )}
+
+      {/* 拒絕藝人模態框 */}
+      {rejectingArtist && (
+        <RejectModal
+          isOpen={true}
+          title="拒絕偶像投稿"
+          itemName={rejectingArtist.stageName}
+          onConfirm={(reason) => handleRejectArtist(rejectingArtist.id, reason)}
+          onClose={() => setRejectingArtist(null)}
+          loading={loading}
+        />
+      )}
+
+      {/* 拒絕活動模態框 */}
+      {rejectingEvent && (
+        <RejectModal
+          isOpen={true}
+          title="拒絕活動投稿"
+          itemName={rejectingEvent.title}
+          onConfirm={(reason) => handleRejectEvent(rejectingEvent.id, reason)}
+          onClose={() => setRejectingEvent(null)}
+          loading={loading}
         />
       )}
     </PageContainer>

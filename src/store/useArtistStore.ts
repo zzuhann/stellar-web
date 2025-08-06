@@ -20,7 +20,7 @@ interface ArtistState {
     >
   ) => Promise<void>;
   approveArtist: (id: string) => Promise<void>;
-  rejectArtist: (id: string) => Promise<void>;
+  rejectArtist: (id: string, reason?: string) => Promise<void>;
   deleteArtist: (id: string) => Promise<void>;
   clearError: () => void;
 }
@@ -81,9 +81,9 @@ export const useArtistStore = create<ArtistState>()(
       },
 
       // 拒絕藝人
-      rejectArtist: async (id) => {
+      rejectArtist: async (id, reason) => {
         try {
-          await artistsApi.reject(id);
+          await artistsApi.reject(id, reason);
           set((state) => ({
             artists: state.artists.map((artist) =>
               artist.id === id ? { ...artist, status: 'rejected' as const } : artist

@@ -147,21 +147,32 @@ const CTAButton = styled.button`
 `;
 
 const ItemList = styled.div`
-  .item {
-    padding: 16px;
-    border-bottom: 1px solid var(--color-border-light);
-    background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+`;
 
-    &:last-child {
-      border-bottom: none;
-    }
+const ItemContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 16px;
+  background: white;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+
+  &:last-child {
+    border-bottom: none;
   }
 `;
 
 const ArtistItem = styled.div`
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 12px;
 `;
 
 const ArtistInfo = styled.div`
@@ -207,7 +218,8 @@ const ArtistDetails = styled.div`
 `;
 
 const ArtistStatusSection = styled.div`
-  text-align: right;
+  flex-shrink: 0;
+  width: 100%;
 `;
 
 const ArtistStatusBadge = styled.span<{ status: 'pending' | 'approved' | 'rejected' }>`
@@ -434,6 +446,7 @@ const StatusSection = styled.div`
   align-items: flex-end;
   gap: 8px;
   min-width: 120px;
+  flex-shrink: 0;
 `;
 
 const StatusBadge = styled.span<{ status: 'pending' | 'approved' | 'rejected' }>`
@@ -484,6 +497,31 @@ const StatusMessage = styled.p<{ status: 'pending' | 'approved' | 'rejected' }>`
         return `color: #92400e;`;
     }
   }}
+`;
+
+const RejectedReasonContainer = styled.div`
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-md);
+  border-left: 3px solid #dc2626;
+`;
+
+const RejectedReasonLabel = styled.div`
+  font-size: 11px;
+  font-weight: 600;
+  color: #991b1b;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+`;
+
+const RejectedReasonText = styled.p`
+  font-size: 12px;
+  color: #991b1b;
+  margin: 0;
+  line-height: 1.4;
 `;
 
 const StatsGrid = styled.div`
@@ -752,7 +790,7 @@ export default function MySubmissionsPage() {
                 <p>共 {userArtists.length} 位偶像投稿</p>
               </CardHeader>
 
-              {userArtists.length !== 0 ? (
+              {userArtists.length === 0 ? (
                 <EmptyState>
                   <div className="icon">✨</div>
                   <h3>還沒有投稿過偶像</h3>
@@ -760,7 +798,7 @@ export default function MySubmissionsPage() {
               ) : (
                 <ItemList>
                   {userArtists.map((artist) => (
-                    <div key={artist.id} className="item">
+                    <ItemContainer key={artist.id}>
                       <ArtistItem>
                         <ArtistInfo>
                           <ArtistAvatar imageUrl={artist.profileImage} />
@@ -780,9 +818,17 @@ export default function MySubmissionsPage() {
                           </ArtistDetails>
                         </ArtistInfo>
 
-                        <ArtistStatusSection>{getStatusBadge(artist.status)}</ArtistStatusSection>
+                        <ArtistStatusSection>
+                          {artist.status === 'rejected' && artist.rejectedReason && (
+                            <RejectedReasonContainer>
+                              <RejectedReasonLabel>拒絕原因</RejectedReasonLabel>
+                              <RejectedReasonText>{artist.rejectedReason}</RejectedReasonText>
+                            </RejectedReasonContainer>
+                          )}
+                        </ArtistStatusSection>
                       </ArtistItem>
-                    </div>
+                      {getStatusBadge(artist.status)}
+                    </ItemContainer>
                   ))}
                 </ItemList>
               )}
@@ -807,111 +853,113 @@ export default function MySubmissionsPage() {
               ) : (
                 <ItemList>
                   {userEvents.map((event) => (
-                    <div key={event.id} className="item">
-                      <EventItem>
-                        <EventInfo>
-                          <TopSection>
-                            <TopLeftSection>
-                              <EventTitle>{event.title}</EventTitle>
+                    <EventItem key={event.id}>
+                      <EventInfo>
+                        <TopSection>
+                          <TopLeftSection>
+                            <EventTitle>{event.title}</EventTitle>
 
-                              <EventArtistSection>
-                                {event.artists?.map((artist, index) => (
-                                  <div
-                                    key={artist.id || index}
-                                    style={{ display: 'flex', alignItems: 'center' }}
-                                  >
-                                    {index > 0 && <EventArtistSeparator>/</EventArtistSeparator>}
-                                    <EventArtistItem>
-                                      <EventArtistAvatar imageUrl={artist.profileImage} />
-                                      <EventArtistName>
-                                        {artist.name || 'Unknown Artist'}
-                                      </EventArtistName>
-                                    </EventArtistItem>
-                                  </div>
-                                ))}
-                              </EventArtistSection>
-                            </TopLeftSection>
-                            <StatusSection>
-                              <StatusBadge status={event.status}>
-                                {event.status === 'approved' && (
-                                  <CheckCircleIcon className="h-3 w-3" />
-                                )}
-                                {event.status === 'rejected' && <XCircleIcon className="h-3 w-3" />}
-                                {event.status === 'pending' && <PendingIcon className="h-3 w-3" />}
-                                {event.status === 'approved' && '已通過'}
-                                {event.status === 'rejected' && '未通過'}
-                                {event.status === 'pending' && '審核中'}
-                              </StatusBadge>
+                            <EventArtistSection>
+                              {event.artists?.map((artist, index) => (
+                                <div
+                                  key={artist.id || index}
+                                  style={{ display: 'flex', alignItems: 'center' }}
+                                >
+                                  {index > 0 && <EventArtistSeparator>/</EventArtistSeparator>}
+                                  <EventArtistItem>
+                                    <EventArtistAvatar imageUrl={artist.profileImage} />
+                                    <EventArtistName>
+                                      {artist.name || 'Unknown Artist'}
+                                    </EventArtistName>
+                                  </EventArtistItem>
+                                </div>
+                              ))}
+                            </EventArtistSection>
+                          </TopLeftSection>
+                          <StatusSection>
+                            <StatusBadge status={event.status}>
                               {event.status === 'approved' && (
-                                <StatusMessage status={event.status}>
-                                  活動已顯示在地圖上!
-                                </StatusMessage>
+                                <CheckCircleIcon className="h-3 w-3" />
                               )}
-                              {event.status === 'pending' && (
-                                <StatusMessage status={event.status}>
-                                  ⏳ 等待管理員審核
-                                </StatusMessage>
+                              {event.status === 'rejected' && <XCircleIcon className="h-3 w-3" />}
+                              {event.status === 'pending' && <PendingIcon className="h-3 w-3" />}
+                              {event.status === 'approved' && '已通過'}
+                              {event.status === 'rejected' && '未通過'}
+                              {event.status === 'pending' && '審核中'}
+                            </StatusBadge>
+                            {event.status === 'approved' && (
+                              <StatusMessage status={event.status}>
+                                活動已顯示在地圖上!
+                              </StatusMessage>
+                            )}
+                            {event.status === 'pending' && (
+                              <StatusMessage status={event.status}>⏳ 等待管理員審核</StatusMessage>
+                            )}
+                            {event.status === 'rejected' && event.rejectedReason && (
+                              <RejectedReasonContainer>
+                                <RejectedReasonLabel>拒絕原因</RejectedReasonLabel>
+                                <RejectedReasonText>{event.rejectedReason}</RejectedReasonText>
+                              </RejectedReasonContainer>
+                            )}
+                          </StatusSection>
+                        </TopSection>
+
+                        <BottomSection>
+                          <DescriptionContainer>
+                            <CalendarIcon className="h-4 w-4 flex-shrink-0" />
+                            <Description>
+                              {firebaseTimestampToDate(event.datetime.start).toLocaleDateString(
+                                'zh-TW'
+                              )}{' '}
+                              -{' '}
+                              {firebaseTimestampToDate(event.datetime.end).toLocaleDateString(
+                                'zh-TW'
                               )}
-                            </StatusSection>
-                          </TopSection>
+                            </Description>
+                          </DescriptionContainer>
+                          <DescriptionContainer>
+                            <MapPinIcon className="h-4 w-4 flex-shrink-0" />
+                            <Description>
+                              {event.location.name && `${event.location.name}`}
+                              {event.location.address && `(${event.location.address})`}
+                            </Description>
+                          </DescriptionContainer>
 
-                          <BottomSection>
-                            <DescriptionContainer>
-                              <CalendarIcon className="h-4 w-4 flex-shrink-0" />
-                              <Description>
-                                {firebaseTimestampToDate(event.datetime.start).toLocaleDateString(
-                                  'zh-TW'
-                                )}{' '}
-                                -{' '}
-                                {firebaseTimestampToDate(event.datetime.end).toLocaleDateString(
-                                  'zh-TW'
-                                )}
-                              </Description>
-                            </DescriptionContainer>
-                            <DescriptionContainer>
-                              <MapPinIcon className="h-4 w-4 flex-shrink-0" />
-                              <Description>
-                                {event.location.name && `${event.location.name}`}
-                                {event.location.address && `(${event.location.address})`}
-                              </Description>
-                            </DescriptionContainer>
+                          <EventTimestamp>
+                            投稿時間：
+                            {firebaseTimestampToDate(event.createdAt).toLocaleString('zh-TW')}
+                          </EventTimestamp>
 
-                            <EventTimestamp>
-                              投稿時間：
-                              {firebaseTimestampToDate(event.createdAt).toLocaleString('zh-TW')}
-                            </EventTimestamp>
-
-                            <ActionButtons>
-                              <ActionButton
-                                variant="edit"
-                                onClick={() => handlePreviewEvent(event)}
-                                title="預覽活動"
-                              >
-                                <EyeIcon />
-                                預覽
-                              </ActionButton>
-                              <ActionButton
-                                variant="edit"
-                                onClick={() => handleEditEvent(event)}
-                                title="編輯活動"
-                              >
-                                <PencilIcon />
-                                編輯
-                              </ActionButton>
-                              <ActionButton
-                                variant="delete"
-                                onClick={() => handleDeleteEvent(event)}
-                                disabled={deleteEventMutation.isPending}
-                                title="刪除活動"
-                              >
-                                <TrashIcon />
-                                {deleteEventMutation.isPending ? '刪除中...' : '刪除'}
-                              </ActionButton>
-                            </ActionButtons>
-                          </BottomSection>
-                        </EventInfo>
-                      </EventItem>
-                    </div>
+                          <ActionButtons>
+                            <ActionButton
+                              variant="edit"
+                              onClick={() => handlePreviewEvent(event)}
+                              title="預覽活動"
+                            >
+                              <EyeIcon />
+                              預覽
+                            </ActionButton>
+                            <ActionButton
+                              variant="edit"
+                              onClick={() => handleEditEvent(event)}
+                              title="編輯活動"
+                            >
+                              <PencilIcon />
+                              編輯
+                            </ActionButton>
+                            <ActionButton
+                              variant="delete"
+                              onClick={() => handleDeleteEvent(event)}
+                              disabled={deleteEventMutation.isPending}
+                              title="刪除活動"
+                            >
+                              <TrashIcon />
+                              {deleteEventMutation.isPending ? '刪除中...' : '刪除'}
+                            </ActionButton>
+                          </ActionButtons>
+                        </BottomSection>
+                      </EventInfo>
+                    </EventItem>
                   ))}
                 </ItemList>
               )}

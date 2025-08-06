@@ -13,6 +13,7 @@ export interface Artist {
   birthday?: string; // 生日 (YYYY-MM-DD)
   profileImage?: string; // 照片 URL
   status: 'pending' | 'approved' | 'rejected';
+  rejectedReason?: string; // 拒絕原因（只有當 status === 'rejected' 時才有）
   createdBy: string;
   createdAt: FirebaseTimestamp | string; // ISO string format
   updatedAt: FirebaseTimestamp | string; // ISO string format
@@ -48,6 +49,7 @@ export interface CoffeeEvent {
   mainImage?: string; // 主要圖片 URL
   detailImage?: string[]; // 詳細圖片 URL
   status: 'pending' | 'approved' | 'rejected';
+  rejectedReason?: string; // 拒絕原因（只有當 status === 'rejected' 時才有）
   createdBy: string;
   createdAt: FirebaseTimestamp;
   updatedAt: FirebaseTimestamp;

@@ -120,8 +120,8 @@ export const artistsApi = {
   },
 
   // 拒絕藝人（管理員）
-  reject: async (id: string): Promise<void> => {
-    await api.put(`/artists/${id}/reject`);
+  reject: async (id: string, reason?: string): Promise<void> => {
+    await api.put(`/artists/${id}/reject`, { reason });
   },
 
   // 獲取單一藝人詳細資料
@@ -277,8 +277,8 @@ export const eventsApi = {
     },
 
     // 快速拒絕
-    reject: async (id: string): Promise<CoffeeEvent> => {
-      const response = await api.put(`/events/${id}/reject`);
+    reject: async (id: string, reason?: string): Promise<CoffeeEvent> => {
+      const response = await api.put(`/events/${id}/reject`, { reason });
       return response.data as CoffeeEvent;
     },
   },

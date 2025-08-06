@@ -44,7 +44,7 @@ interface EventState {
   admin: {
     fetchPendingEvents: () => Promise<void>;
     approveEvent: (id: string) => Promise<void>;
-    rejectEvent: (id: string) => Promise<void>;
+    rejectEvent: (id: string, reason?: string) => Promise<void>;
     reviewEvent: (id: string, status: 'approved' | 'rejected') => Promise<void>;
   };
 }
@@ -217,9 +217,9 @@ export const useEventStore = create<EventState>()(
         },
 
         // 快速拒絕
-        rejectEvent: async (id) => {
+        rejectEvent: async (id, reason) => {
           try {
-            const updatedEvent = await eventsApi.admin.reject(id);
+            const updatedEvent = await eventsApi.admin.reject(id, reason);
             set((state) => ({
               events: state.events.map((event) => (event.id === id ? updatedEvent : event)),
               currentEvent: state.currentEvent?.id === id ? updatedEvent : state.currentEvent,
