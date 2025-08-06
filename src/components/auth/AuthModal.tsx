@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
+import { useAuth } from '@/lib/auth-context';
 import SignInForm from './SignInForm';
 import SignUpForm from './SignUpForm';
 import ResetPasswordForm from './ResetPasswordForm';
@@ -93,11 +95,20 @@ const ContentContainer = styled.div`
 `;
 
 export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) {
+  const router = useRouter();
+  const { redirectUrl } = useAuth();
   const [mode, setMode] = useState<'signin' | 'signup' | 'reset'>(initialMode);
 
   const handleSuccess = () => {
     onClose();
     setMode('signin'); // 重置到登入模式
+
+    // 如果有重定向 URL，等待一小段時間後跳轉
+    if (redirectUrl) {
+      setTimeout(() => {
+        router.push(redirectUrl);
+      }, 100);
+    }
   };
 
   const handleClose = () => {

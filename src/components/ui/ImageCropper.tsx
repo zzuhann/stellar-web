@@ -4,10 +4,10 @@ import { useState, useRef, useCallback } from 'react';
 import {
   CheckIcon,
   XMarkIcon,
-  ArrowsPointingOutIcon,
   MagnifyingGlassPlusIcon,
   MagnifyingGlassMinusIcon,
 } from '@heroicons/react/24/outline';
+import styled from 'styled-components';
 
 interface CropArea {
   x: number;
@@ -24,6 +24,272 @@ interface ImageCropperProps {
   cropShape?: 'square' | 'circle'; // 裁切形狀
   outputSize?: number; // 輸出尺寸（正方形的邊長）
 }
+
+// Styled Components
+const ModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.5);
+`;
+
+const ModalContainer = styled.div`
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 20px;
+  max-width: 500px;
+  width: 100%;
+  margin: 16px;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  @media (min-width: 768px) {
+    padding: 24px;
+    max-width: 520px;
+  }
+`;
+
+const ModalHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+`;
+
+const ModalTitle = styled.h3`
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+
+  @media (min-width: 768px) {
+    font-size: 20px;
+  }
+`;
+
+const ZoomControls = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+`;
+
+const ZoomButton = styled.button<{ disabled?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: 14px;
+
+  &:hover:not(:disabled) {
+    background: var(--color-bg-muted);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @media (min-width: 768px) {
+    padding: 10px 14px;
+    font-size: 15px;
+  }
+`;
+
+const ZoomDisplay = styled.div`
+  font-size: 14px;
+  min-width: 80px;
+  text-align: center;
+  color: var(--color-text-secondary);
+
+  @media (min-width: 768px) {
+    font-size: 15px;
+  }
+`;
+
+const CropContainer = styled.div<{ width: number; height: number }>`
+  position: relative;
+  margin: 0 auto;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  width: ${(props) => props.width}px;
+  height: ${(props) => props.height}px;
+`;
+
+const CropImage = styled.img<{
+  width: number;
+  height: number;
+  left: number;
+  top: number;
+}>`
+  position: absolute;
+  width: ${(props) => props.width}px;
+  height: ${(props) => props.height}px;
+  left: ${(props) => props.left}px;
+  top: ${(props) => props.top}px;
+  max-width: none;
+  max-height: none;
+`;
+
+const CropOverlay = styled.div<{
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}>`
+  position: absolute;
+  left: ${(props) => props.left}px;
+  top: ${(props) => props.top}px;
+  width: ${(props) => props.width}px;
+  height: ${(props) => props.height}px;
+  background: rgba(0, 0, 0, 0.4);
+`;
+
+const CropFrame = styled.div<{
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  isCircle?: boolean;
+  isDragging?: boolean;
+  isResizing?: boolean;
+}>`
+  position: absolute;
+  left: ${(props) => props.left}px;
+  top: ${(props) => props.top}px;
+  width: ${(props) => props.width}px;
+  height: ${(props) => props.height}px;
+  border: 2px solid var(--color-primary);
+  border-radius: ${(props) => (props.isCircle ? '50%' : '0')};
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+  cursor: ${(props) => (props.isDragging ? 'grabbing' : props.isResizing ? 'resize' : 'grab')};
+`;
+
+const ResizeHandle = styled.div<{
+  left: number;
+  top: number;
+  cursor: string;
+}>`
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: var(--color-primary);
+  border: 2px solid white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  left: ${(props) => props.left}px;
+  top: ${(props) => props.top}px;
+  cursor: ${(props) => props.cursor};
+
+  @media (max-width: 768px) {
+    width: 24px;
+    height: 24px;
+  }
+`;
+
+const GridLine = styled.div<{
+  left?: string;
+  top?: string;
+  width?: string;
+  height?: string;
+  isVertical?: boolean;
+}>`
+  position: absolute;
+  width: ${(props) => (props.isVertical ? '1px' : props.width || '100%')};
+  height: ${(props) => (props.isVertical ? props.height || '100%' : '1px')};
+  background: white;
+  opacity: 0.5;
+  left: ${(props) => props.left || '0'};
+  top: ${(props) => props.top || '0'};
+  pointer-events: none;
+`;
+
+const GridContainer = styled.div<{
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}>`
+  position: absolute;
+  left: ${(props) => props.left}px;
+  top: ${(props) => props.top}px;
+  width: ${(props) => props.width}px;
+  height: ${(props) => props.height}px;
+  pointer-events: none;
+`;
+
+const ActionBar = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 24px;
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 12px;
+`;
+
+const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid;
+
+  ${(props) =>
+    props.variant === 'primary'
+      ? `
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #2d4a5f;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  `
+      : `
+    background: var(--color-bg-primary);
+    border-color: var(--color-border-light);
+    color: var(--color-text-primary);
+
+    &:hover {
+      background: var(--color-bg-secondary);
+    }
+  `}
+
+  @media (min-width: 768px) {
+    padding: 14px 18px;
+    font-size: 15px;
+  }
+`;
+
+const HiddenCanvas = styled.canvas`
+  display: none;
+`;
 
 export default function ImageCropper({
   imageUrl,
@@ -51,8 +317,8 @@ export default function ImageCropper({
     const img = imageRef.current;
     if (!img) return;
 
-    // 動態計算容器大小，最大600px
-    const maxContainerSize = 600;
+    // 動態計算容器大小，最大400px
+    const maxContainerSize = 400;
     const imgRatio = img.naturalWidth / img.naturalHeight;
 
     let containerWidth, containerHeight;
@@ -110,7 +376,7 @@ export default function ImageCropper({
   // 檢查是否點擊在調整大小的控制點上
   const getResizeHandle = useCallback(
     (x: number, y: number) => {
-      const handleSize = 8; // 控制點大小的一半
+      const handleSize = window.innerWidth <= 768 ? 12 : 10; // 手機上使用更大的檢測範圍
       const { x: cropX, y: cropY, width, height } = cropArea;
 
       // 檢查四個角落
@@ -135,12 +401,15 @@ export default function ImageCropper({
     [cropArea]
   );
 
-  // 處理拖拽事件
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+  // 處理拖拽事件（滑鼠和觸控）
+  const handlePointerDown = useCallback(
+    (e: React.PointerEvent | React.MouseEvent) => {
+      e.preventDefault();
       const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const clientX = 'clientX' in e ? e.clientX : (e as any).touches?.[0]?.clientX || 0;
+      const clientY = 'clientY' in e ? e.clientY : (e as any).touches?.[0]?.clientY || 0;
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
 
       // 檢查是否點擊在調整大小的控制點上
       const handle = getResizeHandle(x, y);
@@ -160,6 +429,38 @@ export default function ImageCropper({
       ) {
         setIsDragging(true);
         setDragStart({ x: x - cropArea.x, y: y - cropArea.y });
+      }
+    },
+    [cropArea, getResizeHandle]
+  );
+
+  // 處理觸控事件
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      if (e.touches.length === 1) {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = e.touches[0].clientX - rect.left;
+        const y = e.touches[0].clientY - rect.top;
+
+        // 檢查是否點擊在調整大小的控制點上
+        const handle = getResizeHandle(x, y);
+        if (handle) {
+          setIsResizing(true);
+          setResizeHandle(handle);
+          setDragStart({ x, y });
+          return;
+        }
+
+        // 檢查是否點擊在裁切區域內（移動）
+        if (
+          x >= cropArea.x &&
+          x <= cropArea.x + cropArea.width &&
+          y >= cropArea.y &&
+          y <= cropArea.y + cropArea.height
+        ) {
+          setIsDragging(true);
+          setDragStart({ x: x - cropArea.x, y: y - cropArea.y });
+        }
       }
     },
     [cropArea, getResizeHandle]
@@ -254,7 +555,106 @@ export default function ImageCropper({
     ]
   );
 
+  // 處理觸控移動事件
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDragging && !isResizing) return;
+      if (e.touches.length !== 1) return;
+
+      e.preventDefault();
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const y = e.touches[0].clientY - rect.top;
+      const imageBounds = getImageBounds();
+
+      if (isResizing) {
+        // 調整大小邏輯
+        const deltaX = x - dragStart.x;
+        const minSize = 50; // 最小裁切框大小
+
+        setCropArea((prev) => {
+          const newCrop = { ...prev };
+
+          switch (resizeHandle) {
+            case 'se': // 東南角
+              newCrop.width = Math.max(minSize, prev.width + deltaX);
+              newCrop.height = aspectRatio === 1 ? newCrop.width : newCrop.width / aspectRatio;
+              break;
+            case 'sw': // 西南角
+              const newWidthSW = Math.max(minSize, prev.width - deltaX);
+              newCrop.width = newWidthSW;
+              newCrop.height = aspectRatio === 1 ? newWidthSW : newWidthSW / aspectRatio;
+              newCrop.x = prev.x + prev.width - newWidthSW;
+              break;
+            case 'ne': // 東北角
+              const newWidthNE = Math.max(minSize, prev.width + deltaX);
+              const newHeightNE = aspectRatio === 1 ? newWidthNE : newWidthNE / aspectRatio;
+              newCrop.width = newWidthNE;
+              newCrop.height = newHeightNE;
+              newCrop.y = prev.y + prev.height - newHeightNE;
+              break;
+            case 'nw': // 西北角
+              const newWidthNW = Math.max(minSize, prev.width - deltaX);
+              const newHeightNW = aspectRatio === 1 ? newWidthNW : newWidthNW / aspectRatio;
+              newCrop.width = newWidthNW;
+              newCrop.height = newHeightNW;
+              newCrop.x = prev.x + prev.width - newWidthNW;
+              newCrop.y = prev.y + prev.height - newHeightNW;
+              break;
+          }
+
+          // 限制在圖片邊界內
+          newCrop.x = Math.max(
+            imageBounds.left,
+            Math.min(imageBounds.right - newCrop.width, newCrop.x)
+          );
+          newCrop.y = Math.max(
+            imageBounds.top,
+            Math.min(imageBounds.bottom - newCrop.height, newCrop.y)
+          );
+          newCrop.width = Math.min(imageBounds.width, newCrop.width);
+          newCrop.height = Math.min(imageBounds.height, newCrop.height);
+
+          return newCrop;
+        });
+
+        setDragStart({ x, y });
+      } else if (isDragging) {
+        // 移動邏輯
+        const newX = x - dragStart.x;
+        const newY = y - dragStart.y;
+
+        // 限制裁切區域在圖片範圍內
+        const maxX = imageBounds.right - cropArea.width;
+        const maxY = imageBounds.bottom - cropArea.height;
+
+        setCropArea((prev) => ({
+          ...prev,
+          x: Math.max(imageBounds.left, Math.min(maxX, newX)),
+          y: Math.max(imageBounds.top, Math.min(maxY, newY)),
+        }));
+      }
+    },
+    [
+      isDragging,
+      isResizing,
+      dragStart,
+      getImageBounds,
+      cropArea.width,
+      cropArea.height,
+      resizeHandle,
+      aspectRatio,
+    ]
+  );
+
   const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+    setIsResizing(false);
+    setResizeHandle('');
+  }, []);
+
+  // 處理觸控結束事件
+  const handleTouchEnd = useCallback(() => {
     setIsDragging(false);
     setIsResizing(false);
     setResizeHandle('');
@@ -383,70 +783,49 @@ export default function ImageCropper({
   ]);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black">
-      <div className="bg-white rounded-lg p-6 max-w-lg w-full mx-4">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">裁切圖片</h3>
-          <div className="flex items-center space-x-4 text-xs text-gray-500">
-            <div className="flex items-center space-x-1">
-              <ArrowsPointingOutIcon className="h-4 w-4" />
-              <span>拖拽移動</span>
-            </div>
-            <span>•</span>
-            <span>角落調整大小</span>
-            <span>•</span>
-            <span>滾輪縮放</span>
-          </div>
-        </div>
+    <ModalOverlay>
+      <ModalContainer>
+        <ModalHeader>
+          <ModalTitle>裁切圖片</ModalTitle>
+        </ModalHeader>
 
         {/* 縮放控制按鈕 */}
-        <div className="flex justify-center items-center space-x-4 mb-4">
-          <button
-            onClick={handleZoomOut}
-            disabled={zoom <= 1}
-            className="flex items-center space-x-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors"
-          >
+        <ZoomControls>
+          <ZoomButton onClick={handleZoomOut} disabled={zoom <= 1}>
             <MagnifyingGlassMinusIcon className="h-4 w-4" />
-            <span className="text-sm">縮小</span>
-          </button>
+            <span>縮小</span>
+          </ZoomButton>
 
-          <div className="text-sm text-gray-600 min-w-20 text-center">
-            {Math.round(zoom * 100)}%
-          </div>
+          <ZoomDisplay>{Math.round(zoom * 100)}%</ZoomDisplay>
 
-          <button
-            onClick={handleZoomIn}
-            disabled={zoom >= 3}
-            className="flex items-center space-x-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded-md transition-colors"
-          >
+          <ZoomButton onClick={handleZoomIn} disabled={zoom >= 3}>
             <MagnifyingGlassPlusIcon className="h-4 w-4" />
-            <span className="text-sm">放大</span>
-          </button>
-        </div>
+            <span>放大</span>
+          </ZoomButton>
+        </ZoomControls>
 
         {/* 裁切區域 */}
-        <div
-          className="relative mx-auto border border-gray-300 overflow-hidden"
-          style={{ width: containerSize.width, height: containerSize.height }}
-          onMouseDown={handleMouseDown}
+        <CropContainer
+          width={containerSize.width}
+          height={containerSize.height}
+          onMouseDown={handlePointerDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
           onWheel={handleWheel}
+          style={{ touchAction: 'none' }}
         >
-          <img
+          <CropImage
             ref={imageRef}
             src={imageUrl}
             alt="待裁切圖片"
-            className="absolute"
-            style={{
-              width: imageSize.width * zoom,
-              height: imageSize.height * zoom,
-              left: imagePosition.x,
-              top: imagePosition.y,
-              maxWidth: 'none',
-              maxHeight: 'none',
-            }}
+            width={imageSize.width * zoom}
+            height={imageSize.height * zoom}
+            left={imagePosition.x}
+            top={imagePosition.y}
             onLoad={handleImageLoad}
             draggable={false}
           />
@@ -455,163 +834,96 @@ export default function ImageCropper({
           {imageLoaded && (
             <>
               {/* 暗化區域 - 上方 */}
-              <div
-                className="absolute"
-                style={{
-                  left: 0,
-                  top: 0,
-                  right: 0,
-                  height: cropArea.y,
-                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                }}
-              />
+              <CropOverlay left={0} top={0} width={containerSize.width} height={cropArea.y} />
               {/* 暗化區域 - 下方 */}
-              <div
-                className="absolute"
-                style={{
-                  left: 0,
-                  top: cropArea.y + cropArea.height,
-                  right: 0,
-                  bottom: 0,
-                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                }}
+              <CropOverlay
+                left={0}
+                top={cropArea.y + cropArea.height}
+                width={containerSize.width}
+                height={containerSize.height - (cropArea.y + cropArea.height)}
               />
               {/* 暗化區域 - 左側 */}
-              <div
-                className="absolute"
-                style={{
-                  left: 0,
-                  top: cropArea.y,
-                  width: cropArea.x,
-                  height: cropArea.height,
-                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                }}
-              />
+              <CropOverlay left={0} top={cropArea.y} width={cropArea.x} height={cropArea.height} />
               {/* 暗化區域 - 右側 */}
-              <div
-                className="absolute"
-                style={{
-                  left: cropArea.x + cropArea.width,
-                  top: cropArea.y,
-                  right: 0,
-                  height: cropArea.height,
-                  backgroundColor: 'rgba(0, 0, 0, 0.4)',
-                }}
+              <CropOverlay
+                left={cropArea.x + cropArea.width}
+                top={cropArea.y}
+                width={containerSize.width - (cropArea.x + cropArea.width)}
+                height={cropArea.height}
               />
 
               {/* 裁切框邊界 */}
-              <div
-                className={`absolute border-2 border-white ${
-                  cropShape === 'circle' ? 'rounded-full' : ''
-                } ${isDragging ? 'cursor-grabbing' : isResizing ? 'cursor-resize' : 'cursor-grab'}`}
-                style={{
-                  left: cropArea.x,
-                  top: cropArea.y,
-                  width: cropArea.width,
-                  height: cropArea.height,
-                  boxShadow: '0 0 0 1px rgba(0,0,0,0.3)',
-                }}
+              <CropFrame
+                left={cropArea.x}
+                top={cropArea.y}
+                width={cropArea.width}
+                height={cropArea.height}
+                isCircle={cropShape === 'circle'}
+                isDragging={isDragging}
+                isResizing={isResizing}
               />
 
               {/* 調整大小的控制點 */}
               {cropShape === 'square' && (
                 <>
                   {/* 西北角 */}
-                  <div
-                    className="absolute w-4 h-4 bg-white border-2 border-blue-500 cursor-nw-resize transform -translate-x-1/2 -translate-y-1/2"
-                    style={{
-                      left: cropArea.x,
-                      top: cropArea.y,
-                    }}
-                  />
+                  <ResizeHandle left={cropArea.x} top={cropArea.y} cursor="nw-resize" />
                   {/* 東北角 */}
-                  <div
-                    className="absolute w-4 h-4 bg-white border-2 border-blue-500 cursor-ne-resize transform -translate-x-1/2 -translate-y-1/2"
-                    style={{
-                      left: cropArea.x + cropArea.width,
-                      top: cropArea.y,
-                    }}
+                  <ResizeHandle
+                    left={cropArea.x + cropArea.width}
+                    top={cropArea.y}
+                    cursor="ne-resize"
                   />
                   {/* 西南角 */}
-                  <div
-                    className="absolute w-4 h-4 bg-white border-2 border-blue-500 cursor-sw-resize transform -translate-x-1/2 -translate-y-1/2"
-                    style={{
-                      left: cropArea.x,
-                      top: cropArea.y + cropArea.height,
-                    }}
+                  <ResizeHandle
+                    left={cropArea.x}
+                    top={cropArea.y + cropArea.height}
+                    cursor="sw-resize"
                   />
                   {/* 東南角 */}
-                  <div
-                    className="absolute w-4 h-4 bg-white border-2 border-blue-500 cursor-se-resize transform -translate-x-1/2 -translate-y-1/2"
-                    style={{
-                      left: cropArea.x + cropArea.width,
-                      top: cropArea.y + cropArea.height,
-                    }}
+                  <ResizeHandle
+                    left={cropArea.x + cropArea.width}
+                    top={cropArea.y + cropArea.height}
+                    cursor="se-resize"
                   />
                 </>
               )}
 
               {/* 網格線 */}
-              <div
-                className="absolute pointer-events-none"
-                style={{
-                  left: cropArea.x,
-                  top: cropArea.y,
-                  width: cropArea.width,
-                  height: cropArea.height,
-                }}
+              <GridContainer
+                left={cropArea.x}
+                top={cropArea.y}
+                width={cropArea.width}
+                height={cropArea.height}
               >
                 {/* 垂直線 */}
-                <div
-                  className="absolute w-px bg-white opacity-50"
-                  style={{ left: '33.33%', height: '100%' }}
-                />
-                <div
-                  className="absolute w-px bg-white opacity-50"
-                  style={{ left: '66.66%', height: '100%' }}
-                />
+                <GridLine left="33.33%" height="100%" isVertical />
+                <GridLine left="66.66%" height="100%" isVertical />
                 {/* 水平線 */}
-                <div
-                  className="absolute h-px bg-white opacity-50"
-                  style={{ top: '33.33%', width: '100%' }}
-                />
-                <div
-                  className="absolute h-px bg-white opacity-50"
-                  style={{ top: '66.66%', width: '100%' }}
-                />
-              </div>
+                <GridLine top="33.33%" width="100%" />
+                <GridLine top="66.66%" width="100%" />
+              </GridContainer>
             </>
           )}
-        </div>
+        </CropContainer>
 
         {/* 操作按鈕 */}
-        <div className="flex justify-between items-center mt-6">
-          <div className="text-sm text-gray-600">
-            縮放：{Math.round(zoom * 100)}% • 輸出：{outputSize}×
-            {aspectRatio === 1 ? outputSize : Math.round(outputSize / aspectRatio)}px
-          </div>
-          <div className="flex space-x-3">
-            <button
-              onClick={onCancel}
-              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-            >
+        <ActionBar>
+          <ButtonGroup>
+            <Button variant="secondary" onClick={onCancel}>
               <XMarkIcon className="h-4 w-4" />
               <span>取消</span>
-            </button>
-            <button
-              onClick={handleCrop}
-              disabled={!imageLoaded}
-              className="flex items-center space-x-2 px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
+            </Button>
+            <Button variant="primary" onClick={handleCrop} disabled={!imageLoaded}>
               <CheckIcon className="h-4 w-4" />
               <span>確認裁切</span>
-            </button>
-          </div>
-        </div>
+            </Button>
+          </ButtonGroup>
+        </ActionBar>
 
         {/* 隱藏的畫布用於裁切 */}
-        <canvas ref={canvasRef} className="hidden" />
-      </div>
-    </div>
+        <HiddenCanvas ref={canvasRef} />
+      </ModalContainer>
+    </ModalOverlay>
   );
 }

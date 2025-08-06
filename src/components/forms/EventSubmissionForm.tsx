@@ -18,6 +18,7 @@ import { useAuthToken } from '@/hooks/useAuthToken';
 import PlaceAutocomplete from './PlaceAutocomplete';
 import ArtistSelectionModal from './ArtistSelectionModal';
 import ImageUpload from '@/components/ui/ImageUpload';
+import MultiImageUpload from '@/components/ui/MultiImageUpload';
 import { useRouter } from 'next/navigation';
 import { CreateEventRequest, UpdateEventRequest, Artist, CoffeeEvent } from '@/types';
 import showToast from '@/lib/toast';
@@ -186,10 +187,6 @@ const GridContainer = styled.div`
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
 `;
 
 const SectionDivider = styled.div`
@@ -202,7 +199,7 @@ const SectionTitle = styled.h3`
   font-size: 18px;
   font-weight: 600;
   color: var(--color-text-primary);
-  margin: 0 0 16px 0;
+  margin-bottom: 8px;
 `;
 
 const ButtonGroup = styled.div`
@@ -230,6 +227,7 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   align-items: center;
   justify-content: center;
   gap: 8px;
+  flex: 1;
 
   ${(props) =>
     props.variant === 'primary'
@@ -237,14 +235,6 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
     background: var(--color-primary);
     border-color: var(--color-primary);
     color: white;
-    flex: 1;
-    
-    &:hover:not(:disabled) {
-      background: #3a5d7a;
-      border-color: #3a5d7a;
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-md);
-    }
     
     &:disabled {
       background: var(--color-text-disabled);
@@ -258,11 +248,7 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
     background: var(--color-bg-primary);
     border-color: var(--color-border-light);
     color: var(--color-text-primary);
-    
-    &:hover {
-      background: var(--color-bg-secondary);
-      border-color: var(--color-border-medium);
-    }
+
   `}
 
   @media (min-width: 768px) {
@@ -389,14 +375,27 @@ export default function EventSubmissionForm({
         profileImage: artist.profileImage,
         status: 'approved' as const,
         createdBy: '',
-        createdAt: '',
-        updatedAt: '',
+        createdAt: {
+          _seconds: 0,
+          _nanoseconds: 0,
+        },
+        updatedAt: {
+          _seconds: 0,
+          _nanoseconds: 0,
+        },
       }));
     }
     return [];
   });
   const [mainImageUrl, setMainImageUrl] = useState<string>(existingEvent?.mainImage || '');
-  const [detailImageUrl, setDetailImageUrl] = useState<string>(existingEvent?.detailImage || '');
+  const [detailImageUrls, setDetailImageUrls] = useState<string[]>(() => {
+    if (existingEvent?.detailImage) {
+      return Array.isArray(existingEvent.detailImage)
+        ? existingEvent.detailImage
+        : [existingEvent.detailImage];
+    }
+    return [];
+  });
   const { user } = useAuth();
   const { token } = useAuthToken();
   const router = useRouter();
@@ -422,7 +421,11 @@ export default function EventSubmissionForm({
           x: existingEvent.socialMedia.x || '',
           threads: existingEvent.socialMedia.threads || '',
           mainImage: existingEvent.mainImage || '',
-          detailImage: existingEvent.detailImage || '',
+          detailImages: Array.isArray(existingEvent.detailImage)
+            ? existingEvent.detailImage
+            : existingEvent.detailImage
+              ? [existingEvent.detailImage]
+              : [],
           artistIds: existingEvent.artists.map((artist) => artist.id),
         }
       : undefined,
@@ -559,7 +562,7 @@ export default function EventSubmissionForm({
           threads: data.threads || undefined,
         },
         mainImage: mainImageUrl || undefined,
-        detailImage: detailImageUrl || undefined,
+        detailImage: detailImageUrls.length > 0 ? detailImageUrls : undefined,
       };
 
       createEventMutation.mutate(eventData);
@@ -589,7 +592,7 @@ export default function EventSubmissionForm({
           threads: data.threads || undefined,
         },
         mainImage: mainImageUrl || undefined,
-        detailImage: detailImageUrl || undefined,
+        detailImage: detailImageUrls.length > 0 ? detailImageUrls : undefined,
       };
 
       updateEventMutation.mutate({ id: existingEvent.id, data: updateData });
@@ -627,7 +630,7 @@ export default function EventSubmissionForm({
             應援偶像*
           </Label>
           <HelperText>
-            {mode === 'edit' ? '編輯模式下無法修改藝人資訊' : '若為聯合應援，可選擇多個偶像'}
+            {mode === 'edit' ? '編輯模式下無法修改偶像資訊' : '若為聯合應援，可選擇多個偶像'}
           </HelperText>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {/* 已選擇的藝人按鈕 */}
@@ -775,43 +778,37 @@ export default function EventSubmissionForm({
             <PhotoIcon />
             詳細說明圖片
           </Label>
-          <HelperText>活動的詳細說明圖片，可包含活動流程、注意事項等詳細資訊</HelperText>
-          <ImageUpload
-            currentImageUrl={detailImageUrl}
-            onUploadComplete={(imageUrl) => {
-              setDetailImageUrl(imageUrl);
-              setValue('detailImage', imageUrl, {
-                shouldValidate: true,
-                shouldDirty: true,
-              });
-              showToast.success('詳細說明圖片上傳成功');
-            }}
-            onImageRemove={() => {
-              setDetailImageUrl('');
-              setValue('detailImage', '', {
+          <HelperText>
+            活動的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳5張
+          </HelperText>
+          <MultiImageUpload
+            currentImages={detailImageUrls}
+            onImagesChange={(imageUrls) => {
+              setDetailImageUrls(imageUrls);
+              setValue('detailImages', imageUrls, {
                 shouldValidate: true,
                 shouldDirty: true,
               });
             }}
-            placeholder="點擊上傳詳細說明圖片或拖拽至此"
+            maxImages={5}
+            placeholder="點擊添加圖片"
             maxSizeMB={5}
             disabled={createEventMutation.isPending || updateEventMutation.isPending}
             authToken={token || undefined}
             useRealAPI={!!token}
-            enableCrop={false}
           />
-          <input type="hidden" {...register('detailImage')} />
-          {errors.detailImage && <ErrorText>{errors.detailImage.message}</ErrorText>}
+          <input type="hidden" {...register('detailImages')} />
+          {errors.detailImages && <ErrorText>{errors.detailImages.message}</ErrorText>}
         </FormGroup>
 
         {/* 聯絡資訊 */}
         <SectionDivider>
-          <div>
-            <SectionTitle>社群媒體</SectionTitle>
-            <HelperText>請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗</HelperText>
-          </div>
+          <SectionTitle>社群媒體</SectionTitle>
+          <HelperText>
+            請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗（若聯合主辦，請寫主要公布資訊的帳號）
+          </HelperText>
 
-          <GridContainer>
+          <GridContainer style={{ marginTop: '8px' }}>
             <FormGroup>
               <Label htmlFor="instagram">Instagram</Label>
               <Input id="instagram" type="text" {...register('instagram')} />

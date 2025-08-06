@@ -312,7 +312,7 @@ export default function ArtistSubmissionForm() {
 
       await createArtist(artistData);
 
-      showToast.success('藝人投稿成功');
+      showToast.success('投稿成功');
 
       reset();
     } catch {
@@ -386,7 +386,7 @@ export default function ArtistSubmissionForm() {
               onImageRemove={() => {
                 setUploadedImageUrl('');
               }}
-              placeholder="點擊上傳藝人照片或拖拽至此"
+              placeholder="點擊上傳偶像照片或拖拽至此"
               maxSizeMB={3}
               disabled={isLoading}
               authToken={token || undefined}

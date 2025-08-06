@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import { Icon, LatLngTuple, DivIcon, Point } from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
@@ -17,19 +17,77 @@ Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-// 咖啡圖標
-const coffeeIcon = new Icon({
-  iconUrl:
+// 創建自定義圖片 marker 的函數
+const createImageIcon = (imageUrl?: string, isSelected = false) => {
+  // 預設圖片 (如果沒有 mainImage)
+  const defaultImageUrl =
     'data:image/svg+xml;base64,' +
     btoa(`
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#8B4513" width="32" height="32">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#8B4513" width="40" height="40">
       <path d="M2 21h18v-2H2v2zm1.15-4.05L4 15.47l.85 1.48c.2.34.57.55.98.55s.78-.21.98-.55L8 15.47l.85 1.48c.2.34.57.55.98.55s.78-.21.98-.55L12 15.47l.85 1.48c.2.34.57.55.98.55s.78-.21.98-.55L16 15.47l.85 1.48c.2.34.57.55.98.55s.78-.21.98-.55l.85-1.48-.85-1.48c-.2-.34-.57-.55-.98-.55s-.78.21-.98.55L16 14.53l-.85-1.48c-.2-.34-.57-.55-.98-.55s-.78.21-.98.55L12 14.53l-.85-1.48c-.2-.34-.57-.55-.98-.55s-.78.21-.98.55L8 14.53l-.85-1.48c-.2-.34-.57-.55-.98-.55s-.78.21-.98.55l-.85 1.48zM20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.11 0 2-.89 2-2V5c0-1.11-.89-2-2-2zm0 5h-2V5h2v3z"/>
     </svg>
-  `),
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -32],
-});
+  `);
+
+  const size = isSelected ? 60 : 40;
+  const borderWidth = isSelected ? 5 : 3;
+
+  const iconHtml = `
+   <div style="
+      position: absolute;
+      bottom: ${isSelected ? -6 : 3}px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: ${isSelected ? 10 : 6}px solid transparent;
+      border-right: ${isSelected ? 10 : 6}px solid transparent;
+      border-top: ${isSelected ? 12 : 8}px solid white;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    "></div>
+    <div style="
+      width: ${size}px;
+      height: ${size}px;
+      border-radius: 50%;
+      border: ${borderWidth}px solid white;
+      // box-shadow: 0 ${isSelected ? 6 : 2}px ${isSelected ? 16 : 8}px rgba(0,0,0,${isSelected ? 0.5 : 0.3});
+      overflow: hidden;
+      background: white;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transform: ${isSelected ? 'scale(1.2)' : 'scale(1)'};
+    ">
+      <img 
+        src="${imageUrl || defaultImageUrl}" 
+        style="
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        "
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+      />
+      <div style="
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        display: none;
+        font-size: 20px;
+      ">☕</div>
+    </div>
+   
+  `;
+
+  const totalHeight = size + 10; // marker 高度 + 箭頭高度
+
+  return new DivIcon({
+    html: iconHtml,
+    className: '',
+    iconSize: [size, totalHeight],
+    iconAnchor: [size / 2, totalHeight], // 錨點在底部中央
+    popupAnchor: [0, -totalHeight], // popup 出現在 marker 上方
+  });
+};
 
 // 用戶位置圖標
 const userLocationIcon = new Icon({
@@ -67,63 +125,6 @@ const LoadingContainer = styled.div`
   justify-content: center;
   color: var(--color-text-secondary);
   font-size: 14px;
-`;
-
-const PopupContent = styled.div`
-  min-width: 200px;
-  max-width: 300px;
-  font-family: inherit;
-`;
-
-const PopupTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 8px 0;
-  line-height: 1.4;
-`;
-
-const PopupInfo = styled.div`
-  margin-bottom: 12px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  line-height: 1.4;
-`;
-
-const PopupButton = styled.button`
-  width: 100%;
-  background: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: var(--radius-md);
-  padding: 8px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: #3a5d7a;
-    transform: translateY(-1px);
-  }
-`;
-
-const UserLocationPopup = styled.div`
-  min-width: 150px;
-  font-family: inherit;
-`;
-
-const UserLocationTitle = styled.h3`
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-primary);
-  margin: 0 0 4px 0;
-`;
-
-const UserLocationInfo = styled.div`
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  line-height: 1.3;
 `;
 
 // 地圖事件監聽器組件
@@ -180,12 +181,16 @@ function MapViewController({
 interface MapComponentProps {
   events?: MapEvent[];
   onEventSelect?: (event: { id: string }) => void;
+  onMarkerClick?: (eventId: string) => void;
+  selectedEventId?: string | null;
   userLocation?: { lat: number; lng: number } | null;
 }
 
 export default function MapComponent({
   events = [],
   onEventSelect,
+  onMarkerClick,
+  selectedEventId,
   userLocation,
 }: MapComponentProps) {
   const { center, selectMarker, setCenter } = useMapStore();
@@ -200,10 +205,11 @@ export default function MapComponent({
     setCenter({
       lat: event.location.coordinates.lat,
       lng: event.location.coordinates.lng,
-      zoom: 12,
+      zoom: 15,
     });
     selectMarker(event.id);
     onEventSelect?.({ id: event.id });
+    onMarkerClick?.(event.id); // 調用 MapPage 的回調
   };
 
   // 台灣地圖中心點
@@ -239,18 +245,7 @@ export default function MapComponent({
 
         {/* 用戶位置標記 */}
         {userLocation && (
-          <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
-            <Popup>
-              <UserLocationPopup>
-                <UserLocationTitle>您的位置</UserLocationTitle>
-                <UserLocationInfo>
-                  緯度: {userLocation.lat.toFixed(6)}
-                  <br />
-                  經度: {userLocation.lng.toFixed(6)}
-                </UserLocationInfo>
-              </UserLocationPopup>
-            </Popup>
-          </Marker>
+          <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon} />
         )}
 
         {/* Marker 聚合群組 */}
@@ -276,28 +271,16 @@ export default function MapComponent({
           }}
         >
           {events.map((event) => {
+            const isSelected = selectedEventId === event.id;
             return (
               <Marker
                 key={event.id}
                 position={[event.location.coordinates.lat, event.location.coordinates.lng]}
-                icon={coffeeIcon}
+                icon={createImageIcon(event.mainImage, isSelected)}
                 eventHandlers={{
                   click: () => handleMarkerClick(event),
                 }}
-              >
-                <Popup>
-                  <PopupContent>
-                    <PopupTitle>{event.title}</PopupTitle>
-                    <PopupInfo>
-                      <span style={{ fontWeight: '500', color: 'var(--color-primary)' }}>
-                        地址：
-                      </span>
-                      {event.location.address}
-                    </PopupInfo>
-                    <PopupButton onClick={() => handleMarkerClick(event)}>查看詳情</PopupButton>
-                  </PopupContent>
-                </Popup>
-              </Marker>
+              />
             );
           })}
         </MarkerClusterGroup>

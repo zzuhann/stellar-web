@@ -1,16 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import styled from 'styled-components';
 import { useSpring, animated, config } from '@react-spring/web';
-import { MapPinIcon } from '@heroicons/react/24/outline';
+import { MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useMapStore } from '@/store';
 import MapComponent from '@/components/map/MapContainer';
 import { useMapData } from '@/hooks/useMapData';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useArtist } from '@/hooks/useArtist';
 import Header from './Header';
+import EventCard from '../EventCard';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -104,54 +105,52 @@ const DrawerContent = styled.div`
 const EventList = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 0 20px 20px;
-`;
-
-const EventItem = styled.div`
-  padding: 16px 0;
-  border-bottom: 1px solid var(--color-border-light);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: var(--color-bg-secondary);
-  }
-
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const EventTitle = styled.h4`
-  margin: 0 0 8px 0;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  line-height: 1.4;
-`;
-
-const EventLocation = styled.p`
-  margin: 0 0 6px 0;
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  line-height: 1.3;
-`;
-
-const EventDate = styled.p`
-  margin: 0;
-  font-size: 12px;
-  color: var(--color-text-disabled);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 `;
 
 const EmptyState = styled.div`
-  padding: 40px 20px;
   text-align: center;
+  padding: 40px 20px;
   color: var(--color-text-secondary);
 
-  p {
-    margin: 0;
-    font-size: 14px;
+  .icon {
+    font-size: 48px;
+    margin-bottom: 16px;
   }
+
+  h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 8px 0;
+  }
+
+  p {
+    font-size: 14px;
+    margin: 0;
+    line-height: 1.5;
+  }
+`;
+
+const CTAButton = styled.button`
+  padding: 12px 24px;
+  border-radius: var(--radius-lg);
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+  max-width: 50%;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 16px;
 `;
 
 const LocationButton = styled.button<{
@@ -299,9 +298,43 @@ const ProfileImageContainer = styled.div<{ imageUrl: string }>`
   background-repeat: no-repeat;
 `;
 
+const CloseButton = styled.button`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+
+  &:hover {
+    background: var(--color-bg-tertiary);
+    border-color: var(--color-border-medium);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: var(--color-text-primary);
+  }
+`;
+
 export default function MapPageStyled() {
   const { center, setCenter } = useMapStore();
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   // 地理位置功能
   const {
@@ -328,8 +361,8 @@ export default function MapPageStyled() {
   // 標記是否應該自動定位到用戶位置
   const [shouldAutoCenter, setShouldAutoCenter] = useState(true);
 
-  // 追蹤當前抽屜高度
-  const [currentDrawerHeight, setCurrentDrawerHeight] = useState(75);
+  // 追蹤選中的活動
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   // 計算地圖中心點與用戶位置的距離
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
@@ -346,25 +379,27 @@ export default function MapPageStyled() {
     return R * c;
   };
 
-  // 兩段高度設定
+  // 三段高度設定
   const COLLAPSED_HEIGHT = 75; // 收合高度
-  const EXPANDED_HEIGHT = typeof window !== 'undefined' ? window.innerHeight * 0.75 : 500; // 展開高度
+  const SINGLE_ITEM_HEIGHT = 250; // 單一活動顯示高度（調高讓效果更明顯）
+  const EXPANDED_HEIGHT = typeof window !== 'undefined' ? window.innerHeight * 0.75 : 500; // 完全展開高度
+
+  // 根據選中狀態決定目標展開高度
+  const getTargetExpandedHeight = () => (selectedEventId ? SINGLE_ITEM_HEIGHT : EXPANDED_HEIGHT);
 
   // React Spring 動畫 - 使用內建 config
   const [springs, api] = useSpring(() => ({
     height: COLLAPSED_HEIGHT,
     config: config.gentle,
-    // 暫時註解掉 onChange，看看是否干擾動畫
-    // onChange: (result) => {
-    //   // 監聽動畫變化，更新當前高度
-    //   setCurrentDrawerHeight(result.value.height);
-    // },
   }));
 
   // 判斷是否應該顯示定位按鈕
   const shouldShowLocationButton = () => {
     if (!latitude || !longitude) return false;
-    if (currentDrawerHeight !== COLLAPSED_HEIGHT) return false;
+
+    // 直接從 spring 獲取當前高度，而不依賴狀態
+    const currentHeight = springs.height.get();
+    if (Math.abs(currentHeight - COLLAPSED_HEIGHT) > 10) return false; // 給點容差
 
     const distance = calculateDistance(center.lat, center.lng, latitude, longitude);
 
@@ -406,7 +441,8 @@ export default function MapPageStyled() {
 
       const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
       const deltaY = (startY - clientY) * 1; // 向上為正值，提高敏感度讓拖拽更輕鬆
-      const newHeight = Math.max(COLLAPSED_HEIGHT, Math.min(EXPANDED_HEIGHT, startHeight + deltaY));
+      const maxHeight = getTargetExpandedHeight();
+      const newHeight = Math.max(COLLAPSED_HEIGHT, Math.min(maxHeight, startHeight + deltaY));
 
       // 即時跟隨拖拽
       api.start({ height: newHeight, immediate: true });
@@ -418,7 +454,8 @@ export default function MapPageStyled() {
 
       // 根據起始狀態使用不同的閾值
       const currentHeight = springs.height.get();
-      const totalRange = EXPANDED_HEIGHT - COLLAPSED_HEIGHT;
+      const targetExpandedHeight = getTargetExpandedHeight();
+      const totalRange = targetExpandedHeight - COLLAPSED_HEIGHT;
 
       let shouldExpand;
       if (startHeight <= COLLAPSED_HEIGHT + 50) {
@@ -433,17 +470,15 @@ export default function MapPageStyled() {
 
       if (shouldExpand) {
         api.start({
-          height: EXPANDED_HEIGHT,
+          height: targetExpandedHeight,
           config: config.gentle,
           immediate: false,
-          onRest: () => setCurrentDrawerHeight(EXPANDED_HEIGHT),
         });
       } else {
         api.start({
           height: COLLAPSED_HEIGHT,
           config: config.gentle,
           immediate: false,
-          onRest: () => setCurrentDrawerHeight(COLLAPSED_HEIGHT),
         });
       }
     };
@@ -500,6 +535,62 @@ export default function MapPageStyled() {
   // 使用新的資料結構
   const mapEvents = mapData?.events || [];
 
+  // 根據選中狀態篩選顯示的活動
+  const displayEvents = selectedEventId
+    ? mapEvents.filter((event) => event.id === selectedEventId)
+    : mapEvents;
+
+  // 處理地圖 marker 點擊
+  const handleMarkerClick = (eventId: string) => {
+    const currentHeight = springs.height.get();
+    setSelectedEventId(eventId);
+
+    // 先停止任何現有動畫，然後展開到單一活動高度
+    api.stop();
+    setTimeout(() => {
+      api.start({
+        from: { height: currentHeight },
+        to: { height: SINGLE_ITEM_HEIGHT },
+        config: config.gentle,
+      });
+    }, 10);
+  };
+
+  // 處理抽屜點擊（取消選中）
+  const handleDrawerClick = () => {
+    if (selectedEventId) {
+      setSelectedEventId(null);
+      // 如果當前是展開狀態，調整到完整高度
+      const currentHeight = springs.height.get();
+      if (currentHeight > COLLAPSED_HEIGHT + 50) {
+        api.start({
+          height: EXPANDED_HEIGHT,
+          config: config.gentle,
+          immediate: false,
+        });
+      }
+    }
+  };
+
+  const handleCloseButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // 阻止事件冒泡到 drawer
+    if (selectedEventId) {
+      setSelectedEventId(null);
+      if (latitude && longitude) {
+        setCenter({ lat: latitude, lng: longitude, zoom: 13 });
+      }
+      // 如果當前是展開狀態，調整到完整高度
+      const currentHeight = springs.height.get();
+      if (currentHeight > COLLAPSED_HEIGHT + 50) {
+        api.start({
+          height: EXPANDED_HEIGHT,
+          config: config.gentle,
+          immediate: false,
+        });
+      }
+    }
+  };
+
   return (
     <PageContainer>
       {/* Header */}
@@ -514,6 +605,8 @@ export default function MapPageStyled() {
               <MapComponent
                 events={mapEvents}
                 userLocation={latitude && longitude ? { lat: latitude, lng: longitude } : null}
+                onMarkerClick={handleMarkerClick}
+                selectedEventId={selectedEventId}
               />
             </MapInner>
 
@@ -542,38 +635,59 @@ export default function MapPageStyled() {
           >
             {locationLoading ? <LoadingSpinner /> : <MapPinIcon />}
           </LocationButton>
-          <DrawerHandle onMouseDown={bind.handleMouseDown} onTouchStart={bind.handleTouchStart}>
+          <DrawerHandle
+            onMouseDown={bind.handleMouseDown}
+            onTouchStart={bind.handleTouchStart}
+            onClick={handleDrawerClick}
+          >
             <HandleBar />
             <HandleBarTextContainer>
               <ProfileImageContainer imageUrl={artistData?.profileImage || ''} />
               <HandleBarText>
-                {artistData?.stageName} |{' '}
-                {mapEvents.length > 0
-                  ? `目前有 ${mapEvents.length} 個生咖活動`
-                  : '目前沒有正在舉行的生咖'}
+                {selectedEventId ? (
+                  `已選中活動`
+                ) : (
+                  <>
+                    {artistData?.stageName} |{' '}
+                    {mapEvents.length > 0
+                      ? `目前有 ${mapEvents.length} 個生咖活動`
+                      : '目前沒有正在舉行的生咖'}
+                  </>
+                )}
               </HandleBarText>
             </HandleBarTextContainer>
+            {selectedEventId && (
+              <CloseButton onClick={handleCloseButtonClick}>
+                <XMarkIcon />
+              </CloseButton>
+            )}
           </DrawerHandle>
 
           <DrawerContent>
             <EventList>
-              {mapEvents.length > 0 ? (
-                mapEvents.map((event) => (
-                  <EventItem key={event.id}>
-                    <EventTitle>{event.title}</EventTitle>
-                    <EventLocation>
-                      📍{' '}
-                      {event.location.coordinates
-                        ? `${event.location.coordinates.lat.toFixed(3)}, ${event.location.coordinates.lng.toFixed(3)}`
-                        : '位置未知'}
-                    </EventLocation>
-                    <EventDate>{event.location.address}</EventDate>
-                  </EventItem>
+              {displayEvents.length > 0 ? (
+                displayEvents.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    onClick={() => router.push(`/event/${event.id}`)}
+                  />
                 ))
               ) : (
-                <EmptyState>
-                  <p>目前沒有符合條件的活動</p>
-                </EmptyState>
+                <>
+                  <EmptyState>
+                    <div className="icon">😣</div>
+                    <h3>目前{artistData?.stageName}沒有正在舉行的生咖應援</h3>
+                  </EmptyState>
+                  <CTAButton
+                    onClick={() => {
+                      router.push('/submit-event');
+                    }}
+                  >
+                    是生咖主辦嗎? <br />
+                    點擊前往新增生咖
+                  </CTAButton>
+                </>
               )}
             </EventList>
           </DrawerContent>

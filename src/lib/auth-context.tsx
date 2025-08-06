@@ -12,7 +12,8 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   authModalOpen: boolean;
-  toggleAuthModal: () => void;
+  toggleAuthModal: (redirectTo?: string) => void;
+  redirectUrl?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userData, setUserData] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [redirectUrl, setRedirectUrl] = useState<string>();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -41,8 +43,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const toggleAuthModal = () => {
+  const toggleAuthModal = (redirectTo?: string) => {
+    if (redirectTo) {
+      setRedirectUrl(redirectTo);
+    }
     setAuthModalOpen(!authModalOpen);
+
+    // 當關閉模態框時清除重定向 URL
+    if (authModalOpen) {
+      setRedirectUrl(undefined);
+    }
   };
 
   const handleSignOut = async () => {
@@ -58,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut: handleSignOut,
     authModalOpen,
     toggleAuthModal,
+    redirectUrl,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

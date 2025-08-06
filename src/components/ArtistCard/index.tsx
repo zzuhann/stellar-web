@@ -12,12 +12,6 @@ const ArtistCardContainer = styled.div`
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: var(--shadow-sm);
-
-  &:hover {
-    box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
-    border-color: var(--color-primary);
-  }
 `;
 
 const ArtistAvatar = styled.div<{ avatarUrl: string }>`

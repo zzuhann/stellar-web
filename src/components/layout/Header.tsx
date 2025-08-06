@@ -1,13 +1,14 @@
 'use client';
 
 import { useAuth } from '@/lib/auth-context';
-import { UserIcon } from '@heroicons/react/24/outline';
+import { UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import styled from 'styled-components';
 
 // Styled Components
 const HeaderContainer = styled.header`
+  height: 70px;
   position: fixed;
   top: 0;
   left: 0;
@@ -27,10 +28,52 @@ const Logo = styled.div`
   font-weight: 600;
   color: var(--color-text-primary);
   letter-spacing: 1px;
+  cursor: pointer;
+`;
+
+const BurgerButton = styled.button`
+  display: none;
+  background: none;
+  border: none;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--color-bg-secondary);
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+`;
+
+const DesktopNav = styled.div`
+  display: flex;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
 const UserSection = styled.div`
   position: relative;
+`;
+
+const RightSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
 `;
 
 const UserButton = styled.button`
@@ -42,7 +85,6 @@ const UserButton = styled.button`
   border: none;
   color: var(--color-text-primary);
   cursor: pointer;
-  padding: 8px 12px;
   border-radius: var(--radius-sm);
   transition: all 0.2s ease;
 
@@ -68,21 +110,13 @@ const UserMenu = styled.div`
   position: absolute;
   right: 0;
   top: calc(100% + 8px);
-  width: 192px;
+  width: 100px;
   z-index: 10;
   border-radius: var(--radius-md);
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border-light);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
-`;
-
-const UserMenuHeader = styled.div`
-  padding: 8px 16px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border-light);
-  background: var(--color-bg-secondary);
 `;
 
 const UserMenuItem = styled.button`
@@ -111,68 +145,237 @@ const UserMenuItem = styled.button`
   }
 `;
 
-const MenuSeparator = styled.hr`
-  margin: 4px 0;
+// Mobile Menu
+const MobileMenuOverlay = styled.div<{ isOpen: boolean }>`
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  opacity: ${(props) => (props.isOpen ? 1 : 0)};
+  visibility: ${(props) => (props.isOpen ? 'visible' : 'hidden')};
+  transition: all 0.3s ease;
+
+  @media (max-width: 768px) {
+    display: block;
+  }
+`;
+
+const MobileMenu = styled.div<{ isOpen: boolean }>`
+  display: none;
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: 280px;
+  background: white;
+  box-shadow: var(--shadow-lg);
+  transform: translateX(${(props) => (props.isOpen ? '0' : '100%')});
+  transition: transform 0.3s ease;
+  z-index: 101;
+  overflow-y: auto;
+
+  @media (max-width: 768px) {
+    display: flex;
+    flex-direction: column;
+  }
+`;
+
+const MobileMenuHeader = styled.div`
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border-light);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const MobileMenuTitle = styled.h3`
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+`;
+
+const CloseButton = styled.button`
+  background: none;
   border: none;
-  height: 1px;
-  background: var(--color-border-light);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--color-bg-secondary);
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+`;
+
+const MobileMenuContent = styled.div`
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const MobileMenuButton = styled.button`
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 8px 0;
+  font-size: 16px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+const Description = styled.div`
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
 `;
 
 const Header = () => {
   const router = useRouter();
   const { user, userData, signOut, toggleAuthModal } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+  const handleLogoClick = () => router.push('/');
 
   return (
-    <HeaderContainer>
-      <Logo>STELLAR</Logo>
+    <>
+      <HeaderContainer>
+        <Logo onClick={handleLogoClick}>STELLAR</Logo>
 
-      {user ? (
-        <UserSection>
-          <UserButton onClick={() => setUserMenuOpen(!userMenuOpen)}>
-            <UserIcon16 />
-            {userData?.displayName || 'member'}
-          </UserButton>
+        {/* Desktop Navigation */}
+        <DesktopNav>
+          {user ? (
+            <RightSection>
+              <Description onClick={() => router.push('/my-submissions')}>我的投稿</Description>
+              <Description onClick={() => router.push('/admin')}>管理員審核</Description>
+              <Description onClick={() => router.push('/submit-event')}>舉辦生咖應援</Description>
+              <UserSection>
+                <UserButton onClick={() => setUserMenuOpen(!userMenuOpen)}>
+                  <UserIcon16 />
+                  <Description>{userData?.displayName || 'member'}</Description>
+                </UserButton>
 
-          {userMenuOpen && (
-            <UserMenu>
-              <UserMenuHeader>{user.email}</UserMenuHeader>
-              <UserMenuItem
+                {userMenuOpen && (
+                  <UserMenu>
+                    <UserMenuItem
+                      onClick={() => {
+                        signOut();
+                        setUserMenuOpen(false);
+                      }}
+                    >
+                      登出
+                    </UserMenuItem>
+                  </UserMenu>
+                )}
+              </UserSection>
+            </RightSection>
+          ) : (
+            <MemberButton onClick={() => toggleAuthModal()}>登入 / 註冊</MemberButton>
+          )}
+        </DesktopNav>
+
+        {/* Mobile Burger Menu Button */}
+        <BurgerButton onClick={() => setMobileMenuOpen(true)}>
+          <Bars3Icon />
+        </BurgerButton>
+      </HeaderContainer>
+
+      {/* Mobile Menu Overlay */}
+      <MobileMenuOverlay isOpen={mobileMenuOpen} onClick={closeMobileMenu} />
+
+      {/* Mobile Menu */}
+      <MobileMenu isOpen={mobileMenuOpen}>
+        <MobileMenuHeader>
+          <MobileMenuTitle>選單</MobileMenuTitle>
+          <CloseButton onClick={closeMobileMenu}>
+            <XMarkIcon />
+          </CloseButton>
+        </MobileMenuHeader>
+
+        <MobileMenuContent>
+          {user ? (
+            <>
+              <Description>{userData?.displayName || 'member'}</Description>
+
+              <MobileMenuButton
                 onClick={() => {
                   router.push('/my-submissions');
-                  setUserMenuOpen(false);
+                  closeMobileMenu();
                 }}
               >
                 我的投稿
-              </UserMenuItem>
+              </MobileMenuButton>
               {userData?.role === 'admin' && (
-                <UserMenuItem
-                  className="admin"
+                <MobileMenuButton
                   onClick={() => {
-                    window.open('/admin', '_blank');
-                    setUserMenuOpen(false);
+                    router.push('/admin');
+                    closeMobileMenu();
                   }}
                 >
-                  ⚖️ 管理員審核
-                </UserMenuItem>
+                  管理員審核
+                </MobileMenuButton>
               )}
-              <MenuSeparator />
-              <UserMenuItem
-                className="danger"
+              <MobileMenuButton onClick={() => router.push('/submit-event')}>
+                舉辦生咖應援
+              </MobileMenuButton>
+              <MobileMenuButton
                 onClick={() => {
                   signOut();
-                  setUserMenuOpen(false);
+                  closeMobileMenu();
                 }}
               >
                 登出
-              </UserMenuItem>
-            </UserMenu>
+              </MobileMenuButton>
+            </>
+          ) : (
+            <>
+              <MobileMenuButton
+                onClick={() => {
+                  toggleAuthModal();
+                  closeMobileMenu();
+                }}
+              >
+                登入 / 註冊
+              </MobileMenuButton>
+
+              <MobileMenuButton
+                onClick={() => {
+                  toggleAuthModal('/submit-event');
+                  closeMobileMenu();
+                }}
+              >
+                舉辦生咖應援
+              </MobileMenuButton>
+            </>
           )}
-        </UserSection>
-      ) : (
-        <MemberButton onClick={toggleAuthModal}>登入 / 註冊</MemberButton>
-      )}
-    </HeaderContainer>
+        </MobileMenuContent>
+      </MobileMenu>
+    </>
   );
 };
 

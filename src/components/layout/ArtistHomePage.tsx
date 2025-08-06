@@ -369,7 +369,7 @@ export default function ArtistHomePage() {
           <CTAButton
             onClick={() => {
               if (!user) {
-                toggleAuthModal();
+                toggleAuthModal('/submit-event');
               } else {
                 router.push('/submit-event');
               }
@@ -435,7 +435,7 @@ export default function ArtistHomePage() {
             <EmptyState>
               <div className="icon">🎂</div>
               <h3>本週沒有壽星</h3>
-              <p>可以切換到其他週查看，或點擊上方搜尋框尋找特定藝人</p>
+              <p>可以切換到其他週查看，或點擊上方搜尋框尋找特定偶像</p>
             </EmptyState>
           )}
         </ContentWrapper>

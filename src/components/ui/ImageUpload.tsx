@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import { PhotoIcon, XMarkIcon, ArrowUpTrayIcon, ScissorsIcon } from '@heroicons/react/24/outline';
 import { uploadImageToAPI, mockUpload, compressImage } from '@/lib/r2-upload';
 import ImageCropper from './ImageCropper';
+import styled from 'styled-components';
 
 interface ImageUploadProps {
   onImageSelect?: (file: File) => void;
@@ -22,6 +23,203 @@ interface ImageUploadProps {
   cropShape?: 'square' | 'circle'; // 裁切形狀
   cropOutputSize?: number; // 輸出尺寸
 }
+
+// Styled Components
+const UploadContainer = styled.div`
+  width: 100%;
+`;
+
+const UploadArea = styled.div<{
+  isDragOver: boolean;
+  hasError: boolean;
+  disabled: boolean;
+}>`
+  position: relative;
+  border: 2px dashed;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  transition: all 0.2s ease;
+  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+
+  ${(props) =>
+    props.isDragOver
+      ? `
+    border-color: var(--color-primary);
+    background: var(--color-accent);
+  `
+      : props.hasError
+        ? `
+    border-color: var(--color-error);
+    background: rgba(220, 53, 69, 0.05);
+  `
+        : `
+    border-color: var(--color-border-light);
+    background: var(--color-bg-primary);
+
+    &:hover {
+      border-color: var(--color-border-medium);
+      background: var(--color-bg-secondary);
+    }
+  `}
+
+  @media (min-width: 768px) {
+    padding: 32px;
+  }
+`;
+
+const HiddenInput = styled.input`
+  display: none;
+`;
+
+const LoadingContainer = styled.div`
+  text-align: center;
+`;
+
+const LoadingSpinner = styled.div`
+  width: 32px;
+  height: 32px;
+  border: 2px solid transparent;
+  border-bottom-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 8px;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const LoadingText = styled.p`
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+`;
+
+const PreviewContainer = styled.div`
+  position: relative;
+`;
+
+const PreviewImage = styled.img`
+  width: 100%;
+  max-height: 192px;
+  border-radius: var(--radius-lg);
+  object-fit: contain;
+  background-color: var(--color-bg-secondary);
+`;
+
+const ActionButtons = styled.div`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+`;
+
+const ActionButton = styled.button<{ variant: 'crop' | 'remove' }>`
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  ${(props) =>
+    props.variant === 'crop'
+      ? `
+    background: var(--color-primary);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #2d4a5f;
+    }
+  `
+      : `
+    background: var(--color-error);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #c82333;
+    }
+  `}
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const ImageHint = styled.div`
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+`;
+
+const UploadContent = styled.div`
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`;
+
+const UploadIcon = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+`;
+
+const UploadTitle = styled.p`
+  font-size: 14px;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+
+  @media (min-width: 768px) {
+    font-size: 15px;
+  }
+`;
+
+const UploadSubtitle = styled.p`
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin: 0 0 12px 0;
+
+  @media (min-width: 768px) {
+    font-size: 13px;
+  }
+`;
+
+const UploadArrow = styled.div`
+  margin-top: 12px;
+`;
+
+const ErrorMessage = styled.p`
+  margin: 8px 0 0 0;
+  font-size: 13px;
+  color: var(--color-error);
+`;
+
+const HelperText = styled.p`
+  margin: 8px 0 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+
+  @media (min-width: 768px) {
+    font-size: 13px;
+  }
+`;
 
 export default function ImageUpload({
   onImageSelect,
@@ -221,101 +419,86 @@ export default function ImageUpload({
   }, [disabled]);
 
   return (
-    <div className="w-full">
-      <div
-        className={`relative border-2 border-dashed rounded-lg p-6 transition-all duration-200 ${
-          isDragOver
-            ? 'border-amber-400 bg-amber-50'
-            : error
-              ? 'border-red-300 bg-red-50'
-              : 'border-gray-300 hover:border-gray-400'
-        } ${disabled ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-gray-50'}`}
+    <UploadContainer>
+      <UploadArea
+        isDragOver={isDragOver}
+        hasError={!!error}
+        disabled={disabled}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onClick={handleClick}
       >
-        <input
+        <HiddenInput
           ref={fileInputRef}
           type="file"
           accept={acceptedFormats.join(',')}
           onChange={handleInputChange}
           disabled={disabled}
-          className="hidden"
         />
 
         {isLoading ? (
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto mb-2"></div>
-            <p className="text-sm text-gray-600">上傳中...</p>
-          </div>
+          <LoadingContainer>
+            <LoadingSpinner />
+            <LoadingText>上傳中...</LoadingText>
+          </LoadingContainer>
         ) : previewUrl ? (
-          <div className="relative">
-            <img
-              src={previewUrl}
-              alt="預覽"
-              className="w-full max-h-48 rounded-lg"
-              style={{
-                objectFit: 'contain',
-                backgroundColor: '#f3f4f6',
-              }}
-            />
-            <div className="absolute top-2 right-2 flex space-x-1">
+          <PreviewContainer>
+            <PreviewImage src={previewUrl} alt="預覽" />
+            <ActionButtons>
               {/* 重新裁切按鈕（如果啟用裁切功能） */}
               {enableCrop && originalFile && (
-                <button
+                <ActionButton
                   type="button"
+                  variant="crop"
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowCropper(true);
                   }}
                   disabled={disabled}
-                  className="bg-amber-500 text-white p-1 rounded-full hover:bg-amber-600 transition-colors disabled:opacity-50"
                   title="重新裁切"
                 >
                   <ScissorsIcon className="h-4 w-4" />
-                </button>
+                </ActionButton>
               )}
-              <button
+              <ActionButton
                 type="button"
+                variant="remove"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleRemove();
                 }}
                 disabled={disabled}
-                className="bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-colors disabled:opacity-50"
                 title="移除圖片"
               >
                 <XMarkIcon className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-              {enableCrop ? '點擊更換圖片或重新裁切' : '點擊更換圖片'}
-            </div>
-          </div>
+              </ActionButton>
+            </ActionButtons>
+            <ImageHint>{enableCrop ? '點擊更換圖片或重新裁切' : '點擊更換圖片'}</ImageHint>
+          </PreviewContainer>
         ) : (
-          <div className="text-center">
-            <div className="flex justify-center mb-3">
-              <PhotoIcon className="h-12 w-12 text-gray-400" />
-            </div>
-            <p className="text-sm text-gray-600 mb-1">{placeholder}</p>
-            <p className="text-xs text-gray-500">
+          <UploadContent>
+            <UploadIcon>
+              <PhotoIcon className="h-12 w-12" style={{ color: 'var(--color-text-secondary)' }} />
+            </UploadIcon>
+            <UploadTitle>{placeholder}</UploadTitle>
+            <UploadSubtitle>
               支援格式：{acceptedFormats.map((f) => f.split('/')[1]).join(', ')} • 最大 {maxSizeMB}
               MB
-            </p>
-            <div className="mt-3">
-              <ArrowUpTrayIcon className="h-5 w-5 text-amber-600 mx-auto" />
-            </div>
-          </div>
+            </UploadSubtitle>
+            <UploadArrow>
+              <ArrowUpTrayIcon className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
+            </UploadArrow>
+          </UploadContent>
         )}
-      </div>
+      </UploadArea>
 
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && <ErrorMessage>{error}</ErrorMessage>}
 
-      <p className="mt-2 text-xs text-gray-500">
+      <HelperText>
         圖片會自動壓縮至適當大小以提升載入速度
         {enableCrop && ` • 支援${cropShape === 'circle' ? '圓形' : '方形'}裁切`}
-      </p>
+      </HelperText>
 
       {/* 圖片裁切器 */}
       {showCropper && originalFile && (
@@ -328,6 +511,6 @@ export default function ImageUpload({
           outputSize={cropOutputSize}
         />
       )}
-    </div>
+    </UploadContainer>
   );
 }

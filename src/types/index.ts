@@ -14,8 +14,8 @@ export interface Artist {
   profileImage?: string; // 照片 URL
   status: 'pending' | 'approved' | 'rejected';
   createdBy: string;
-  createdAt: string; // ISO string format
-  updatedAt: string; // ISO string format
+  createdAt: FirebaseTimestamp | string; // ISO string format
+  updatedAt: FirebaseTimestamp | string; // ISO string format
   coffeeEventCount?: number; // 進行中的生咖活動數量（當 includeStats=true 時回傳）
 }
 
@@ -46,7 +46,7 @@ export interface CoffeeEvent {
     threads?: string;
   };
   mainImage?: string; // 主要圖片 URL
-  detailImage?: string; // 詳細圖片 URL
+  detailImage?: string[]; // 詳細圖片 URL
   status: 'pending' | 'approved' | 'rejected';
   createdBy: string;
   createdAt: FirebaseTimestamp;
@@ -96,6 +96,10 @@ export interface MapEvent {
   };
   title: string;
   mainImage: string;
+  datetime: {
+    start: string;
+    end: string;
+  };
 }
 
 // 地圖資料回應格式
@@ -163,7 +167,7 @@ export interface CreateEventRequest {
     threads?: string;
   };
   mainImage?: string; // 主要圖片 URL
-  detailImage?: string; // 詳細圖片 URL
+  detailImage?: string[]; // 詳細圖片 URL
 }
 
 // 編輯活動的請求格式
@@ -188,5 +192,5 @@ export interface UpdateEventRequest {
     threads?: string;
   };
   mainImage?: string;
-  detailImage?: string;
+  detailImage?: string[];
 }

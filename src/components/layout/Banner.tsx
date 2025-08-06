@@ -1,0 +1,242 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSpring, animated } from '@react-spring/web';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import styled from 'styled-components';
+
+// Banner 數據類型
+interface BannerItem {
+  id: string;
+  imageUrl: string;
+  title: string;
+  subtitle?: string;
+  description?: string;
+}
+
+// Styled Components
+const BannerContainer = styled.div`
+  position: relative;
+  width: 100%;
+  height: 600px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--color-border-light);
+
+  @media (max-width: 500px) {
+    height: 450px;
+  }
+`;
+
+const SlideContainer = styled(animated.div)`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const SlideContent = styled.div`
+  position: relative;
+  width: 100%;
+  height: 100%;
+  color: white;
+  text-align: center;
+`;
+
+const ProductImage = styled.div<{ imageUrl: string }>`
+  width: 100%;
+  height: 100%;
+  background-image: url(${(props) => props.imageUrl});
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: absolute;
+  top: 0;
+  left: 0;
+`;
+
+const NavigationButton = styled.button`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+`;
+
+const PrevButton = styled(NavigationButton)`
+  left: 16px;
+`;
+
+const NextButton = styled(NavigationButton)`
+  right: 16px;
+`;
+
+const PaginationDots = styled.div`
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 10;
+`;
+
+const Dot = styled.button<{ active: boolean }>`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: ${(props) => (props.active ? 'white' : 'rgba(255, 255, 255, 0.3)')};
+  border: ${(props) => (props.active ? 'none' : '1px solid rgba(255, 255, 255, 0.5)')};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${(props) => (props.active ? 'white' : 'rgba(255, 255, 255, 0.5)')};
+  }
+`;
+
+const PageIndicator = styled.div`
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  z-index: 10;
+`;
+
+// 預設的 banner 數據
+const defaultBannerItems: BannerItem[] = [
+  {
+    id: '1',
+    imageUrl: '/api/placeholder/200/300',
+    title: 'Milk Oil',
+    subtitle: '33 ingredients',
+    description: 'patchouli',
+  },
+  {
+    id: '2',
+    imageUrl: '/api/placeholder/200/300',
+    title: "Re'lilla",
+    subtitle: 'Premium Care',
+    description: 'DIRECTIONS FOR USE',
+  },
+  {
+    id: '3',
+    imageUrl: '/api/placeholder/200/300',
+    title: 'Special Event',
+    subtitle: 'Limited Edition',
+    description: 'Exclusive Collection',
+  },
+];
+
+interface BannerProps {
+  items?: BannerItem[];
+}
+
+export default function Banner({ items = defaultBannerItems }: BannerProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // React Spring 動畫
+  const [springs, api] = useSpring(() => ({
+    from: { opacity: 0, transform: 'translateX(100%)' },
+    to: { opacity: 1, transform: 'translateX(0%)' },
+    config: { tension: 200, friction: 20, mass: 1 },
+  }));
+
+  // 切換到下一張
+  const nextSlide = () => {
+    setCurrentIndex((prev) => (prev + 1) % items.length);
+  };
+
+  // 切換到上一張
+  const prevSlide = () => {
+    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+  };
+
+  // 直接跳轉到指定索引
+  const goToSlide = (index: number) => {
+    setCurrentIndex(index);
+  };
+
+  // 當索引改變時觸發動畫
+  useEffect(() => {
+    api.start({
+      from: { opacity: 0, transform: 'translateX(100%)' },
+      to: { opacity: 1, transform: 'translateX(0%)' },
+      config: { tension: 150, friction: 20, mass: 1.5 },
+    });
+  }, [currentIndex, api]);
+
+  if (items.length === 0) {
+    return null;
+  }
+
+  return (
+    <BannerContainer>
+      <SlideContainer style={springs}>
+        <SlideContent>
+          <ProductImage imageUrl={items[currentIndex].imageUrl} />
+        </SlideContent>
+      </SlideContainer>
+
+      {/* 導航按鈕 */}
+      {items.length > 1 && (
+        <>
+          <PrevButton onClick={prevSlide}>
+            <ChevronLeftIcon />
+          </PrevButton>
+          <NextButton onClick={nextSlide}>
+            <ChevronRightIcon />
+          </NextButton>
+        </>
+      )}
+
+      {/* 分頁指示器 */}
+      {items.length > 1 && (
+        <PaginationDots>
+          {items.map((_, index) => (
+            <Dot key={index} active={index === currentIndex} onClick={() => goToSlide(index)} />
+          ))}
+        </PaginationDots>
+      )}
+
+      {/* 頁面指示器 */}
+      <PageIndicator>
+        {currentIndex + 1} / {items.length}
+      </PageIndicator>
+    </BannerContainer>
+  );
+}

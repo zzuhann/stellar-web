@@ -271,7 +271,7 @@ export default function ArtistSelectionModal({
             <UserIcon />
             <SearchInput
               type="text"
-              placeholder="搜尋藝人名稱..."
+              placeholder="搜尋偶像名稱..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               autoFocus
@@ -284,7 +284,7 @@ export default function ArtistSelectionModal({
             <EmptyState>
               <div className="icon">🎤</div>
               <h3>選擇應援偶像</h3>
-              <p>輸入藝人名稱來搜尋並選擇</p>
+              <p>輸入偶像名稱來搜尋並選擇</p>
             </EmptyState>
           ) : searchLoading ? (
             <LoadingState>
@@ -315,7 +315,7 @@ export default function ArtistSelectionModal({
           ) : (
             <EmptyState>
               <div className="icon">😔</div>
-              <h3>找不到相關藝人</h3>
+              <h3>找不到該偶像</h3>
               <p>試試其他關鍵字、檢查拼寫是否正確</p>
             </EmptyState>
           )}

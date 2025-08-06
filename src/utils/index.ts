@@ -54,3 +54,16 @@ export const getDaysUntilBirthday = (birthdayStr: string): number => {
     return Math.ceil((thisYearBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   }
 };
+
+// 日期範圍格式化 (YYYY/MM/DD - YYYY/MM/DD)
+export const formatDateRange = (startDate: Date | string, endDate: Date | string): string => {
+  const formatSingleDate = (date: Date | string): string => {
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    return `${year}/${month}/${day}`;
+  };
+
+  return `${formatSingleDate(startDate)} - ${formatSingleDate(endDate)}`;
+};
