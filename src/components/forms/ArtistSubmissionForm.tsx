@@ -10,6 +10,7 @@ import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import ImageUpload from '@/components/ui/ImageUpload';
+import DatePicker from '@/components/ui/DatePicker';
 import { useRouter } from 'next/navigation';
 import showToast from '@/lib/toast';
 
@@ -288,6 +289,8 @@ export default function ArtistSubmissionForm() {
     register,
     handleSubmit,
     formState: { errors },
+    watch,
+    setValue,
     reset,
   } = useForm<ArtistSubmissionFormData>({
     resolver: zodResolver(artistSubmissionSchema),
@@ -335,12 +338,12 @@ export default function ArtistSubmissionForm() {
         <FormGroup>
           <Label htmlFor="stageName">
             <UserIcon />
-            藝名（偶像活動名稱、中譯名稱）*
+            藝名(請填寫官方正名的英文名稱)*
           </Label>
           <Input
             id="stageName"
             type="text"
-            placeholder="例：泰山、明宰鉉、S.COUPS"
+            placeholder="例：S.COUPS、Riku、RIWOO"
             {...register('stageName')}
           />
           {errors.stageName && <ErrorText>{errors.stageName.message}</ErrorText>}
@@ -364,7 +367,16 @@ export default function ArtistSubmissionForm() {
             <CalendarIcon />
             生日*
           </Label>
-          <Input id="birthday" type="date" {...register('birthday')} />
+          <DatePicker
+            value={watch('birthday') || ''}
+            onChange={(date) =>
+              setValue('birthday', date, { shouldValidate: true, shouldDirty: true })
+            }
+            placeholder="選擇生日"
+            disabled={isLoading}
+            error={!!errors.birthday}
+            max={new Date().toISOString().split('T')[0]}
+          />
           {errors.birthday && <ErrorText>{errors.birthday.message}</ErrorText>}
         </FormGroup>
 

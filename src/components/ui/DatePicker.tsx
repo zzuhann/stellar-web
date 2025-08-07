@@ -99,6 +99,14 @@ const MonthYearDisplay = styled.h3`
   font-weight: 600;
   color: var(--color-text-primary);
   margin: 0;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--color-bg-secondary);
+  }
 `;
 
 const NavigationButton = styled.button`
@@ -127,6 +135,39 @@ const NavigationButton = styled.button`
   svg {
     width: 16px;
     height: 16px;
+  }
+`;
+
+const YearMonthGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+`;
+
+const YearMonthButton = styled.button<{ isSelected?: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  background: ${(props) => (props.isSelected ? 'var(--color-primary)' : 'var(--color-bg-primary)')};
+  color: ${(props) => (props.isSelected ? 'white' : 'var(--color-text-primary)')};
+  font-size: 13px;
+  font-weight: ${(props) => (props.isSelected ? '600' : '400')};
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${(props) =>
+      props.isSelected ? 'var(--color-primary)' : 'var(--color-bg-secondary)'};
+    border-color: var(--color-border-medium);
+  }
+
+  @media (max-width: 410px) {
+    font-size: 12px;
+    padding: 6px 2px;
   }
 `;
 
@@ -227,6 +268,7 @@ export default function DatePicker({
   });
 
   const [_isOpen, setIsOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'calendar' | 'year' | 'month'>('calendar');
 
   // 當 value 改變時更新 currentDate
   useEffect(() => {
@@ -305,6 +347,20 @@ export default function DatePicker({
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
   };
 
+  const handleYearMonthClick = () => {
+    setViewMode(viewMode === 'calendar' ? 'year' : 'calendar');
+  };
+
+  const selectYear = (year: number) => {
+    setCurrentDate(new Date(year, currentDate.getMonth(), 1));
+    setViewMode('month');
+  };
+
+  const selectMonth = (month: number) => {
+    setCurrentDate(new Date(currentDate.getFullYear(), month, 1));
+    setViewMode('calendar');
+  };
+
   const formatDisplayDate = (dateString: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -338,60 +394,152 @@ export default function DatePicker({
             </Popover.Button>
 
             <PopoverPanel>
-              <CalendarHeader>
-                <NavigationButton
-                  type="button"
-                  onClick={goToPreviousMonth}
-                  disabled={
-                    !!(
-                      min &&
-                      new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1) <
-                        new Date(min)
-                    )
-                  }
-                >
-                  <ChevronLeftIcon />
-                </NavigationButton>
-                <MonthYearDisplay>{monthYearText}</MonthYearDisplay>
-                <NavigationButton
-                  type="button"
-                  onClick={goToNextMonth}
-                  disabled={
-                    !!(
-                      max &&
-                      new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1) >
-                        new Date(max)
-                    )
-                  }
-                >
-                  <ChevronRightIcon />
-                </NavigationButton>
-              </CalendarHeader>
-
-              <WeekDaysHeader>
-                {weekDays.map((day) => (
-                  <WeekDay key={day}>{day}</WeekDay>
-                ))}
-              </WeekDaysHeader>
-
-              <DaysGrid>
-                {days.map((day, index) => {
-                  const isCurrentMonth = day.getMonth() === currentDate.getMonth();
-                  return (
-                    <DayButton
-                      key={index}
+              {viewMode === 'calendar' && (
+                <>
+                  <CalendarHeader>
+                    <NavigationButton
                       type="button"
-                      onClick={() => handleDateSelect(day)}
-                      isSelected={isSelected(day)}
-                      isToday={isToday(day)}
-                      isOtherMonth={!isCurrentMonth}
-                      isDisabled={isDisabled(day)}
+                      onClick={goToPreviousMonth}
+                      disabled={
+                        !!(
+                          min &&
+                          new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1) <
+                            new Date(min)
+                        )
+                      }
                     >
-                      {day.getDate()}
-                    </DayButton>
-                  );
-                })}
-              </DaysGrid>
+                      <ChevronLeftIcon />
+                    </NavigationButton>
+                    <MonthYearDisplay onClick={handleYearMonthClick}>
+                      {monthYearText}
+                    </MonthYearDisplay>
+                    <NavigationButton
+                      type="button"
+                      onClick={goToNextMonth}
+                      disabled={
+                        !!(
+                          max &&
+                          new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1) >
+                            new Date(max)
+                        )
+                      }
+                    >
+                      <ChevronRightIcon />
+                    </NavigationButton>
+                  </CalendarHeader>
+
+                  <WeekDaysHeader>
+                    {weekDays.map((day) => (
+                      <WeekDay key={day}>{day}</WeekDay>
+                    ))}
+                  </WeekDaysHeader>
+
+                  <DaysGrid>
+                    {days.map((day, index) => {
+                      const isCurrentMonth = day.getMonth() === currentDate.getMonth();
+                      return (
+                        <DayButton
+                          key={index}
+                          type="button"
+                          onClick={() => handleDateSelect(day)}
+                          isSelected={isSelected(day)}
+                          isToday={isToday(day)}
+                          isOtherMonth={!isCurrentMonth}
+                          isDisabled={isDisabled(day)}
+                        >
+                          {day.getDate()}
+                        </DayButton>
+                      );
+                    })}
+                  </DaysGrid>
+                </>
+              )}
+
+              {viewMode === 'year' && (
+                <>
+                  <CalendarHeader>
+                    <NavigationButton
+                      type="button"
+                      onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 12, 0, 1))}
+                    >
+                      <ChevronLeftIcon />
+                    </NavigationButton>
+                    <MonthYearDisplay onClick={handleYearMonthClick}>
+                      {currentDate.getFullYear() - 6} - {currentDate.getFullYear() + 5}
+                    </MonthYearDisplay>
+                    <NavigationButton
+                      type="button"
+                      onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 12, 0, 1))}
+                    >
+                      <ChevronRightIcon />
+                    </NavigationButton>
+                  </CalendarHeader>
+
+                  <YearMonthGrid>
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const year = currentDate.getFullYear() - 6 + i;
+                      return (
+                        <YearMonthButton
+                          key={year}
+                          type="button"
+                          onClick={() => selectYear(year)}
+                          isSelected={year === new Date().getFullYear()}
+                        >
+                          {year}
+                        </YearMonthButton>
+                      );
+                    })}
+                  </YearMonthGrid>
+                </>
+              )}
+
+              {viewMode === 'month' && (
+                <>
+                  <CalendarHeader>
+                    <NavigationButton
+                      type="button"
+                      onClick={() => setCurrentDate(new Date(currentDate.getFullYear() - 1, 0, 1))}
+                    >
+                      <ChevronLeftIcon />
+                    </NavigationButton>
+                    <MonthYearDisplay onClick={handleYearMonthClick}>
+                      {currentDate.getFullYear()}
+                    </MonthYearDisplay>
+                    <NavigationButton
+                      type="button"
+                      onClick={() => setCurrentDate(new Date(currentDate.getFullYear() + 1, 0, 1))}
+                    >
+                      <ChevronRightIcon />
+                    </NavigationButton>
+                  </CalendarHeader>
+
+                  <YearMonthGrid>
+                    {[
+                      '一月',
+                      '二月',
+                      '三月',
+                      '四月',
+                      '五月',
+                      '六月',
+                      '七月',
+                      '八月',
+                      '九月',
+                      '十月',
+                      '十一月',
+                      '十二月',
+                    ].map((month, index) => (
+                      <YearMonthButton
+                        key={index}
+                        type="button"
+                        onClick={() => selectMonth(index)}
+                        isSelected={index === new Date().getMonth()}
+                      >
+                        {month}
+                      </YearMonthButton>
+                    ))}
+                  </YearMonthGrid>
+                </>
+              )}
             </PopoverPanel>
           </>
         )}
