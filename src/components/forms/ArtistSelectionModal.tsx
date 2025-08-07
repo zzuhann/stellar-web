@@ -8,6 +8,7 @@ import { useArtistStore } from '@/store';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Artist } from '@/types';
 import ArtistCard from '../ArtistCard';
+import { useRouter } from 'next/navigation';
 
 interface ArtistSelectionModalProps {
   isOpen: boolean;
@@ -118,6 +119,11 @@ const ArtistList = styled.div`
 `;
 
 const EmptyState = styled.div`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 30px 20px;
   color: var(--color-text-secondary);
@@ -139,6 +145,21 @@ const EmptyState = styled.div`
     margin: 0;
     line-height: 1.5;
   }
+`;
+
+const CTAButton = styled.button`
+  padding: 12px 24px;
+  border-radius: var(--radius-lg);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+  position: relative;
+  margin-top: 24px;
 `;
 
 const LoadingState = styled.div`
@@ -191,6 +212,7 @@ export default function ArtistSelectionModal({
   onArtistSelect,
   selectedArtistIds = [],
 }: ArtistSelectionModalProps) {
+  const router = useRouter();
   const { searchResults, searchLoading, searchQuery, searchArtists, clearSearch, setSearchQuery } =
     useSearchStore();
   const {
@@ -299,6 +321,9 @@ export default function ArtistSelectionModal({
                 <div className="icon">😔</div>
                 <h3>找不到該偶像</h3>
                 <p>試試其他關鍵字、檢查拼寫是否正確</p>
+                <CTAButton onClick={() => router.push('/submit-artist')}>
+                  點擊前往新增偶像 ✨<p>點擊後，將會跳轉至新增偶像頁面</p>
+                </CTAButton>
               </EmptyState>
             )
           ) : // 預設模式：顯示當月壽星
