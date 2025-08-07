@@ -238,8 +238,9 @@ const LoadingContainer = styled.div`
 const getWeekStart = (date: Date): Date => {
   const d = new Date(date.getTime()); // 確保不修改原始 date
   const day = d.getDay();
-  const diff = d.getDate() - day; // 星期日為 0
-  d.setDate(diff);
+  // 將星期一設為一週的開始 (星期一為1，星期日為0)
+  const diff = day === 0 ? -6 : 1 - day; // 如果是星期日(0)，往前6天到星期一；否則計算到星期一的差距
+  d.setDate(d.getDate() + diff);
   // 設定為當天開始（00:00:00）
   d.setHours(0, 0, 0, 0);
   return d;

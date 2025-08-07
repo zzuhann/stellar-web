@@ -18,6 +18,7 @@ import { eventsApi } from '@/lib/api';
 import { CoffeeEvent, FirebaseTimestamp } from '@/types';
 import EventSubmissionForm from '@/components/forms/EventSubmissionForm';
 import EventPreviewModal from '@/components/events/EventPreviewModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import { showToast } from '@/lib/toast';
 import { firebaseTimestampToDate } from '@/utils';
 import styled from 'styled-components';
@@ -619,6 +620,10 @@ export default function MySubmissionsPage() {
   const [activeTab, setActiveTab] = useState<'artists' | 'events'>('artists');
   const [editingEvent, setEditingEvent] = useState<CoffeeEvent | null>(null);
   const [previewingEvent, setPreviewingEvent] = useState<CoffeeEvent | null>(null);
+  const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
+    isOpen: boolean;
+    event: CoffeeEvent | null;
+  }>({ isOpen: true, event: null });
   const queryClient = useQueryClient();
 
   // 使用新的 /me API 取得用戶投稿
@@ -665,17 +670,22 @@ export default function MySubmissionsPage() {
   }, []);
 
   // 處理刪除活動
-  const handleDeleteEvent = useCallback(
-    (event: CoffeeEvent) => {
-      if (
-        typeof window !== 'undefined' &&
-        window.confirm(`確定要刪除活動「${event.title}」嗎？此操作無法復原。`)
-      ) {
-        deleteEventMutation.mutate(event.id);
-      }
-    },
-    [deleteEventMutation]
-  );
+  const handleDeleteEvent = useCallback((event: CoffeeEvent) => {
+    setDeleteConfirmModal({ isOpen: true, event });
+  }, []);
+
+  // 確認刪除活動
+  const handleConfirmDelete = useCallback(() => {
+    if (deleteConfirmModal.event) {
+      deleteEventMutation.mutate(deleteConfirmModal.event.id);
+      setDeleteConfirmModal({ isOpen: false, event: null });
+    }
+  }, [deleteConfirmModal.event, deleteEventMutation]);
+
+  // 取消刪除活動
+  const handleCancelDelete = useCallback(() => {
+    setDeleteConfirmModal({ isOpen: false, event: null });
+  }, []);
 
   // 編輯成功後的處理
   const handleEditSuccess = useCallback(() => {
@@ -993,6 +1003,18 @@ export default function MySubmissionsPage() {
           onClose={() => setPreviewingEvent(null)}
         />
       )}
+
+      {/* 確認刪除模態框 */}
+      <ConfirmModal
+        isOpen={deleteConfirmModal.isOpen}
+        title="確認刪除活動"
+        message={`確定要刪除活動「${deleteConfirmModal.event?.title}」嗎？此操作無法復原。`}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        confirmText="刪除"
+        cancelText="取消"
+        isLoading={deleteEventMutation.isPending}
+      />
     </PageContainer>
   );
 }

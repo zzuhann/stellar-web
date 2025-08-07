@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
 import api from '@/lib/api';
 import { useDebounce } from '@/hooks/useDebounce';
+import showToast from '@/lib/toast';
 
 interface PlaceAutocompleteProps {
   onPlaceSelect: (place: {
@@ -284,7 +285,7 @@ export default function PlaceAutocomplete({
           onPlaceSelect(placeData);
         }
       } catch {
-        window.alert('地點詳情取得失敗');
+        showToast.warning('地點詳情取得失敗');
       }
     },
     [onPlaceSelect, isDisabled]

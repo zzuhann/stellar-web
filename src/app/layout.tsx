@@ -14,7 +14,7 @@ const notoSansTC = Noto_Sans_TC({
 });
 
 export const metadata: Metadata = {
-  title: '台灣生咖地圖 | K-pop 藝人應援咖啡活動平台',
+  title: 'STELLAR | 生咖應援地圖',
   description: '探索台灣各地 K-pop 藝人生日應援咖啡活動，一起參與粉絲應援！',
 };
 
