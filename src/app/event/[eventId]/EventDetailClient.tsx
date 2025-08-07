@@ -113,7 +113,7 @@ const ArtistSeparator = styled.span`
 const EventDetailsSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 4px;
 `;
 
 const DetailItem = styled.div`
@@ -180,7 +180,6 @@ const CTAButton = styled.button`
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
-  max-width: 50%;
   position: relative;
   left: 50%;
   transform: translateX(-50%);
@@ -438,7 +437,16 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
                   <DetailItem>
                     <InstagramIcon size={20} color="var(--color-text-secondary)" />
                     <DetailContent>
-                      <DetailValue>@{event.socialMedia.instagram}</DetailValue>
+                      <DetailValue>
+                        <a
+                          href={`https://www.instagram.com/${event.socialMedia.instagram}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#3a64c7' }}
+                        >
+                          @{event.socialMedia.instagram}
+                        </a>
+                      </DetailValue>
                     </DetailContent>
                   </DetailItem>
                 )}
@@ -447,7 +455,16 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
                   <DetailItem>
                     <ThreadsIcon size={20} color="var(--color-text-secondary)" />
                     <DetailContent>
-                      <DetailValue>@{event.socialMedia.threads}</DetailValue>
+                      <DetailValue>
+                        <a
+                          href={`https://www.threads.net/@${event.socialMedia.threads}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#3a64c7' }}
+                        >
+                          @{event.socialMedia.threads}
+                        </a>
+                      </DetailValue>
                     </DetailContent>
                   </DetailItem>
                 )}
@@ -456,7 +473,16 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
                   <DetailItem>
                     <XIcon size={20} color="var(--color-text-secondary)" />
                     <DetailContent>
-                      <DetailValue>@{event.socialMedia.x}</DetailValue>
+                      <DetailValue>
+                        <a
+                          href={`https://x.com/${event.socialMedia.x}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#3a64c7' }}
+                        >
+                          @{event.socialMedia.x}
+                        </a>
+                      </DetailValue>
                     </DetailContent>
                   </DetailItem>
                 )}
@@ -478,7 +504,14 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
                   </DetailIcon>
                   <DetailContent>
                     <DetailValue>
-                      {event.location.name}({event.location.address})
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${event.location.name}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#3a64c7' }}
+                      >
+                        {event.location.name}({event.location.address}){' '}
+                      </a>
                     </DetailValue>
                   </DetailContent>
                 </DetailItem>

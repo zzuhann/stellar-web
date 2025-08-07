@@ -109,8 +109,8 @@ const EmptyState = styled.div`
   color: var(--color-text-secondary);
 
   .icon {
-    font-size: 48px;
-    margin-bottom: 16px;
+    font-size: 24px;
+    margin-bottom: 8px;
   }
 
   h3 {
@@ -172,6 +172,7 @@ const ItemContainer = styled.div`
 
 const ArtistItem = styled.div`
   display: flex;
+  align-items: flex-start;
   flex-direction: column;
   gap: 12px;
 `;
@@ -218,13 +219,9 @@ const ArtistDetails = styled.div`
   }
 `;
 
-const ArtistStatusSection = styled.div`
-  flex-shrink: 0;
-  width: 100%;
-`;
-
 const ArtistStatusBadge = styled.span<{ status: 'pending' | 'approved' | 'rejected' }>`
   display: inline-flex;
+  justify-content: flex-start;
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
@@ -623,7 +620,7 @@ export default function MySubmissionsPage() {
   const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
     isOpen: boolean;
     event: CoffeeEvent | null;
-  }>({ isOpen: true, event: null });
+  }>({ isOpen: false, event: null });
   const queryClient = useQueryClient();
 
   // 使用新的 /me API 取得用戶投稿
@@ -691,35 +688,37 @@ export default function MySubmissionsPage() {
   const handleEditSuccess = useCallback(() => {
     setEditingEvent(null);
     queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
-    showToast.success('活動資訊更新成功');
   }, [queryClient]);
 
-  const getStatusBadge = useCallback((status: 'pending' | 'approved' | 'rejected') => {
-    switch (status) {
-      case 'approved':
-        return (
-          <ArtistStatusBadge status={status}>
-            <CheckCircleIcon className="h-3 w-3" />
-            已通過
-          </ArtistStatusBadge>
-        );
-      case 'rejected':
-        return (
-          <ArtistStatusBadge status={status}>
-            <XCircleIcon className="h-3 w-3" />
-            已拒絕
-          </ArtistStatusBadge>
-        );
-      case 'pending':
-      default:
-        return (
-          <ArtistStatusBadge status={status}>
-            <PendingIcon className="h-3 w-3" />
-            審核中
-          </ArtistStatusBadge>
-        );
-    }
-  }, []);
+  const getStatusBadge = useCallback(
+    (status: 'pending' | 'approved' | 'rejected', rejectedReason?: string) => {
+      switch (status) {
+        case 'approved':
+          return (
+            <ArtistStatusBadge status={status}>
+              <CheckCircleIcon className="h-3 w-3" />
+              已通過
+            </ArtistStatusBadge>
+          );
+        case 'rejected':
+          return (
+            <ArtistStatusBadge status={status}>
+              <XCircleIcon className="h-3 w-3" />
+              已拒絕{rejectedReason ? `(原因: ${rejectedReason})` : ''}
+            </ArtistStatusBadge>
+          );
+        case 'pending':
+        default:
+          return (
+            <ArtistStatusBadge status={status}>
+              <PendingIcon className="h-3 w-3" />
+              審核中
+            </ArtistStatusBadge>
+          );
+      }
+    },
+    []
+  );
 
   if (authLoading || loading) {
     return (
@@ -813,6 +812,8 @@ export default function MySubmissionsPage() {
                   {userArtists.map((artist) => (
                     <ItemContainer key={artist.id}>
                       <ArtistItem>
+                        {getStatusBadge(artist.status, artist.rejectedReason)}
+
                         <ArtistInfo>
                           <ArtistAvatar imageUrl={artist.profileImage} />
                           <ArtistDetails>
@@ -830,17 +831,7 @@ export default function MySubmissionsPage() {
                             </p>
                           </ArtistDetails>
                         </ArtistInfo>
-
-                        <ArtistStatusSection>
-                          {artist.status === 'rejected' && artist.rejectedReason && (
-                            <RejectedReasonContainer>
-                              <RejectedReasonLabel>拒絕原因</RejectedReasonLabel>
-                              <RejectedReasonText>{artist.rejectedReason}</RejectedReasonText>
-                            </RejectedReasonContainer>
-                          )}
-                        </ArtistStatusSection>
                       </ArtistItem>
-                      {getStatusBadge(artist.status)}
                     </ItemContainer>
                   ))}
                 </ItemList>
@@ -858,10 +849,10 @@ export default function MySubmissionsPage() {
 
               {userEvents.length === 0 ? (
                 <EmptyState>
-                  <div className="icon">📅</div>
-                  <h3>還沒有活動投稿</h3>
-                  <p>分享您發現的應援咖啡活動吧！</p>
-                  <CTAButton onClick={() => router.push('/')}>前往投稿</CTAButton>
+                  <div className="icon">🍰</div>
+                  <h3>還沒有舉辦過生咖</h3>
+                  <p>如果你是生咖主辦，可以點擊前往投稿生咖 ✨</p>
+                  <CTAButton onClick={() => router.push('/submit-event')}>前往投稿</CTAButton>
                 </EmptyState>
               ) : (
                 <ItemList>

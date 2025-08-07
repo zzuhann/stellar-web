@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { XMarkIcon, UserIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { useSearchStore } from '@/store';
+import { useArtistStore } from '@/store';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Artist } from '@/types';
+import ArtistCard from '../ArtistCard';
 
 interface ArtistSelectionModalProps {
   isOpen: boolean;
@@ -133,47 +135,9 @@ const ArtistList = styled.div`
   margin-top: 16px;
 `;
 
-const ArtistItem = styled.div<{ isSelected?: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px;
-  border-radius: var(--radius-lg);
-  background: ${(props) =>
-    props.isSelected ? 'var(--color-primary)' : 'var(--color-bg-secondary)'};
-  border: 1px solid
-    ${(props) => (props.isSelected ? 'var(--color-primary)' : 'var(--color-border-light)')};
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.isSelected ? 'var(--color-primary)' : 'var(--color-bg-tertiary)'};
-    border-color: ${(props) =>
-      props.isSelected ? 'var(--color-primary)' : 'var(--color-border-medium)'};
-  }
-`;
-
-const ArtistInfo = styled.div`
-  flex: 1;
-`;
-
-const ArtistName = styled.div<{ isSelected?: boolean }>`
-  font-size: 16px;
-  font-weight: 600;
-  color: ${(props) => (props.isSelected ? 'white' : 'var(--color-text-primary)')};
-  margin-bottom: 4px;
-`;
-
-const ArtistRealName = styled.div<{ isSelected?: boolean }>`
-  font-size: 14px;
-  color: ${(props) =>
-    props.isSelected ? 'rgba(255, 255, 255, 0.8)' : 'var(--color-text-secondary)'};
-`;
-
 const EmptyState = styled.div`
   text-align: center;
-  padding: 40px 20px;
+  padding: 30px 20px;
   color: var(--color-text-secondary);
 
   .icon {
@@ -220,17 +184,57 @@ const LoadingState = styled.div`
   }
 `;
 
+// 獲取當月的開始和結束日期
+const getCurrentMonthRange = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0-11
+
+  const startDate = new Date(year, month, 1);
+  const endDate = new Date(year, month + 1, 0); // 下個月的第0天 = 這個月的最後一天
+
+  const formatDate = (date: Date) => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+
+  return {
+    startDate: formatDate(startDate),
+    endDate: formatDate(endDate),
+  };
+};
+
 export default function ArtistSelectionModal({
   isOpen,
   onClose,
   onArtistSelect,
-  selectedArtistIds = [],
 }: ArtistSelectionModalProps) {
   const { searchResults, searchLoading, searchQuery, searchArtists, clearSearch, setSearchQuery } =
     useSearchStore();
+  const {
+    artists: monthlyBirthdayArtists,
+    loading: monthlyLoading,
+    fetchArtists,
+  } = useArtistStore();
 
   const [inputValue, setInputValue] = useState('');
+  const [hasLoadedMonthlyArtists, setHasLoadedMonthlyArtists] = useState(false);
   const debouncedSearchQuery = useDebounce(inputValue, 500);
+
+  // 載入當月壽星（模態框打開時）
+  useEffect(() => {
+    if (isOpen && !hasLoadedMonthlyArtists) {
+      const { startDate, endDate } = getCurrentMonthRange();
+      fetchArtists({
+        status: 'approved',
+        birthdayStartDate: startDate,
+        birthdayEndDate: endDate,
+        includeStats: true,
+        sortBy: 'coffeeEventCount',
+        sortOrder: 'desc',
+      });
+      setHasLoadedMonthlyArtists(true);
+    }
+  }, [isOpen, hasLoadedMonthlyArtists, fetchArtists]);
 
   // 使用 debounced 值進行搜尋
   useEffect(() => {
@@ -253,11 +257,16 @@ export default function ArtistSelectionModal({
     if (!isOpen) {
       setInputValue('');
       clearSearch();
+      setHasLoadedMonthlyArtists(false);
     }
   }, [isOpen, clearSearch]);
 
-  const showResults = searchQuery.trim().length > 0;
-  const hasResults = searchResults.length > 0;
+  const isSearching = searchQuery.trim().length > 0;
+  const hasSearchResults = searchResults.length > 0;
+  const hasMonthlyArtists = monthlyBirthdayArtists.length > 0;
+
+  // 計算當前月份名稱
+  const currentMonth = new Date().toLocaleDateString('zh-TW', { month: 'long' });
 
   return (
     <ModalOverlay isOpen={isOpen} onClick={onClose}>
@@ -280,43 +289,53 @@ export default function ArtistSelectionModal({
         </ModalHeader>
 
         <ResultsContainer>
-          {!showResults ? (
-            <EmptyState>
-              <div className="icon">🎤</div>
-              <h3>選擇應援偶像</h3>
-              <p>輸入偶像名稱來搜尋並選擇</p>
-            </EmptyState>
-          ) : searchLoading ? (
+          {isSearching ? (
+            // 搜尋模式：顯示搜尋結果
+            searchLoading ? (
+              <LoadingState>
+                <div className="spinner" />
+                <p>搜尋中...</p>
+              </LoadingState>
+            ) : hasSearchResults ? (
+              <ArtistList>
+                {searchResults.map((artist) => (
+                  <ArtistCard
+                    key={artist.id}
+                    artist={artist}
+                    handleArtistClick={handleArtistSelect}
+                  />
+                ))}
+              </ArtistList>
+            ) : (
+              <EmptyState>
+                <div className="icon">😔</div>
+                <h3>找不到該偶像</h3>
+                <p>試試其他關鍵字、檢查拼寫是否正確</p>
+              </EmptyState>
+            )
+          ) : // 預設模式：顯示當月壽星
+          monthlyLoading ? (
             <LoadingState>
               <div className="spinner" />
-              <p>搜尋中...</p>
+              <p>載入{currentMonth}壽星中...</p>
             </LoadingState>
-          ) : hasResults ? (
+          ) : hasMonthlyArtists ? (
             <ArtistList>
-              {searchResults.map((artist) => (
-                <ArtistItem
+              <EmptyState style={{ paddingBottom: '20px' }}>
+                <h3>本月壽星 ✨</h3>
+                <p>選擇要應援的偶像，或在上方搜尋其他偶像</p>
+              </EmptyState>
+              {monthlyBirthdayArtists.map((artist) => (
+                <ArtistCard
                   key={artist.id}
-                  isSelected={selectedArtistIds.includes(artist.id)}
-                  onClick={() => handleArtistSelect(artist)}
-                >
-                  <ArtistInfo>
-                    <ArtistName isSelected={selectedArtistIds.includes(artist.id)}>
-                      {artist.stageName}
-                    </ArtistName>
-                    {artist.realName && (
-                      <ArtistRealName isSelected={selectedArtistIds.includes(artist.id)}>
-                        {artist.realName}
-                      </ArtistRealName>
-                    )}
-                  </ArtistInfo>
-                </ArtistItem>
+                  artist={artist}
+                  handleArtistClick={handleArtistSelect}
+                />
               ))}
             </ArtistList>
           ) : (
             <EmptyState>
-              <div className="icon">😔</div>
-              <h3>找不到該偶像</h3>
-              <p>試試其他關鍵字、檢查拼寫是否正確</p>
+              <p>在上方輸入偶像名稱來搜尋並選擇 ✨</p>
             </EmptyState>
           )}
         </ResultsContainer>

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
+import { useEffect, useState, useRef, useMemo, memo } from 'react';
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import { Icon, LatLngTuple, DivIcon, Point } from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
@@ -32,6 +32,7 @@ const createImageIcon = (imageUrl?: string, isSelected = false) => {
 
   const size = isSelected ? 60 : 40;
   const borderWidth = isSelected ? 5 : 3;
+  const backgroundImage = imageUrl || defaultImageUrl;
 
   const iconHtml = `
    <div style="
@@ -51,23 +52,20 @@ const createImageIcon = (imageUrl?: string, isSelected = false) => {
       height: ${size}px;
       border-radius: 50%;
       border: ${borderWidth}px solid white;
-      // box-shadow: 0 ${isSelected ? 6 : 2}px ${isSelected ? 16 : 8}px rgba(0,0,0,${isSelected ? 0.5 : 0.3});
       overflow: hidden;
       background: white;
       position: relative;
       transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
       transform: ${isSelected ? 'scale(1.2)' : 'scale(1)'};
     ">
-      <img 
-        src="${imageUrl || defaultImageUrl}" 
-        style="
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        "
-        onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
-      />
+      <div style="
+        width: 100%;
+        height: 100%;
+        background-image: url('${backgroundImage}');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+      "></div>
       <div style="
         position: absolute;
         top: 50%;
@@ -77,17 +75,16 @@ const createImageIcon = (imageUrl?: string, isSelected = false) => {
         font-size: 20px;
       ">☕</div>
     </div>
-   
   `;
 
-  const totalHeight = size + 10; // marker 高度 + 箭頭高度
+  const totalHeight = size + 10;
 
   return new DivIcon({
     html: iconHtml,
     className: '',
     iconSize: [size, totalHeight],
-    iconAnchor: [size / 2, totalHeight], // 錨點在底部中央
-    popupAnchor: [0, -totalHeight], // popup 出現在 marker 上方
+    iconAnchor: [size / 2, totalHeight],
+    popupAnchor: [0, -totalHeight],
   });
 };
 
@@ -129,6 +126,53 @@ const LoadingContainer = styled.div`
   font-size: 14px;
 `;
 
+const LoadingContent = styled.div`
+  text-align: center;
+`;
+
+const LoadingSpinnerLarge = styled.div`
+  width: 48px;
+  height: 48px;
+  border: 2px solid transparent;
+  border-top: 2px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+// Memoized Marker 組件，防止不必要的重新渲染
+const MemoizedMarker = memo(
+  ({
+    event,
+    icon,
+    onMarkerClick,
+  }: {
+    event: MapEvent;
+    icon: DivIcon;
+    onMarkerClick: (event: MapEvent) => void;
+  }) => (
+    <Marker
+      key={event.id}
+      position={[event.location.coordinates.lat, event.location.coordinates.lng]}
+      icon={icon}
+      eventHandlers={{
+        click: () => onMarkerClick(event),
+      }}
+    />
+  )
+);
+
+MemoizedMarker.displayName = 'MemoizedMarker';
+
 // 地圖事件監聽器組件
 function MapEventHandler() {
   const { setCenter } = useMapStore();
@@ -160,26 +204,6 @@ function MapEventHandler() {
   return null;
 }
 
-// 地圖視圖更新組件
-function MapViewController({
-  center,
-  zoom,
-}: {
-  center: { lat: number; lng: number };
-  zoom: number;
-}) {
-  const map = useMap();
-
-  useEffect(() => {
-    // 使用 flyTo 提供平滑的動畫效果
-    map.flyTo([center.lat, center.lng], zoom, {
-      duration: 1.5, // 動畫持續時間
-    });
-  }, [map, center.lat, center.lng, zoom]);
-
-  return null;
-}
-
 interface MapComponentProps {
   events?: MapEvent[];
   onEventSelect?: (event: { id: string }) => void;
@@ -197,6 +221,23 @@ export default function MapComponent({
 }: MapComponentProps) {
   const { center, selectMarker, setCenter } = useMapStore();
   const [isMounted, setIsMounted] = useState(false);
+  const clusterGroupRef = useRef<any>(null);
+
+  // 緩存所有 marker 圖標，只在相關數據變化時重新計算
+  const markerIcons = useMemo(() => {
+    const iconCache = new Map();
+
+    events.forEach((event) => {
+      const isSelected = selectedEventId === event.id;
+      const cacheKey = `${event.mainImage || 'default'}_${isSelected}`;
+
+      if (!iconCache.has(cacheKey)) {
+        iconCache.set(cacheKey, createImageIcon(event.mainImage, isSelected));
+      }
+    });
+
+    return iconCache;
+  }, [events, selectedEventId]); // 只在 events 或 selectedEventId 變化時重新計算
 
   // 確保在客戶端渲染
   useEffect(() => {
@@ -207,11 +248,38 @@ export default function MapComponent({
     setCenter({
       lat: event.location.coordinates.lat,
       lng: event.location.coordinates.lng,
-      zoom: 15,
+      zoom: 16,
     });
     selectMarker(event.id);
     onEventSelect?.({ id: event.id });
     onMarkerClick?.(event.id); // 調用 MapPage 的回調
+  };
+
+  // 處理聚合點擊事件
+  const handleClusterClick = (event: any) => {
+    const cluster = event.layer;
+    const map = event.target._map;
+    const currentZoom = map.getZoom();
+    const clusterBounds = cluster.getBounds();
+    const clusterCenter = clusterBounds.getCenter();
+
+    const newZoom = Math.min(currentZoom + 2, 18);
+
+    // 直接操作地圖，不使用動畫
+    map.setView([clusterCenter.lat, clusterCenter.lng], newZoom, {
+      animate: false,
+    });
+
+    // 同步更新 store
+    setCenter({
+      lat: clusterCenter.lat,
+      lng: clusterCenter.lng,
+      zoom: newZoom,
+    });
+
+    // 阻止預設行為
+    event.originalEvent.preventDefault();
+    event.originalEvent.stopPropagation();
   };
 
   // 台灣地圖中心點
@@ -220,7 +288,10 @@ export default function MapComponent({
   if (!isMounted) {
     return (
       <LoadingContainer>
-        <div>載入地圖中...</div>
+        <LoadingContent>
+          <LoadingSpinnerLarge />
+          <p>載入中...</p>
+        </LoadingContent>
       </LoadingContainer>
     );
   }
@@ -242,9 +313,6 @@ export default function MapComponent({
         {/* 地圖事件監聽器 */}
         <MapEventHandler />
 
-        {/* 地圖視圖控制器 */}
-        <MapViewController center={center} zoom={center.zoom} />
-
         {/* 用戶位置標記 */}
         {userLocation && (
           <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon} />
@@ -252,7 +320,14 @@ export default function MapComponent({
 
         {/* Marker 聚合群組 */}
         <MarkerClusterGroup
-          chunkedLoading
+          ref={clusterGroupRef}
+          // 控制聚合行為的選項
+          maxClusterRadius={80} // 聚合半徑 (像素)，預設 80
+          disableClusteringAtZoom={14} // 在此縮放等級以上停用聚合
+          spiderfyOnMaxZoom={true} // 在最大縮放時展開 marker
+          eventHandlers={{
+            clusterclick: handleClusterClick,
+          }}
           iconCreateFunction={(cluster: { getChildCount(): number }) => {
             const count = cluster.getChildCount();
             let className = 'marker-cluster-small';
@@ -274,14 +349,15 @@ export default function MapComponent({
         >
           {events.map((event) => {
             const isSelected = selectedEventId === event.id;
+            const cacheKey = `${event.mainImage || 'default'}_${isSelected}`;
+            const cachedIcon = markerIcons.get(cacheKey);
+
             return (
-              <Marker
+              <MemoizedMarker
                 key={event.id}
-                position={[event.location.coordinates.lat, event.location.coordinates.lng]}
-                icon={createImageIcon(event.mainImage, isSelected)}
-                eventHandlers={{
-                  click: () => handleMarkerClick(event),
-                }}
+                event={event}
+                icon={cachedIcon}
+                onMarkerClick={handleMarkerClick}
               />
             );
           })}

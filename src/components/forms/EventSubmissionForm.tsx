@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -421,7 +421,7 @@ export default function EventSubmissionForm({
           x: existingEvent.socialMedia.x || '',
           threads: existingEvent.socialMedia.threads || '',
           mainImage: existingEvent.mainImage || '',
-          detailImages: Array.isArray(existingEvent.detailImage)
+          detailImage: Array.isArray(existingEvent.detailImage)
             ? existingEvent.detailImage
             : existingEvent.detailImage
               ? [existingEvent.detailImage]
@@ -433,6 +433,30 @@ export default function EventSubmissionForm({
 
   // 監聽開始日期變化，自動設定結束日期最小值
   const startDate = watch('startDate');
+
+  // 同步 selectedArtists 和 detailImageUrls 到表單
+  useEffect(() => {
+    setValue(
+      'artistIds',
+      selectedArtists.map((artist) => artist.id)
+    );
+  }, [selectedArtists, setValue]);
+
+  useEffect(() => {
+    setValue('detailImage', detailImageUrls);
+  }, [detailImageUrls, setValue]);
+
+  // 初始化時同步值
+  useEffect(() => {
+    setValue(
+      'artistIds',
+      selectedArtists.map((artist) => artist.id)
+    );
+    setValue('detailImage', detailImageUrls);
+    if (mainImageUrl) {
+      setValue('mainImage', mainImageUrl);
+    }
+  }, []);
 
   // 處理地點選擇
   const handlePlaceSelect = useCallback(
@@ -562,10 +586,14 @@ export default function EventSubmissionForm({
           threads: data.threads || undefined,
         },
         mainImage: mainImageUrl || undefined,
-        detailImage: detailImageUrls.length > 0 ? detailImageUrls : undefined,
+        detailImage: detailImageUrls,
       };
 
-      createEventMutation.mutate(eventData);
+      createEventMutation.mutate(eventData, {
+        onSuccess: () => {
+          router.push(`/my-submissions`);
+        },
+      });
     } else if (mode === 'edit' && existingEvent) {
       // 準備編輯活動資料
       const updateData: UpdateEventRequest = {
@@ -592,10 +620,17 @@ export default function EventSubmissionForm({
           threads: data.threads || undefined,
         },
         mainImage: mainImageUrl || undefined,
-        detailImage: detailImageUrls.length > 0 ? detailImageUrls : undefined,
+        detailImage: detailImageUrls,
       };
 
-      updateEventMutation.mutate({ id: existingEvent.id, data: updateData });
+      updateEventMutation.mutate(
+        { id: existingEvent.id, data: updateData },
+        {
+          onSuccess: () => {
+            router.push(`/my-submissions`);
+          },
+        }
+      );
     }
   };
 
@@ -785,9 +820,9 @@ export default function EventSubmissionForm({
             currentImages={detailImageUrls}
             onImagesChange={(imageUrls) => {
               setDetailImageUrls(imageUrls);
-              setValue('detailImages', imageUrls, {
-                shouldValidate: true,
-                shouldDirty: true,
+              setValue('detailImage', imageUrls, {
+                shouldValidate: false,
+                shouldDirty: false,
               });
             }}
             maxImages={5}
@@ -797,8 +832,8 @@ export default function EventSubmissionForm({
             authToken={token || undefined}
             useRealAPI={!!token}
           />
-          <input type="hidden" {...register('detailImages')} />
-          {errors.detailImages && <ErrorText>{errors.detailImages.message}</ErrorText>}
+          <input type="hidden" {...register('detailImage')} />
+          {errors.detailImage && <ErrorText>{errors.detailImage.message}</ErrorText>}
         </FormGroup>
 
         {/* 聯絡資訊 */}
@@ -858,7 +893,6 @@ export default function EventSubmissionForm({
           isOpen={artistSelectionModalOpen}
           onClose={() => setArtistSelectionModalOpen(false)}
           onArtistSelect={handleArtistSelect}
-          selectedArtistIds={selectedArtists.map((artist) => artist.id)}
         />
       )}
     </FormContainer>

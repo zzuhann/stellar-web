@@ -94,7 +94,8 @@ const ComboboxInput = styled(Combobox.Input)<{ isDisabled: boolean; isError: boo
 
 const ComboboxButton = styled(Combobox.Button)`
   position: absolute;
-  inset-y: 0;
+  top: 50%;
+  transform: translateY(-50%);
   right: 0;
   display: flex;
   align-items: center;
@@ -147,7 +148,6 @@ const ComboboxOption = styled(Combobox.Option)`
   cursor-default;
   select-none;
   padding: 12px 16px;
-  padding-left: 48px;
   transition: all 0.2s ease;
   color: var(--color-text-primary);
   
@@ -160,10 +160,6 @@ const ComboboxOption = styled(Combobox.Option)`
     color: white;
   }
 
-  @media (min-width: 768px) {
-    padding: 14px 18px;
-    padding-left: 52px;
-  }
 `;
 
 const OptionContent = styled.div<{ isSelected: boolean }>`
@@ -181,8 +177,7 @@ const OptionMainText = styled.div`
 
 const OptionSecondaryText = styled.div<{ isActive: boolean }>`
   font-size: 13px;
-  color: ${(props) =>
-    props.isActive ? 'rgba(255, 255, 255, 0.8)' : 'var(--color-text-secondary)'};
+  color: var(--color-text-secondary);
 `;
 
 const CheckIconContainer = styled.span<{ isActive: boolean }>`

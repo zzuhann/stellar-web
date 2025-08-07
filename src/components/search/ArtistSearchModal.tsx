@@ -186,7 +186,7 @@ const LoadingState = styled.div`
 const CTAButton = styled.button`
   padding: 12px 24px;
   border-radius: var(--radius-lg);
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   transition: all 0.2s ease;
   cursor: pointer;
@@ -194,7 +194,6 @@ const CTAButton = styled.button`
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
-  max-width: 50%;
   position: relative;
   left: 50%;
   transform: translateX(-50%);
@@ -296,7 +295,9 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
                   }
                 }}
               >
-                找不到偶像? 點擊前往新增偶像
+                找不到偶像?
+                <br />
+                點擊前往新增偶像 ✨
               </CTAButton>
             </>
           )}

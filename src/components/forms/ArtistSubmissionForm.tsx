@@ -315,6 +315,7 @@ export default function ArtistSubmissionForm() {
       showToast.success('投稿成功');
 
       reset();
+      router.push(`/my-submissions`);
     } catch {
       showToast.error('投稿失敗');
     } finally {

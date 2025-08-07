@@ -386,6 +386,7 @@ export default function AdminPage() {
     try {
       await approveArtist(artistId);
       showToast.success('審核成功');
+      fetchArtists({ status: 'pending' });
     } catch {
       showToast.error('審核失敗');
     } finally {
@@ -399,6 +400,7 @@ export default function AdminPage() {
       await rejectArtist(artistId, reason);
       showToast.success('已拒絕此投稿');
       setRejectingArtist(null);
+      fetchArtists({ status: 'pending' });
     } catch {
       showToast.error('操作失敗');
     } finally {
@@ -411,6 +413,7 @@ export default function AdminPage() {
     try {
       await admin.approveEvent(eventId);
       showToast.success('審核成功');
+      fetchEvents({ status: 'pending' });
     } catch {
       showToast.error('操作失敗');
     } finally {
@@ -424,6 +427,7 @@ export default function AdminPage() {
       await admin.rejectEvent(eventId, reason);
       showToast.success('已拒絕此投稿');
       setRejectingEvent(null);
+      fetchEvents({ status: 'pending' });
     } catch {
       showToast.error('操作失敗');
     } finally {
@@ -590,6 +594,7 @@ export default function AdminPage() {
                           <EventDetails>
                             <DetailItem>
                               <XIcon size={16} color="var(--color-text-secondary)" />
+                              {event.socialMedia.x}
                             </DetailItem>
                           </EventDetails>
                         )}
@@ -598,6 +603,7 @@ export default function AdminPage() {
                           <EventDetails>
                             <DetailItem>
                               <ThreadsIcon size={16} color="var(--color-text-secondary)" />
+                              {event.socialMedia.threads}
                             </DetailItem>
                           </EventDetails>
                         )}
