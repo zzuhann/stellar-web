@@ -21,9 +21,10 @@ export const metadata: Metadata = {
   description: '在 STELLAR 尋找在你附近的生咖應援吧！',
   keywords: ['生咖', 'K-POP', '生日咖啡廳', '應援', 'idol'],
   openGraph: {
+    type: 'website',
     title: 'STELLAR | 生咖應援地圖',
     description: '在 STELLAR 尋找在你附近的生咖應援吧！',
-    images: '/og-image.png',
+    images: [{ url: 'https://pub-1ea260dddf7f40e4b473626d08cc1689.r2.dev/images/og-image.png' }],
   },
   icons: {
     icon: '/icon.png',
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'STELLAR | 生咖應援地圖',
     description: '在 STELLAR 尋找在你附近的生咖應援吧！',
-    images: '/og-image.png',
+    images: [{ url: 'https://pub-1ea260dddf7f40e4b473626d08cc1689.r2.dev/images/og-image.png' }],
     creator: '@STELLAR_TW',
   },
   viewport: {
