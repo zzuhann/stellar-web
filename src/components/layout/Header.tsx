@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import styled from 'styled-components';
+import AuthModal from '../auth/AuthModal';
 
 // Styled Components
 const HeaderContainer = styled.header`
@@ -249,7 +250,7 @@ const Description = styled.div`
 
 const Header = () => {
   const router = useRouter();
-  const { user, userData, signOut, toggleAuthModal } = useAuth();
+  const { user, userData, signOut, authModalOpen, toggleAuthModal } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -370,6 +371,8 @@ const Header = () => {
           )}
         </MobileMenuContent>
       </MobileMenu>
+      {/* 認證模態視窗 */}
+      <AuthModal isOpen={authModalOpen} onClose={toggleAuthModal} initialMode="signin" />
     </>
   );
 };

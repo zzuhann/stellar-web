@@ -12,7 +12,6 @@ import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { Artist } from '@/types';
 import Header from './Header';
-import AuthModal from '@/components/auth/AuthModal';
 import ArtistSearchModal from '@/components/search/ArtistSearchModal';
 import ArtistCard from '../ArtistCard';
 import { getDaysUntilBirthday } from '@/utils';
@@ -258,7 +257,7 @@ const formatDate = (date: Date): string => {
 
 export default function ArtistHomePage() {
   const router = useRouter();
-  const { user, authModalOpen, toggleAuthModal } = useAuth();
+  const { user, toggleAuthModal } = useAuth();
   const { artists, loading, fetchArtists } = useArtistStore();
 
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => getWeekStart(new Date()));
@@ -441,9 +440,6 @@ export default function ArtistHomePage() {
           )}
         </ContentWrapper>
       </MainContainer>
-
-      {/* 認證模態視窗 */}
-      <AuthModal isOpen={authModalOpen} onClose={toggleAuthModal} initialMode="signin" />
 
       {/* 搜尋模態視窗 */}
       <ArtistSearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
