@@ -347,6 +347,70 @@ const ImageContainer = styled.div`
   }
 `;
 
+// 步驟指示器樣式
+const StepIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 32px;
+  gap: 16px;
+`;
+
+const Step = styled.div<{ active: boolean; completed: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .step-number {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+
+    ${(props) => {
+      if (props.completed) {
+        return `
+          background: var(--color-primary);
+          color: white;
+        `;
+      } else if (props.active) {
+        return `
+          background: var(--color-primary);
+          color: white;
+        `;
+      } else {
+        return `
+          background: var(--color-bg-secondary);
+          color: var(--color-text-secondary);
+          border: 1px solid var(--color-border-light);
+        `;
+      }
+    }}
+  }
+
+  .step-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: ${(props) =>
+      props.active || props.completed
+        ? 'var(--color-text-primary)'
+        : 'var(--color-text-secondary)'};
+  }
+`;
+
+const StepConnector = styled.div<{ completed: boolean }>`
+  width: 40px;
+  height: 2px;
+  background: ${(props) =>
+    props.completed ? 'var(--color-primary)' : 'var(--color-border-light)'};
+  transition: all 0.2s ease;
+`;
+
 interface EventSubmissionFormProps {
   mode?: 'create' | 'edit';
   existingEvent?: CoffeeEvent;
@@ -360,6 +424,8 @@ export default function EventSubmissionForm({
   onSuccess,
   onCancel,
 }: EventSubmissionFormProps) {
+  // 步驟狀態：編輯模式直接跳到第二步，創建模式從第一步開始
+  const [currentStep, setCurrentStep] = useState(mode === 'edit' ? 2 : 1);
   const [locationCoordinates, setLocationCoordinates] = useState<{
     lat: number;
     lng: number;
@@ -515,6 +581,24 @@ export default function EventSubmissionForm({
     setArtistSelectionModalOpen(true);
   };
 
+  // 步驟導航處理
+  const handleNextStep = () => {
+    if (currentStep === 1) {
+      // 檢查是否已選擇藝人
+      if (selectedArtists.length === 0) {
+        showToast.warning('請至少選擇一個偶像');
+        return;
+      }
+      setCurrentStep(2);
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (currentStep === 2) {
+      setCurrentStep(1);
+    }
+  };
+
   const createEventMutation = useMutation({
     mutationFn: (eventData: CreateEventRequest) => eventsApi.create(eventData),
     onSuccess: (newEvent) => {
@@ -648,285 +732,340 @@ export default function EventSubmissionForm({
         )}
       </FormHeader>
 
+      {/* 步驟指示器 - 只在創建模式顯示 */}
+      {mode === 'create' && (
+        <StepIndicator>
+          <Step active={currentStep === 1} completed={currentStep > 1}>
+            <div className="step-number">1</div>
+            <div className="step-title">選擇偶像</div>
+          </Step>
+          <StepConnector completed={currentStep > 1} />
+          <Step active={currentStep === 2} completed={false}>
+            <div className="step-number">2</div>
+            <div className="step-title">活動資訊</div>
+          </Step>
+        </StepIndicator>
+      )}
+
       <Form onSubmit={handleSubmit(onSubmit)}>
-        {/* 活動標題 */}
-        <FormGroup>
-          <Label htmlFor="title">主題名稱*</Label>
-          <Input id="title" type="text" {...register('title')} />
-          {errors.title && <ErrorText>{errors.title.message}</ErrorText>}
-        </FormGroup>
-
-        {/* 應援藝人 */}
-        <FormGroup>
-          <Label htmlFor="artistName">
-            <UserIcon />
-            應援偶像*
-          </Label>
-          <HelperText>
-            {mode === 'edit' ? '編輯模式下無法修改偶像資訊' : '若為聯合應援，可選擇多個偶像'}
-          </HelperText>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {/* 已選擇的藝人按鈕 */}
-            {selectedArtists.map((artist) => (
-              <ArtistSelectionButton
-                key={artist.id}
-                type="button"
-                onClick={mode === 'edit' ? undefined : openArtistSelectionModal}
-                className={errors.artistIds ? 'error' : ''}
-                style={{
-                  opacity: mode === 'edit' ? 0.7 : 1,
-                  cursor: mode === 'edit' ? 'not-allowed' : 'pointer',
-                  background:
-                    mode === 'edit' ? 'var(--color-bg-secondary)' : 'var(--color-bg-primary)',
-                }}
-              >
-                <SelectedArtistInfo>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <ImageContainer>
-                      <img src={artist.profileImage} alt={artist.stageName} />
-                    </ImageContainer>
-                    <div>
-                      <ArtistName>{artist.stageName}</ArtistName>
-                      {artist.realName && <ArtistRealName>({artist.realName})</ArtistRealName>}
+        {/* 第一步：選擇藝人 */}
+        {(currentStep === 1 || mode === 'edit') && (
+          <FormGroup>
+            <Label htmlFor="artistName">
+              <UserIcon />
+              應援偶像*
+            </Label>
+            <HelperText>
+              {mode === 'edit' ? '編輯模式下無法修改偶像資訊' : '若為聯合應援，可選擇多個偶像'}
+            </HelperText>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {/* 已選擇的藝人按鈕 */}
+              {selectedArtists.map((artist) => (
+                <ArtistSelectionButton
+                  key={artist.id}
+                  type="button"
+                  onClick={mode === 'edit' ? undefined : openArtistSelectionModal}
+                  className={errors.artistIds ? 'error' : ''}
+                  style={{
+                    opacity: mode === 'edit' ? 0.7 : 1,
+                    cursor: mode === 'edit' ? 'not-allowed' : 'pointer',
+                    background:
+                      mode === 'edit' ? 'var(--color-bg-secondary)' : 'var(--color-bg-primary)',
+                  }}
+                >
+                  <SelectedArtistInfo>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <ImageContainer>
+                        <img src={artist.profileImage} alt={artist.stageName} />
+                      </ImageContainer>
+                      <div>
+                        <ArtistName>{artist.stageName}</ArtistName>
+                        {artist.realName && <ArtistRealName>({artist.realName})</ArtistRealName>}
+                      </div>
                     </div>
-                  </div>
-                  {mode === 'create' && (
-                    <IconContainer>
-                      <XMarkIcon
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeArtist(artist.id);
-                        }}
-                      />
-                    </IconContainer>
-                  )}
-                </SelectedArtistInfo>
-              </ArtistSelectionButton>
-            ))}
+                    {mode === 'create' && (
+                      <IconContainer>
+                        <XMarkIcon
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeArtist(artist.id);
+                          }}
+                        />
+                      </IconContainer>
+                    )}
+                  </SelectedArtistInfo>
+                </ArtistSelectionButton>
+              ))}
 
-            {/* 新增藝人的按鈕 - 只在創建模式顯示 */}
-            {mode === 'create' && (
-              <ArtistSelectionButton
-                type="button"
-                onClick={openArtistSelectionModal}
-                className={errors.artistIds ? 'error' : ''}
-              >
-                <PlaceholderText>請選擇偶像</PlaceholderText>
-                <IconContainer>
-                  <ChevronDownIcon />
-                </IconContainer>
-              </ArtistSelectionButton>
-            )}
-          </div>
-          <input type="hidden" {...register('artistIds')} />
-          {errors.artistIds && <ErrorText>{errors.artistIds.message}</ErrorText>}
-        </FormGroup>
-
-        {/* 主視覺圖片 */}
-        <FormGroup>
-          <Label>
-            <PhotoIcon />
-            主視覺圖片*
-          </Label>
-          <HelperText>活動的主要宣傳圖片</HelperText>
-          <ImageUpload
-            currentImageUrl={mainImageUrl}
-            onUploadComplete={(imageUrl) => {
-              setMainImageUrl(imageUrl);
-              setValue('mainImage', imageUrl, {
-                shouldValidate: true,
-                shouldDirty: true,
-              });
-              showToast.success('主視覺圖片上傳成功');
-            }}
-            onImageRemove={() => {
-              setMainImageUrl('');
-              setValue('mainImage', '', {
-                shouldValidate: true,
-                shouldDirty: true,
-              });
-            }}
-            placeholder="點擊上傳主視覺圖片或拖拽至此"
-            maxSizeMB={5}
-            disabled={createEventMutation.isPending || updateEventMutation.isPending}
-            authToken={token || undefined}
-            useRealAPI={!!token}
-            enableCrop={false}
-          />
-          <input type="hidden" {...register('mainImage')} />
-          {errors.mainImage && <ErrorText>{errors.mainImage.message}</ErrorText>}
-        </FormGroup>
-
-        {/* 活動時間 */}
-        <GridContainer>
-          <FormGroup>
-            <Label htmlFor="startDate">
-              <CalendarIcon />
-              開始日期*
-            </Label>
-            <DatePicker
-              value={watch('startDate') || ''}
-              onChange={(date) => {
-                setValue('startDate', date, { shouldValidate: true, shouldDirty: true });
-                // 如果結束日期早於新的開始日期，清空結束日期
-                const endDate = watch('endDate');
-                if (endDate && new Date(endDate) < new Date(date)) {
-                  setValue('endDate', '', { shouldValidate: true, shouldDirty: true });
-                }
-              }}
-              placeholder="選擇開始日期"
-              disabled={createEventMutation.isPending || updateEventMutation.isPending}
-              error={!!errors.startDate}
-              min={new Date().toISOString().split('T')[0]}
-            />
-            {errors.startDate && <ErrorText>{errors.startDate.message}</ErrorText>}
+              {/* 新增藝人的按鈕 - 只在創建模式顯示 */}
+              {mode === 'create' && (
+                <ArtistSelectionButton
+                  type="button"
+                  onClick={openArtistSelectionModal}
+                  className={errors.artistIds ? 'error' : ''}
+                >
+                  <PlaceholderText>請選擇偶像</PlaceholderText>
+                  <IconContainer>
+                    <ChevronDownIcon />
+                  </IconContainer>
+                </ArtistSelectionButton>
+              )}
+            </div>
+            <input type="hidden" {...register('artistIds')} />
+            {errors.artistIds && <ErrorText>{errors.artistIds.message}</ErrorText>}
           </FormGroup>
+        )}
 
-          <FormGroup>
-            <Label htmlFor="endDate">
-              <CalendarIcon />
-              結束日期*
-            </Label>
-            <DatePicker
-              value={watch('endDate') || ''}
-              onChange={(date) =>
-                setValue('endDate', date, { shouldValidate: true, shouldDirty: true })
-              }
-              min={watch('startDate')}
-              placeholder="選擇結束日期"
-              disabled={
-                createEventMutation.isPending ||
-                updateEventMutation.isPending ||
-                !watch('startDate')
-              }
-              error={!!errors.endDate}
-            />
-            {!watch('startDate') && (
-              <HelperText style={{ color: '#f59e0b' }}>請先選擇開始日期</HelperText>
-            )}
-            {errors.endDate && <ErrorText>{errors.endDate.message}</ErrorText>}
-          </FormGroup>
-        </GridContainer>
-
-        {/* 活動地址 */}
-        <FormGroup>
-          <Label>
-            <MapPinIcon />
-            活動地點*
-          </Label>
-          <HelperText>搜尋店家名稱或地址</HelperText>
-          <PlaceAutocomplete
-            onPlaceSelect={handlePlaceSelect}
-            defaultValue={existingEvent?.location.address}
-          />
-          <input type="hidden" {...register('addressName')} />
-          {errors.addressName && <ErrorText>{errors.addressName.message}</ErrorText>}
-        </FormGroup>
-
-        {/* 活動描述 */}
-        <FormGroup>
-          <Label htmlFor="description">說明</Label>
-          <Textarea
-            id="description"
-            rows={10}
-            placeholder="描述活動內容與資訊，例如：活動時間/領取應援/注意事項等等"
-            {...register('description')}
-          />
-          {errors.description && <ErrorText>{errors.description.message}</ErrorText>}
-        </FormGroup>
-
-        {/* 詳細說明圖片 */}
-        <FormGroup>
-          <Label>
-            <PhotoIcon />
-            詳細說明圖片
-          </Label>
-          <HelperText>
-            活動的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳5張
-          </HelperText>
-          <MultiImageUpload
-            currentImages={detailImageUrls}
-            onImagesChange={(imageUrls) => {
-              setDetailImageUrls(imageUrls);
-              setValue('detailImage', imageUrls, {
-                shouldValidate: false,
-                shouldDirty: false,
-              });
-            }}
-            maxImages={5}
-            placeholder="點擊添加圖片"
-            maxSizeMB={5}
-            disabled={createEventMutation.isPending || updateEventMutation.isPending}
-            authToken={token || undefined}
-            useRealAPI={!!token}
-          />
-          <input type="hidden" {...register('detailImage')} />
-          {errors.detailImage && <ErrorText>{errors.detailImage.message}</ErrorText>}
-        </FormGroup>
-
-        {/* 聯絡資訊 */}
-        <SectionDivider>
-          <SectionTitle>社群媒體</SectionTitle>
-          <HelperText>
-            請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗（若聯合主辦，請寫主要公布資訊的帳號）
-          </HelperText>
-
-          <GridContainer style={{ marginTop: '8px' }}>
-            {errors.instagram && errors.instagram.type === 'custom' && (
-              <ErrorText style={{ marginTop: '8px' }}>{errors.instagram.message}</ErrorText>
-            )}
+        {/* 第二步：其他活動資訊 */}
+        {(currentStep === 2 || mode === 'edit') && (
+          <>
+            {/* 活動標題 */}
             <FormGroup>
-              <Label htmlFor="instagram">Instagram</Label>
-              <Input
-                id="instagram"
-                type="text"
-                placeholder="填寫 id 例如: boynextdoor_official"
-                {...register('instagram')}
-              />
+              <Label htmlFor="title">主題名稱*</Label>
+              <Input id="title" type="text" {...register('title')} />
+              {errors.title && <ErrorText>{errors.title.message}</ErrorText>}
             </FormGroup>
-            <FormGroup>
-              <Label htmlFor="x">X</Label>
-              <Input
-                id="x"
-                type="text"
-                placeholder="填寫 id 例如: BOYNEXTDOOR_KOZ"
-                {...register('x')}
-              />
-            </FormGroup>
-            <FormGroup>
-              <Label htmlFor="threads">Threads</Label>
-              <Input
-                id="threads"
-                type="text"
-                placeholder="填寫 id 例如: _muri.ri"
-                {...register('threads')}
-              />
-            </FormGroup>
-          </GridContainer>
-        </SectionDivider>
 
-        {/* 提交按鈕 */}
+            {/* 主視覺圖片 */}
+            <FormGroup>
+              <Label>
+                <PhotoIcon />
+                主視覺圖片*
+              </Label>
+              <HelperText>活動的主要宣傳圖片</HelperText>
+              <ImageUpload
+                currentImageUrl={mainImageUrl}
+                onUploadComplete={(imageUrl) => {
+                  setMainImageUrl(imageUrl);
+                  setValue('mainImage', imageUrl, {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  });
+                  showToast.success('主視覺圖片上傳成功');
+                }}
+                onImageRemove={() => {
+                  setMainImageUrl('');
+                  setValue('mainImage', '', {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  });
+                }}
+                placeholder="點擊上傳主視覺圖片或拖拽至此"
+                maxSizeMB={5}
+                disabled={createEventMutation.isPending || updateEventMutation.isPending}
+                authToken={token || undefined}
+                useRealAPI={!!token}
+                enableCrop={false}
+              />
+              <input type="hidden" {...register('mainImage')} />
+              {errors.mainImage && <ErrorText>{errors.mainImage.message}</ErrorText>}
+            </FormGroup>
+
+            {/* 活動時間 */}
+            <GridContainer>
+              <FormGroup>
+                <Label htmlFor="startDate">
+                  <CalendarIcon />
+                  開始日期*
+                </Label>
+                <DatePicker
+                  value={watch('startDate') || ''}
+                  onChange={(date) => {
+                    setValue('startDate', date, { shouldValidate: true, shouldDirty: true });
+                    // 如果結束日期早於新的開始日期，清空結束日期
+                    const endDate = watch('endDate');
+                    if (endDate && new Date(endDate) < new Date(date)) {
+                      setValue('endDate', '', { shouldValidate: true, shouldDirty: true });
+                    }
+                  }}
+                  placeholder="選擇開始日期"
+                  disabled={createEventMutation.isPending || updateEventMutation.isPending}
+                  error={!!errors.startDate}
+                  min={new Date().toISOString().split('T')[0]}
+                />
+                {errors.startDate && <ErrorText>{errors.startDate.message}</ErrorText>}
+              </FormGroup>
+
+              <FormGroup>
+                <Label htmlFor="endDate">
+                  <CalendarIcon />
+                  結束日期*
+                </Label>
+                <DatePicker
+                  value={watch('endDate') || ''}
+                  onChange={(date) =>
+                    setValue('endDate', date, { shouldValidate: true, shouldDirty: true })
+                  }
+                  min={watch('startDate')}
+                  placeholder="選擇結束日期"
+                  disabled={
+                    createEventMutation.isPending ||
+                    updateEventMutation.isPending ||
+                    !watch('startDate')
+                  }
+                  error={!!errors.endDate}
+                />
+                {!watch('startDate') && (
+                  <HelperText style={{ color: '#f59e0b' }}>請先選擇開始日期</HelperText>
+                )}
+                {errors.endDate && <ErrorText>{errors.endDate.message}</ErrorText>}
+              </FormGroup>
+            </GridContainer>
+
+            {/* 活動地址 */}
+            <FormGroup>
+              <Label>
+                <MapPinIcon />
+                活動地點*
+              </Label>
+              <HelperText>搜尋店家名稱或地址</HelperText>
+              <PlaceAutocomplete
+                onPlaceSelect={handlePlaceSelect}
+                defaultValue={existingEvent?.location.address}
+              />
+              <input type="hidden" {...register('addressName')} />
+              {errors.addressName && <ErrorText>{errors.addressName.message}</ErrorText>}
+            </FormGroup>
+
+            {/* 活動描述 */}
+            <FormGroup>
+              <Label htmlFor="description">說明</Label>
+              <Textarea
+                id="description"
+                rows={10}
+                placeholder="描述活動內容與資訊，例如：活動時間/領取應援/注意事項等等"
+                {...register('description')}
+              />
+              {errors.description && <ErrorText>{errors.description.message}</ErrorText>}
+            </FormGroup>
+
+            {/* 詳細說明圖片 */}
+            <FormGroup>
+              <Label>
+                <PhotoIcon />
+                詳細說明圖片
+              </Label>
+              <HelperText>
+                活動的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳5張
+              </HelperText>
+              <MultiImageUpload
+                currentImages={detailImageUrls}
+                onImagesChange={(imageUrls) => {
+                  setDetailImageUrls(imageUrls);
+                  setValue('detailImage', imageUrls, {
+                    shouldValidate: false,
+                    shouldDirty: false,
+                  });
+                }}
+                maxImages={5}
+                placeholder="點擊添加圖片"
+                maxSizeMB={5}
+                disabled={createEventMutation.isPending || updateEventMutation.isPending}
+                authToken={token || undefined}
+                useRealAPI={!!token}
+              />
+              <input type="hidden" {...register('detailImage')} />
+              {errors.detailImage && <ErrorText>{errors.detailImage.message}</ErrorText>}
+            </FormGroup>
+
+            {/* 聯絡資訊 */}
+            <SectionDivider>
+              <SectionTitle>社群媒體</SectionTitle>
+              <HelperText>
+                請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗（若聯合主辦，請寫主要公布資訊的帳號）
+              </HelperText>
+
+              <GridContainer style={{ marginTop: '8px' }}>
+                {errors.instagram && errors.instagram.type === 'custom' && (
+                  <ErrorText style={{ marginTop: '8px' }}>{errors.instagram.message}</ErrorText>
+                )}
+                <FormGroup>
+                  <Label htmlFor="instagram">Instagram</Label>
+                  <Input
+                    id="instagram"
+                    type="text"
+                    placeholder="填寫 id 例如: boynextdoor_official"
+                    {...register('instagram')}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="x">X</Label>
+                  <Input
+                    id="x"
+                    type="text"
+                    placeholder="填寫 id 例如: BOYNEXTDOOR_KOZ"
+                    {...register('x')}
+                  />
+                </FormGroup>
+                <FormGroup>
+                  <Label htmlFor="threads">Threads</Label>
+                  <Input
+                    id="threads"
+                    type="text"
+                    placeholder="填寫 id 例如: _muri.ri"
+                    {...register('threads')}
+                  />
+                </FormGroup>
+              </GridContainer>
+            </SectionDivider>
+          </>
+        )}
+
+        {/* 步驟導航按鈕 */}
         <ButtonGroup>
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={createEventMutation.isPending || updateEventMutation.isPending}
-          >
-            {createEventMutation.isPending || updateEventMutation.isPending ? (
-              <>
-                <LoadingSpinner />
-                {mode === 'edit' ? '更新中...' : '投稿中...'}
-              </>
-            ) : mode === 'edit' ? (
-              '更新活動'
-            ) : (
-              '提交投稿'
-            )}
-          </Button>
-
-          <Button type="button" variant="secondary" onClick={onCancel || (() => router.push('/'))}>
-            取消
-          </Button>
+          {mode === 'create' && currentStep === 1 ? (
+            // 第一步：下一步按鈕
+            <>
+              <Button type="button" variant="primary" onClick={handleNextStep}>
+                下一步
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onCancel || (() => router.push('/'))}
+              >
+                取消
+              </Button>
+            </>
+          ) : mode === 'create' && currentStep === 2 ? (
+            // 第二步：上一步 + 提交按鈕
+            <>
+              <Button type="button" variant="secondary" onClick={handlePrevStep}>
+                上一步
+              </Button>
+              <Button type="submit" variant="primary" disabled={createEventMutation.isPending}>
+                {createEventMutation.isPending ? (
+                  <>
+                    <LoadingSpinner />
+                    投稿中...
+                  </>
+                ) : (
+                  '提交投稿'
+                )}
+              </Button>
+            </>
+          ) : (
+            // 編輯模式：原有的按鈕
+            <>
+              <Button type="submit" variant="primary" disabled={updateEventMutation.isPending}>
+                {updateEventMutation.isPending ? (
+                  <>
+                    <LoadingSpinner />
+                    更新中...
+                  </>
+                ) : (
+                  '更新活動'
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={onCancel || (() => router.push('/'))}
+              >
+                取消
+              </Button>
+            </>
+          )}
         </ButtonGroup>
       </Form>
 
@@ -936,6 +1075,7 @@ export default function EventSubmissionForm({
           isOpen={artistSelectionModalOpen}
           onClose={() => setArtistSelectionModalOpen(false)}
           onArtistSelect={handleArtistSelect}
+          selectedArtistIds={selectedArtists.map((artist) => artist.id)}
         />
       )}
     </FormContainer>

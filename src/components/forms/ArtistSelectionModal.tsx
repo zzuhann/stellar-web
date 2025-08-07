@@ -189,6 +189,7 @@ export default function ArtistSelectionModal({
   isOpen,
   onClose,
   onArtistSelect,
+  selectedArtistIds = [],
 }: ArtistSelectionModalProps) {
   const { searchResults, searchLoading, searchQuery, searchArtists, clearSearch, setSearchQuery } =
     useSearchStore();
@@ -244,8 +245,17 @@ export default function ArtistSelectionModal({
   }, [isOpen, clearSearch]);
 
   const isSearching = searchQuery.trim().length > 0;
-  const hasSearchResults = searchResults.length > 0;
-  const hasMonthlyArtists = monthlyBirthdayArtists.length > 0;
+
+  // 過濾掉已選擇的藝人
+  const filteredSearchResults = searchResults.filter(
+    (artist) => !selectedArtistIds.includes(artist.id)
+  );
+  const filteredMonthlyArtists = monthlyBirthdayArtists.filter(
+    (artist) => !selectedArtistIds.includes(artist.id)
+  );
+
+  const hasSearchResults = filteredSearchResults.length > 0;
+  const hasMonthlyArtists = filteredMonthlyArtists.length > 0;
 
   // 計算當前月份名稱
   const currentMonth = new Date().toLocaleDateString('zh-TW', { month: 'long' });
@@ -276,7 +286,7 @@ export default function ArtistSelectionModal({
               </LoadingState>
             ) : hasSearchResults ? (
               <ArtistList>
-                {searchResults.map((artist) => (
+                {filteredSearchResults.map((artist) => (
                   <ArtistCard
                     key={artist.id}
                     artist={artist}
@@ -303,7 +313,7 @@ export default function ArtistSelectionModal({
                 <h3>本月壽星 ✨</h3>
                 <p>選擇要應援的偶像，或在上方搜尋其他偶像</p>
               </EmptyState>
-              {monthlyBirthdayArtists.map((artist) => (
+              {filteredMonthlyArtists.map((artist) => (
                 <ArtistCard
                   key={artist.id}
                   artist={artist}

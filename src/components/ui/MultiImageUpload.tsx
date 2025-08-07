@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { uploadImageToAPI, mockUpload, compressImage } from '@/lib/r2-upload';
 import styled from 'styled-components';
+import showToast from '@/lib/toast';
 
 interface MultiImageUploadProps {
   onImagesChange?: (imageUrls: string[]) => void;
@@ -276,6 +277,7 @@ export default function MultiImageUpload({
 
       // 檢查數量限制
       if (images.length + filesArray.length > maxImages) {
+        showToast.error(`最多只能上傳 ${maxImages} 張圖片`);
         setError(`最多只能上傳 ${maxImages} 張圖片`);
         return;
       }
