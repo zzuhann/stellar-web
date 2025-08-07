@@ -2,6 +2,8 @@
 
 import { useAuth } from '@/lib/auth-context';
 import { UserIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import styled from 'styled-components';
@@ -21,14 +23,6 @@ const HeaderContainer = styled.header`
   border-bottom: 1px solid var(--color-border-medium);
   box-shadow: var(--shadow-md);
   background-color: #fff;
-`;
-
-const Logo = styled.div`
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  letter-spacing: 1px;
-  cursor: pointer;
 `;
 
 const BurgerButton = styled.button`
@@ -260,12 +254,13 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
-  const handleLogoClick = () => router.push('/');
 
   return (
     <>
       <HeaderContainer>
-        <Logo onClick={handleLogoClick}>STELLAR</Logo>
+        <Link href="/">
+          <Image src="/icon-with-text.png" alt="STELLAR" width={100} height={100} />
+        </Link>
 
         {/* Desktop Navigation */}
         <DesktopNav>

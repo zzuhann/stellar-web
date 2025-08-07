@@ -14,8 +14,35 @@ const notoSansTC = Noto_Sans_TC({
 });
 
 export const metadata: Metadata = {
-  title: 'STELLAR | 生咖應援地圖',
-  description: '探索台灣各地 K-pop 藝人生日應援咖啡活動，一起參與粉絲應援！',
+  title: {
+    default: 'STELLAR | 生咖應援地圖',
+    template: '%s | STELLAR 生咖應援地圖',
+  },
+  description: '在 STELLAR 尋找在你附近的生咖應援吧！',
+  keywords: ['生咖', 'K-POP', '生日咖啡廳', '應援', 'idol'],
+  openGraph: {
+    title: 'STELLAR | 生咖應援地圖',
+    description: '在 STELLAR 尋找在你附近的生咖應援吧！',
+    images: '/og-image.png',
+  },
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/icon.png',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'STELLAR | 生咖應援地圖',
+    description: '在 STELLAR 尋找在你附近的生咖應援吧！',
+    images: '/og-image.png',
+    creator: '@STELLAR_TW',
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
