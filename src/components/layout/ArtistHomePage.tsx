@@ -39,33 +39,6 @@ const ContentWrapper = styled.div`
   gap: 16px;
 `;
 
-const PageTitle = styled.div`
-  text-align: center;
-  margin-bottom: 8px;
-
-  h1 {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin: 0 0 8px 0;
-
-    @media (min-width: 768px) {
-      font-size: 24px;
-      margin: 0 0 12px 0;
-    }
-  }
-
-  p {
-    font-size: 14px;
-    color: var(--color-text-secondary);
-    margin: 0;
-
-    @media (min-width: 768px) {
-      font-size: 16px;
-    }
-  }
-`;
-
 const WeekNavigationContainer = styled.div`
   display: flex;
   align-items: center;
@@ -363,9 +336,6 @@ export default function ArtistHomePage() {
       <MainContainer>
         <ContentWrapper>
           {/* 頁面標題 */}
-          <PageTitle>
-            <p>篩選偶像以尋找附近的生咖活動</p>
-          </PageTitle>
           <CTAButton
             onClick={() => {
               if (!user) {
@@ -406,7 +376,7 @@ export default function ArtistHomePage() {
                 setSearchModalOpen(true);
               }}
             >
-              搜尋其他偶像
+              搜尋你的偶像的生咖
             </SearchInput>
           </SearchContainer>
 

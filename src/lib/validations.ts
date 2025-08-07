@@ -72,6 +72,18 @@ export const eventSubmissionSchema = z
       message: '結束日期必須晚於或等於開始日期',
       path: ['endDate'],
     }
+  )
+  .refine(
+    (data) => {
+      const hasInstagram = data.instagram && data.instagram.trim() !== '';
+      const hasX = data.x && data.x.trim() !== '';
+      const hasThreads = data.threads && data.threads.trim() !== '';
+      return hasInstagram || hasX || hasThreads;
+    },
+    {
+      message: '請至少填寫一個社群媒體帳號（Instagram、X 或 Threads）',
+      path: ['instagram'],
+    }
   );
 
 // 型別導出

@@ -19,6 +19,7 @@ import PlaceAutocomplete from './PlaceAutocomplete';
 import ArtistSelectionModal from './ArtistSelectionModal';
 import ImageUpload from '@/components/ui/ImageUpload';
 import MultiImageUpload from '@/components/ui/MultiImageUpload';
+import DatePicker from '@/components/ui/DatePicker';
 import { useRouter } from 'next/navigation';
 import { CreateEventRequest, UpdateEventRequest, Artist, CoffeeEvent } from '@/types';
 import showToast from '@/lib/toast';
@@ -431,9 +432,6 @@ export default function EventSubmissionForm({
       : undefined,
   });
 
-  // 監聽開始日期變化，自動設定結束日期最小值
-  const startDate = watch('startDate');
-
   // 同步 selectedArtists 和 detailImageUrls 到表單
   useEffect(() => {
     setValue(
@@ -766,7 +764,21 @@ export default function EventSubmissionForm({
               <CalendarIcon />
               開始日期*
             </Label>
-            <Input id="startDate" type="date" {...register('startDate')} />
+            <DatePicker
+              value={watch('startDate') || ''}
+              onChange={(date) => {
+                setValue('startDate', date, { shouldValidate: true, shouldDirty: true });
+                // 如果結束日期早於新的開始日期，清空結束日期
+                const endDate = watch('endDate');
+                if (endDate && new Date(endDate) < new Date(date)) {
+                  setValue('endDate', '', { shouldValidate: true, shouldDirty: true });
+                }
+              }}
+              placeholder="選擇開始日期"
+              disabled={createEventMutation.isPending || updateEventMutation.isPending}
+              error={!!errors.startDate}
+              min={new Date().toISOString().split('T')[0]}
+            />
             {errors.startDate && <ErrorText>{errors.startDate.message}</ErrorText>}
           </FormGroup>
 
@@ -775,7 +787,23 @@ export default function EventSubmissionForm({
               <CalendarIcon />
               結束日期*
             </Label>
-            <Input id="endDate" type="date" min={startDate} {...register('endDate')} />
+            <DatePicker
+              value={watch('endDate') || ''}
+              onChange={(date) =>
+                setValue('endDate', date, { shouldValidate: true, shouldDirty: true })
+              }
+              min={watch('startDate')}
+              placeholder="選擇結束日期"
+              disabled={
+                createEventMutation.isPending ||
+                updateEventMutation.isPending ||
+                !watch('startDate')
+              }
+              error={!!errors.endDate}
+            />
+            {!watch('startDate') && (
+              <HelperText style={{ color: '#f59e0b' }}>請先選擇開始日期</HelperText>
+            )}
             {errors.endDate && <ErrorText>{errors.endDate.message}</ErrorText>}
           </FormGroup>
         </GridContainer>
@@ -844,20 +872,35 @@ export default function EventSubmissionForm({
           </HelperText>
 
           <GridContainer style={{ marginTop: '8px' }}>
+            {errors.instagram && errors.instagram.type === 'custom' && (
+              <ErrorText style={{ marginTop: '8px' }}>{errors.instagram.message}</ErrorText>
+            )}
             <FormGroup>
               <Label htmlFor="instagram">Instagram</Label>
-              <Input id="instagram" type="text" {...register('instagram')} />
-              {errors.instagram && <ErrorText>{errors.instagram.message}</ErrorText>}
+              <Input
+                id="instagram"
+                type="text"
+                placeholder="填寫 id 例如: boynextdoor_official"
+                {...register('instagram')}
+              />
             </FormGroup>
             <FormGroup>
               <Label htmlFor="x">X</Label>
-              <Input id="x" type="text" {...register('x')} />
-              {errors.x && <ErrorText>{errors.x.message}</ErrorText>}
+              <Input
+                id="x"
+                type="text"
+                placeholder="填寫 id 例如: BOYNEXTDOOR_KOZ"
+                {...register('x')}
+              />
             </FormGroup>
             <FormGroup>
               <Label htmlFor="threads">Threads</Label>
-              <Input id="threads" type="text" {...register('threads')} />
-              {errors.threads && <ErrorText>{errors.threads.message}</ErrorText>}
+              <Input
+                id="threads"
+                type="text"
+                placeholder="填寫 id 例如: _muri.ri"
+                {...register('threads')}
+              />
             </FormGroup>
           </GridContainer>
         </SectionDivider>

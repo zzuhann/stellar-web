@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { XMarkIcon, UserIcon } from '@heroicons/react/24/outline';
+import { UserIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { useSearchStore } from '@/store';
 import { useArtistStore } from '@/store';
@@ -67,28 +67,6 @@ const ModalHeader = styled.div`
   gap: 16px;
 `;
 
-const CloseButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: var(--color-bg-secondary);
-    color: var(--color-text-primary);
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-`;
-
 const SearchInputContainer = styled.div`
   flex: 1;
   position: relative;
@@ -117,6 +95,10 @@ const SearchInput = styled.input`
 
   &::placeholder {
     color: var(--color-text-secondary);
+  }
+
+  @media (max-width: 400px) {
+    font-size: 14px;
   }
 `;
 
@@ -272,10 +254,6 @@ export default function ArtistSelectionModal({
     <ModalOverlay isOpen={isOpen} onClick={onClose}>
       <ModalContent isOpen={isOpen} onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
-          <CloseButton onClick={onClose}>
-            <XMarkIcon />
-          </CloseButton>
-
           <SearchInputContainer>
             <UserIcon />
             <SearchInput
