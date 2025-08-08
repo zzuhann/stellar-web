@@ -763,14 +763,10 @@ export default function EventSubmissionForm({
     <FormContainer>
       <FormHeader>
         <h2>{mode === 'edit' ? '編輯生咖應援' : '投稿生咖應援'}</h2>
-        <p>
-          {mode === 'edit'
-            ? '編輯活動資訊，更新後需要重新審核'
-            : '審核通過之後其他用戶可以在地圖/列表上看到此活動!'}
-        </p>
+        {mode !== 'edit' && <p>審核通過之後其他用戶可以在地圖/列表上看到此活動!</p>}
         {mode === 'edit' && (
-          <p style={{ fontSize: '12px', color: '#888', margin: '8px 0 0 0' }}>
-            注意：無法修改活動的藝人資訊
+          <p style={{ fontSize: '14px', color: '#ef4444', margin: '8px 0 0 0' }}>
+            無法修改活動的藝人資訊
           </p>
         )}
       </FormHeader>

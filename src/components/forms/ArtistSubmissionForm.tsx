@@ -417,14 +417,10 @@ export default function ArtistSubmissionForm({
     <FormContainer>
       <FormHeader>
         <h2>{mode === 'edit' ? '編輯偶像' : '投稿偶像'}</h2>
-        <p>
-          {mode === 'edit'
-            ? '編輯偶像資訊，更新後需要重新審核'
-            : '新增偶像到我們的資料庫，審核通過後其他用戶可以為他們建立應援活動!'}
-        </p>
+        {mode !== 'edit' && <p>新增偶像到我們的資料庫，審核通過後其他用戶可以為他們建立應援活動</p>}
         {mode === 'edit' && (
-          <p style={{ fontSize: '12px', color: '#888', margin: '8px 0 0 0' }}>
-            注意：編輯後的資料將重新進入審核流程
+          <p style={{ fontSize: '14px', color: '#ef4444', margin: '8px 0 0 0' }}>
+            編輯後的資料將重新進入審核流程
           </p>
         )}
       </FormHeader>
