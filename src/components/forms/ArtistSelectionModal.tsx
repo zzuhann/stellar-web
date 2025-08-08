@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserIcon } from '@heroicons/react/24/outline';
+import { UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { useSearchStore } from '@/store';
 import { useArtistStore } from '@/store';
@@ -41,7 +41,7 @@ const ModalContent = styled.div<{ isOpen: boolean }>`
   background: var(--color-bg-primary);
   width: 100%;
   max-width: 600px;
-  height: 85vh;
+  height: 80vh;
   border-radius: 16px 16px 0 0;
   overflow: hidden;
   display: flex;
@@ -187,6 +187,28 @@ const LoadingState = styled.div`
   }
 `;
 
+const CloseButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+  }
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+`;
+
 // 獲取當月的開始和結束日期
 const getCurrentMonthRange = () => {
   const now = new Date();
@@ -296,6 +318,9 @@ export default function ArtistSelectionModal({
               autoFocus
             />
           </SearchInputContainer>
+          <CloseButton onClick={onClose}>
+            <XMarkIcon />
+          </CloseButton>
         </ModalHeader>
 
         <ResultsContainer>
@@ -321,6 +346,7 @@ export default function ArtistSelectionModal({
                 <div className="icon">😔</div>
                 <h3>找不到該偶像</h3>
                 <p>試試其他關鍵字、檢查拼寫是否正確</p>
+                <p>也可能是系統中還沒有你偶像的個人檔案 ⬇️</p>
                 <CTAButton onClick={() => router.push('/submit-artist')}>
                   點擊前往新增偶像 ✨<p>點擊後，將會跳轉至新增偶像頁面</p>
                 </CTAButton>

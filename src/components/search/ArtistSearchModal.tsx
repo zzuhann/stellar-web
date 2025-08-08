@@ -39,7 +39,7 @@ const ModalContent = styled.div<{ isOpen: boolean }>`
   background: var(--color-bg-primary);
   width: 100%;
   max-width: 600px;
-  height: 85vh;
+  height: 80vh;
   border-radius: 16px 16px 0 0;
   overflow: hidden;
   display: flex;
@@ -197,6 +197,7 @@ const CTAButton = styled.button`
   position: relative;
   left: 50%;
   transform: translateX(-50%);
+  margin-top: 16px;
 `;
 
 export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModalProps) {
@@ -239,10 +240,6 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
     <ModalOverlay isOpen={isOpen} onClick={onClose}>
       <ModalContent isOpen={isOpen} onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
-          <CloseButton onClick={onClose}>
-            <XMarkIcon />
-          </CloseButton>
-
           <SearchInputContainer>
             <MagnifyingGlassIcon />
             <SearchInput
@@ -253,6 +250,9 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
               autoFocus
             />
           </SearchInputContainer>
+          <CloseButton onClick={onClose}>
+            <XMarkIcon />
+          </CloseButton>
         </ModalHeader>
 
         <ResultsContainer>
@@ -268,17 +268,32 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
               <p>搜尋中...</p>
             </LoadingState>
           ) : hasResults ? (
-            <ArtistList>
-              {searchResults.map((artist) => {
-                return (
-                  <ArtistCard
-                    key={artist.id}
-                    artist={artist}
-                    handleArtistClick={handleArtistClick}
-                  />
-                );
-              })}
-            </ArtistList>
+            <>
+              <ArtistList>
+                {searchResults.map((artist) => {
+                  return (
+                    <ArtistCard
+                      key={artist.id}
+                      artist={artist}
+                      handleArtistClick={handleArtistClick}
+                    />
+                  );
+                })}
+              </ArtistList>
+              <CTAButton
+                onClick={() => {
+                  if (!user) {
+                    toggleAuthModal('/submit-artist');
+                  } else {
+                    router.push('/submit-artist');
+                  }
+                }}
+              >
+                找不到偶像?
+                <br />
+                點擊前往新增偶像 ✨
+              </CTAButton>
+            </>
           ) : (
             <>
               <EmptyState>

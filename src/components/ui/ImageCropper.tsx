@@ -705,82 +705,86 @@ export default function ImageCropper({
   );
 
   // 執行裁切
-  const handleCrop = useCallback(async () => {
-    const img = imageRef.current;
-    const canvas = canvasRef.current;
-    if (!img || !canvas || !imageLoaded) return;
+  const handleCrop = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+      const img = imageRef.current;
+      const canvas = canvasRef.current;
+      if (!img || !canvas || !imageLoaded) return;
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    // 設定輸出畫布大小
-    canvas.width = outputSize;
-    canvas.height = aspectRatio === 1 ? outputSize : outputSize / aspectRatio;
+      // 設定輸出畫布大小
+      canvas.width = outputSize;
+      canvas.height = aspectRatio === 1 ? outputSize : outputSize / aspectRatio;
 
-    // 計算縮放比例（考慮用戶縮放）
-    const currentImageWidth = imageSize.width * zoom;
-    const currentImageHeight = imageSize.height * zoom;
+      // 計算縮放比例（考慮用戶縮放）
+      const currentImageWidth = imageSize.width * zoom;
+      const currentImageHeight = imageSize.height * zoom;
 
-    const scaleX = img.naturalWidth / currentImageWidth;
-    const scaleY = img.naturalHeight / currentImageHeight;
+      const scaleX = img.naturalWidth / currentImageWidth;
+      const scaleY = img.naturalHeight / currentImageHeight;
 
-    // 計算相對於縮放圖片的裁切區域
-    const relativeX = cropArea.x - imagePosition.x;
-    const relativeY = cropArea.y - imagePosition.y;
+      // 計算相對於縮放圖片的裁切區域
+      const relativeX = cropArea.x - imagePosition.x;
+      const relativeY = cropArea.y - imagePosition.y;
 
-    // 計算實際裁切區域
-    const sourceX = Math.max(0, relativeX * scaleX);
-    const sourceY = Math.max(0, relativeY * scaleY);
-    const sourceWidth = cropArea.width * scaleX;
-    const sourceHeight = cropArea.height * scaleY;
+      // 計算實際裁切區域
+      const sourceX = Math.max(0, relativeX * scaleX);
+      const sourceY = Math.max(0, relativeY * scaleY);
+      const sourceWidth = cropArea.width * scaleX;
+      const sourceHeight = cropArea.height * scaleY;
 
-    // 如果是圓形裁切，建立遮罩
-    if (cropShape === 'circle') {
-      ctx.beginPath();
-      ctx.arc(
-        canvas.width / 2,
-        canvas.height / 2,
-        Math.min(canvas.width, canvas.height) / 2,
+      // 如果是圓形裁切，建立遮罩
+      if (cropShape === 'circle') {
+        ctx.beginPath();
+        ctx.arc(
+          canvas.width / 2,
+          canvas.height / 2,
+          Math.min(canvas.width, canvas.height) / 2,
+          0,
+          Math.PI * 2
+        );
+        ctx.clip();
+      }
+
+      // 繪製裁切後的圖片
+      ctx.drawImage(
+        img,
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
         0,
-        Math.PI * 2
+        0,
+        canvas.width,
+        canvas.height
       );
-      ctx.clip();
-    }
 
-    // 繪製裁切後的圖片
-    ctx.drawImage(
-      img,
-      sourceX,
-      sourceY,
-      sourceWidth,
-      sourceHeight,
-      0,
-      0,
-      canvas.width,
-      canvas.height
-    );
-
-    // 轉換為 Blob
-    canvas.toBlob(
-      (blob) => {
-        if (blob) {
-          onCropComplete(blob);
-        }
-      },
-      'image/jpeg',
-      0.9
-    );
-  }, [
-    imageLoaded,
-    cropArea,
-    imageSize,
-    imagePosition,
-    zoom,
-    outputSize,
-    aspectRatio,
-    cropShape,
-    onCropComplete,
-  ]);
+      // 轉換為 Blob
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            onCropComplete(blob);
+          }
+        },
+        'image/jpeg',
+        0.9
+      );
+    },
+    [
+      imageLoaded,
+      cropArea,
+      imageSize,
+      imagePosition,
+      zoom,
+      outputSize,
+      aspectRatio,
+      cropShape,
+      onCropComplete,
+    ]
+  );
 
   return (
     <ModalOverlay>

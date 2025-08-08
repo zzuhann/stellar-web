@@ -359,6 +359,7 @@ const StepIndicator = styled.div`
 
 const Step = styled.div<{ active: boolean; completed: boolean }>`
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 8px;
 
@@ -765,7 +766,7 @@ export default function EventSubmissionForm({
         <p>
           {mode === 'edit'
             ? '編輯活動資訊，更新後需要重新審核'
-            : '新增生咖應援，審核通過之後其他用戶可以在地圖/列表上看到此活動!'}
+            : '審核通過之後其他用戶可以在地圖/列表上看到此活動!'}
         </p>
         {mode === 'edit' && (
           <p style={{ fontSize: '12px', color: '#888', margin: '8px 0 0 0' }}>

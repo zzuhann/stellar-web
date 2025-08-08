@@ -93,9 +93,9 @@ const StatusBadge = styled.span<{ status: 'pending' | 'approved' | 'rejected' | 
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 3px 6px;
+  padding: 6px 8px;
   border-radius: var(--radius-md);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 600;
   position: absolute;
   top: 6px;

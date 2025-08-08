@@ -40,9 +40,9 @@ const ImageOverlay = styled.div<{ $isApproved: boolean; $hasActionButtons: boole
   top: 0;
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.8) 0%,
-    rgba(0, 0, 0, 0.6) 50%,
-    rgba(0, 0, 0, 0.2) 100%
+    rgba(0, 0, 0, 0.3) 0%,
+    rgba(0, 0, 0, 0.2) 50%,
+    rgba(0, 0, 0, 0.1) 100%
   );
   padding: 16px;
   color: white;
@@ -146,9 +146,9 @@ const StatusBadge = styled.span<{ status: 'pending' | 'approved' | 'rejected' }>
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  padding: 3px 6px;
+  padding: 6px 8px;
   border-radius: var(--radius-md);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 600;
   position: absolute;
   top: 6px;
