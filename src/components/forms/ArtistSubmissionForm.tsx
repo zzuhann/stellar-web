@@ -541,7 +541,7 @@ export default function ArtistSubmissionForm({
                 {mode === 'edit' ? '更新中...' : '投稿中...'}
               </>
             ) : mode === 'edit' ? (
-              '更新藝人'
+              '更新資料'
             ) : (
               '提交投稿'
             )}
