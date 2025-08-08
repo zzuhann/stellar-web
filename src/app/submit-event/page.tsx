@@ -1,27 +1,13 @@
 'use client';
 
-import { useAuth } from '@/lib/auth-context';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { Suspense } from 'react';
 import styled from 'styled-components';
-import EventSubmissionForm from '@/components/forms/EventSubmissionForm';
-import { useQuery } from '@tanstack/react-query';
-import { eventsApi } from '@/lib/api';
+import SubmitEventClient from './SubmitEventClient';
 
 // Styled Components
 const PageContainer = styled.div`
   min-height: 100vh;
   background: var(--color-bg-primary);
-`;
-
-const MainContent = styled.main`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 100px 16px 40px;
-
-  @media (min-width: 768px) {
-    padding: 100px 24px 60px;
-  }
 `;
 
 const LoadingContainer = styled.div`
@@ -61,51 +47,23 @@ const LoadingText = styled.p`
   margin: 0;
 `;
 
+function SubmitEventFallback() {
+  return (
+    <LoadingContainer>
+      <LoadingContent>
+        <LoadingSpinner />
+        <LoadingText>載入中...</LoadingText>
+      </LoadingContent>
+    </LoadingContainer>
+  );
+}
+
 export default function SubmitEventPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const editEventId = searchParams.get('edit');
-
-  // 如果是編輯模式，獲取活動資料
-  const { data: existingEvent, isLoading: loadingEvent } = useQuery({
-    queryKey: ['event', editEventId],
-    queryFn: () => eventsApi.getById(editEventId ?? ''),
-    enabled: !!editEventId,
-  });
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/');
-    }
-  }, [user, loading, router]);
-
-  if (loading || (editEventId && loadingEvent)) {
-    return (
-      <LoadingContainer>
-        <LoadingContent>
-          <LoadingSpinner />
-          <LoadingText>載入中...</LoadingText>
-        </LoadingContent>
-      </LoadingContainer>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
   return (
     <PageContainer>
-      {/* Main Content */}
-      <MainContent>
-        <EventSubmissionForm
-          mode={editEventId ? 'edit' : 'create'}
-          existingEvent={existingEvent || undefined}
-          onSuccess={() => router.push('/my-submissions')}
-          onCancel={editEventId ? () => router.push('/my-submissions') : () => router.back()}
-        />
-      </MainContent>
+      <Suspense fallback={<SubmitEventFallback />}>
+        <SubmitEventClient />
+      </Suspense>
     </PageContainer>
   );
 }
