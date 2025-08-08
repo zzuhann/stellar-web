@@ -231,16 +231,40 @@ const formatDate = (date: Date): string => {
   return `${date.getMonth() + 1}/${date.getDate()}`;
 };
 
-export default function ArtistHomePage() {
+interface ArtistHomePageProps {
+  initialArtists?: Artist[];
+}
+
+export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePageProps) {
   const router = useRouter();
   const { user, toggleAuthModal } = useAuth();
   const { artists, loading, fetchArtists } = useArtistStore();
 
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => getWeekStart(new Date()));
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // 載入當週壽星
+  // 初始化 store 數據（只在首次載入時使用 SSR 數據）
   useEffect(() => {
+    if (initialArtists.length > 0 && !isInitialized) {
+      // 使用 SSR 預取的數據初始化 store
+      useArtistStore.setState({ artists: initialArtists, loading: false });
+      setIsInitialized(true);
+    }
+  }, [initialArtists, isInitialized]);
+
+  // 載入當週壽星（當週變更時重新獲取）
+  useEffect(() => {
+    // 如果是首次載入且有初始數據，跳過 API 調用
+    const currentWeek = getWeekStart(new Date());
+    if (
+      !isInitialized &&
+      currentWeekStart.getTime() === currentWeek.getTime() &&
+      initialArtists.length > 0
+    ) {
+      return;
+    }
+
     const fetchWeekBirthdayArtists = async () => {
       const weekStart = getWeekStart(currentWeekStart);
       const weekEnd = getWeekEnd(weekStart);
@@ -263,7 +287,7 @@ export default function ArtistHomePage() {
     };
 
     fetchWeekBirthdayArtists();
-  }, [currentWeekStart, fetchArtists]);
+  }, [currentWeekStart, fetchArtists, isInitialized, initialArtists]);
 
   // 計算當前週的結束日期
   const currentWeekEnd = useMemo(() => getWeekEnd(currentWeekStart), [currentWeekStart]);

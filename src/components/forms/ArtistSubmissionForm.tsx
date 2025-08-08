@@ -517,10 +517,10 @@ export default function ArtistSubmissionForm({
         <InfoBox>
           <div className="title">投稿說明：</div>
           <ul>
-            <li>投稿的偶像將經過管理員審核</li>
-            <li>審核通過後，所有用戶都可以選擇這位偶像來投稿應援活動</li>
+            <li>投稿的偶像將經過審核</li>
+            <li>審核通過後，所有用戶都可以選擇這位偶像來建立生日應援活動</li>
             <li>請確保偶像資訊的正確性以及照片來源是否可公開使用</li>
-            <li>資料錯誤、重複的偶像投稿將被拒絕</li>
+            <li>資料錯誤、重複的偶像投稿審核不會通過</li>
           </ul>
         </InfoBox>
 
