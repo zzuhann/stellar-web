@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
 import { eventsApi } from '@/lib/api';
 import { CoffeeEvent } from '@/types';
-import Header from '@/components/layout/Header';
 import Banner from '@/components/layout/Banner';
 import { firebaseTimestampToDate } from '@/utils';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
@@ -392,8 +391,6 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
 
   return (
     <PageContainer>
-      <Header />
-
       <MainContainer>
         {isLoading && (
           <LoadingContainer>

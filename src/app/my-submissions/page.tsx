@@ -16,7 +16,6 @@ import { Artist } from '@/types';
 import { showToast } from '@/lib/toast';
 
 import styled from 'styled-components';
-import Header from '@/components/layout/Header';
 import { EyeIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { firebaseTimestampToDate } from '@/utils';
 
@@ -359,7 +358,6 @@ export default function MySubmissionsPage() {
   if (authLoading || loading) {
     return (
       <PageContainer>
-        <Header />
         <MainContainer>
           <LoadingContainer>
             <div className="spinner" />
@@ -376,8 +374,6 @@ export default function MySubmissionsPage() {
 
   return (
     <PageContainer>
-      <Header />
-
       <MainContainer>
         <ContentWrapper>
           {/* 標籤頁 */}

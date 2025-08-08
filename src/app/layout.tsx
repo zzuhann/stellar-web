@@ -5,6 +5,8 @@ import { AuthProvider } from '@/lib/auth-context';
 import { QueryProvider } from '@/lib/query-client';
 import { Toaster } from 'react-hot-toast';
 import StyledComponentsRegistry from '@/lib/styled-components-registry';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
@@ -57,6 +59,7 @@ export default function RootLayout({
         <StyledComponentsRegistry>
           <QueryProvider>
             <AuthProvider>
+              <Header />
               {children}
               <Toaster
                 position="top-center"
@@ -93,6 +96,7 @@ export default function RootLayout({
                   },
                 }}
               />
+              <Footer />
             </AuthProvider>
           </QueryProvider>
         </StyledComponentsRegistry>

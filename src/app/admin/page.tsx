@@ -17,7 +17,6 @@ import styled from 'styled-components';
 import EventPreviewModal from '@/components/events/EventPreviewModal';
 import RejectModal from '@/components/admin/RejectModal';
 import { CoffeeEvent, Artist } from '@/types';
-import Header from '@/components/layout/Header';
 import VerticalEventCard from '@/components/EventCard/VerticalEventCard';
 import VerticalArtistCard from '@/components/ArtistCard/VerticalArtistCard';
 
@@ -400,9 +399,6 @@ export default function AdminPage() {
 
   return (
     <PageContainer>
-      {/* Header */}
-      <Header />
-
       {/* Main Content */}
       <MainContainer>
         {/* Tabs */}

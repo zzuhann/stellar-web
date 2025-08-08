@@ -280,6 +280,14 @@ const Header = () => {
                   <UserMenu>
                     <UserMenuItem
                       onClick={() => {
+                        router.push('/settings');
+                        setUserMenuOpen(false);
+                      }}
+                    >
+                      設定
+                    </UserMenuItem>
+                    <UserMenuItem
+                      onClick={() => {
                         signOut();
                         setUserMenuOpen(false);
                       }}
@@ -339,6 +347,7 @@ const Header = () => {
               <MobileMenuButton onClick={() => router.push('/submit-event')}>
                 舉辦生咖應援
               </MobileMenuButton>
+              <MobileMenuButton onClick={() => router.push('/settings')}>設定</MobileMenuButton>
               <MobileMenuButton
                 onClick={() => {
                   signOut();

@@ -4,7 +4,6 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import styled from 'styled-components';
-import Header from '@/components/layout/Header';
 import EventSubmissionForm from '@/components/forms/EventSubmissionForm';
 import { useQuery } from '@tanstack/react-query';
 import { eventsApi } from '@/lib/api';
@@ -98,9 +97,6 @@ export default function SubmitEventPage() {
 
   return (
     <PageContainer>
-      {/* Header */}
-      <Header />
-
       {/* Main Content */}
       <MainContent>
         <EventSubmissionForm

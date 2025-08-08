@@ -7,7 +7,6 @@ import { useQuery } from '@tanstack/react-query';
 import { artistsApi } from '@/lib/api';
 import styled from 'styled-components';
 import ArtistSubmissionForm from '@/components/forms/ArtistSubmissionForm';
-import Header from '@/components/layout/Header';
 
 const PageContainer = styled.div`
   min-height: 100vh;
@@ -112,7 +111,6 @@ export default function SubmitArtistPage() {
   if (isEditMode && error) {
     return (
       <PageContainer>
-        <Header />
         <MainContent>
           <LoadingContainer>
             <LoadingContent>
@@ -126,7 +124,6 @@ export default function SubmitArtistPage() {
 
   return (
     <PageContainer>
-      <Header />
       <MainContent>
         <ArtistSubmissionForm
           mode={isEditMode ? 'edit' : 'create'}

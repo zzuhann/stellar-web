@@ -11,7 +11,6 @@ import styled from 'styled-components';
 import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { Artist } from '@/types';
-import Header from './Header';
 import ArtistSearchModal from '@/components/search/ArtistSearchModal';
 import ArtistCard from '../ArtistCard';
 import { getDaysUntilBirthday } from '@/utils';
@@ -20,13 +19,17 @@ import { getDaysUntilBirthday } from '@/utils';
 const PageContainer = styled.div`
   min-height: 100vh;
   background: var(--color-bg-primary);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 `;
 
 const MainContainer = styled.div`
   padding-top: 100px;
   max-width: 600px;
+  padding: 100px 30px 40px;
   margin: 0 auto;
-  padding: 100px 16px 40px;
+  width: 100%;
 
   @media (min-width: 768px) {
     padding: 100px 24px 60px;
@@ -331,8 +334,6 @@ export default function ArtistHomePage() {
 
   return (
     <PageContainer>
-      <Header />
-
       <MainContainer>
         <ContentWrapper>
           {/* 頁面標題 */}

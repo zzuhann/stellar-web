@@ -10,7 +10,6 @@ import MapComponent from '@/components/map/MapContainer';
 import { useMapData } from '@/hooks/useMapData';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useArtist } from '@/hooks/useArtist';
-import Header from './Header';
 import EventCard from '../EventCard';
 
 // Styled Components
@@ -600,9 +599,6 @@ export default function MapPageStyled() {
 
   return (
     <PageContainer>
-      {/* Header */}
-      <Header />
-
       {/* 主容器 */}
       <MainContainer>
         {/* 地圖區域 */}

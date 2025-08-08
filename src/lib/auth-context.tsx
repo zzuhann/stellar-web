@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 import { getUserData } from './auth';
@@ -14,6 +14,7 @@ interface AuthContextType {
   authModalOpen: boolean;
   toggleAuthModal: (redirectTo?: string) => void;
   redirectUrl?: string;
+  refetchUserData: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +25,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState<string>();
+
+  const refetchUserData = useCallback(async () => {
+    if (user) {
+      const appUserData = await getUserData(user.uid);
+      setUserData(appUserData);
+    }
+  }, [user]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -69,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     authModalOpen,
     toggleAuthModal,
     redirectUrl,
+    refetchUserData,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
