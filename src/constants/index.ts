@@ -12,13 +12,6 @@ export const TAIWAN_MAP_CENTER = {
   zoom: 8,
 } as const;
 
-// 狀態選項
-export const STATUS_OPTIONS = [
-  { value: 'pending', label: '待審核' },
-  { value: 'approved', label: '已通過' },
-  { value: 'rejected', label: '已拒絕' },
-] as const;
-
 // 使用者角色
 export const USER_ROLES = {
   USER: 'user',

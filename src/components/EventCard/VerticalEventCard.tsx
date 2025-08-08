@@ -177,12 +177,12 @@ const StatusBadge = styled.span<{ status: 'pending' | 'approved' | 'rejected' }>
   }}
 `;
 
-const getStatusText = (status: 'pending' | 'approved' | 'rejected') => {
+const getStatusText = (status: 'pending' | 'approved' | 'rejected', rejectedReason?: string) => {
   switch (status) {
     case 'approved':
       return '已通過';
     case 'rejected':
-      return '未通過';
+      return `未通過：${rejectedReason}`;
     case 'pending':
     default:
       return '審核中';
@@ -204,7 +204,9 @@ const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardP
     <VerticalEventCardContainer>
       <EventImage imageUrl={event.mainImage ?? ''} />
 
-      <StatusBadge status={event.status}>{getStatusText(event.status)}</StatusBadge>
+      <StatusBadge status={event.status}>
+        {getStatusText(event.status, event.rejectedReason)}
+      </StatusBadge>
 
       <ImageOverlay
         $hasActionButtons={!!actionButtons}

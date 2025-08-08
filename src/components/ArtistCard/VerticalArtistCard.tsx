@@ -137,7 +137,7 @@ const getStatusText = (
     case 'approved':
       return '已通過';
     case 'rejected':
-      return `已拒絕：${rejectedReason}`;
+      return `未通過：${rejectedReason}`;
     case 'exists':
       return '已存在';
     case 'pending':
