@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Combobox } from '@headlessui/react';
 import { ChevronUpDownIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/20/solid';
 import { useQuery } from '@tanstack/react-query';
@@ -252,39 +252,36 @@ export default function PlaceAutocomplete({
     },
   });
 
-  const handlePlaceSelect = useCallback(
-    async (prediction: PlacePrediction | null) => {
-      if (!prediction || isDisabled) {
-        setSelectedPlace(null);
-        setIsSelectedState(false);
-        return;
+  const handlePlaceSelect = async (prediction: PlacePrediction | null) => {
+    if (!prediction || isDisabled) {
+      setSelectedPlace(null);
+      setIsSelectedState(false);
+      return;
+    }
+
+    setSelectedPlace(prediction);
+    setIsSelectedState(true);
+    setQuery(prediction.structured_formatting?.main_text || prediction.description);
+
+    try {
+      const response = await api.get(`/places/details/${prediction.place_id}`);
+      const result = response.data;
+
+      if (result.geometry?.location?.lat && result.geometry?.location?.lng) {
+        const placeData = {
+          address: result.formatted_address || prediction.description,
+          coordinates: {
+            lat: result.geometry.location.lat,
+            lng: result.geometry.location.lng,
+          },
+          name: result.name,
+        };
+        onPlaceSelect(placeData);
       }
-
-      setSelectedPlace(prediction);
-      setIsSelectedState(true);
-      setQuery(prediction.structured_formatting?.main_text || prediction.description);
-
-      try {
-        const response = await api.get(`/places/details/${prediction.place_id}`);
-        const result = response.data;
-
-        if (result.geometry?.location?.lat && result.geometry?.location?.lng) {
-          const placeData = {
-            address: result.formatted_address || prediction.description,
-            coordinates: {
-              lat: result.geometry.location.lat,
-              lng: result.geometry.location.lng,
-            },
-            name: result.name,
-          };
-          onPlaceSelect(placeData);
-        }
-      } catch {
-        showToast.warning('地點詳情取得失敗');
-      }
-    },
-    [onPlaceSelect, isDisabled]
-  );
+    } catch {
+      showToast.warning('地點詳情取得失敗');
+    }
+  };
 
   return (
     <Container>

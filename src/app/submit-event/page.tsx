@@ -1,11 +1,13 @@
 'use client';
 
 import { useAuth } from '@/lib/auth-context';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import styled from 'styled-components';
 import Header from '@/components/layout/Header';
 import EventSubmissionForm from '@/components/forms/EventSubmissionForm';
+import { useQuery } from '@tanstack/react-query';
+import { eventsApi } from '@/lib/api';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -63,6 +65,15 @@ const LoadingText = styled.p`
 export default function SubmitEventPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editEventId = searchParams.get('edit');
+
+  // 如果是編輯模式，獲取活動資料
+  const { data: existingEvent, isLoading: loadingEvent } = useQuery({
+    queryKey: ['event', editEventId],
+    queryFn: () => eventsApi.getById(editEventId ?? ''),
+    enabled: !!editEventId,
+  });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -70,7 +81,7 @@ export default function SubmitEventPage() {
     }
   }, [user, loading, router]);
 
-  if (loading) {
+  if (loading || (editEventId && loadingEvent)) {
     return (
       <LoadingContainer>
         <LoadingContent>
@@ -92,7 +103,12 @@ export default function SubmitEventPage() {
 
       {/* Main Content */}
       <MainContent>
-        <EventSubmissionForm />
+        <EventSubmissionForm
+          mode={editEventId ? 'edit' : 'create'}
+          existingEvent={existingEvent || undefined}
+          onSuccess={() => router.push('/my-submissions')}
+          onCancel={editEventId ? () => router.push('/my-submissions') : () => router.back()}
+        />
       </MainContent>
     </PageContainer>
   );

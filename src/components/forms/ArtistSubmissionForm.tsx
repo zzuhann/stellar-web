@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UserIcon, CalendarIcon, PhotoIcon } from '@heroicons/react/24/outline';
@@ -11,7 +11,11 @@ import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import ImageUpload from '@/components/ui/ImageUpload';
 import DatePicker from '@/components/ui/DatePicker';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
+import { Artist } from '@/types';
+import { artistsApi } from '@/lib/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import showToast from '@/lib/toast';
 
 // Styled Components - 與其他組件保持一致的設計風格
@@ -277,13 +281,29 @@ const artistSubmissionSchema = z.object({
 
 type ArtistSubmissionFormData = z.infer<typeof artistSubmissionSchema>;
 
-export default function ArtistSubmissionForm() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
+interface ArtistSubmissionFormProps {
+  mode?: 'create' | 'edit';
+  existingArtist?: Artist;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export default function ArtistSubmissionForm({
+  mode = 'create',
+  existingArtist,
+  onSuccess,
+  onCancel,
+}: ArtistSubmissionFormProps) {
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>(
+    existingArtist?.profileImage || ''
+  );
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [pendingSubmitData, setPendingSubmitData] = useState<ArtistSubmissionFormData | null>(null);
   const router = useRouter();
   const { createArtist } = useArtistStore();
   const { user } = useAuth();
   const { token } = useAuthToken();
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -291,9 +311,51 @@ export default function ArtistSubmissionForm() {
     formState: { errors },
     watch,
     setValue,
-    reset,
   } = useForm<ArtistSubmissionFormData>({
     resolver: zodResolver(artistSubmissionSchema),
+    defaultValues: existingArtist
+      ? {
+          stageName: existingArtist.stageName,
+          realName: existingArtist.realName || '',
+          birthday: existingArtist.birthday || '',
+          profileImage: existingArtist.profileImage || '',
+        }
+      : undefined,
+  });
+
+  // 新增藝人 mutation
+  const createArtistMutation = useMutation({
+    mutationFn: createArtist,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
+      showToast.success('投稿成功');
+      onSuccess?.();
+      if (!onSuccess) {
+        router.push('/my-submissions');
+      }
+    },
+    onError: () => {
+      showToast.error('投稿失敗');
+    },
+  });
+
+  // 編輯藝人 mutation
+  const updateArtistMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      // 先更新藝人資料
+      const updatedArtist = await artistsApi.update(id, data);
+      // 然後自動重新送審
+      await artistsApi.resubmit(id);
+      return updatedArtist;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
+      showToast.success('更新成功');
+      onSuccess?.();
+    },
+    onError: () => {
+      showToast.error('藝人更新失敗');
+    },
   });
 
   const onSubmit = async (data: ArtistSubmissionFormData) => {
@@ -302,35 +364,69 @@ export default function ArtistSubmissionForm() {
       return;
     }
 
-    setIsLoading(true);
+    // 如果是編輯模式且狀態是 rejected，顯示確認彈窗
+    if (mode === 'edit' && existingArtist?.status === 'rejected') {
+      setPendingSubmitData(data);
+      setConfirmModalOpen(true);
+      return;
+    }
 
-    try {
-      // 準備藝人資料
-      const artistData = {
-        stageName: data.stageName,
-        realName: data.realName || undefined,
-        birthday: data.birthday || undefined,
-        profileImage: uploadedImageUrl || data.profileImage || undefined,
-      };
+    await submitArtistData(data);
+  };
 
-      await createArtist(artistData);
+  const submitArtistData = async (data: ArtistSubmissionFormData) => {
+    // 準備藝人資料
+    const artistData = {
+      stageName: data.stageName,
+      realName: data.realName || undefined,
+      birthday: data.birthday || undefined,
+      profileImage: uploadedImageUrl || data.profileImage || undefined,
+    };
 
-      showToast.success('投稿成功');
-
-      reset();
-      router.push(`/my-submissions`);
-    } catch {
-      showToast.error('投稿失敗');
-    } finally {
-      setIsLoading(false);
+    if (mode === 'create') {
+      createArtistMutation.mutate(artistData);
+    } else if (mode === 'edit' && existingArtist) {
+      updateArtistMutation.mutate({
+        id: existingArtist.id,
+        data: artistData,
+      });
     }
   };
+
+  const handleConfirmSubmit = () => {
+    if (pendingSubmitData) {
+      submitArtistData(pendingSubmitData);
+      setConfirmModalOpen(false);
+      setPendingSubmitData(null);
+    }
+  };
+
+  const handleCancelConfirm = () => {
+    setConfirmModalOpen(false);
+    setPendingSubmitData(null);
+  };
+
+  // 初始化時同步值
+  useEffect(() => {
+    if (uploadedImageUrl) {
+      setValue('profileImage', uploadedImageUrl);
+    }
+  }, [uploadedImageUrl, setValue]);
 
   return (
     <FormContainer>
       <FormHeader>
-        <h2>投稿偶像</h2>
-        <p>新增偶像到我們的資料庫，審核通過後其他用戶可以為他們建立應援活動!</p>
+        <h2>{mode === 'edit' ? '編輯偶像' : '投稿偶像'}</h2>
+        <p>
+          {mode === 'edit'
+            ? '編輯偶像資訊，更新後需要重新審核'
+            : '新增偶像到我們的資料庫，審核通過後其他用戶可以為他們建立應援活動!'}
+        </p>
+        {mode === 'edit' && (
+          <p style={{ fontSize: '12px', color: '#888', margin: '8px 0 0 0' }}>
+            注意：編輯後的資料將重新進入審核流程
+          </p>
+        )}
       </FormHeader>
 
       <Form onSubmit={handleSubmit(onSubmit)}>
@@ -373,7 +469,7 @@ export default function ArtistSubmissionForm() {
               setValue('birthday', date, { shouldValidate: true, shouldDirty: true })
             }
             placeholder="選擇生日"
-            disabled={isLoading}
+            disabled={createArtistMutation.isPending || updateArtistMutation.isPending}
             error={!!errors.birthday}
             max={new Date().toISOString().split('T')[0]}
           />
@@ -392,16 +488,25 @@ export default function ArtistSubmissionForm() {
             </HelperText>
 
             <ImageUpload
+              currentImageUrl={uploadedImageUrl}
               onUploadComplete={(imageUrl) => {
                 setUploadedImageUrl(imageUrl);
+                setValue('profileImage', imageUrl, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
                 showToast.success('圖片上傳成功');
               }}
               onImageRemove={() => {
                 setUploadedImageUrl('');
+                setValue('profileImage', '', {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
               }}
               placeholder="點擊上傳偶像照片或拖拽至此"
               maxSizeMB={3}
-              disabled={isLoading}
+              disabled={createArtistMutation.isPending || updateArtistMutation.isPending}
               authToken={token || undefined}
               useRealAPI={!!token}
               enableCrop={true}
@@ -425,22 +530,40 @@ export default function ArtistSubmissionForm() {
 
         {/* 提交按鈕 */}
         <ButtonGroup>
-          <Button type="submit" variant="primary" disabled={isLoading}>
-            {isLoading ? (
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={createArtistMutation.isPending || updateArtistMutation.isPending}
+          >
+            {createArtistMutation.isPending || updateArtistMutation.isPending ? (
               <>
                 <LoadingSpinner />
-                投稿中...
+                {mode === 'edit' ? '更新中...' : '投稿中...'}
               </>
+            ) : mode === 'edit' ? (
+              '更新藝人'
             ) : (
               '提交投稿'
             )}
           </Button>
 
-          <Button type="button" variant="secondary" onClick={() => router.push('/')}>
+          <Button type="button" variant="secondary" onClick={onCancel || (() => router.push('/'))}>
             取消
           </Button>
         </ButtonGroup>
       </Form>
+
+      {/* 確認彈窗 - 只在編輯模式且狀態為 rejected 時顯示 */}
+      <ConfirmModal
+        isOpen={confirmModalOpen}
+        title="確認重新送審"
+        message="是否確認所有資訊都正確？送出之後將會重新進入審核流程。"
+        onConfirm={handleConfirmSubmit}
+        onCancel={handleCancelConfirm}
+        confirmText="確認送出"
+        cancelText="取消"
+        isLoading={createArtistMutation.isPending || updateArtistMutation.isPending}
+      />
     </FormContainer>
   );
 }

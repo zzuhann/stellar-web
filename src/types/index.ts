@@ -12,7 +12,7 @@ export interface Artist {
   realName?: string; // 本名（可選）
   birthday?: string; // 生日 (YYYY-MM-DD)
   profileImage?: string; // 照片 URL
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'approved' | 'rejected' | 'exists';
   rejectedReason?: string; // 拒絕原因（只有當 status === 'rejected' 時才有）
   createdBy: string;
   createdAt: FirebaseTimestamp | string; // ISO string format
@@ -62,6 +62,67 @@ export interface User {
   photoURL?: string;
   role: 'user' | 'admin';
   createdAt: string;
+}
+
+// 用戶資料更新請求格式
+export interface UpdateUserRequest {
+  displayName?: string;
+}
+
+// 通知系統類型
+export type NotificationType =
+  | 'artist_approved'
+  | 'artist_rejected'
+  | 'event_approved'
+  | 'event_rejected'
+  | 'artist_exists';
+
+export interface UserNotification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  isRead: boolean;
+  data?: {
+    artistId?: string;
+    eventId?: string;
+    rejectedReason?: string;
+  };
+  createdAt: FirebaseTimestamp | string;
+}
+
+// 通知查詢參數
+export interface NotificationSearchParams {
+  isRead?: boolean;
+  type?: NotificationType;
+  page?: number;
+  limit?: number;
+}
+
+// 通知回應格式
+export interface NotificationsResponse {
+  notifications: UserNotification[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+  summary: {
+    unreadCount: number;
+    totalCount: number;
+  };
+}
+
+// 未讀通知數量回應
+export interface UnreadCountResponse {
+  unreadCount: number;
+}
+
+// 批量標記已讀請求
+export interface BulkReadRequest {
+  notificationIds: string[];
 }
 
 // API 回應型別
@@ -170,6 +231,30 @@ export interface CreateEventRequest {
   };
   mainImage?: string; // 主要圖片 URL
   detailImage?: string[]; // 詳細圖片 URL
+}
+
+// 藝人編輯請求格式
+export interface UpdateArtistRequest {
+  stageName?: string;
+  realName?: string;
+  birthday?: string; // YYYY-MM-DD
+  profileImage?: string;
+}
+
+// 審核請求格式
+export interface ArtistReviewRequest {
+  status: 'approved' | 'rejected' | 'exists';
+  reason?: string; // 拒絕時使用
+}
+
+export interface EventReviewRequest {
+  status: 'approved' | 'rejected';
+  reason?: string; // 拒絕時使用
+}
+
+// 拒絕請求格式
+export interface RejectRequest {
+  reason?: string;
 }
 
 // 編輯活動的請求格式

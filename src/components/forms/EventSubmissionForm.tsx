@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -20,6 +20,7 @@ import ArtistSelectionModal from './ArtistSelectionModal';
 import ImageUpload from '@/components/ui/ImageUpload';
 import MultiImageUpload from '@/components/ui/MultiImageUpload';
 import DatePicker from '@/components/ui/DatePicker';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { CreateEventRequest, UpdateEventRequest, Artist, CoffeeEvent } from '@/types';
 import showToast from '@/lib/toast';
@@ -432,6 +433,8 @@ export default function EventSubmissionForm({
   } | null>(existingEvent?.location.coordinates || null);
   const [locationAddress, setLocationAddress] = useState(existingEvent?.location.address || '');
   const [artistSelectionModalOpen, setArtistSelectionModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [pendingSubmitData, setPendingSubmitData] = useState<EventSubmissionFormData | null>(null);
   const [selectedArtists, setSelectedArtists] = useState<Artist[]>(() => {
     if (existingEvent?.artists) {
       // 將 CoffeeEvent.artists 轉換為 Artist 格式（用於顯示）
@@ -523,58 +526,53 @@ export default function EventSubmissionForm({
   }, []);
 
   // 處理地點選擇
-  const handlePlaceSelect = useCallback(
-    (place: { address: string; coordinates: { lat: number; lng: number }; name: string }) => {
-      setValue('addressName', place.name, {
+  const handlePlaceSelect = (place: {
+    address: string;
+    coordinates: { lat: number; lng: number };
+    name: string;
+  }) => {
+    setValue('addressName', place.name, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setLocationCoordinates(place.coordinates);
+    setLocationAddress(place.address);
+  };
+
+  // 處理藝人選擇
+  const handleArtistSelect = (artist: Artist) => {
+    // 檢查是否已經選擇過這個藝人
+    const isAlreadySelected = selectedArtists.some((selected) => selected.id === artist.id);
+    if (!isAlreadySelected) {
+      const newSelectedArtists = [...selectedArtists, artist];
+      setSelectedArtists(newSelectedArtists);
+      // 更新表單值，使用藝人ID陣列
+      const artistIds = newSelectedArtists.map((a) => a.id);
+      setValue('artistIds', artistIds, {
         shouldValidate: true,
         shouldDirty: true,
       });
-      setLocationCoordinates(place.coordinates);
-      setLocationAddress(place.address);
-    },
-    [setValue]
-  );
-
-  // 處理藝人選擇
-  const handleArtistSelect = useCallback(
-    (artist: Artist) => {
-      // 檢查是否已經選擇過這個藝人
-      const isAlreadySelected = selectedArtists.some((selected) => selected.id === artist.id);
-      if (!isAlreadySelected) {
-        const newSelectedArtists = [...selectedArtists, artist];
-        setSelectedArtists(newSelectedArtists);
-        // 更新表單值，使用藝人ID陣列
-        const artistIds = newSelectedArtists.map((a) => a.id);
-        setValue('artistIds', artistIds, {
-          shouldValidate: true,
-          shouldDirty: true,
-        });
-      }
-    },
-    [selectedArtists, setValue]
-  );
+    }
+  };
 
   // 移除藝人
-  const removeArtist = useCallback(
-    (artistId: string) => {
-      const newSelectedArtists = selectedArtists.filter((artist) => artist.id !== artistId);
-      setSelectedArtists(newSelectedArtists);
+  const removeArtist = (artistId: string) => {
+    const newSelectedArtists = selectedArtists.filter((artist) => artist.id !== artistId);
+    setSelectedArtists(newSelectedArtists);
 
-      if (newSelectedArtists.length > 0) {
-        const artistIds = newSelectedArtists.map((a) => a.id);
-        setValue('artistIds', artistIds, {
-          shouldValidate: true,
-          shouldDirty: true,
-        });
-      } else {
-        setValue('artistIds', [], {
-          shouldValidate: true,
-          shouldDirty: true,
-        });
-      }
-    },
-    [selectedArtists, setValue]
-  );
+    if (newSelectedArtists.length > 0) {
+      const artistIds = newSelectedArtists.map((a) => a.id);
+      setValue('artistIds', artistIds, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    } else {
+      setValue('artistIds', [], {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+  };
 
   // 打開藝人選擇 modal
   const openArtistSelectionModal = () => {
@@ -631,12 +629,38 @@ export default function EventSubmissionForm({
     },
   });
 
+  const resubmitEventMutation = useMutation({
+    mutationFn: (eventId: string) => eventsApi.resubmit(eventId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['map-data'] });
+      queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
+      showToast.success('已重新提交審核！');
+      router.push(`/my-submissions`);
+    },
+    onError: (error) => {
+      showToast.error(error instanceof Error ? error.message : '重新提交審核時發生錯誤');
+      router.push(`/my-submissions`);
+    },
+  });
+
   const onSubmit = async (data: EventSubmissionFormData) => {
     if (!user) {
       showToast.warning('請先登入');
       return;
     }
 
+    // 如果是編輯模式且狀態是 rejected，顯示確認彈窗
+    if (mode === 'edit' && existingEvent?.status === 'rejected') {
+      setPendingSubmitData(data);
+      setConfirmModalOpen(true);
+      return;
+    }
+
+    await submitEventData(data);
+  };
+
+  const submitEventData = async (data: EventSubmissionFormData) => {
     if (mode === 'create') {
       // 準備新增活動資料
       const eventData: CreateEventRequest = {
@@ -709,11 +733,29 @@ export default function EventSubmissionForm({
         { id: existingEvent.id, data: updateData },
         {
           onSuccess: () => {
-            router.push(`/my-submissions`);
+            // 如果原本狀態是 rejected，自動調用重新審核 API
+            if (existingEvent.status === 'rejected') {
+              resubmitEventMutation.mutate(existingEvent.id);
+            } else {
+              router.push(`/my-submissions`);
+            }
           },
         }
       );
     }
+  };
+
+  const handleConfirmSubmit = () => {
+    if (pendingSubmitData) {
+      submitEventData(pendingSubmitData);
+      setConfirmModalOpen(false);
+      setPendingSubmitData(null);
+    }
+  };
+
+  const handleCancelConfirm = () => {
+    setConfirmModalOpen(false);
+    setPendingSubmitData(null);
   };
 
   return (
@@ -1047,12 +1089,23 @@ export default function EventSubmissionForm({
           ) : (
             // 編輯模式：原有的按鈕
             <>
-              <Button type="submit" variant="primary" disabled={updateEventMutation.isPending}>
+              <Button
+                type="submit"
+                variant="primary"
+                disabled={updateEventMutation.isPending || resubmitEventMutation.isPending}
+              >
                 {updateEventMutation.isPending ? (
                   <>
                     <LoadingSpinner />
                     更新中...
                   </>
+                ) : resubmitEventMutation.isPending ? (
+                  <>
+                    <LoadingSpinner />
+                    重新提交審核中...
+                  </>
+                ) : existingEvent?.status === 'rejected' ? (
+                  '更新活動並重新審核'
                 ) : (
                   '更新活動'
                 )}
@@ -1078,6 +1131,18 @@ export default function EventSubmissionForm({
           selectedArtistIds={selectedArtists.map((artist) => artist.id)}
         />
       )}
+
+      {/* 確認彈窗 - 只在編輯模式且狀態為 rejected 時顯示 */}
+      <ConfirmModal
+        isOpen={confirmModalOpen}
+        title="確認重新送審"
+        message="是否確認所有資訊都正確？送出之後將會重新進入審核流程。"
+        onConfirm={handleConfirmSubmit}
+        onCancel={handleCancelConfirm}
+        confirmText="確認送出"
+        cancelText="取消"
+        isLoading={updateEventMutation.isPending || resubmitEventMutation.isPending}
+      />
     </FormContainer>
   );
 }

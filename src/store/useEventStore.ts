@@ -191,7 +191,7 @@ export const useEventStore = create<EventState>()(
         // 審核活動
         reviewEvent: async (id, status) => {
           try {
-            const updatedEvent = await eventsApi.admin.review(id, status);
+            const updatedEvent = await eventsApi.admin.review(id, { status });
             set((state) => ({
               events: state.events.map((event) => (event.id === id ? updatedEvent : event)),
               currentEvent: state.currentEvent?.id === id ? updatedEvent : state.currentEvent,
@@ -219,7 +219,7 @@ export const useEventStore = create<EventState>()(
         // 快速拒絕
         rejectEvent: async (id, reason) => {
           try {
-            const updatedEvent = await eventsApi.admin.reject(id, reason);
+            const updatedEvent = await eventsApi.admin.reject(id, { reason });
             set((state) => ({
               events: state.events.map((event) => (event.id === id ? updatedEvent : event)),
               currentEvent: state.currentEvent?.id === id ? updatedEvent : state.currentEvent,

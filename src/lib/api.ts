@@ -6,12 +6,22 @@ import { auth } from './firebase';
 import {
   Artist,
   CoffeeEvent,
+  User,
   ApiResponse,
   EventSearchParams,
   EventsResponse,
   MapDataResponse,
   CreateEventRequest,
   UpdateEventRequest,
+  UpdateArtistRequest,
+  ArtistReviewRequest,
+  EventReviewRequest,
+  RejectRequest,
+  UpdateUserRequest,
+  UserNotification,
+  NotificationSearchParams,
+  NotificationsResponse,
+  UnreadCountResponse,
 } from '@/types';
 
 // 建立 Axios 實例
@@ -56,7 +66,7 @@ api.interceptors.response.use(
 
 // 藝人 API 查詢參數
 export interface ArtistSearchParams {
-  status?: 'approved' | 'pending' | 'rejected';
+  status?: 'approved' | 'pending' | 'rejected' | 'exists';
   createdBy?: string;
   birthdayStartDate?: string; // YYYY-MM-DD
   birthdayEndDate?: string; // YYYY-MM-DD
@@ -111,17 +121,35 @@ export const artistsApi = {
     >
   ): Promise<Artist> => {
     const response = await api.post<ApiResponse<Artist>>('/artists', artist);
-    return response.data.data!;
+    return response.data.data || ({} as Artist);
   },
 
-  // 審核藝人（管理員）
+  // 編輯藝人
+  update: async (id: string, updateData: UpdateArtistRequest): Promise<Artist> => {
+    const response = await api.put(`/artists/${id}`, updateData);
+    return response.data;
+  },
+
+  // 重新送審藝人
+  resubmit: async (id: string): Promise<Artist> => {
+    const response = await api.patch(`/artists/${id}/resubmit`);
+    return response.data;
+  },
+
+  // 審核藝人（管理員）- 更新為支援 reason
+  review: async (id: string, reviewData: ArtistReviewRequest): Promise<Artist> => {
+    const response = await api.patch(`/artists/${id}/review`, reviewData);
+    return response.data;
+  },
+
+  // 審核藝人（管理員）- 舊版本保持相容性
   approve: async (id: string): Promise<void> => {
     await api.put(`/artists/${id}/approve`);
   },
 
-  // 拒絕藝人（管理員）
-  reject: async (id: string, reason?: string): Promise<void> => {
-    await api.put(`/artists/${id}/reject`, { reason });
+  // 拒絕藝人（管理員）- 更新為支援 reason
+  reject: async (id: string, rejectData?: RejectRequest): Promise<void> => {
+    await api.put(`/artists/${id}/reject`, rejectData);
   },
 
   // 獲取單一藝人詳細資料
@@ -256,6 +284,12 @@ export const eventsApi = {
     await api.delete(`/events/${id}`);
   },
 
+  // 重新送審活動
+  resubmit: async (id: string): Promise<CoffeeEvent> => {
+    const response = await api.patch(`/events/${id}/resubmit`);
+    return response.data;
+  },
+
   // 管理員專用 API
   admin: {
     // 獲取待審核活動
@@ -264,9 +298,9 @@ export const eventsApi = {
       return response.data as CoffeeEvent[];
     },
 
-    // 審核活動
-    review: async (id: string, status: 'approved' | 'rejected'): Promise<CoffeeEvent> => {
-      const response = await api.patch(`/events/${id}/review`, { status });
+    // 審核活動 - 更新為支援 reason
+    review: async (id: string, reviewData: EventReviewRequest): Promise<CoffeeEvent> => {
+      const response = await api.patch(`/events/${id}/review`, reviewData);
       return response.data as CoffeeEvent;
     },
 
@@ -276,11 +310,61 @@ export const eventsApi = {
       return response.data as CoffeeEvent;
     },
 
-    // 快速拒絕
-    reject: async (id: string, reason?: string): Promise<CoffeeEvent> => {
-      const response = await api.put(`/events/${id}/reject`, { reason });
+    // 快速拒絕 - 更新為支援 reason
+    reject: async (id: string, rejectData?: RejectRequest): Promise<CoffeeEvent> => {
+      const response = await api.put(`/events/${id}/reject`, rejectData);
       return response.data as CoffeeEvent;
     },
+  },
+};
+
+// 用戶相關 API
+export const usersApi = {
+  // 獲取用戶資料
+  getProfile: async (): Promise<User> => {
+    const response = await api.get('/users/profile');
+    return response.data as User;
+  },
+
+  // 更新用戶資料
+  updateProfile: async (updateData: UpdateUserRequest): Promise<User> => {
+    const response = await api.put('/users/profile', updateData);
+    return response.data as User;
+  },
+
+  // 獲取通知列表
+  getNotifications: async (params?: NotificationSearchParams): Promise<NotificationsResponse> => {
+    const queryParams: Record<string, string> = {};
+
+    if (params?.isRead !== undefined) queryParams.isRead = params.isRead.toString();
+    if (params?.type) queryParams.type = params.type;
+    if (params?.page) queryParams.page = params.page.toString();
+    if (params?.limit) queryParams.limit = params.limit.toString();
+
+    const response = await api.get('/users/notifications', { params: queryParams });
+    return response.data as NotificationsResponse;
+  },
+
+  // 獲取未讀通知數量
+  getUnreadCount: async (): Promise<UnreadCountResponse> => {
+    const response = await api.get('/users/notifications/unread-count');
+    return response.data as UnreadCountResponse;
+  },
+
+  // 標記單一通知為已讀
+  markNotificationAsRead: async (notificationId: string): Promise<UserNotification> => {
+    const response = await api.patch(`/users/notifications/${notificationId}/read`);
+    return response.data as UserNotification;
+  },
+
+  // 批量標記通知為已讀
+  markNotificationsAsRead: async (notificationIds: string[]): Promise<void> => {
+    await api.patch('/users/notifications/read', { notificationIds });
+  },
+
+  // 刪除通知
+  deleteNotification: async (notificationId: string): Promise<void> => {
+    await api.delete(`/users/notifications/${notificationId}`);
   },
 };
 

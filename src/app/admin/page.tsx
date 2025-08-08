@@ -8,18 +8,18 @@ import {
   XCircleIcon,
   UserIcon,
   CalendarIcon,
-  MapPinIcon,
   EyeIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 import { useEventStore, useArtistStore } from '@/store';
-import { firebaseTimestampToDate } from '@/utils';
 import showToast from '@/lib/toast';
 import styled from 'styled-components';
 import EventPreviewModal from '@/components/events/EventPreviewModal';
 import RejectModal from '@/components/admin/RejectModal';
 import { CoffeeEvent, Artist } from '@/types';
 import Header from '@/components/layout/Header';
-import { InstagramIcon, ThreadsIcon, XIcon } from '@/components/ui/SocialMediaIcons';
+import VerticalEventCard from '@/components/EventCard/VerticalEventCard';
+import VerticalArtistCard from '@/components/ArtistCard/VerticalArtistCard';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -125,104 +125,10 @@ const EmptyState = styled.div`
 `;
 
 const ItemList = styled.div`
-  .item {
-    padding: 20px;
-    border-bottom: 1px solid var(--color-border-light);
-    background: white;
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-`;
-
-const ArtistItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const ArtistInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex: 1;
-`;
-
-const ArtistAvatar = styled.div<{ imageUrl?: string }>`
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  overflow: hidden;
-  background-image: url(${(props) => props.imageUrl ?? ''});
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: var(--color-bg-secondary);
-  flex-shrink: 0;
-`;
-
-const ArtistDetails = styled.div`
-  flex: 1;
-
-  h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    margin: 0 0 4px 0;
-  }
-
-  p {
-    font-size: 14px;
-    color: var(--color-text-secondary);
-    margin: 0 0 2px 0;
-  }
-
-  .timestamp {
-    font-size: 12px;
-    color: var(--color-text-secondary);
-  }
-`;
-
-const EventItem = styled.div`
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
-`;
-
-const EventInfo = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const EventTitle = styled.h3`
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0;
-`;
-
-const EventDetails = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  flex-wrap: wrap;
-`;
-
-const DetailItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-`;
-
-const EventTimestamp = styled.div`
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  margin-top: 8px;
+  padding: 20px;
 `;
 
 const ActionButtons = styled.div`
@@ -230,9 +136,11 @@ const ActionButtons = styled.div`
   gap: 8px;
   flex-shrink: 0;
   justify-content: flex-end;
+  height: 60px;
+  align-items: center;
 `;
 
-const ActionButton = styled.button<{ variant: 'approve' | 'reject' | 'preview' }>`
+const ActionButton = styled.button<{ variant: 'approve' | 'reject' | 'preview' | 'exists' }>`
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -289,6 +197,23 @@ const ActionButton = styled.button<{ variant: 'approve' | 'reject' | 'preview' }
           &:hover:not(:disabled) {
             background: var(--color-bg-secondary);
             border-color: var(--color-border-medium);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+          }
+          
+          &:active:not(:disabled) {
+            transform: translateY(0);
+          }
+        `;
+      case 'exists':
+        return `
+          background: #f59e0b;
+          border-color: #f59e0b;
+          color: white;
+          
+          &:hover:not(:disabled) {
+            background: #d97706;
+            border-color: #d97706;
             transform: translateY(-1px);
             box-shadow: var(--shadow-sm);
           }
@@ -362,7 +287,13 @@ export default function AdminPage() {
   const [rejectingEvent, setRejectingEvent] = useState<CoffeeEvent | null>(null);
 
   // 狀態管理
-  const { artists: pendingArtists, fetchArtists, approveArtist, rejectArtist } = useArtistStore();
+  const {
+    artists: pendingArtists,
+    fetchArtists,
+    approveArtist,
+    rejectArtist,
+    markAsExists,
+  } = useArtistStore();
   const { events: pendingEvents, fetchEvents, admin } = useEventStore();
 
   // 權限檢查
@@ -400,6 +331,19 @@ export default function AdminPage() {
       await rejectArtist(artistId, reason);
       showToast.success('已拒絕此投稿');
       setRejectingArtist(null);
+      fetchArtists({ status: 'pending' });
+    } catch {
+      showToast.error('操作失敗');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExistsArtist = async (artistId: string) => {
+    setLoading(true);
+    try {
+      await markAsExists(artistId);
+      showToast.success('已標記為已存在');
       fetchArtists({ status: 'pending' });
     } catch {
       showToast.error('操作失敗');
@@ -491,21 +435,15 @@ export default function AdminPage() {
             ) : (
               <ItemList>
                 {pendingArtists.map((artist) => (
-                  <div key={artist.id} className="item">
-                    <ArtistItem>
-                      <ArtistInfo>
-                        <ArtistAvatar imageUrl={artist.profileImage} />
-                        <ArtistDetails>
-                          <h3>{artist.stageName}</h3>
-                          {artist.realName && <p>{artist.realName}</p>}
-                          {artist.birthday && (
-                            <p>生日：{new Date(artist.birthday).toLocaleDateString('zh-TW')}</p>
-                          )}
-                          <p className="timestamp">
-                            投稿時間：{new Date(artist.createdAt as string).toLocaleString('zh-TW')}
-                          </p>
-                        </ArtistDetails>
-                      </ArtistInfo>
+                  <VerticalArtistCard
+                    key={artist.id}
+                    artist={artist}
+                    submissionTime={
+                      artist.createdAt
+                        ? new Date(artist.createdAt as string).toLocaleString('zh-TW')
+                        : undefined
+                    }
+                    actionButtons={
                       <ActionButtons>
                         <ActionButton
                           variant="approve"
@@ -516,6 +454,14 @@ export default function AdminPage() {
                           通過
                         </ActionButton>
                         <ActionButton
+                          variant="exists"
+                          onClick={() => handleExistsArtist(artist.id)}
+                          disabled={loading}
+                        >
+                          <ExclamationTriangleIcon />
+                          已存在
+                        </ActionButton>
+                        <ActionButton
                           variant="reject"
                           onClick={() => setRejectingArtist(artist)}
                           disabled={loading}
@@ -524,8 +470,8 @@ export default function AdminPage() {
                           拒絕
                         </ActionButton>
                       </ActionButtons>
-                    </ArtistItem>
-                  </div>
+                    }
+                  />
                 ))}
               </ItemList>
             )}
@@ -548,72 +494,10 @@ export default function AdminPage() {
             ) : (
               <ItemList>
                 {pendingEvents.map((event) => (
-                  <div key={event.id} className="item">
-                    <EventItem>
-                      <EventInfo>
-                        <EventTitle>{event.title}</EventTitle>
-                        <EventDetails>
-                          <DetailItem>
-                            <UserIcon width={16} height={16} />
-                            {event.artists.map((artist) => artist.name).join(', ')}
-                          </DetailItem>
-                        </EventDetails>
-
-                        <EventDetails>
-                          <DetailItem>
-                            <div style={{ flexShrink: 0 }}>
-                              <MapPinIcon width={16} height={16} />
-                            </div>
-                            {event.location.name}({event.location.address})
-                          </DetailItem>
-                        </EventDetails>
-
-                        <EventDetails>
-                          <DetailItem>
-                            <CalendarIcon width={16} height={16} />
-                            {firebaseTimestampToDate(event.datetime.start).toLocaleDateString(
-                              'zh-TW'
-                            )}{' '}
-                            -{' '}
-                            {firebaseTimestampToDate(event.datetime.end).toLocaleDateString(
-                              'zh-TW'
-                            )}
-                          </DetailItem>
-                        </EventDetails>
-
-                        {event.socialMedia.instagram && (
-                          <EventDetails>
-                            <DetailItem>
-                              <InstagramIcon size={16} color="var(--color-text-secondary)" />
-                              {event.socialMedia.instagram}
-                            </DetailItem>
-                          </EventDetails>
-                        )}
-
-                        {event.socialMedia.x && (
-                          <EventDetails>
-                            <DetailItem>
-                              <XIcon size={16} color="var(--color-text-secondary)" />
-                              {event.socialMedia.x}
-                            </DetailItem>
-                          </EventDetails>
-                        )}
-
-                        {event.socialMedia.threads && (
-                          <EventDetails>
-                            <DetailItem>
-                              <ThreadsIcon size={16} color="var(--color-text-secondary)" />
-                              {event.socialMedia.threads}
-                            </DetailItem>
-                          </EventDetails>
-                        )}
-
-                        <EventTimestamp>
-                          投稿時間：
-                          {firebaseTimestampToDate(event.createdAt).toLocaleString('zh-TW')}
-                        </EventTimestamp>
-                      </EventInfo>
-
+                  <VerticalEventCard
+                    key={event.id}
+                    event={event}
+                    actionButtons={
                       <ActionButtons>
                         <ActionButton variant="preview" onClick={() => handlePreviewEvent(event)}>
                           <EyeIcon />
@@ -636,8 +520,8 @@ export default function AdminPage() {
                           拒絕
                         </ActionButton>
                       </ActionButtons>
-                    </EventItem>
-                  </div>
+                    }
+                  />
                 ))}
               </ItemList>
             )}
