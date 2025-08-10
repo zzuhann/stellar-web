@@ -501,7 +501,7 @@ export default function ArtistSubmissionForm({
                 });
               }}
               placeholder="點擊上傳偶像照片或拖拽至此"
-              maxSizeMB={3}
+              maxSizeMB={5}
               disabled={createArtistMutation.isPending || updateArtistMutation.isPending}
               authToken={token || undefined}
               useRealAPI={!!token}
