@@ -59,13 +59,13 @@ const ImageOverlay = styled.div<{ $isApproved: boolean; $hasActionButtons: boole
   `}
 `;
 
-const EventInfo = styled.div`
-  padding: 16px;
+const ButtonContainer = styled.div`
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 8px;
   height: 60px;
-  justify-content: center;
+  padding-left: 16px;
+  padding-right: 16px;
 `;
 
 const EventTitle = styled.h3`
@@ -86,7 +86,7 @@ const EventArtistSection = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 8px;
 `;
@@ -111,13 +111,13 @@ const EventArtistAvatar = styled.div<{ imageUrl?: string }>`
 `;
 
 const EventArtistName = styled.span`
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
 `;
 
 const EventArtistSeparator = styled.span`
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
   margin: 0 2px;
 `;
@@ -126,7 +126,7 @@ const EventDetails = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.8);
 `;
 
@@ -137,7 +137,7 @@ const EventDetailItem = styled.div`
 `;
 
 const SubmissionTime = styled.div`
-  font-size: 10px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
   margin-top: 4px;
 `;
@@ -241,10 +241,7 @@ const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardP
           {event.location.name && (
             <EventDetailItem>
               <MapPinIcon className="h-3 w-3 flex-shrink-0" />
-              <span>
-                {event.location.name}
-                {event.location.address && ` (${event.location.address})`}
-              </span>
+              <span>{event.location.name}</span>
             </EventDetailItem>
           )}
         </EventDetails>
@@ -252,7 +249,7 @@ const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardP
         {submissionTime && <SubmissionTime>投稿時間：{submissionTime}</SubmissionTime>}
       </ImageOverlay>
 
-      {actionButtons && <EventInfo>{actionButtons}</EventInfo>}
+      {actionButtons && <ButtonContainer>{actionButtons}</ButtonContainer>}
     </VerticalEventCardContainer>
   );
 };

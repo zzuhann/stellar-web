@@ -112,12 +112,19 @@ const PaginationDots = styled.div`
 const Dot = styled.button<{ active: boolean }>`
   width: 8px;
   height: 8px;
+  max-width: 8px;
+  max-height: 8px;
+  min-width: 8px;
+  min-height: 8px;
+  padding: 0;
+  margin: 0;
   border-radius: 50%;
-  border: none;
   background: ${(props) => (props.active ? 'white' : 'rgba(255, 255, 255, 0.3)')};
   border: ${(props) => (props.active ? 'none' : '1px solid rgba(255, 255, 255, 0.5)')};
   cursor: pointer;
   transition: all 0.2s ease;
+  box-sizing: border-box;
+  flex-shrink: 0;
 
   &:hover {
     background: ${(props) => (props.active ? 'white' : 'rgba(255, 255, 255, 0.5)')};

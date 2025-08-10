@@ -93,7 +93,7 @@ export default function SubmitArtistClient() {
       <LoadingContainer>
         <LoadingContent>
           <LoadingSpinner />
-          <LoadingText>{isEditMode ? '載入藝人資料中...' : '載入中...'}</LoadingText>
+          <LoadingText>{isEditMode ? '載入偶像資料中...' : '載入中...'}</LoadingText>
         </LoadingContent>
       </LoadingContainer>
     );
@@ -108,7 +108,7 @@ export default function SubmitArtistClient() {
       <MainContent>
         <LoadingContainer>
           <LoadingContent>
-            <LoadingText>載入藝人資料失敗，請重試</LoadingText>
+            <LoadingText>載入偶像資料失敗，請重試</LoadingText>
           </LoadingContent>
         </LoadingContainer>
       </MainContent>

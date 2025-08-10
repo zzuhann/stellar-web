@@ -24,6 +24,7 @@ const HeaderContainer = styled.header`
   border-bottom: 1px solid var(--color-border-medium);
   box-shadow: var(--shadow-md);
   background-color: #fff;
+  box-sizing: border-box;
 `;
 
 const BurgerButton = styled.button`
@@ -260,7 +261,16 @@ const Header = () => {
     <>
       <HeaderContainer>
         <Link href="/">
-          <Image src="/icon-with-text.png" alt="STELLAR" width={100} height={100} />
+          <Image
+            src="/icon-with-text.png"
+            alt="STELLAR"
+            width={120}
+            height={120}
+            style={{
+              width: '120px',
+              height: 'auto',
+            }}
+          />
         </Link>
 
         {/* Desktop Navigation */}
@@ -344,10 +354,22 @@ const Header = () => {
                   管理員審核
                 </MobileMenuButton>
               )}
-              <MobileMenuButton onClick={() => router.push('/submit-event')}>
+              <MobileMenuButton
+                onClick={() => {
+                  router.push('/submit-event');
+                  closeMobileMenu();
+                }}
+              >
                 舉辦生咖應援
               </MobileMenuButton>
-              <MobileMenuButton onClick={() => router.push('/settings')}>設定</MobileMenuButton>
+              <MobileMenuButton
+                onClick={() => {
+                  router.push('/settings');
+                  closeMobileMenu();
+                }}
+              >
+                設定
+              </MobileMenuButton>
               <MobileMenuButton
                 onClick={() => {
                   signOut();

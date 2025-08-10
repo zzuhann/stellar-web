@@ -54,30 +54,22 @@ const ImageOverlay = styled.div<{ $isRejected: boolean; $hasActionButtons: boole
   gap: 4px;
 `;
 
-const ArtistInfo = styled.div`
-  padding: 16px;
+const ButtonContainer = styled.div`
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 8px;
   height: 60px;
-  justify-content: center;
 `;
 
 const ArtistName = styled.h3`
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: white;
-  line-height: 1.2;
-`;
-
-const ArtistRealName = styled.div`
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.9);
   margin: 0;
 `;
 
 const ArtistBirthday = styled.div`
-  font-size: 12px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.8);
   display: flex;
   align-items: center;
@@ -85,7 +77,7 @@ const ArtistBirthday = styled.div`
 `;
 
 const SubmissionTime = styled.div`
-  font-size: 10px;
+  font-size: 12px;
   color: rgba(255, 255, 255, 0.7);
 `;
 
@@ -182,15 +174,16 @@ const VerticalArtistCard = ({
       )}
 
       <ImageOverlay $hasActionButtons={!!actionButtons} $isRejected={artist.status === 'rejected'}>
-        <ArtistName>{artist.stageName}</ArtistName>
-        {artist.realName && <ArtistRealName>{artist.realName}</ArtistRealName>}
+        <ArtistName>
+          {artist.stageName} {artist.realName && `(${artist.realName})`}
+        </ArtistName>
 
         {birthdayText && <ArtistBirthday>🎂 {birthdayText}</ArtistBirthday>}
 
         {submissionTime && <SubmissionTime>投稿時間：{submissionTime}</SubmissionTime>}
       </ImageOverlay>
 
-      {actionButtons && <ArtistInfo>{actionButtons}</ArtistInfo>}
+      {actionButtons && <ButtonContainer>{actionButtons}</ButtonContainer>}
     </VerticalArtistCardContainer>
   );
 };

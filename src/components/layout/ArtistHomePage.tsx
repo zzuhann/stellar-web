@@ -11,8 +11,14 @@ import styled from 'styled-components';
 import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { Artist } from '@/types';
-import ArtistSearchModal from '@/components/search/ArtistSearchModal';
+import dynamic from 'next/dynamic';
 import ArtistCard from '../ArtistCard';
+
+// 動態載入搜尋模態框，不在首次載入時打包
+const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearchModal'), {
+  ssr: false,
+  loading: () => null,
+});
 import { getDaysUntilBirthday } from '@/utils';
 
 // Styled Components
