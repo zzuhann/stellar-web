@@ -44,7 +44,7 @@ const ComboboxInput = styled(Combobox.Input)<{ isDisabled: boolean; isError: boo
   border-radius: var(--radius-lg);
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: 16px;
   transition: all 0.2s ease;
   padding-right: 40px;
 
