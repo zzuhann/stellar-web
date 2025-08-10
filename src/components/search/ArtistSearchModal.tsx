@@ -64,6 +64,12 @@ const ModalHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
+  min-width: 0; /* 允許 flex item 縮小 */
+
+  @media (max-width: 480px) {
+    padding: 16px;
+    gap: 12px;
+  }
 `;
 
 const CloseButton = styled.button`
@@ -72,10 +78,12 @@ const CloseButton = styled.button`
   justify-content: center;
   width: 32px;
   height: 32px;
+  min-width: 32px; /* 防止按鈕被壓縮 */
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0; /* 防止按鈕被壓縮 */
 
   &:hover {
     background: var(--color-bg-secondary);
@@ -90,6 +98,7 @@ const CloseButton = styled.button`
 
 const SearchInputContainer = styled.div`
   flex: 1;
+  min-width: 0; /* 允許 flex item 縮小 */
   position: relative;
   display: flex;
   align-items: center;
@@ -103,11 +112,18 @@ const SearchInputContainer = styled.div`
     width: 20px;
     height: 20px;
     color: var(--color-text-secondary);
+    flex-shrink: 0; /* 防止 icon 被壓縮 */
+  }
+
+  @media (max-width: 480px) {
+    padding: 10px 12px;
+    gap: 8px;
   }
 `;
 
 const SearchInput = styled.input`
   flex: 1;
+  min-width: 0; /* 允許 input 縮小 */
   background: transparent;
   border: none;
   color: var(--color-text-primary);
@@ -116,6 +132,10 @@ const SearchInput = styled.input`
 
   &::placeholder {
     color: var(--color-text-secondary);
+  }
+
+  @media (max-width: 480px) {
+    font-size: 16px; /* 保持 16px 避免 iOS Safari 縮放 */
   }
 `;
 
