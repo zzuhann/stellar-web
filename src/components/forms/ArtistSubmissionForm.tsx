@@ -100,11 +100,11 @@ const Input = styled.input`
   border-radius: var(--radius-lg);
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: 16px;
   transition: all 0.2s ease;
 
   &::placeholder {
-    color: var(--color-text-secondary);
+    color: var(--color-text-disabled);
   }
 
   &:focus {
@@ -208,6 +208,7 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   align-items: center;
   justify-content: center;
   gap: 8px;
+  flex: 1;
 
   ${(props) =>
     props.variant === 'primary'
@@ -215,7 +216,6 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
     background: var(--color-primary);
     border-color: var(--color-primary);
     color: white;
-    flex: 1;
     
     &:hover:not(:disabled) {
       background: #3a5d7a;
@@ -505,7 +505,7 @@ export default function ArtistSubmissionForm({
               disabled={createArtistMutation.isPending || updateArtistMutation.isPending}
               authToken={token || undefined}
               useRealAPI={!!token}
-              enableCrop={true}
+              enableCrop={mode === 'create'}
               cropAspectRatio={1}
               cropShape="square"
               cropOutputSize={400}
@@ -521,6 +521,7 @@ export default function ArtistSubmissionForm({
             <li>審核通過後，所有用戶都可以選擇這位偶像來建立生日應援活動</li>
             <li>請確保偶像資訊的正確性以及照片來源是否可公開使用</li>
             <li>資料錯誤、重複的偶像投稿審核不會通過</li>
+            <li>若有多人重複投稿偶像，將以投稿時間較早者為準</li>
           </ul>
         </InfoBox>
 

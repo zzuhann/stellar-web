@@ -11,7 +11,6 @@ const VerticalArtistCardContainer = styled.div`
   overflow: hidden;
   transition: all 0.2s ease;
   box-shadow: var(--shadow-sm);
-  cursor: pointer;
   position: relative;
   height: 360px;
 
@@ -32,7 +31,11 @@ const ArtistImage = styled.div<{ imageUrl: string }>`
   position: relative;
 `;
 
-const ImageOverlay = styled.div<{ $isRejected: boolean; $hasActionButtons: boolean }>`
+const ImageOverlay = styled.div<{
+  $isRejected: boolean;
+  $hasActionButtons: boolean;
+  $isExists: boolean;
+}>`
   position: absolute;
   bottom: ${({ $hasActionButtons }) => ($hasActionButtons ? '60px' : '0')};
   left: 0;
@@ -52,6 +55,7 @@ const ImageOverlay = styled.div<{ $isRejected: boolean; $hasActionButtons: boole
   flex-direction: column;
   justify-content: flex-end;
   gap: 4px;
+  cursor: ${({ $isExists }) => ($isExists ? 'pointer' : 'default')};
 `;
 
 const ButtonContainer = styled.div`
@@ -164,7 +168,7 @@ const VerticalArtistCard = ({
   const birthdayText = getBirthdayText(artist.birthday ?? '');
 
   return (
-    <VerticalArtistCardContainer onClick={() => onClick?.(artist)}>
+    <VerticalArtistCardContainer>
       <ArtistImage imageUrl={artist.profileImage ?? ''} />
 
       {artist.status && (
@@ -173,7 +177,16 @@ const VerticalArtistCard = ({
         </StatusBadge>
       )}
 
-      <ImageOverlay $hasActionButtons={!!actionButtons} $isRejected={artist.status === 'rejected'}>
+      <ImageOverlay
+        $hasActionButtons={!!actionButtons}
+        $isRejected={artist.status === 'rejected'}
+        $isExists={artist.status === 'exists' || artist.status === 'approved'}
+        onClick={() => {
+          if (artist.status === 'approved' || artist.status === 'exists') {
+            onClick?.(artist);
+          }
+        }}
+      >
         <ArtistName>
           {artist.stageName} {artist.realName && `(${artist.realName})`}
         </ArtistName>

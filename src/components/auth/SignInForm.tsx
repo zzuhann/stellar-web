@@ -69,7 +69,7 @@ const Input = styled.input`
   border-radius: var(--radius-lg);
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: 16px;
   transition: all 0.2s ease;
 
   &::placeholder {

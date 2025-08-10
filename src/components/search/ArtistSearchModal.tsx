@@ -116,14 +116,6 @@ const SearchInput = styled.input`
 
   &::placeholder {
     color: var(--color-text-secondary);
-    font-size: 14px;
-  }
-
-  @media (max-width: 390px) {
-    font-size: 12px;
-    &::placeholder {
-      font-size: 12px;
-    }
   }
 `;
 
@@ -252,7 +244,7 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
             <MagnifyingGlassIcon />
             <SearchInput
               type="text"
-              placeholder="搜尋：藝名(英文) 或 本名(中文)"
+              placeholder="藝名(英文) 或 本名(中文)"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               autoFocus

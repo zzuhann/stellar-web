@@ -97,7 +97,7 @@ const Input = styled.input<{ hasError?: boolean }>`
   padding: 12px 16px;
   border: 2px solid ${(props) => (props.hasError ? '#ef4444' : 'var(--color-border-light)')};
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 16px;
   transition: all 0.2s ease;
   background: white;
 

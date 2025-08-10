@@ -191,7 +191,6 @@ const WeekDay = styled.div`
   @media (max-width: 410px) {
     height: 28px;
     width: 28px;
-    font-size: 10px;
   }
 `;
 
@@ -267,7 +266,6 @@ export default function DatePicker({
     return new Date();
   });
 
-  const [_isOpen, setIsOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'calendar' | 'year' | 'month'>('calendar');
 
   // 當 value 改變時更新 currentDate
@@ -327,7 +325,7 @@ export default function DatePicker({
     return false;
   };
 
-  const handleDateSelect = (date: Date) => {
+  const handleDateSelect = (date: Date, close: () => void) => {
     if (isDisabled(date)) return;
 
     const year = date.getFullYear();
@@ -336,7 +334,7 @@ export default function DatePicker({
     const dateString = `${year}-${month}-${day}`;
 
     onChange(dateString);
-    setIsOpen(false);
+    close();
   };
 
   const goToPreviousMonth = () => {
@@ -380,7 +378,7 @@ export default function DatePicker({
   return (
     <DatePickerContainer>
       <Popover>
-        {({ open: _open }) => (
+        {({ open: _open, close }) => (
           <>
             <Popover.Button as={DateInput} error={error} disabled={disabled} type="button">
               <div>
@@ -441,7 +439,7 @@ export default function DatePicker({
                         <DayButton
                           key={index}
                           type="button"
-                          onClick={() => handleDateSelect(day)}
+                          onClick={() => handleDateSelect(day, close)}
                           isSelected={isSelected(day)}
                           isToday={isToday(day)}
                           isOtherMonth={!isCurrentMonth}
