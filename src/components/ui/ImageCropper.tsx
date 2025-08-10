@@ -485,24 +485,53 @@ export default function ImageCropper({
 
           switch (resizeHandle) {
             case 'se': // 東南角
-              newCrop.width = Math.max(minSize, prev.width + deltaX);
+              // 限制寬度不超過右邊界和底邊界
+              const maxWidthSE = imageBounds.right - prev.x;
+              const maxHeightSE = imageBounds.bottom - prev.y;
+              const maxSizeSE =
+                aspectRatio === 1
+                  ? Math.min(maxWidthSE, maxHeightSE)
+                  : Math.min(maxWidthSE, maxHeightSE * aspectRatio);
+
+              newCrop.width = Math.max(minSize, Math.min(maxSizeSE, prev.width + deltaX));
               newCrop.height = aspectRatio === 1 ? newCrop.width : newCrop.width / aspectRatio;
               break;
             case 'sw': // 西南角
-              const newWidthSW = Math.max(minSize, prev.width - deltaX);
+              const maxWidthSW = prev.x + prev.width - imageBounds.left;
+              const maxHeightSW = imageBounds.bottom - prev.y;
+              const maxSizeSW =
+                aspectRatio === 1
+                  ? Math.min(maxWidthSW, maxHeightSW)
+                  : Math.min(maxWidthSW, maxHeightSW * aspectRatio);
+
+              const newWidthSW = Math.max(minSize, Math.min(maxSizeSW, prev.width - deltaX));
               newCrop.width = newWidthSW;
               newCrop.height = aspectRatio === 1 ? newWidthSW : newWidthSW / aspectRatio;
               newCrop.x = prev.x + prev.width - newWidthSW;
               break;
             case 'ne': // 東北角
-              const newWidthNE = Math.max(minSize, prev.width + deltaX);
+              const maxWidthNE = imageBounds.right - prev.x;
+              const maxHeightNE = prev.y + prev.height - imageBounds.top;
+              const maxSizeNE =
+                aspectRatio === 1
+                  ? Math.min(maxWidthNE, maxHeightNE)
+                  : Math.min(maxWidthNE, maxHeightNE * aspectRatio);
+
+              const newWidthNE = Math.max(minSize, Math.min(maxSizeNE, prev.width + deltaX));
               const newHeightNE = aspectRatio === 1 ? newWidthNE : newWidthNE / aspectRatio;
               newCrop.width = newWidthNE;
               newCrop.height = newHeightNE;
               newCrop.y = prev.y + prev.height - newHeightNE;
               break;
             case 'nw': // 西北角
-              const newWidthNW = Math.max(minSize, prev.width - deltaX);
+              const maxWidthNW = prev.x + prev.width - imageBounds.left;
+              const maxHeightNW = prev.y + prev.height - imageBounds.top;
+              const maxSizeNW =
+                aspectRatio === 1
+                  ? Math.min(maxWidthNW, maxHeightNW)
+                  : Math.min(maxWidthNW, maxHeightNW * aspectRatio);
+
+              const newWidthNW = Math.max(minSize, Math.min(maxSizeNW, prev.width - deltaX));
               const newHeightNW = aspectRatio === 1 ? newWidthNW : newWidthNW / aspectRatio;
               newCrop.width = newWidthNW;
               newCrop.height = newHeightNW;
@@ -510,18 +539,6 @@ export default function ImageCropper({
               newCrop.y = prev.y + prev.height - newHeightNW;
               break;
           }
-
-          // 限制在圖片邊界內
-          newCrop.x = Math.max(
-            imageBounds.left,
-            Math.min(imageBounds.right - newCrop.width, newCrop.x)
-          );
-          newCrop.y = Math.max(
-            imageBounds.top,
-            Math.min(imageBounds.bottom - newCrop.height, newCrop.y)
-          );
-          newCrop.width = Math.min(imageBounds.width, newCrop.width);
-          newCrop.height = Math.min(imageBounds.height, newCrop.height);
 
           return newCrop;
         });
@@ -577,24 +594,53 @@ export default function ImageCropper({
 
           switch (resizeHandle) {
             case 'se': // 東南角
-              newCrop.width = Math.max(minSize, prev.width + deltaX);
+              // 限制寬度不超過右邊界和底邊界
+              const maxWidthSE = imageBounds.right - prev.x;
+              const maxHeightSE = imageBounds.bottom - prev.y;
+              const maxSizeSE =
+                aspectRatio === 1
+                  ? Math.min(maxWidthSE, maxHeightSE)
+                  : Math.min(maxWidthSE, maxHeightSE * aspectRatio);
+
+              newCrop.width = Math.max(minSize, Math.min(maxSizeSE, prev.width + deltaX));
               newCrop.height = aspectRatio === 1 ? newCrop.width : newCrop.width / aspectRatio;
               break;
             case 'sw': // 西南角
-              const newWidthSW = Math.max(minSize, prev.width - deltaX);
+              const maxWidthSW = prev.x + prev.width - imageBounds.left;
+              const maxHeightSW = imageBounds.bottom - prev.y;
+              const maxSizeSW =
+                aspectRatio === 1
+                  ? Math.min(maxWidthSW, maxHeightSW)
+                  : Math.min(maxWidthSW, maxHeightSW * aspectRatio);
+
+              const newWidthSW = Math.max(minSize, Math.min(maxSizeSW, prev.width - deltaX));
               newCrop.width = newWidthSW;
               newCrop.height = aspectRatio === 1 ? newWidthSW : newWidthSW / aspectRatio;
               newCrop.x = prev.x + prev.width - newWidthSW;
               break;
             case 'ne': // 東北角
-              const newWidthNE = Math.max(minSize, prev.width + deltaX);
+              const maxWidthNE = imageBounds.right - prev.x;
+              const maxHeightNE = prev.y + prev.height - imageBounds.top;
+              const maxSizeNE =
+                aspectRatio === 1
+                  ? Math.min(maxWidthNE, maxHeightNE)
+                  : Math.min(maxWidthNE, maxHeightNE * aspectRatio);
+
+              const newWidthNE = Math.max(minSize, Math.min(maxSizeNE, prev.width + deltaX));
               const newHeightNE = aspectRatio === 1 ? newWidthNE : newWidthNE / aspectRatio;
               newCrop.width = newWidthNE;
               newCrop.height = newHeightNE;
               newCrop.y = prev.y + prev.height - newHeightNE;
               break;
             case 'nw': // 西北角
-              const newWidthNW = Math.max(minSize, prev.width - deltaX);
+              const maxWidthNW = prev.x + prev.width - imageBounds.left;
+              const maxHeightNW = prev.y + prev.height - imageBounds.top;
+              const maxSizeNW =
+                aspectRatio === 1
+                  ? Math.min(maxWidthNW, maxHeightNW)
+                  : Math.min(maxWidthNW, maxHeightNW * aspectRatio);
+
+              const newWidthNW = Math.max(minSize, Math.min(maxSizeNW, prev.width - deltaX));
               const newHeightNW = aspectRatio === 1 ? newWidthNW : newWidthNW / aspectRatio;
               newCrop.width = newWidthNW;
               newCrop.height = newHeightNW;
@@ -602,18 +648,6 @@ export default function ImageCropper({
               newCrop.y = prev.y + prev.height - newHeightNW;
               break;
           }
-
-          // 限制在圖片邊界內
-          newCrop.x = Math.max(
-            imageBounds.left,
-            Math.min(imageBounds.right - newCrop.width, newCrop.x)
-          );
-          newCrop.y = Math.max(
-            imageBounds.top,
-            Math.min(imageBounds.bottom - newCrop.height, newCrop.y)
-          );
-          newCrop.width = Math.min(imageBounds.width, newCrop.width);
-          newCrop.height = Math.min(imageBounds.height, newCrop.height);
 
           return newCrop;
         });
