@@ -610,6 +610,7 @@ export default function MapPageStyled() {
                 userLocation={latitude && longitude ? { lat: latitude, lng: longitude } : null}
                 onMarkerClick={handleMarkerClick}
                 selectedEventId={selectedEventId}
+                artistData={artistData}
               />
             </MapInner>
 
@@ -652,9 +653,7 @@ export default function MapPageStyled() {
                 ) : (
                   <>
                     {artistData?.stageName} |{' '}
-                    {mapEvents.length > 0
-                      ? `目前有 ${mapEvents.length} 個生咖活動`
-                      : '目前沒有正在舉行的生咖'}
+                    {mapEvents.length > 0 ? `${mapEvents.length} 個生咖` : '目前沒有生咖'}
                   </>
                 )}
               </HandleBarText>
@@ -680,7 +679,7 @@ export default function MapPageStyled() {
                 <>
                   <EmptyState>
                     <div className="icon">😣</div>
-                    <h3>目前{artistData?.stageName}沒有正在舉行的生咖應援</h3>
+                    <h3>目前{artistData?.stageName}沒有生咖</h3>
                   </EmptyState>
                   <CTAButton
                     onClick={() => {

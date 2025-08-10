@@ -210,6 +210,7 @@ interface MapComponentProps {
   onMarkerClick?: (eventId: string) => void;
   selectedEventId?: string | null;
   userLocation?: { lat: number; lng: number } | null;
+  artistData?: { profileImage?: string; stageName?: string } | null;
 }
 
 export default function MapComponent({
@@ -218,6 +219,7 @@ export default function MapComponent({
   onMarkerClick,
   selectedEventId,
   userLocation,
+  artistData,
 }: MapComponentProps) {
   const { center, selectMarker, setCenter } = useMapStore();
   const [isMounted, setIsMounted] = useState(false);
@@ -330,20 +332,72 @@ export default function MapComponent({
           }}
           iconCreateFunction={(cluster: { getChildCount(): number }) => {
             const count = cluster.getChildCount();
+
+            // 決定 cluster 大小
+            let size = 50;
             let className = 'marker-cluster-small';
 
             if (count < 10) {
+              size = 50;
               className = 'marker-cluster-small';
             } else if (count < 100) {
+              size = 60;
               className = 'marker-cluster-medium';
             } else {
+              size = 70;
               className = 'marker-cluster-large';
             }
 
+            // 如果有 artist profileImage，使用自定義樣式
+            if (artistData?.profileImage) {
+              const html = `
+                <div style="
+                  width: ${size}px;
+                  height: ${size}px;
+                  border-radius: 50%;
+                  background-image: url('${artistData.profileImage}');
+                  background-size: cover;
+                  background-position: center;
+                  background-repeat: no-repeat;
+                  border: 3px solid white;
+                  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                  position: relative;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                ">
+                  <div style="
+                    background: rgba(0, 0, 0, 0.2);
+                    // backdrop-filter: blur(2px);
+                    color: #fff;
+                    border-radius: 50%;
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 18px;
+                    font-weight: bold;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                  ">
+                    ${count}
+                  </div>
+                </div>
+              `;
+
+              return new DivIcon({
+                html: html,
+                className: '',
+                iconSize: new Point(size, size),
+                iconAnchor: [size / 2, size / 2],
+              });
+            }
+
+            // 預設樣式（沒有 artist profileImage 時）
             return new DivIcon({
               html: `<div><span>${count}</span></div>`,
               className: `marker-cluster ${className}`,
-              iconSize: new Point(40, 40),
+              iconSize: new Point(size, size),
             });
           }}
         >
