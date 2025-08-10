@@ -317,8 +317,9 @@ export default function ImageCropper({
     const img = imageRef.current;
     if (!img) return;
 
-    // 動態計算容器大小，最大400px
-    const maxContainerSize = 400;
+    // 動態計算容器大小，根據螢幕大小調整
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768;
+    const maxContainerSize = isMobile ? Math.min(280, window.innerWidth - 80) : 400;
     const imgRatio = img.naturalWidth / img.naturalHeight;
 
     let containerWidth, containerHeight;
@@ -578,7 +579,7 @@ export default function ImageCropper({
       if (!isDragging && !isResizing) return;
       if (e.touches.length !== 1) return;
 
-      e.preventDefault();
+      // 移除 preventDefault() 以避免 passive event listener 錯誤
       const rect = e.currentTarget.getBoundingClientRect();
       const x = e.touches[0].clientX - rect.left;
       const y = e.touches[0].clientY - rect.top;
