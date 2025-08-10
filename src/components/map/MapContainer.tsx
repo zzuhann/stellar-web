@@ -204,6 +204,23 @@ function MapEventHandler() {
   return null;
 }
 
+// 地圖中心點更新器組件
+function MapCenterUpdater() {
+  const { center } = useMapStore();
+  const map = useMapEvents({});
+
+  useEffect(() => {
+    if (map && center) {
+      map.setView([center.lat, center.lng], center.zoom, {
+        animate: true,
+        duration: 0.5,
+      });
+    }
+  }, [map, center.lat, center.lng, center.zoom]);
+
+  return null;
+}
+
 interface MapComponentProps {
   events?: MapEvent[];
   onEventSelect?: (event: { id: string }) => void;
@@ -314,6 +331,9 @@ export default function MapComponent({
 
         {/* 地圖事件監聽器 */}
         <MapEventHandler />
+
+        {/* 地圖中心點更新器 */}
+        <MapCenterUpdater />
 
         {/* 用戶位置標記 */}
         {userLocation && (
