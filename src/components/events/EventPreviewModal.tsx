@@ -6,6 +6,7 @@ import Banner from '@/components/layout/Banner';
 import { firebaseTimestampToDate } from '@/utils';
 import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
+import Image from 'next/image';
 
 interface EventPreviewModalProps {
   event: CoffeeEvent;
@@ -384,6 +385,27 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
             </DescriptionSection>
           )}
         </ContentSection>
+
+        {/* Banner 項目圖片 - 滿版顯示 */}
+        <div>
+          {getBannerItems().map((item, index) => (
+            <div key={item.id}>
+              <Image
+                src={item.imageUrl}
+                alt={item.title}
+                width={800}
+                height={600}
+                quality={95}
+                priority={index === 0}
+                style={{
+                  width: '100%',
+                  height: 'auto',
+                  display: 'block',
+                }}
+              />
+            </div>
+          ))}
+        </div>
       </ModalContent>
     </ModalOverlay>
   );

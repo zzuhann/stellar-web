@@ -4,7 +4,10 @@ const nextConfig = {
     styledComponents: true,
   },
   images: {
-    domains: ['pub-b7b01bb9cbef44f2bdd3b7b3a5c1b4b7.r2.dev'], // R2 G�
+    domains: [
+      'pub-b7b01bb9cbef44f2bdd3b7b3a5c1b4b7.r2.dev',
+      'pub-1ea260dddf7f40e4b473626d08cc1689.r2.dev',
+    ], // R2 G�
   },
 };
 
