@@ -7,6 +7,7 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { signUpSchema, SignUpFormData } from '@/lib/validations';
 import { signUp } from '@/lib/auth';
+import { useAuth } from '@/lib/auth-context';
 import showToast from '@/lib/toast';
 
 interface SignUpFormProps {
@@ -206,6 +207,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { refetchUserData } = useAuth();
 
   const {
     register,
@@ -226,6 +228,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
         setError('root', { message: error });
         showToast.error('註冊失敗');
       } else if (user) {
+        await refetchUserData();
         showToast.success('註冊成功');
         onSuccess?.();
       }

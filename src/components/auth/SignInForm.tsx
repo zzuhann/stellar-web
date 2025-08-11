@@ -7,6 +7,7 @@ import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { signInSchema, SignInFormData } from '@/lib/validations';
 import { signIn, signInWithGoogle } from '@/lib/auth';
+import { useAuth } from '@/lib/auth-context';
 import showToast from '@/lib/toast';
 
 interface SignInFormProps {
@@ -283,6 +284,7 @@ export default function SignInForm({
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const { refetchUserData } = useAuth();
 
   const {
     register,
@@ -303,6 +305,7 @@ export default function SignInForm({
         setError('root', { message: error });
         showToast.error('登入失敗');
       } else if (user) {
+        await refetchUserData();
         showToast.success('登入成功');
         onSuccess?.();
       }
@@ -324,6 +327,7 @@ export default function SignInForm({
       if (error) {
         showToast.error('Google 登入失敗');
       } else if (user) {
+        await refetchUserData();
         showToast.success('登入成功');
         onSuccess?.();
       }
