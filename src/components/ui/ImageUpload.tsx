@@ -244,6 +244,12 @@ export default function ImageUpload({
   const [isLoading, setIsLoading] = useState(false);
   const [showCropper, setShowCropper] = useState(false);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
+  const [lastCropArea, setLastCropArea] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 驗證檔案
@@ -333,7 +339,15 @@ export default function ImageUpload({
 
   // 處理裁切完成
   const handleCropComplete = useCallback(
-    async (croppedBlob: Blob) => {
+    async (
+      croppedBlob: Blob,
+      cropArea?: { x: number; y: number; width: number; height: number }
+    ) => {
+      // 保存裁切區域
+      if (cropArea) {
+        setLastCropArea(cropArea);
+      }
+
       // 將 Blob 轉換為 File
       const croppedFile = new File([croppedBlob], `cropped-${Date.now()}.jpg`, {
         type: 'image/jpeg',
@@ -355,8 +369,7 @@ export default function ImageUpload({
   // 取消裁切
   const handleCropCancel = useCallback(() => {
     setShowCropper(false);
-    setOriginalFile(null);
-    setPreviewUrl(null);
+    // 不重置 originalFile 和 previewUrl，保持當前狀態
   }, []);
 
   // 處理檔案輸入變化
@@ -511,6 +524,7 @@ export default function ImageUpload({
           aspectRatio={cropAspectRatio}
           cropShape={cropShape}
           outputSize={cropOutputSize}
+          initialCropArea={lastCropArea}
         />
       )}
     </UploadContainer>

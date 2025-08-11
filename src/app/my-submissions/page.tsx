@@ -453,7 +453,7 @@ export default function MySubmissionsPage() {
                 <EmptyState>
                   <div className="icon">🍰</div>
                   <h3>還沒有舉辦過生咖</h3>
-                  <p>如果你是生咖主辦，可以點擊前往投稿生咖 ✨</p>
+                  <p>如果你是生咖主辦，可以點擊投稿生咖 ✨</p>
                   <CTAButton onClick={() => router.push('/submit-event')}>前往投稿</CTAButton>
                 </EmptyState>
               ) : (

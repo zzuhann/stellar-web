@@ -18,11 +18,12 @@ interface CropArea {
 
 interface ImageCropperProps {
   imageUrl: string;
-  onCropComplete: (croppedImageBlob: Blob) => void;
+  onCropComplete: (croppedImageBlob: Blob, cropArea?: CropArea) => void;
   onCancel: () => void;
   aspectRatio?: number; // 1 = 正方形, 16/9 = 寬螢幕等
   cropShape?: 'square' | 'circle'; // 裁切形狀
   outputSize?: number; // 輸出尺寸（正方形的邊長）
+  initialCropArea?: CropArea | null; // 初始裁切區域
 }
 
 // Styled Components
@@ -298,6 +299,7 @@ export default function ImageCropper({
   aspectRatio = 1, // 預設正方形
   cropShape = 'square',
   outputSize = 400,
+  initialCropArea = null,
 }: ImageCropperProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
@@ -345,19 +347,25 @@ export default function ImageCropper({
     // 圖片位置設為 (0,0)，填滿整個容器
     setImagePosition({ x: 0, y: 0 });
 
-    // 設定初始裁切區域（居中）
-    const minSize = Math.min(displayWidth, displayHeight) * 0.6;
-    const size = aspectRatio === 1 ? minSize : Math.min(minSize, minSize / aspectRatio);
+    // 設定初始裁切區域
+    if (initialCropArea) {
+      // 如果有之前的裁切區域，使用它
+      setCropArea(initialCropArea);
+    } else {
+      // 否則使用預設的居中裁切區域
+      const minSize = Math.min(displayWidth, displayHeight) * 0.6;
+      const size = aspectRatio === 1 ? minSize : Math.min(minSize, minSize / aspectRatio);
 
-    setCropArea({
-      x: (displayWidth - size) / 2,
-      y: (displayHeight - size) / 2,
-      width: size,
-      height: size / aspectRatio,
-    });
+      setCropArea({
+        x: (displayWidth - size) / 2,
+        y: (displayHeight - size) / 2,
+        width: size,
+        height: size / aspectRatio,
+      });
+    }
 
     setImageLoaded(true);
-  }, [aspectRatio]);
+  }, [aspectRatio, initialCropArea]);
 
   // 獲取圖片的實際邊界
   const getImageBounds = useCallback(() => {
@@ -801,7 +809,8 @@ export default function ImageCropper({
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            onCropComplete(blob);
+            // 傳遞當前的裁切區域給回調函數
+            onCropComplete(blob, cropArea);
           }
         },
         'image/jpeg',
