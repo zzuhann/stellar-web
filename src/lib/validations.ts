@@ -48,14 +48,14 @@ export const eventSubmissionSchema = z
   .object({
     title: z
       .string()
-      .min(1, '請輸入活動標題')
-      .min(5, '活動標題至少需要5個字元')
-      .max(100, '活動標題不能超過100個字元'),
-    artistIds: z.array(z.string()).min(1, '請至少選擇一個偶像').max(10, '最多只能選擇10個偶像'),
-    description: z.string().max(1000, '活動描述不能超過1000個字元').optional(),
+      .min(1, '請輸入標題')
+      .min(5, '標題至少需要 5 個字')
+      .max(100, '標題不能超過 100 個字'),
+    artistIds: z.array(z.string()).min(1, '請至少選擇一個偶像').max(10, '最多只能選擇 10 個偶像'),
+    description: z.string().max(1500, '描述不能超過 1500 個字').optional(),
     startDate: z.string().min(1, '請選擇開始日期'),
     endDate: z.string().min(1, '請選擇結束日期'),
-    addressName: z.string().min(1, '請輸入活動地點').max(200, '地址不能超過200個字元'),
+    addressName: z.string().min(1, '請輸入活動地點').max(200, '地址不能超過200個字'),
     instagram: z.string().optional().or(z.literal('')),
     x: z.string().optional().or(z.literal('')),
     threads: z.string().optional().or(z.literal('')),

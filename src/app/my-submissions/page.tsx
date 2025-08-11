@@ -299,7 +299,7 @@ export default function MySubmissionsPage() {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['map-data'] });
       queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
-      showToast.success('活動刪除成功');
+      showToast.success('刪除成功');
     },
     onError: (error) => {
       showToast.error(error instanceof Error ? error.message : '刪除活動時發生錯誤');

@@ -334,8 +334,10 @@ export default function ArtistSubmissionForm({
         router.push('/my-submissions');
       }
     },
-    onError: () => {
-      showToast.error('投稿失敗');
+    onError: (error: any) => {
+      // 從後端錯誤回應中提取錯誤訊息
+      const errorMessage = error?.response?.data?.error || '投稿失敗';
+      showToast.error(errorMessage);
     },
   });
 
@@ -353,8 +355,10 @@ export default function ArtistSubmissionForm({
       showToast.success('更新成功');
       onSuccess?.();
     },
-    onError: () => {
-      showToast.error('藝人更新失敗');
+    onError: (error: any) => {
+      // 從後端錯誤回應中提取錯誤訊息
+      const errorMessage = error?.response?.data?.error || '藝人更新失敗';
+      showToast.error(errorMessage);
     },
   });
 

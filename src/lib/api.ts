@@ -400,6 +400,50 @@ export function handleApiError(error: unknown): string {
   return '發生未知錯誤';
 }
 
+// 處理表單錯誤 - 解析後端的結構化錯誤格式
+export interface FormFieldError {
+  field: string;
+  message: string;
+  code?: string;
+}
+
+export function handleFormError(error: unknown): FormFieldError[] {
+  if (axios.isAxiosError(error) && error.response?.data) {
+    const responseData = error.response.data;
+
+    // 如果是單一錯誤
+    if (responseData.error && responseData.field) {
+      return [
+        {
+          field: responseData.field,
+          message: responseData.error,
+          code: responseData.code,
+        },
+      ];
+    }
+
+    // 如果是多個錯誤的陣列
+    if (Array.isArray(responseData)) {
+      return responseData.map((err: any) => ({
+        field: err.field || '',
+        message: err.error || err.message || '未知錯誤',
+        code: err.code,
+      }));
+    }
+
+    // 如果是錯誤物件陣列
+    if (responseData.errors && Array.isArray(responseData.errors)) {
+      return responseData.errors.map((err: any) => ({
+        field: err.field || '',
+        message: err.error || err.message || '未知錯誤',
+        code: err.code,
+      }));
+    }
+  }
+
+  return [];
+}
+
 // 檢查網路連線
 export async function checkApiConnection(): Promise<boolean> {
   try {

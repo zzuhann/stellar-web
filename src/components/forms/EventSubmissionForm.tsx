@@ -610,8 +610,10 @@ export default function EventSubmissionForm({
         router.push('/my-submissions');
       }
     },
-    onError: () => {
-      showToast.error('投稿失敗');
+    onError: (error: any) => {
+      // 從後端錯誤回應中提取錯誤訊息
+      const errorMessage = error?.response?.data?.error || '投稿失敗';
+      showToast.error(errorMessage);
     },
   });
 
@@ -622,11 +624,13 @@ export default function EventSubmissionForm({
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['map-data'] });
       queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
-      showToast.success('活動更新成功');
+      showToast.success('更新成功');
       onSuccess?.(updatedEvent);
     },
-    onError: () => {
-      showToast.error('活動更新失敗');
+    onError: (error: any) => {
+      // 從後端錯誤回應中提取錯誤訊息
+      const errorMessage = error?.response?.data?.error || '更新失敗';
+      showToast.error(errorMessage);
     },
   });
 
@@ -639,9 +643,10 @@ export default function EventSubmissionForm({
       showToast.success('已重新提交審核！');
       router.push(`/my-submissions`);
     },
-    onError: (error) => {
-      showToast.error(error instanceof Error ? error.message : '重新提交審核時發生錯誤');
-      router.push(`/my-submissions`);
+    onError: (error: any) => {
+      // 從後端錯誤回應中提取錯誤訊息
+      const errorMessage = error?.response?.data?.error || '重新提交審核時發生錯誤';
+      showToast.error(errorMessage);
     },
   });
 

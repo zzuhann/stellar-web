@@ -307,7 +307,7 @@ export default function ResetPasswordForm({ onSuccess, onSwitchToSignIn }: Reset
         showToast.success('重設密碼郵件已發送');
       }
     } catch {
-      const errorMessage = '發送重設密碼郵件時發生未知錯誤';
+      const errorMessage = '發送重設密碼郵件時發生錯誤';
       setError('root', { message: errorMessage });
       showToast.error('重設密碼失敗');
     } finally {
