@@ -649,7 +649,7 @@ export default function MapPageStyled() {
               <ProfileImageContainer imageUrl={artistData?.profileImage || ''} />
               <HandleBarText>
                 {selectedEventId ? (
-                  `已選中活動`
+                  '目前查看中的生咖'
                 ) : (
                   <>
                     {artistData?.stageName} |{' '}

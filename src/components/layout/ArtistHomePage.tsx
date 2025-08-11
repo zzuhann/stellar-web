@@ -436,7 +436,7 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
             <EmptyState>
               <div className="icon">🎂</div>
               <h3>本週沒有壽星</h3>
-              <p>可以切換到其他週查看，或點擊上方搜尋框尋找特定偶像</p>
+              <p>可以切換查看其他週的壽星，或直接搜尋你的偶像</p>
             </EmptyState>
           )}
         </ContentWrapper>

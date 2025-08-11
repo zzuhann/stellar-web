@@ -409,7 +409,7 @@ export default function AdminPage() {
               {pendingArtists.length > 0 && <Badge>{pendingArtists.length}</Badge>}
             </TabButton>
             <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')}>
-              待審活動
+              待審生咖
               {pendingEvents.length > 0 && <Badge>{pendingEvents.length}</Badge>}
             </TabButton>
           </TabNav>
@@ -478,14 +478,14 @@ export default function AdminPage() {
         {activeTab === 'events' && (
           <ContentCard>
             <CardHeader>
-              <h2>待審核活動</h2>
-              <p>{pendingEvents.length} 個活動等待審核</p>
+              <h2>待審核生咖</h2>
+              <p>{pendingEvents.length} 個生咖等待審核</p>
             </CardHeader>
             {pendingEvents.length === 0 ? (
               <EmptyState>
                 <CalendarIcon className="icon" width={48} height={48} />
-                <h3>沒有待審核活動</h3>
-                <p>所有活動投稿都已處理完成</p>
+                <h3>沒有待審核生咖</h3>
+                <p>所有生咖投稿都已處理完成</p>
               </EmptyState>
             ) : (
               <ItemList>
@@ -538,7 +538,7 @@ export default function AdminPage() {
       {rejectingArtist && (
         <RejectModal
           isOpen={true}
-          title="拒絕偶像投稿"
+          title="拒絕投稿"
           itemName={rejectingArtist.stageName}
           onConfirm={(reason) => handleRejectArtist(rejectingArtist.id, reason)}
           onClose={() => setRejectingArtist(null)}
@@ -550,7 +550,7 @@ export default function AdminPage() {
       {rejectingEvent && (
         <RejectModal
           isOpen={true}
-          title="拒絕活動投稿"
+          title="拒絕投稿"
           itemName={rejectingEvent.title}
           onConfirm={(reason) => handleRejectEvent(rejectingEvent.id, reason)}
           onClose={() => setRejectingEvent(null)}

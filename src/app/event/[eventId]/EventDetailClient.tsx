@@ -289,10 +289,10 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
         if (eventData) {
           setEvent(eventData);
         } else {
-          setError('活動不存在');
+          setError('生咖不存在');
         }
       } catch {
-        setError('載入活動詳情時發生錯誤');
+        setError('載入生咖時發生錯誤');
       } finally {
         setIsLoading(false);
       }
@@ -345,7 +345,7 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
           id: 'detail',
           imageUrl: image,
           title: event.title,
-          subtitle: '活動詳情',
+          subtitle: '生咖詳情',
         });
       });
     }
@@ -356,7 +356,7 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
         id: 'default',
         imageUrl: '/api/placeholder/400/600',
         title: event.title,
-        subtitle: '活動圖片',
+        subtitle: '生咖圖片',
       });
     }
 

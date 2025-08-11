@@ -768,10 +768,10 @@ export default function EventSubmissionForm({
     <FormContainer>
       <FormHeader>
         <h2>{mode === 'edit' ? '編輯生咖應援' : '投稿生咖應援'}</h2>
-        {mode !== 'edit' && <p>審核通過之後其他用戶可以在地圖/列表上看到此活動!</p>}
+        {mode !== 'edit' && <p>審核通過之後其他用戶可以在地圖/列表上看到此生咖!</p>}
         {mode === 'edit' && (
           <p style={{ fontSize: '14px', color: '#ef4444', margin: '8px 0 0 0' }}>
-            無法修改活動的藝人資訊
+            無法修改生咖的藝人資訊
           </p>
         )}
       </FormHeader>
@@ -786,7 +786,7 @@ export default function EventSubmissionForm({
           <StepConnector completed={currentStep > 1} />
           <Step active={currentStep === 2} completed={false}>
             <div className="step-number">2</div>
-            <div className="step-title">活動資訊</div>
+            <div className="step-title">生咖資訊</div>
           </Step>
         </StepIndicator>
       )}
@@ -876,7 +876,7 @@ export default function EventSubmissionForm({
                 <PhotoIcon />
                 主視覺圖片*
               </Label>
-              <HelperText>活動的主要宣傳圖片</HelperText>
+              <HelperText>主要宣傳圖片</HelperText>
               <ImageUpload
                 currentImageUrl={mainImageUrl}
                 onUploadComplete={(imageUrl) => {
@@ -960,7 +960,7 @@ export default function EventSubmissionForm({
             <FormGroup>
               <Label>
                 <MapPinIcon />
-                活動地點*
+                地點*
               </Label>
               <HelperText>搜尋店家名稱或地址</HelperText>
               <PlaceAutocomplete
@@ -977,7 +977,7 @@ export default function EventSubmissionForm({
               <Textarea
                 id="description"
                 rows={10}
-                placeholder="描述活動內容與資訊，例如：活動時間/領取應援/注意事項等等"
+                placeholder="描述生咖內容與資訊，例如：時間/領取應援/注意事項等等"
                 {...register('description')}
               />
               {errors.description && <ErrorText>{errors.description.message}</ErrorText>}
@@ -990,7 +990,7 @@ export default function EventSubmissionForm({
                 詳細說明圖片
               </Label>
               <HelperText>
-                活動的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳5張
+                生咖的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳5張
               </HelperText>
               <MultiImageUpload
                 currentImages={detailImageUrls}
@@ -1107,9 +1107,9 @@ export default function EventSubmissionForm({
                     重新提交審核中...
                   </>
                 ) : existingEvent?.status === 'rejected' ? (
-                  '更新活動並重新審核'
+                  '更新並重新審核'
                 ) : (
-                  '更新活動'
+                  '更新'
                 )}
               </Button>
               <Button

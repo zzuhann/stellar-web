@@ -55,7 +55,7 @@ export const eventSubmissionSchema = z
     description: z.string().max(1500, '描述不能超過 1500 個字').optional(),
     startDate: z.string().min(1, '請選擇開始日期'),
     endDate: z.string().min(1, '請選擇結束日期'),
-    addressName: z.string().min(1, '請輸入活動地點').max(200, '地址不能超過200個字'),
+    addressName: z.string().min(1, '請輸入地點').max(200, '地址不能超過200個字'),
     instagram: z.string().optional().or(z.literal('')),
     x: z.string().optional().or(z.literal('')),
     threads: z.string().optional().or(z.literal('')),

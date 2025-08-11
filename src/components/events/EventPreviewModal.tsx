@@ -242,7 +242,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
           id: `detail-${index}`,
           imageUrl: image,
           title: event.title,
-          subtitle: '活動詳情',
+          subtitle: '生咖詳情',
         });
       });
     }
@@ -253,7 +253,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
         id: 'default',
         imageUrl: '/api/placeholder/400/600',
         title: event.title,
-        subtitle: '活動圖片',
+        subtitle: '生咖圖片',
       });
     }
 
@@ -264,7 +264,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
-          <ModalTitle>活動預覽</ModalTitle>
+          <ModalTitle>生咖預覽</ModalTitle>
           <CloseButton onClick={onClose}>
             <XMarkIcon />
           </CloseButton>
@@ -291,7 +291,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
           </ArtistSection>
 
           {/* 活動詳情 */}
-          <DescriptionTitle>主要資訊</DescriptionTitle>
+          <DescriptionTitle>生咖資訊</DescriptionTitle>
           <EventDetailsSection>
             {event.socialMedia.instagram && (
               <DetailItem>
@@ -380,7 +380,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
           {/* 活動說明 */}
           {event.description && (
             <DescriptionSection>
-              <DescriptionTitle>活動說明</DescriptionTitle>
+              <DescriptionTitle>詳細說明</DescriptionTitle>
               <DescriptionContent>{event.description}</DescriptionContent>
             </DescriptionSection>
           )}

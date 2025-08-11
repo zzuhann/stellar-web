@@ -302,7 +302,7 @@ export default function MySubmissionsPage() {
       showToast.success('刪除成功');
     },
     onError: (error) => {
-      showToast.error(error instanceof Error ? error.message : '刪除活動時發生錯誤');
+      showToast.error(error instanceof Error ? error.message : '刪除時發生錯誤');
     },
   });
 
@@ -472,7 +472,7 @@ export default function MySubmissionsPage() {
                           <ActionButton
                             variant="edit"
                             onClick={(e) => handlePreviewEvent(e, event)}
-                            title="預覽活動"
+                            title="預覽生咖"
                           >
                             <EyeIcon />
                             預覽
@@ -480,7 +480,7 @@ export default function MySubmissionsPage() {
                           <ActionButton
                             variant="edit"
                             onClick={(e) => handleEditEvent(e, event)}
-                            title="編輯活動"
+                            title="編輯生咖"
                           >
                             <PencilIcon />
                             編輯
@@ -489,7 +489,7 @@ export default function MySubmissionsPage() {
                             variant="delete"
                             onClick={(e) => handleDeleteEvent(e, event)}
                             disabled={deleteEventMutation.isPending}
-                            title="刪除活動"
+                            title="刪除生咖"
                           >
                             <TrashIcon />
                             {deleteEventMutation.isPending ? '刪除中...' : '刪除'}
@@ -517,8 +517,8 @@ export default function MySubmissionsPage() {
       {/* 確認刪除模態框 */}
       <ConfirmModal
         isOpen={deleteConfirmModal.isOpen}
-        title="確認刪除活動"
-        message={`確定要刪除活動「${deleteConfirmModal.event?.title}」嗎？此操作無法復原。`}
+        title="確認刪除生咖"
+        message={`確定要刪除生咖「${deleteConfirmModal.event?.title}」嗎？此操作無法復原。`}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
         confirmText="刪除"
