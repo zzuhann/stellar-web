@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { artistsApi } from '@/lib/api';
 import styled from 'styled-components';
 import ArtistSubmissionForm from '@/components/forms/ArtistSubmissionForm';
+import { showToast } from '@/lib/toast';
 
 const MainContent = styled.main`
   max-width: 1200px;
@@ -79,6 +80,24 @@ export default function SubmitArtistClient() {
       router.push('/');
     }
   }, [user, loading, router]);
+
+  // 檢查編輯模式下的藝人狀態
+  useEffect(() => {
+    if (isEditMode && existingArtist) {
+      // 只有 rejected 狀態可以編輯
+      if (existingArtist.status !== 'rejected') {
+        const statusText =
+          {
+            pending: '審核中',
+            approved: '已通過',
+            exists: '已存在',
+          }[existingArtist.status] || '無法編輯';
+
+        showToast.warning(`此偶像目前狀態為「${statusText}」，無法編輯`);
+        router.push('/my-submissions');
+      }
+    }
+  }, [isEditMode, existingArtist, router]);
 
   const handleSuccess = () => {
     router.push('/my-submissions');
