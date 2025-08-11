@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { PhotoIcon, XMarkIcon, ArrowUpTrayIcon, ScissorsIcon } from '@heroicons/react/24/outline';
 import { uploadImageToAPI, mockUpload, compressImage } from '@/lib/r2-upload';
+import { CDN_DOMAIN } from '@/constants';
 import ImageCropper from './ImageCropper';
 import styled from 'styled-components';
 
@@ -315,8 +316,9 @@ export default function ImageUpload({
           uploadResult = await mockUpload(file);
         }
 
-        if (uploadResult.success && uploadResult.imageUrl) {
-          onUploadComplete(uploadResult.imageUrl);
+        if (uploadResult.success && uploadResult.filename) {
+          const fullImageUrl = CDN_DOMAIN + uploadResult.filename;
+          onUploadComplete(fullImageUrl);
         } else {
           setError(uploadResult.error || '上傳失敗');
         }

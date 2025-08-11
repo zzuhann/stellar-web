@@ -143,7 +143,7 @@ export async function mockUpload(file: File): Promise<UploadResponse> {
     return {
       success: true,
       imageUrl: base64, // 暫時返回 base64，實際應該是 R2 URL
-      filename: `mock-${Date.now()}.jpg`,
+      filename: `images/mock-${Date.now()}.jpg`,
     };
   } catch (error) {
     return {

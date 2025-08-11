@@ -8,6 +8,7 @@ import {
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import { uploadImageToAPI, mockUpload, compressImage } from '@/lib/r2-upload';
+import { CDN_DOMAIN } from '@/constants';
 import styled from 'styled-components';
 import showToast from '@/lib/toast';
 
@@ -256,8 +257,8 @@ export default function MultiImageUpload({
           uploadResult = await mockUpload(compressedFile);
         }
 
-        if (uploadResult.success && uploadResult.imageUrl) {
-          return uploadResult.imageUrl;
+        if (uploadResult.success && uploadResult.filename) {
+          return CDN_DOMAIN + uploadResult.filename;
         } else {
           throw new Error(uploadResult.error || '上傳失敗');
         }
