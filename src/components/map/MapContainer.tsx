@@ -282,7 +282,7 @@ export default function MapComponent({
     const clusterBounds = cluster.getBounds();
     const clusterCenter = clusterBounds.getCenter();
 
-    const newZoom = Math.min(currentZoom + 2, 18);
+    const newZoom = Math.min(currentZoom + 2 >= 15 ? currentZoom + 2 : 15, 18);
 
     // 直接操作地圖，不使用動畫
     map.setView([clusterCenter.lat, clusterCenter.lng], newZoom, {

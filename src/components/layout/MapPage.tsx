@@ -416,7 +416,7 @@ export default function MapPageStyled() {
   // 當獲取到用戶位置時，自動更新地圖中心（僅第一次）
   useEffect(() => {
     if (latitude && longitude && setCenter && shouldAutoCenter) {
-      setCenter({ lat: latitude, lng: longitude, zoom: 13 });
+      setCenter({ lat: latitude, lng: longitude, zoom: 8 });
       setShouldAutoCenter(false); // 只自動定位一次
     }
   }, [latitude, longitude, setCenter, shouldAutoCenter]);
