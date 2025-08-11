@@ -9,6 +9,7 @@ import Banner from '@/components/layout/Banner';
 import { firebaseTimestampToDate } from '@/utils';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon, XIcon } from '@/components/ui/SocialMediaIcons';
+import Image from 'next/image';
 
 // Styled Components - 參考 EventSubmissionForm 的設計風格
 const PageContainer = styled.div`
@@ -521,6 +522,26 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
                   <DescriptionContent>{event.description}</DescriptionContent>
                 </DescriptionSection>
               )}
+
+              <div>
+                {getBannerItems().map((item, index) => (
+                  <div key={item.id}>
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.title}
+                      width={800}
+                      height={600}
+                      quality={95}
+                      priority={index === 0}
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        display: 'block',
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
 
               {/* 回到地圖頁按鈕 */}
               <CTAButton onClick={handleBackToMap}>

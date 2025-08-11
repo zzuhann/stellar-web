@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSpring, animated } from '@react-spring/web';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
+import Image from 'next/image';
 
 // Banner 數據類型
 interface BannerItem {
@@ -47,16 +48,10 @@ const SlideContent = styled.div`
   text-align: center;
 `;
 
-const ProductImage = styled.div<{ imageUrl: string }>`
+const ProductImage = styled(Image)`
+  object-fit: cover;
   width: 100%;
   height: 100%;
-  background-image: url(${(props) => props.imageUrl});
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  position: absolute;
-  top: 0;
-  left: 0;
 `;
 
 const NavigationButton = styled.button`
@@ -215,7 +210,12 @@ export default function Banner({ items = defaultBannerItems }: BannerProps) {
     <BannerContainer>
       <SlideContainer style={springs}>
         <SlideContent>
-          <ProductImage imageUrl={items[currentIndex].imageUrl} />
+          <ProductImage
+            src={items[currentIndex].imageUrl}
+            alt={items[currentIndex].title}
+            width={800}
+            height={600}
+          />
         </SlideContent>
       </SlideContainer>
 
