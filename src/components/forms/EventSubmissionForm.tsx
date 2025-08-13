@@ -1107,7 +1107,7 @@ export default function EventSubmissionForm({
                     重新提交審核中...
                   </>
                 ) : existingEvent?.status === 'rejected' ? (
-                  '更新並重新審核'
+                  '重新送審'
                 ) : (
                   '更新'
                 )}
@@ -1138,7 +1138,7 @@ export default function EventSubmissionForm({
       <ConfirmModal
         isOpen={confirmModalOpen}
         title="確認重新送審"
-        message="是否確認所有資訊都正確？送出之後將會重新進入審核流程。"
+        message="是否確認所有資訊都正確？送出之後將會重新送審。"
         onConfirm={handleConfirmSubmit}
         onCancel={handleCancelConfirm}
         confirmText="確認送出"
