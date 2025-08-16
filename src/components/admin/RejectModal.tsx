@@ -122,7 +122,7 @@ const Textarea = styled.textarea`
   border-radius: var(--radius-md);
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: 16px;
   font-family: inherit;
   line-height: 1.5;
   resize: vertical;

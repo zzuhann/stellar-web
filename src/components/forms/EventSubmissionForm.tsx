@@ -142,7 +142,7 @@ const Textarea = styled.textarea`
   border-radius: var(--radius-lg);
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
-  font-size: 14px;
+  font-size: 16px;
   transition: all 0.2s ease;
   resize: vertical;
   min-height: 100px;
@@ -165,7 +165,7 @@ const Textarea = styled.textarea`
 
   @media (min-width: 768px) {
     padding: 14px 18px;
-    font-size: 15px;
+    font-size: 16px;
   }
 `;
 
