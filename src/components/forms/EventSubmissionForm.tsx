@@ -72,7 +72,7 @@ const FormHeader = styled.div`
   }
 `;
 
-const Form = styled.form`
+const Form = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -791,7 +791,7 @@ export default function EventSubmissionForm({
         </StepIndicator>
       )}
 
-      <Form onSubmit={handleSubmit(onSubmit)}>
+      <Form>
         {/* 第一步：選擇藝人 */}
         {(currentStep === 1 || mode === 'edit') && (
           <FormGroup>
@@ -1077,7 +1077,12 @@ export default function EventSubmissionForm({
               <Button type="button" variant="secondary" onClick={handlePrevStep}>
                 上一步
               </Button>
-              <Button type="submit" variant="primary" disabled={createEventMutation.isPending}>
+              <Button
+                type="button"
+                variant="primary"
+                disabled={createEventMutation.isPending}
+                onClick={handleSubmit(onSubmit)}
+              >
                 {createEventMutation.isPending ? (
                   <>
                     <LoadingSpinner />
@@ -1092,9 +1097,10 @@ export default function EventSubmissionForm({
             // 編輯模式：原有的按鈕
             <>
               <Button
-                type="submit"
+                type="button"
                 variant="primary"
                 disabled={updateEventMutation.isPending || resubmitEventMutation.isPending}
+                onClick={handleSubmit(onSubmit)}
               >
                 {updateEventMutation.isPending ? (
                   <>

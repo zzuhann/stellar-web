@@ -62,7 +62,7 @@ const FormHeader = styled.div`
   }
 `;
 
-const Form = styled.form`
+const Form = styled.div`
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -429,7 +429,7 @@ export default function ArtistSubmissionForm({
         )}
       </FormHeader>
 
-      <Form onSubmit={handleSubmit(onSubmit)}>
+      <Form>
         {/* 藝名 */}
         <FormGroup>
           <Label htmlFor="stageName">
@@ -532,9 +532,10 @@ export default function ArtistSubmissionForm({
         {/* 提交按鈕 */}
         <ButtonGroup>
           <Button
-            type="submit"
+            type="button"
             variant="primary"
             disabled={createArtistMutation.isPending || updateArtistMutation.isPending}
+            onClick={handleSubmit(onSubmit)}
           >
             {createArtistMutation.isPending || updateArtistMutation.isPending ? (
               <>
