@@ -15,6 +15,7 @@ interface AuthContextType {
   toggleAuthModal: (redirectTo?: string) => void;
   redirectUrl?: string;
   refetchUserData: () => Promise<void>;
+  fetchUserDataByUid: (uid: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,6 +33,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUserData(appUserData);
     }
   }, [user]);
+
+  const fetchUserDataByUid = useCallback(async (uid: string) => {
+    const appUserData = await getUserData(uid);
+    setUserData(appUserData);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
@@ -78,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     toggleAuthModal,
     redirectUrl,
     refetchUserData,
+    fetchUserDataByUid,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

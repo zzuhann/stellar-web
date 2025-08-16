@@ -34,7 +34,7 @@ const Title = styled.h2`
   margin: 0 0 8px 0;
 `;
 
-const Form = styled.form`
+const FormContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -207,7 +207,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { refetchUserData } = useAuth();
+  const { fetchUserDataByUid } = useAuth();
 
   const {
     register,
@@ -228,7 +228,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
         setError('root', { message: error });
         showToast.error('註冊失敗');
       } else if (user) {
-        await refetchUserData();
+        await fetchUserDataByUid(user.uid);
         showToast.success('註冊成功');
         onSuccess?.();
       }
@@ -247,7 +247,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
         <Title>建立帳號</Title>
       </FormHeader>
 
-      <Form onSubmit={handleSubmit(onSubmit)}>
+      <FormContent>
         {/* 顯示名稱 */}
         <FormField>
           <Label htmlFor="displayName">顯示名稱</Label>
@@ -321,7 +321,12 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
         )}
 
         {/* 註冊按鈕 */}
-        <SubmitButton type="submit" loading={isLoading} disabled={isLoading}>
+        <SubmitButton
+          type="button"
+          onClick={handleSubmit(onSubmit)}
+          loading={isLoading}
+          disabled={isLoading}
+        >
           {isLoading ? (
             <LoadingContent>
               <Spinner />
@@ -343,7 +348,7 @@ export default function SignUpForm({ onSuccess, onSwitchToSignIn }: SignUpFormPr
             </TextWithLink>
           </ActionsContainer>
         )}
-      </Form>
+      </FormContent>
     </FormContainer>
   );
 }

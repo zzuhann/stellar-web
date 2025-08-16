@@ -38,7 +38,7 @@ const Subtitle = styled.p`
   margin: 0;
 `;
 
-const Form = styled.form`
+const FormContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -364,7 +364,7 @@ export default function ResetPasswordForm({ onSuccess, onSwitchToSignIn }: Reset
         <Subtitle>請輸入您的電子郵件地址，我們將發送重設密碼的連結給您</Subtitle>
       </FormHeader>
 
-      <Form onSubmit={handleSubmit(onSubmit)}>
+      <FormContent>
         {/* 電子郵件 */}
         <FormField>
           <Label htmlFor="email">電子郵件</Label>
@@ -386,7 +386,12 @@ export default function ResetPasswordForm({ onSuccess, onSwitchToSignIn }: Reset
         )}
 
         {/* 發送重設郵件按鈕 */}
-        <SubmitButton type="submit" loading={isLoading} disabled={isLoading}>
+        <SubmitButton
+          type="button"
+          onClick={handleSubmit(onSubmit)}
+          loading={isLoading}
+          disabled={isLoading}
+        >
           {isLoading ? (
             <LoadingContent>
               <Spinner />
@@ -405,7 +410,7 @@ export default function ResetPasswordForm({ onSuccess, onSwitchToSignIn }: Reset
             </LinkButton>
           )}
         </ActionsContainer>
-      </Form>
+      </FormContent>
     </FormContainer>
   );
 }

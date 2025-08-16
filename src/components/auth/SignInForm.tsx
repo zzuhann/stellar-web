@@ -41,7 +41,7 @@ const Subtitle = styled.p`
   margin: 0;
 `;
 
-const Form = styled.form`
+const FormContent = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -284,7 +284,7 @@ export default function SignInForm({
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const { refetchUserData } = useAuth();
+  const { fetchUserDataByUid } = useAuth();
 
   const {
     register,
@@ -305,7 +305,7 @@ export default function SignInForm({
         setError('root', { message: error });
         showToast.error('登入失敗');
       } else if (user) {
-        await refetchUserData();
+        await fetchUserDataByUid(user.uid);
         showToast.success('登入成功');
         onSuccess?.();
       }
@@ -327,7 +327,7 @@ export default function SignInForm({
       if (error) {
         showToast.error('Google 登入失敗');
       } else if (user) {
-        await refetchUserData();
+        await fetchUserDataByUid(user.uid);
         showToast.success('登入成功');
         onSuccess?.();
       }
@@ -386,7 +386,7 @@ export default function SignInForm({
         <span>或</span>
       </Divider>
 
-      <Form onSubmit={handleSubmit(onSubmit)}>
+      <FormContent>
         {/* 電子郵件 */}
         <FormField>
           <Label htmlFor="email">電子郵件</Label>
@@ -426,7 +426,12 @@ export default function SignInForm({
         )}
 
         {/* 登入按鈕 */}
-        <SubmitButton type="submit" loading={isLoading} disabled={isLoading}>
+        <SubmitButton
+          type="button"
+          onClick={handleSubmit(onSubmit)}
+          loading={isLoading}
+          disabled={isLoading}
+        >
           {isLoading ? (
             <LoadingContent>
               <Spinner />
@@ -454,7 +459,7 @@ export default function SignInForm({
             </TextWithLink>
           )}
         </ActionsContainer>
-      </Form>
+      </FormContent>
     </FormContainer>
   );
 }
