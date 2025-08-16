@@ -474,7 +474,7 @@ export default function EventSubmissionForm({
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     watch,
     setValue,
   } = useForm<EventSubmissionFormData>({
@@ -650,9 +650,55 @@ export default function EventSubmissionForm({
     },
   });
 
+  // 檢測是否有任何改動的函數
+  const checkForChanges = () => {
+    if (mode !== 'edit' || !existingEvent) {
+      return true; // 非編輯模式一律允許提交
+    }
+
+    // 檢測表單欄位改動
+    const formHasChanges = isDirty;
+
+    // 檢測主圖改動
+    const mainImageChanged = mainImageUrl !== (existingEvent.mainImage || '');
+
+    // 檢測詳細圖片改動
+    const originalDetailImages = existingEvent.detailImage
+      ? Array.isArray(existingEvent.detailImage)
+        ? existingEvent.detailImage
+        : [existingEvent.detailImage]
+      : [];
+    const detailImagesChanged =
+      detailImageUrls.length !== originalDetailImages.length ||
+      detailImageUrls.some((url, index) => url !== originalDetailImages[index]);
+
+    // 檢測藝人選擇改動
+    const originalArtistIds = existingEvent.artists?.map((artist) => artist.id) || [];
+    const selectedArtistIds = selectedArtists.map((artist) => artist.id);
+    const artistsChanged =
+      originalArtistIds.length !== selectedArtistIds.length ||
+      originalArtistIds.some((id) => !selectedArtistIds.includes(id));
+
+    // 檢測地點改動
+    const locationChanged =
+      locationAddress !== (existingEvent.location.address || '') ||
+      locationCoordinates?.lat !== existingEvent.location.coordinates?.lat ||
+      locationCoordinates?.lng !== existingEvent.location.coordinates?.lng;
+
+    return (
+      formHasChanges || mainImageChanged || detailImagesChanged || artistsChanged || locationChanged
+    );
+  };
+
   const onSubmit = async (data: EventSubmissionFormData) => {
     if (!user) {
       showToast.warning('請先登入');
+      return;
+    }
+
+    // 檢查是否有變更
+    if (!checkForChanges()) {
+      showToast.success('更新成功');
       return;
     }
 
@@ -927,6 +973,7 @@ export default function EventSubmissionForm({
                   error={!!errors.startDate}
                   min={new Date().toISOString().split('T')[0]}
                 />
+                <input type="hidden" {...register('startDate')} />
                 {errors.startDate && <ErrorText>{errors.startDate.message}</ErrorText>}
               </FormGroup>
 
@@ -952,6 +999,7 @@ export default function EventSubmissionForm({
                 {!watch('startDate') && (
                   <HelperText style={{ color: '#f59e0b' }}>請先選擇開始日期</HelperText>
                 )}
+                <input type="hidden" {...register('endDate')} />
                 {errors.endDate && <ErrorText>{errors.endDate.message}</ErrorText>}
               </FormGroup>
             </GridContainer>

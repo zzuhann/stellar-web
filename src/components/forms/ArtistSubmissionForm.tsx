@@ -308,7 +308,7 @@ export default function ArtistSubmissionForm({
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     watch,
     setValue,
   } = useForm<ArtistSubmissionFormData>({
@@ -362,9 +362,30 @@ export default function ArtistSubmissionForm({
     },
   });
 
+  // 檢測是否有任何改動的函數
+  const checkForChanges = () => {
+    if (mode !== 'edit' || !existingArtist) {
+      return true; // 非編輯模式一律允許提交
+    }
+
+    // 檢測表單欄位改動
+    const formHasChanges = isDirty;
+
+    // 檢測圖片改動
+    const imageChanged = uploadedImageUrl !== (existingArtist.profileImage || '');
+
+    return formHasChanges || imageChanged;
+  };
+
   const onSubmit = async (data: ArtistSubmissionFormData) => {
     if (!user) {
       showToast.warning('請先登入');
+      return;
+    }
+
+    // 檢查是否有變更
+    if (!checkForChanges()) {
+      showToast.success('更新成功');
       return;
     }
 

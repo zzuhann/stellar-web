@@ -53,8 +53,16 @@ export const eventSubmissionSchema = z
       .max(100, '標題不能超過 100 個字'),
     artistIds: z.array(z.string()).min(1, '請至少選擇一個偶像').max(10, '最多只能選擇 10 個偶像'),
     description: z.string().max(1500, '描述不能超過 1500 個字').optional(),
-    startDate: z.string().min(1, '請選擇開始日期'),
-    endDate: z.string().min(1, '請選擇結束日期'),
+    startDate: z
+      .string()
+      .min(1, '請選擇開始日期')
+      .regex(/^\d{4}-\d{2}-\d{2}$/, '請選擇有效的開始日期')
+      .refine((date) => !isNaN(Date.parse(date)), '請選擇有效的開始日期'),
+    endDate: z
+      .string()
+      .min(1, '請選擇結束日期')
+      .regex(/^\d{4}-\d{2}-\d{2}$/, '請選擇有效的結束日期')
+      .refine((date) => !isNaN(Date.parse(date)), '請選擇有效的結束日期'),
     addressName: z.string().min(1, '請輸入地點').max(200, '地址不能超過200個字'),
     instagram: z.string().optional().or(z.literal('')),
     x: z.string().optional().or(z.literal('')),
