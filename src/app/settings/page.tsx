@@ -73,7 +73,7 @@ const SettingsCard = styled.div`
   box-shadow: var(--shadow-sm);
 `;
 
-const Form = styled.form`
+const FormContainer = styled.div`
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -225,13 +225,17 @@ export default function SettingsPage() {
 
   const {
     register,
-    handleSubmit,
     formState: { errors },
     setValue,
     reset,
+    getValues,
+    watch,
   } = useForm<SettingsFormData>({
     resolver: zodResolver(settingsSchema),
   });
+
+  const currentDisplayName = watch('displayName');
+  const hasChanges = currentDisplayName !== userData?.displayName;
 
   // 更新用戶資料的 mutation
   const updateProfileMutation = useMutation({
@@ -263,8 +267,10 @@ export default function SettingsPage() {
     }
   }, [userData, setValue]);
 
-  const onSubmit = (data: SettingsFormData) => {
-    updateProfileMutation.mutate(data);
+  const handleSave = () => {
+    const values = getValues();
+    if (errors.displayName) return;
+    updateProfileMutation.mutate(values);
   };
 
   const handleCancel = () => {
@@ -300,7 +306,7 @@ export default function SettingsPage() {
           </PageHeader>
 
           <SettingsCard>
-            <Form onSubmit={handleSubmit(onSubmit)}>
+            <FormContainer>
               <FormGroup>
                 <Label htmlFor="displayName">顯示名稱</Label>
                 <Input
@@ -314,15 +320,22 @@ export default function SettingsPage() {
               </FormGroup>
 
               <ButtonGroup>
+                {hasChanges && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleCancel}
+                    disabled={updateProfileMutation.isPending}
+                  >
+                    取消
+                  </Button>
+                )}
                 <Button
                   type="button"
-                  variant="secondary"
-                  onClick={handleCancel}
-                  disabled={updateProfileMutation.isPending}
+                  variant="primary"
+                  onClick={handleSave}
+                  disabled={updateProfileMutation.isPending || !hasChanges}
                 >
-                  取消
-                </Button>
-                <Button type="submit" variant="primary" disabled={updateProfileMutation.isPending}>
                   {updateProfileMutation.isPending ? (
                     <>
                       <LoadingSpinner />
@@ -336,7 +349,7 @@ export default function SettingsPage() {
                   )}
                 </Button>
               </ButtonGroup>
-            </Form>
+            </FormContainer>
           </SettingsCard>
         </ContentWrapper>
       </MainContainer>
