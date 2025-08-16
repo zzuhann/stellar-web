@@ -204,23 +204,12 @@ const ErrorMessage = styled.p`
   }
 `;
 
-const DisabledMessage = styled.p`
-  margin: 8px 0 0 0;
-  font-size: 12px;
-  color: #f59e0b;
-
-  @media (min-width: 768px) {
-    font-size: 13px;
-  }
-`;
-
 export default function PlaceAutocomplete({
   onPlaceSelect,
   defaultValue = '',
 }: PlaceAutocompleteProps) {
   const [query, setQuery] = useState(defaultValue);
   const [selectedPlace, setSelectedPlace] = useState<PlacePrediction | null>(null);
-  const [isDisabled, setIsDisabled] = useState(false);
   const [isSelectedState, setIsSelectedState] = useState(false);
 
   const debouncedQuery = useDebounce(query, 500);
@@ -240,20 +229,13 @@ export default function PlaceAutocomplete({
 
       return response.data.predictions || [];
     },
-    enabled: debouncedQuery.length >= 2 && !isDisabled && !isSelectedState,
+    enabled: debouncedQuery.length >= 2 && !isSelectedState,
     staleTime: 1000 * 60 * 5,
-    retry: (failureCount) => {
-      if (failureCount >= 2) {
-        setIsDisabled(true);
-        setTimeout(() => setIsDisabled(false), 30000);
-        return false;
-      }
-      return true;
-    },
+    retry: 2,
   });
 
   const handlePlaceSelect = async (prediction: PlacePrediction | null) => {
-    if (!prediction || isDisabled) {
+    if (!prediction) {
       setSelectedPlace(null);
       setIsSelectedState(false);
       return;
@@ -288,8 +270,8 @@ export default function PlaceAutocomplete({
       <Combobox value={selectedPlace} onChange={handlePlaceSelect}>
         <ComboboxContainer>
           <ComboboxInput
-            isDisabled={isDisabled}
             isError={isError}
+            isDisabled={false}
             displayValue={(prediction: PlacePrediction | null) =>
               prediction
                 ? prediction.structured_formatting?.main_text || prediction.description
@@ -300,17 +282,16 @@ export default function PlaceAutocomplete({
               setIsSelectedState(false);
               setSelectedPlace(null);
             }}
-            disabled={isDisabled}
           />
           <ComboboxButton>
-            {isError && !isDisabled ? (
+            {isError ? (
               <ExclamationTriangleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
             ) : (
               <ChevronUpDownIcon className="h-5 w-5" aria-hidden="true" />
             )}
           </ComboboxButton>
 
-          {(predictions.length > 0 || isLoading) && !isDisabled && (
+          {(predictions.length > 0 || isLoading) && (
             <ComboboxOptions>
               {isLoading && <LoadingOption>搜尋中...</LoadingOption>}
               {predictions.map((prediction: PlacePrediction) => (
@@ -345,9 +326,7 @@ export default function PlaceAutocomplete({
         </ComboboxContainer>
       </Combobox>
 
-      {isError && !isDisabled && <ErrorMessage>搜尋服務暫時無法使用，請稍後再試</ErrorMessage>}
-
-      {isDisabled && <DisabledMessage>搜尋服務暫時停用中，30 秒後自動重新啟用</DisabledMessage>}
+      {isError && <ErrorMessage>搜尋服務暫時無法使用，請稍後再試</ErrorMessage>}
     </Container>
   );
 }
