@@ -221,6 +221,7 @@ const InfoBox = styled.div`
   padding: 16px;
   margin-bottom: 24px;
   text-align: left;
+  margin-top: 16px;
 `;
 
 const InfoTitle = styled.p`
@@ -329,15 +330,15 @@ export default function ResetPasswordForm({ onSuccess, onSwitchToSignIn }: Reset
           </svg>
         </SuccessIcon>
 
-        <SuccessTitle>郵件已發送</SuccessTitle>
-        <SuccessSubtitle>我們已經發送重設密碼的郵件到</SuccessSubtitle>
+        <SuccessTitle>已發送重設密碼信件!</SuccessTitle>
+        <SuccessSubtitle>我們已經發送重設密碼的信件到</SuccessSubtitle>
         <EmailHighlight>{getValues('email')}</EmailHighlight>
 
         <InfoBox>
           <InfoTitle>請按照以下步驟完成密碼重設：</InfoTitle>
           <InfoList>
-            <li>檢查您的電子郵件信箱</li>
-            <li>點擊郵件中的重設密碼連結</li>
+            <li>前往信箱收信(寄件人結尾為 firebaseapp.com，可能在垃圾信件)</li>
+            <li>前往信件中的重設密碼連結</li>
             <li>設定新的密碼</li>
             <li>使用新密碼登入</li>
           </InfoList>
@@ -348,7 +349,7 @@ export default function ResetPasswordForm({ onSuccess, onSwitchToSignIn }: Reset
         </BackButton>
 
         <ResendContainer>
-          沒有收到郵件？檢查垃圾郵件資料夾或
+          沒有收到？檢查垃圾信件或
           <ResendButton type="button" onClick={() => setIsEmailSent(false)}>
             重新發送
           </ResendButton>
@@ -361,18 +362,18 @@ export default function ResetPasswordForm({ onSuccess, onSwitchToSignIn }: Reset
     <FormContainer>
       <FormHeader>
         <Title>重設密碼</Title>
-        <Subtitle>請輸入您的電子郵件地址，我們將發送重設密碼的連結給您</Subtitle>
+        <Subtitle>請輸入您的 Email，我們將發送重設密碼的信件給您</Subtitle>
       </FormHeader>
 
       <FormContent>
         {/* 電子郵件 */}
         <FormField>
-          <Label htmlFor="email">電子郵件</Label>
+          <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="text"
             autoComplete="email"
-            placeholder="請輸入您的電子郵件"
+            placeholder="請輸入您的 Email"
             {...register('email')}
           />
           {errors.email && <ErrorMessage>{errors.email.message}</ErrorMessage>}
@@ -398,7 +399,7 @@ export default function ResetPasswordForm({ onSuccess, onSwitchToSignIn }: Reset
               <span>發送中...</span>
             </LoadingContent>
           ) : (
-            '發送重設郵件'
+            '發送重設信件'
           )}
         </SubmitButton>
 

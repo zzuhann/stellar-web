@@ -100,6 +100,7 @@ const Input = styled.input<{ hasError?: boolean }>`
   font-size: 16px;
   transition: all 0.2s ease;
   background: white;
+  color: var(--color-text-primary);
 
   &:focus {
     outline: none;

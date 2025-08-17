@@ -29,9 +29,9 @@ export const STORAGE_KEYS = {
 export const FIREBASE_ERROR_MESSAGES: Record<string, string> = {
   'auth/user-not-found': '找不到此用戶',
   'auth/wrong-password': '密碼錯誤',
-  'auth/email-already-in-use': '此電子郵件已被使用',
+  'auth/email-already-in-use': '此 Email 已被使用',
   'auth/weak-password': '密碼強度不足',
-  'auth/invalid-email': '電子郵件格式錯誤',
+  'auth/invalid-email': 'Email 格式錯誤',
   'auth/too-many-requests': '嘗試次數過多，請稍後再試',
 };
 
