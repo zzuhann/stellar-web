@@ -20,40 +20,27 @@ const ModalOverlay = styled.div<{ isOpen: boolean }>`
   background: rgba(0, 0, 0, 0.5);
   z-index: 9999;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   opacity: ${(props) => (props.isOpen ? 1 : 0)};
   visibility: ${(props) => (props.isOpen ? 'visible' : 'hidden')};
   transition:
     opacity 0.3s ease-out,
     visibility 0.3s ease-out;
-
-  @media (min-width: 768px) {
-    align-items: center;
-  }
 `;
 
 const ModalContent = styled.div<{ isOpen: boolean }>`
   background: var(--color-bg-primary);
   width: 100%;
   max-width: 480px;
-  height: 40vh;
-  border-radius: 16px 16px 0 0;
+  border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transform: ${(props) => (props.isOpen ? 'translateY(0)' : 'translateY(100%)')};
-  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-
-  @media (min-width: 768px) {
-    border-radius: 16px;
-    margin: 0 16px;
-    min-height: auto;
-    max-height: 80vh;
-    transform: ${(props) =>
-      props.isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(20px)'};
-    transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-  }
+  margin: 0 16px;
+  transform: ${(props) =>
+    props.isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(-20px)'};
+  transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 `;
 
 const ModalHeader = styled.div`

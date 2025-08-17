@@ -1021,7 +1021,7 @@ export default function EventSubmissionForm({
 
             {/* 活動描述 */}
             <FormGroup>
-              <Label htmlFor="description">說明</Label>
+              <Label htmlFor="description">詳細說明</Label>
               <Textarea
                 id="description"
                 rows={10}

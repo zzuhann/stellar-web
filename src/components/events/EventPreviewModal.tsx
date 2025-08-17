@@ -290,8 +290,8 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
             ))}
           </ArtistSection>
 
-          {/* 活動詳情 */}
-          <DescriptionTitle>生咖資訊</DescriptionTitle>
+          {/* 主辦資訊 */}
+          <DescriptionTitle>主辦</DescriptionTitle>
           <EventDetailsSection>
             {event.socialMedia.instagram && (
               <DetailItem>
@@ -346,7 +346,11 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                 </DetailContent>
               </DetailItem>
             )}
+          </EventDetailsSection>
 
+          {/* 時間地點 */}
+          <DescriptionSection>
+            <DescriptionTitle>時間/地點</DescriptionTitle>
             <DetailItem>
               <DetailIcon>
                 <CalendarIcon />
@@ -370,12 +374,12 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                     rel="noopener noreferrer"
                     style={{ color: '#3a64c7' }}
                   >
-                    {event.location.name}({event.location.address})
+                    {event.location.name}({event.location.address}){' '}
                   </a>
                 </DetailValue>
               </DetailContent>
             </DetailItem>
-          </EventDetailsSection>
+          </DescriptionSection>
 
           {/* 活動說明 */}
           {event.description && (

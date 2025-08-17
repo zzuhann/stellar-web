@@ -428,8 +428,7 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
                 ))}
               </ArtistSection>
 
-              {/* 活動詳情 */}
-              <DescriptionTitle>主要資訊</DescriptionTitle>
+              <DescriptionTitle>主辦</DescriptionTitle>
               <EventDetailsSection>
                 {event.socialMedia.instagram && (
                   <DetailItem>
@@ -484,7 +483,11 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
                     </DetailContent>
                   </DetailItem>
                 )}
+              </EventDetailsSection>
 
+              {/* 活動詳情 */}
+              <DescriptionSection>
+                <DescriptionTitle>時間/地點</DescriptionTitle>
                 <DetailItem>
                   <DetailIcon>
                     <CalendarIcon />
@@ -513,12 +516,12 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
                     </DetailValue>
                   </DetailContent>
                 </DetailItem>
-              </EventDetailsSection>
+              </DescriptionSection>
 
               {/* 活動說明 */}
               {event.description && (
                 <DescriptionSection>
-                  <DescriptionTitle>活動說明</DescriptionTitle>
+                  <DescriptionTitle>詳細說明</DescriptionTitle>
                   <DescriptionContent>{event.description}</DescriptionContent>
                 </DescriptionSection>
               )}
