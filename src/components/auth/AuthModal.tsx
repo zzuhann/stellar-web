@@ -1,13 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { useAuth } from '@/lib/auth-context';
 import SignInForm from './SignInForm';
-import SignUpForm from './SignUpForm';
-import ResetPasswordForm from './ResetPasswordForm';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -39,7 +37,7 @@ const ModalContent = styled.div<{ isOpen: boolean }>`
   background: var(--color-bg-primary);
   width: 100%;
   max-width: 480px;
-  height: 85vh;
+  height: 40vh;
   border-radius: 16px 16px 0 0;
   overflow: hidden;
   display: flex;
@@ -94,14 +92,12 @@ const ContentContainer = styled.div`
   min-height: 0;
 `;
 
-export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: AuthModalProps) {
+export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const router = useRouter();
   const { redirectUrl } = useAuth();
-  const [mode, setMode] = useState<'signin' | 'signup' | 'reset'>(initialMode);
 
   const handleSuccess = () => {
     onClose();
-    setMode('signin'); // 重置到登入模式
 
     // 如果有重定向 URL，等待一小段時間後跳轉
     if (redirectUrl) {
@@ -113,15 +109,12 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
 
   const handleClose = () => {
     onClose();
-    // 延遲重置模式，避免視覺上的閃爍
-    setTimeout(() => setMode('signin'), 300);
   };
 
   // 關閉 modal 時重置模式
   useEffect(() => {
     if (!isOpen) {
-      const timer = setTimeout(() => setMode('signin'), 300);
-      return () => clearTimeout(timer);
+      return;
     }
   }, [isOpen]);
 
@@ -148,24 +141,7 @@ export default function AuthModal({ isOpen, onClose, initialMode = 'signin' }: A
         </ModalHeader>
 
         <ContentContainer>
-          {mode === 'signin' && (
-            <SignInForm
-              onSuccess={handleSuccess}
-              onSwitchToSignUp={() => setMode('signup')}
-              onSwitchToReset={() => setMode('reset')}
-            />
-          )}
-
-          {mode === 'signup' && (
-            <SignUpForm onSuccess={handleSuccess} onSwitchToSignIn={() => setMode('signin')} />
-          )}
-
-          {mode === 'reset' && (
-            <ResetPasswordForm
-              onSuccess={() => setMode('signin')}
-              onSwitchToSignIn={() => setMode('signin')}
-            />
-          )}
+          <SignInForm onSuccess={handleSuccess} />
         </ContentContainer>
       </ModalContent>
     </ModalOverlay>

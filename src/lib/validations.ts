@@ -2,47 +2,6 @@
 
 import { z } from 'zod';
 
-// 登入表單驗證
-export const signInSchema = z.object({
-  email: z
-    .string()
-    .min(1, '請輸入 Email')
-    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, '請輸入正確的 Email 格式'),
-  password: z.string().min(1, '請輸入密碼').min(6, '密碼至少需要6個字元'),
-});
-
-// 註冊表單驗證
-export const signUpSchema = z
-  .object({
-    displayName: z
-      .string()
-      .min(1, '請輸入顯示名稱')
-      .min(2, '顯示名稱至少需要2個字元')
-      .max(50, '顯示名稱不能超過50個字元'),
-    email: z
-      .string()
-      .min(1, '請輸入 Email')
-      .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, '請輸入正確的 Email 格式'),
-    password: z
-      .string()
-      .min(1, '請輸入密碼')
-      .min(6, '密碼至少需要6個字元')
-      .max(128, '密碼不能超過128個字元'),
-    confirmPassword: z.string().min(1, '請確認密碼'),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: '密碼確認不匹配',
-    path: ['confirmPassword'],
-  });
-
-// 重設密碼表單驗證
-export const resetPasswordSchema = z.object({
-  email: z
-    .string()
-    .min(1, '請輸入 Email')
-    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, '請輸入正確的 Email 格式'),
-});
-
 // 活動投稿表單驗證
 export const eventSubmissionSchema = z
   .object({
@@ -94,8 +53,4 @@ export const eventSubmissionSchema = z
     }
   );
 
-// 型別導出
-export type SignInFormData = z.infer<typeof signInSchema>;
-export type SignUpFormData = z.infer<typeof signUpSchema>;
-export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 export type EventSubmissionFormData = z.infer<typeof eventSubmissionSchema>;

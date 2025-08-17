@@ -114,11 +114,11 @@ const EmptyState = styled.div`
   text-align: center;
   padding: 40px 20px;
   color: var(--color-text-secondary);
-
-  .icon {
-    font-size: 48px;
-    margin-bottom: 16px;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
 
   h3 {
     font-size: 18px;
@@ -287,8 +287,8 @@ const LoadingSpinnerLarge = styled.div`
 `;
 
 const ProfileImageContainer = styled.div<{ imageUrl: string }>`
-  width: 32px;
-  height: 32px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
   overflow: hidden;
   background-image: url(${(props) => props.imageUrl});
@@ -646,7 +646,6 @@ export default function MapPageStyled() {
           >
             <HandleBar />
             <HandleBarTextContainer>
-              <ProfileImageContainer imageUrl={artistData?.profileImage || ''} />
               <HandleBarText>
                 {selectedEventId ? (
                   '目前查看中的生咖'
@@ -678,7 +677,7 @@ export default function MapPageStyled() {
               ) : (
                 <>
                   <EmptyState>
-                    <div className="icon">😣</div>
+                    <ProfileImageContainer imageUrl={artistData?.profileImage || ''} />
                     <h3>目前{artistData?.stageName}沒有生咖</h3>
                   </EmptyState>
                   <CTAButton

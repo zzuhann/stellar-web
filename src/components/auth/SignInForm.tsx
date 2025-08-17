@@ -1,19 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
-import { signInSchema, SignInFormData } from '@/lib/validations';
-import { signIn, signInWithGoogle } from '@/lib/auth';
+import { signInWithGoogle } from '@/lib/auth';
 import { useAuth } from '@/lib/auth-context';
 import showToast from '@/lib/toast';
 
 interface SignInFormProps {
   onSuccess?: () => void;
-  onSwitchToSignUp?: () => void;
-  onSwitchToReset?: () => void;
 }
 
 // Styled Components
@@ -41,126 +35,6 @@ const Subtitle = styled.p`
   margin: 0;
 `;
 
-const FormContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
-
-const FormField = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const Label = styled.label`
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  margin-bottom: 8px;
-`;
-
-const InputWrapper = styled.div`
-  position: relative;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-size: 16px;
-  transition: all 0.2s ease;
-
-  &::placeholder {
-    color: var(--color-text-secondary);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(90, 125, 154, 0.1);
-  }
-
-  &:disabled {
-    background: var(--color-bg-secondary);
-    cursor: not-allowed;
-  }
-`;
-
-const PasswordInput = styled(Input)`
-  padding-right: 48px;
-`;
-
-const PasswordToggle = styled.button`
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: var(--color-text-primary);
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-`;
-
-const ErrorMessage = styled.p`
-  font-size: 12px;
-  color: #ef4444;
-  margin: 4px 0 0 0;
-`;
-
-const ErrorBox = styled.div`
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: var(--radius-lg);
-  padding: 12px 16px;
-
-  p {
-    font-size: 14px;
-    color: #dc2626;
-    margin: 0;
-  }
-`;
-
-const SubmitButton = styled.button<{ loading?: boolean }>`
-  width: 100%;
-  padding: 14px 24px;
-  border-radius: var(--radius-lg);
-  background: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: ${(props) => (props.loading ? 'not-allowed' : 'pointer')};
-  opacity: ${(props) => (props.loading ? 0.7 : 1)};
-  transition: all 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background: #3a5d7a;
-    border-color: #3a5d7a;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-  }
-`;
-
 const LoadingContent = styled.div`
   display: flex;
   align-items: center;
@@ -183,26 +57,6 @@ const Spinner = styled.div`
     100% {
       transform: rotate(360deg);
     }
-  }
-`;
-
-const Divider = styled.div`
-  display: flex;
-  align-items: center;
-  margin: 20px 0;
-
-  &::before,
-  &::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--color-border-light);
-  }
-
-  span {
-    padding: 0 16px;
-    font-size: 14px;
-    color: var(--color-text-secondary);
   }
 `;
 
@@ -240,83 +94,9 @@ const GoogleButton = styled.button<{ loading?: boolean }>`
   }
 `;
 
-const ActionsContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  text-align: center;
-`;
-
-const LinkButton = styled.button`
-  font-size: 14px;
-  color: var(--color-primary);
-  cursor: pointer;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: #3a5d7a;
-    text-decoration: underline;
-  }
-`;
-
-const TextWithLink = styled.div`
-  font-size: 14px;
-  color: var(--color-text-secondary);
-
-  button {
-    color: var(--color-primary);
-    font-weight: 500;
-    margin-left: 4px;
-    cursor: pointer;
-    transition: color 0.2s ease;
-
-    &:hover {
-      color: #3a5d7a;
-    }
-  }
-`;
-
-export default function SignInForm({
-  onSuccess,
-  onSwitchToSignUp,
-  onSwitchToReset,
-}: SignInFormProps) {
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+export default function SignInForm({ onSuccess }: SignInFormProps) {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const { fetchUserDataByUid } = useAuth();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setError,
-  } = useForm<SignInFormData>({
-    resolver: zodResolver(signInSchema),
-  });
-
-  const onSubmit = async (data: SignInFormData) => {
-    setIsLoading(true);
-
-    try {
-      const { user, error } = await signIn(data.email, data.password);
-
-      if (error) {
-        setError('root', { message: error });
-        showToast.error('登入失敗');
-      } else if (user) {
-        await fetchUserDataByUid(user.uid);
-        showToast.success('登入成功');
-        onSuccess?.();
-      }
-    } catch {
-      const errorMessage = '登入時發生未知錯誤';
-      setError('root', { message: errorMessage });
-      showToast.error('登入失敗');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
@@ -381,85 +161,6 @@ export default function SignInForm({
           </>
         )}
       </GoogleButton>
-
-      <Divider>
-        <span>或</span>
-      </Divider>
-
-      <FormContent>
-        {/* 電子郵件 */}
-        <FormField>
-          <Label htmlFor="email">電子郵件</Label>
-          <Input
-            id="email"
-            type="text"
-            autoComplete="email"
-            placeholder="請輸入您的電子郵件"
-            {...register('email')}
-          />
-          {errors.email && <ErrorMessage>{errors.email.message}</ErrorMessage>}
-        </FormField>
-
-        {/* 密碼 */}
-        <FormField>
-          <Label htmlFor="password">密碼</Label>
-          <InputWrapper>
-            <PasswordInput
-              id="password"
-              type={showPassword ? 'text' : 'password'}
-              autoComplete="current-password"
-              placeholder="請輸入您的密碼"
-              {...register('password')}
-            />
-            <PasswordToggle type="button" onClick={() => setShowPassword(!showPassword)}>
-              {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
-            </PasswordToggle>
-          </InputWrapper>
-          {errors.password && <ErrorMessage>{errors.password.message}</ErrorMessage>}
-        </FormField>
-
-        {/* 錯誤訊息 */}
-        {errors.root && (
-          <ErrorBox>
-            <p>{errors.root.message}</p>
-          </ErrorBox>
-        )}
-
-        {/* 登入按鈕 */}
-        <SubmitButton
-          type="button"
-          onClick={handleSubmit(onSubmit)}
-          loading={isLoading}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <LoadingContent>
-              <Spinner />
-              <span>登入中...</span>
-            </LoadingContent>
-          ) : (
-            '登入'
-          )}
-        </SubmitButton>
-
-        {/* 其他操作 */}
-        <ActionsContainer>
-          {onSwitchToReset && (
-            <LinkButton type="button" onClick={onSwitchToReset}>
-              忘記密碼？
-            </LinkButton>
-          )}
-
-          {onSwitchToSignUp && (
-            <TextWithLink>
-              還沒有帳號？
-              <button type="button" onClick={onSwitchToSignUp}>
-                立即註冊
-              </button>
-            </TextWithLink>
-          )}
-        </ActionsContainer>
-      </FormContent>
     </FormContainer>
   );
 }
