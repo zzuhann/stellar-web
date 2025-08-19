@@ -8,8 +8,10 @@ export interface FirebaseTimestamp {
 
 export interface Artist {
   id: string;
-  stageName: string; // 藝名（主要顯示）
-  realName?: string; // 本名（可選）
+  stageName: string; // 英文藝名（必填）
+  stageNameZh?: string; // 中文藝名（選填）
+  groupName?: string; // 團名（選填）
+  realName?: string; // 本名（選填）
   birthday?: string; // 生日 (YYYY-MM-DD)
   profileImage?: string; // 照片 URL
   status: 'pending' | 'approved' | 'rejected' | 'exists';
@@ -236,6 +238,8 @@ export interface CreateEventRequest {
 // 藝人編輯請求格式
 export interface UpdateArtistRequest {
   stageName?: string;
+  stageNameZh?: string;
+  groupName?: string;
   realName?: string;
   birthday?: string; // YYYY-MM-DD
   profileImage?: string;

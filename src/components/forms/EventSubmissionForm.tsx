@@ -320,11 +320,6 @@ const ArtistName = styled.span`
   font-weight: 500;
 `;
 
-const ArtistRealName = styled.span`
-  color: var(--color-text-secondary);
-  font-size: 13px;
-`;
-
 const PlaceholderText = styled.span`
   color: var(--color-text-secondary);
 `;
@@ -869,8 +864,9 @@ export default function EventSubmissionForm({
                         <img src={artist.profileImage} alt={artist.stageName} />
                       </ImageContainer>
                       <div>
-                        <ArtistName>{artist.stageName}</ArtistName>
-                        {artist.realName && <ArtistRealName>({artist.realName})</ArtistRealName>}
+                        <ArtistName>
+                          {artist.stageName} {artist.realName && `(${artist.realName})`}
+                        </ArtistName>
                       </div>
                     </div>
                     {mode === 'create' && (

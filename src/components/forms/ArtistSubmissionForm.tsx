@@ -271,9 +271,10 @@ const LoadingSpinner = styled.div`
 const artistSubmissionSchema = z.object({
   stageName: z
     .string()
-    .min(1, '請輸入藝名')
-    .min(2, '藝名至少需要2個字元')
-    .max(50, '藝名不能超過50個字元'),
+    .min(1, '請輸入英文藝名')
+    .min(2, '英文藝名至少需要2個字元')
+    .max(50, '英文藝名不能超過50個字元'),
+  stageNameZh: z.string().max(50, '中文藝名不能超過50個字元').optional().or(z.literal('')),
   realName: z.string().max(50, '本名不能超過50個字元').optional().or(z.literal('')),
   birthday: z.string().optional().or(z.literal('')),
   profileImage: z.string().url('請輸入正確的圖片連結格式').optional().or(z.literal('')),
@@ -316,6 +317,7 @@ export default function ArtistSubmissionForm({
     defaultValues: existingArtist
       ? {
           stageName: existingArtist.stageName,
+          stageNameZh: existingArtist.stageNameZh || '',
           realName: existingArtist.realName || '',
           birthday: existingArtist.birthday || '',
           profileImage: existingArtist.profileImage || '',
@@ -403,6 +405,7 @@ export default function ArtistSubmissionForm({
     // 準備藝人資料
     const artistData = {
       stageName: data.stageName,
+      stageNameZh: data.stageNameZh || undefined,
       realName: data.realName || undefined,
       birthday: data.birthday || undefined,
       profileImage: uploadedImageUrl || data.profileImage || undefined,
@@ -451,11 +454,11 @@ export default function ArtistSubmissionForm({
       </FormHeader>
 
       <Form>
-        {/* 藝名 */}
+        {/* 英文藝名 */}
         <FormGroup>
           <Label htmlFor="stageName">
             <UserIcon />
-            藝名(請填寫官方正名的英文名稱)*
+            藝名（請填寫官方正名的英文名稱）*
           </Label>
           <Input
             id="stageName"
@@ -466,9 +469,21 @@ export default function ArtistSubmissionForm({
           {errors.stageName && <ErrorText>{errors.stageName.message}</ErrorText>}
         </FormGroup>
 
+        {/* 中文藝名 */}
+        <FormGroup>
+          <Label htmlFor="stageNameZh">藝名（中文）</Label>
+          <Input
+            id="stageNameZh"
+            type="text"
+            placeholder="例：泰山、李涵（沒有可不填）"
+            {...register('stageNameZh')}
+          />
+          {errors.stageNameZh && <ErrorText>{errors.stageNameZh.message}</ErrorText>}
+        </FormGroup>
+
         {/* 本名 */}
         <FormGroup>
-          <Label htmlFor="realName">本名（中譯名稱）*</Label>
+          <Label htmlFor="realName">本名（中文）</Label>
           <Input
             id="realName"
             type="text"
