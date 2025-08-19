@@ -249,6 +249,16 @@ export interface UpdateArtistRequest {
 export interface ArtistReviewRequest {
   status: 'approved' | 'rejected' | 'exists';
   reason?: string; // 拒絕時使用
+  adminUpdate?: {
+    groupName?: string; // 審核通過時可設定團名
+  };
+}
+
+// 藝人審核通過請求格式
+export interface ArtistApproveRequest {
+  adminUpdate?: {
+    groupName?: string; // 選填，管理員可設定團名
+  };
 }
 
 export interface EventReviewRequest {

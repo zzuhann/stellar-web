@@ -142,9 +142,10 @@ export const artistsApi = {
     return response.data;
   },
 
-  // 審核藝人（管理員）- 舊版本保持相容性
-  approve: async (id: string): Promise<void> => {
-    await api.put(`/artists/${id}/approve`);
+  // 審核藝人（管理員）- 支援設定團名
+  approve: async (id: string, groupName?: string): Promise<void> => {
+    const body = groupName ? { adminUpdate: { groupName } } : {};
+    await api.put(`/artists/${id}/approve`, body);
   },
 
   // 拒絕藝人（管理員）- 更新為支援 reason

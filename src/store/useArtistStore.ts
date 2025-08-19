@@ -19,7 +19,7 @@ interface ArtistState {
       'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status' | 'coffeeEventCount'
     >
   ) => Promise<void>;
-  approveArtist: (id: string) => Promise<void>;
+  approveArtist: (id: string, groupName?: string) => Promise<void>;
   rejectArtist: (id: string, reason?: string) => Promise<void>;
   markAsExists: (id: string) => Promise<void>;
   deleteArtist: (id: string) => Promise<void>;
@@ -67,9 +67,9 @@ export const useArtistStore = create<ArtistState>()(
       },
 
       // 審核藝人
-      approveArtist: async (id) => {
+      approveArtist: async (id, groupName) => {
         try {
-          await artistsApi.approve(id);
+          await artistsApi.approve(id, groupName);
           set((state) => ({
             artists: state.artists.map((artist) =>
               artist.id === id ? { ...artist, status: 'approved' as const } : artist

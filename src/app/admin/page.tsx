@@ -16,6 +16,7 @@ import showToast from '@/lib/toast';
 import styled from 'styled-components';
 import EventPreviewModal from '@/components/events/EventPreviewModal';
 import RejectModal from '@/components/admin/RejectModal';
+import GroupNameModal from '@/components/admin/GroupNameModal';
 import { CoffeeEvent, Artist } from '@/types';
 import VerticalEventCard from '@/components/EventCard/VerticalEventCard';
 import VerticalArtistCard from '@/components/ArtistCard/VerticalArtistCard';
@@ -284,6 +285,7 @@ export default function AdminPage() {
   const [previewingEvent, setPreviewingEvent] = useState<CoffeeEvent | null>(null);
   const [rejectingArtist, setRejectingArtist] = useState<Artist | null>(null);
   const [rejectingEvent, setRejectingEvent] = useState<CoffeeEvent | null>(null);
+  const [approvingArtist, setApprovingArtist] = useState<Artist | null>(null);
 
   // 狀態管理
   const {
@@ -311,11 +313,18 @@ export default function AdminPage() {
     }
   }, [user, userData, fetchArtists, fetchEvents]);
 
-  const handleApproveArtist = async (artistId: string) => {
+  const handleApproveArtist = (artist: Artist) => {
+    setApprovingArtist(artist);
+  };
+
+  const handleApproveArtistWithGroupName = async (groupName?: string) => {
+    if (!approvingArtist) return;
+
     setLoading(true);
     try {
-      await approveArtist(artistId);
+      await approveArtist(approvingArtist.id, groupName);
       showToast.success('審核成功');
+      setApprovingArtist(null);
       fetchArtists({ status: 'pending' });
     } catch {
       showToast.error('審核失敗');
@@ -443,7 +452,7 @@ export default function AdminPage() {
                       <ActionButtons>
                         <ActionButton
                           variant="approve"
-                          onClick={() => handleApproveArtist(artist.id)}
+                          onClick={() => handleApproveArtist(artist)}
                           disabled={loading}
                         >
                           <CheckCircleIcon />
@@ -555,6 +564,18 @@ export default function AdminPage() {
           onConfirm={(reason) => handleRejectEvent(rejectingEvent.id, reason)}
           onClose={() => setRejectingEvent(null)}
           loading={loading}
+        />
+      )}
+
+      {/* 設定團名模態框 */}
+      {approvingArtist && (
+        <GroupNameModal
+          isOpen={true}
+          artistName={approvingArtist.stageNameZh || approvingArtist.stageName}
+          currentGroupName={approvingArtist.groupName}
+          onConfirm={handleApproveArtistWithGroupName}
+          onCancel={() => setApprovingArtist(null)}
+          isLoading={loading}
         />
       )}
     </PageContainer>
