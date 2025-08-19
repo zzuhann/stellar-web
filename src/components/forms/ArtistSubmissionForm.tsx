@@ -540,6 +540,23 @@ export default function ArtistSubmissionForm({
                   shouldDirty: true,
                 });
               }}
+              onCropCancel={() => {
+                // 如果是第一次上傳且取消裁切，清空圖片
+                if (!existingArtist?.profileImage) {
+                  setUploadedImageUrl('');
+                  setValue('profileImage', '', {
+                    shouldValidate: true,
+                    shouldDirty: true,
+                  });
+                } else {
+                  // 如果是編輯模式，恢復到原始圖片
+                  setUploadedImageUrl(existingArtist.profileImage);
+                  setValue('profileImage', existingArtist.profileImage, {
+                    shouldValidate: true,
+                    shouldDirty: false,
+                  });
+                }
+              }}
               placeholder="點擊上傳偶像照片或拖拽至此"
               maxSizeMB={5}
               disabled={createArtistMutation.isPending || updateArtistMutation.isPending}
@@ -547,7 +564,7 @@ export default function ArtistSubmissionForm({
               useRealAPI={!!token}
               enableCrop={mode === 'create'}
               cropAspectRatio={1}
-              cropShape="square"
+              cropShape="circle"
               cropOutputSize={400}
             />
           </FormGroup>

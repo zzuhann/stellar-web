@@ -23,6 +23,7 @@ interface ImageUploadProps {
   cropAspectRatio?: number; // 裁切比例，1 = 正方形
   cropShape?: 'square' | 'circle'; // 裁切形狀
   cropOutputSize?: number; // 輸出尺寸
+  onCropCancel?: () => void; // 裁切取消回調
 }
 
 // Styled Components
@@ -106,12 +107,15 @@ const PreviewContainer = styled.div`
   position: relative;
 `;
 
-const PreviewImage = styled.img`
+const PreviewImage = styled.img<{ isCircle?: boolean }>`
   width: 100%;
   max-height: 192px;
-  border-radius: var(--radius-lg);
-  object-fit: contain;
-  background-color: var(--color-bg-secondary);
+  border-radius: ${(props) => (props.isCircle ? '50%' : 'var(--radius-lg)')};
+  object-fit: ${(props) => (props.isCircle ? 'cover' : 'contain')};
+  background-color: ${(props) => (props.isCircle ? 'transparent' : 'var(--color-bg-secondary)')};
+  aspect-ratio: ${(props) => (props.isCircle ? '1' : 'auto')};
+  max-width: ${(props) => (props.isCircle ? '192px' : '100%')};
+  margin: ${(props) => (props.isCircle ? '0 auto' : '0')};
 `;
 
 const ActionButtons = styled.div`
@@ -237,6 +241,7 @@ export default function ImageUpload({
   cropAspectRatio = 1,
   cropShape = 'square',
   cropOutputSize = 400,
+  onCropCancel,
 }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -250,6 +255,7 @@ export default function ImageUpload({
     width: number;
     height: number;
   } | null>(null);
+  const [hasCroppedImage, setHasCroppedImage] = useState(false); // 追蹤是否已經裁切過圖片
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 驗證檔案
@@ -360,6 +366,9 @@ export default function ImageUpload({
       // 關閉裁切器
       setShowCropper(false);
 
+      // 標記已經裁切過圖片
+      setHasCroppedImage(true);
+
       // 上傳裁切後的圖片
       await uploadImage(croppedFile);
     },
@@ -369,8 +378,18 @@ export default function ImageUpload({
   // 取消裁切
   const handleCropCancel = useCallback(() => {
     setShowCropper(false);
-    // 不重置 originalFile 和 previewUrl，保持當前狀態
-  }, []);
+    // 如果還沒裁切過圖片，則清空所有狀態（第一次上傳時取消）
+    if (!hasCroppedImage) {
+      setPreviewUrl(null);
+      setOriginalFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+    // 如果已經裁切過，就保持現狀（再次裁切時取消）
+    // 呼叫外部傳入的取消回調
+    onCropCancel?.();
+  }, [onCropCancel, hasCroppedImage]);
 
   // 處理檔案輸入變化
   const handleInputChange = useCallback(
@@ -420,6 +439,7 @@ export default function ImageUpload({
   const handleRemove = useCallback(() => {
     setPreviewUrl(null);
     setError(null);
+    setHasCroppedImage(false); // 重置裁切狀態
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -459,7 +479,11 @@ export default function ImageUpload({
           </LoadingContainer>
         ) : previewUrl ? (
           <PreviewContainer>
-            <PreviewImage src={previewUrl} alt="預覽" />
+            <PreviewImage
+              src={previewUrl}
+              alt="預覽"
+              isCircle={enableCrop && cropShape === 'circle' && hasCroppedImage}
+            />
             <ActionButtons>
               {/* 重新裁切按鈕（如果啟用裁切功能） */}
               {enableCrop && originalFile && (

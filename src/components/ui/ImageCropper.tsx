@@ -911,46 +911,46 @@ export default function ImageCropper({
                 isResizing={isResizing}
               />
 
-              {/* 調整大小的控制點 */}
-              {cropShape === 'square' && (
-                <>
-                  {/* 西北角 */}
-                  <ResizeHandle left={cropArea.x} top={cropArea.y} cursor="nw-resize" />
-                  {/* 東北角 */}
-                  <ResizeHandle
-                    left={cropArea.x + cropArea.width}
-                    top={cropArea.y}
-                    cursor="ne-resize"
-                  />
-                  {/* 西南角 */}
-                  <ResizeHandle
-                    left={cropArea.x}
-                    top={cropArea.y + cropArea.height}
-                    cursor="sw-resize"
-                  />
-                  {/* 東南角 */}
-                  <ResizeHandle
-                    left={cropArea.x + cropArea.width}
-                    top={cropArea.y + cropArea.height}
-                    cursor="se-resize"
-                  />
-                </>
-              )}
+              {/* 調整大小的控制點 - 圓形和方形都顯示 */}
+              <>
+                {/* 西北角 */}
+                <ResizeHandle left={cropArea.x} top={cropArea.y} cursor="nw-resize" />
+                {/* 東北角 */}
+                <ResizeHandle
+                  left={cropArea.x + cropArea.width}
+                  top={cropArea.y}
+                  cursor="ne-resize"
+                />
+                {/* 西南角 */}
+                <ResizeHandle
+                  left={cropArea.x}
+                  top={cropArea.y + cropArea.height}
+                  cursor="sw-resize"
+                />
+                {/* 東南角 */}
+                <ResizeHandle
+                  left={cropArea.x + cropArea.width}
+                  top={cropArea.y + cropArea.height}
+                  cursor="se-resize"
+                />
+              </>
 
-              {/* 網格線 */}
-              <GridContainer
-                left={cropArea.x}
-                top={cropArea.y}
-                width={cropArea.width}
-                height={cropArea.height}
-              >
-                {/* 垂直線 */}
-                <GridLine left="33.33%" height="100%" isVertical />
-                <GridLine left="66.66%" height="100%" isVertical />
-                {/* 水平線 */}
-                <GridLine top="33.33%" width="100%" />
-                <GridLine top="66.66%" width="100%" />
-              </GridContainer>
+              {/* 網格線 - 只在方形模式顯示 */}
+              {cropShape === 'square' && (
+                <GridContainer
+                  left={cropArea.x}
+                  top={cropArea.y}
+                  width={cropArea.width}
+                  height={cropArea.height}
+                >
+                  {/* 垂直線 */}
+                  <GridLine left="33.33%" height="100%" isVertical />
+                  <GridLine left="66.66%" height="100%" isVertical />
+                  {/* 水平線 */}
+                  <GridLine top="33.33%" width="100%" />
+                  <GridLine top="66.66%" width="100%" />
+                </GridContainer>
+              )}
             </>
           )}
         </CropContainer>
