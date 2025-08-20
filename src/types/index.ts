@@ -182,6 +182,8 @@ export interface EventSearchParams {
   createdBy?: string; // 創建者 UID（篩選用戶自己的投稿）
   page?: number; // 頁數，預設1
   limit?: number; // 每頁筆數，預設50，最大100
+  sortBy?: 'title' | 'startTime' | 'createdAt'; // 排序欄位
+  sortOrder?: 'asc' | 'desc'; // 排序方向
 }
 
 // 地圖相關型別

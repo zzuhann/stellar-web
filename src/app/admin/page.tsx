@@ -291,20 +291,22 @@ export default function AdminPage() {
   // 使用 React Query 取得待審核藝人
   const { data: pendingArtists = [], isLoading: artistsLoading } = useQuery({
     queryKey: ['admin-pending-artists'],
-    queryFn: () => artistsApi.getAll({ status: 'pending', sortBy: 'createdAt', sortOrder: 'desc' }),
+    queryFn: () => artistsApi.getAll({ status: 'pending', sortBy: 'createdAt', sortOrder: 'asc' }),
     enabled: !!user && userData?.role === 'admin',
     staleTime: 5 * 60 * 1000, // 5分鐘內資料視為新鮮，不會重新請求
     gcTime: 10 * 60 * 1000, // 10分鐘後從快取中移除
   });
 
   // 使用 React Query 取得待審核活動
-  const { data: pendingEvents = [], isLoading: eventsLoading } = useQuery({
+  const { data: pendingEventsResponse, isLoading: eventsLoading } = useQuery({
     queryKey: ['admin-pending-events'],
-    queryFn: () => eventsApi.admin.getPending(),
+    queryFn: () => eventsApi.getAll({ status: 'pending', sortBy: 'createdAt', sortOrder: 'asc' }),
     enabled: !!user && userData?.role === 'admin',
     staleTime: 5 * 60 * 1000, // 5分鐘內資料視為新鮮，不會重新請求
     gcTime: 10 * 60 * 1000, // 10分鐘後從快取中移除
   });
+
+  const pendingEvents = pendingEventsResponse?.events || [];
 
   // 權限檢查
   useEffect(() => {

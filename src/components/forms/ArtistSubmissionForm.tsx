@@ -279,7 +279,14 @@ const artistSubmissionSchema = z.object({
   stageNameZh: z.string().max(50, '中文藝名不能超過50個字元').optional().or(z.literal('')),
   realName: z.string().max(50, '本名不能超過50個字元').optional().or(z.literal('')),
   birthday: z.string().optional().or(z.literal('')),
-  profileImage: z.string().url('請輸入正確的圖片連結格式').optional().or(z.literal('')),
+  profileImage: z
+    .string()
+    .optional()
+    .or(z.literal(''))
+    .refine(
+      (val) => !val || val === 'pending' || /^https?:\/\//.test(val),
+      '請輸入正確的圖片連結格式'
+    ),
 });
 
 type ArtistSubmissionFormData = z.infer<typeof artistSubmissionSchema>;
@@ -378,8 +385,8 @@ export default function ArtistSubmissionForm({
     // 檢測表單欄位改動
     const formHasChanges = isDirty;
 
-    // 檢測圖片改動
-    const imageChanged = uploadedImageUrl !== (existingArtist.profileImage || '');
+    // 檢測圖片改動 - 使用 hasImageChanged 標記
+    const imageChanged = hasImageChanged;
 
     return formHasChanges || imageChanged;
   };
@@ -391,8 +398,10 @@ export default function ArtistSubmissionForm({
     }
 
     // 檢查是否有變更
-    if (!checkForChanges()) {
-      showToast.success('更新成功');
+    const hasChanges = checkForChanges();
+
+    if (!hasChanges) {
+      showToast.success('沒有變更需要更新');
       return;
     }
 
@@ -416,7 +425,6 @@ export default function ArtistSubmissionForm({
         const uploadResult = await uploadImageToAPI(selectedImageFile, token || '');
         if (uploadResult.success && uploadResult.filename) {
           finalImageUrl = CDN_DOMAIN + uploadResult.filename;
-          showToast.success('圖片上傳成功');
         } else {
           showToast.error(uploadResult.error || '圖片上傳失敗');
           return;
@@ -432,7 +440,7 @@ export default function ArtistSubmissionForm({
     // 準備藝人資料
     const artistData = {
       stageName: data.stageName,
-      stageNameZh: data.stageNameZh || undefined,
+      stageNameZh: data.stageNameZh,
       realName: data.realName || undefined,
       birthday: data.birthday || undefined,
       profileImage: finalImageUrl,
@@ -557,6 +565,7 @@ export default function ArtistSubmissionForm({
                 // 保存選擇的檔案，不立即上傳
                 setSelectedImageFile(file);
                 setHasImageChanged(true); // 標記圖片已變更
+                // 更新預覽 URL（ImageUpload 組件會處理預覽，這裡不需要設定 uploadedImageUrl）
                 setValue('profileImage', 'pending', {
                   shouldValidate: true,
                   shouldDirty: true,
@@ -626,7 +635,13 @@ export default function ArtistSubmissionForm({
             disabled={
               createArtistMutation.isPending || updateArtistMutation.isPending || isUploadingImage
             }
-            onClick={handleSubmit(onSubmit)}
+            onClick={handleSubmit(onSubmit, (errors) => {
+              // 找出第一個錯誤並顯示
+              const firstError = Object.values(errors)[0]?.message;
+              if (firstError) {
+                showToast.error(firstError);
+              }
+            })}
           >
             {isUploadingImage ||
             createArtistMutation.isPending ||

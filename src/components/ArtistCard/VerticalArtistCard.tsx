@@ -145,7 +145,7 @@ const getStatusText = (
 const getBirthdayText = (birthday: string): string => {
   if (!birthday) return '';
   const date = new Date(birthday);
-  return `${date.getMonth() + 1}月${date.getDate()}日`;
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
 };
 
 interface VerticalArtistCardProps {
@@ -188,7 +188,9 @@ const VerticalArtistCard = ({
         }}
       >
         <ArtistName>
-          {artist.stageName} {artist.realName && `(${artist.realName})`}
+          {artist.stageName}
+          {artist.stageNameZh && `/${artist.stageNameZh}`}{' '}
+          {artist.realName && `(${artist.realName})`}
         </ArtistName>
 
         {birthdayText && <ArtistBirthday>🎂 {birthdayText}</ArtistBirthday>}

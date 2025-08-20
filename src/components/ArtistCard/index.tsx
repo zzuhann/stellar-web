@@ -39,13 +39,6 @@ const ArtistName = styled.h3`
   }
 `;
 
-const ArtistSecondaryName = styled.div`
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--color-text-secondary);
-  margin-bottom: 4px;
-`;
-
 const ArtistBirthday = styled.div`
   font-size: 14px;
   color: var(--color-text-secondary);
@@ -99,9 +92,7 @@ const ArtistCard = ({ artist, handleArtistClick }: ArtistCardProps) => {
       <ArtistAvatar avatarUrl={artist.profileImage ?? ''} />
 
       <ArtistInfo>
-        <ArtistName>{artist.stageNameZh || artist.stageName}</ArtistName>
-        {artist.stageNameZh && <ArtistSecondaryName>{artist.stageName}</ArtistSecondaryName>}
-        {artist.groupName && <ArtistSecondaryName>{artist.groupName}</ArtistSecondaryName>}
+        <ArtistName>{artist.stageName}</ArtistName>
         <ArtistBirthday>
           <span className="birthday-label">🎂: </span>
           <span className="birthday-date">{birthdayText}</span>

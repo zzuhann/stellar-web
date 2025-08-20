@@ -98,10 +98,13 @@ export const artistsApi = {
     return rawArtists.map((artist: Record<string, unknown>) => ({
       id: artist.id,
       stageName: artist.stageName,
+      stageNameZh: artist.stageNameZh, // 新增中文藝名
+      groupName: artist.groupName, // 新增團名
       realName: artist.realName,
       birthday: artist.birthday,
       profileImage: artist.profileImage,
       status: artist.status,
+      rejectedReason: artist.rejectedReason, // 新增拒絕原因
       createdBy: artist.createdBy,
       createdAt: (artist.createdAt as { _seconds?: number })?._seconds
         ? new Date((artist.createdAt as { _seconds: number })._seconds * 1000).toISOString()
@@ -162,10 +165,13 @@ export const artistsApi = {
     return {
       id: artist.id,
       stageName: artist.stageName,
+      stageNameZh: artist.stageNameZh, // 新增中文藝名
+      groupName: artist.groupName, // 新增團名
       realName: artist.realName,
       birthday: artist.birthday,
       profileImage: artist.profileImage,
       status: artist.status,
+      rejectedReason: artist.rejectedReason, // 新增拒絕原因
       createdBy: artist.createdBy,
       createdAt: artist.createdAt?._seconds
         ? new Date(artist.createdAt._seconds * 1000).toISOString()
@@ -210,6 +216,8 @@ export const eventsApi = {
     if (params?.createdBy) queryParams.createdBy = params.createdBy;
     if (params?.page) queryParams.page = params.page.toString();
     if (params?.limit) queryParams.limit = params.limit.toString();
+    if (params?.sortBy) queryParams.sortBy = params.sortBy;
+    if (params?.sortOrder) queryParams.sortOrder = params.sortOrder;
 
     const response = await api.get('/events', { params: queryParams });
     return response.data as EventsResponse;

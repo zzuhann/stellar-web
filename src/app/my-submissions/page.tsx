@@ -333,9 +333,26 @@ function MySubmissionsContent() {
     router.push(`/my-submissions?tab=${tabParam}`, { scroll: false });
   };
 
-  // 從 API 取得的資料
-  const userArtists = useMemo(() => userSubmissions?.artists || [], [userSubmissions?.artists]);
-  const userEvents = useMemo(() => userSubmissions?.events || [], [userSubmissions?.events]);
+  // 從 API 取得的資料，並把 rejected 狀態排到最上面
+  const userArtists = useMemo(() => {
+    if (!userSubmissions?.artists) return [];
+    return [...userSubmissions.artists].sort((a, b) => {
+      // rejected 狀態排在最上面，其他保持原順序
+      if (a.status === 'rejected' && b.status !== 'rejected') return -1;
+      if (a.status !== 'rejected' && b.status === 'rejected') return 1;
+      return 0;
+    });
+  }, [userSubmissions?.artists]);
+
+  const userEvents = useMemo(() => {
+    if (!userSubmissions?.events) return [];
+    return [...userSubmissions.events].sort((a, b) => {
+      // rejected 狀態排在最上面，其他保持原順序
+      if (a.status === 'rejected' && b.status !== 'rejected') return -1;
+      if (a.status !== 'rejected' && b.status === 'rejected') return 1;
+      return 0;
+    });
+  }, [userSubmissions?.events]);
 
   // 處理編輯藝人
   const handleEditArtist = (e: React.MouseEvent, artist: Artist) => {
