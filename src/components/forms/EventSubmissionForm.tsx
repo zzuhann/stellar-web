@@ -602,7 +602,7 @@ export default function EventSubmissionForm({
       showToast.success('投稿成功');
       onSuccess?.(newEvent);
       if (!onSuccess) {
-        router.push('/my-submissions');
+        router.push('/my-submissions?tab=event');
       }
     },
     onError: (error: any) => {
@@ -636,7 +636,7 @@ export default function EventSubmissionForm({
       queryClient.invalidateQueries({ queryKey: ['map-data'] });
       queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
       showToast.success('已重新提交審核！');
-      router.push(`/my-submissions`);
+      router.push(`/my-submissions?tab=event`);
     },
     onError: (error: any) => {
       // 從後端錯誤回應中提取錯誤訊息
@@ -744,7 +744,7 @@ export default function EventSubmissionForm({
 
       createEventMutation.mutate(eventData, {
         onSuccess: () => {
-          router.push(`/my-submissions`);
+          router.push(`/my-submissions?tab=event`);
         },
       });
     } else if (mode === 'edit' && existingEvent) {
@@ -784,7 +784,7 @@ export default function EventSubmissionForm({
             if (existingEvent.status === 'rejected') {
               resubmitEventMutation.mutate(existingEvent.id);
             } else {
-              router.push(`/my-submissions`);
+              router.push(`/my-submissions?tab=event`);
             }
           },
         }

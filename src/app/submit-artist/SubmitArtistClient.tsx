@@ -94,17 +94,17 @@ export default function SubmitArtistClient() {
           }[existingArtist.status] || '無法編輯';
 
         showToast.warning(`此偶像目前狀態為「${statusText}」，無法編輯`);
-        router.push('/my-submissions');
+        router.push('/my-submissions?tab=artists');
       }
     }
   }, [isEditMode, existingArtist, router]);
 
   const handleSuccess = () => {
-    router.push('/my-submissions');
+    router.push('/my-submissions?tab=artists');
   };
 
   const handleCancel = () => {
-    router.push('/my-submissions');
+    router.push('/my-submissions?tab=artists');
   };
 
   if (loading || (isEditMode && artistLoading)) {

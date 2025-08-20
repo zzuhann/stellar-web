@@ -94,8 +94,10 @@ export default function SubmitEventClient() {
       <EventSubmissionForm
         mode={editEventId ? 'edit' : 'create'}
         existingEvent={existingEvent || undefined}
-        onSuccess={() => router.push('/my-submissions')}
-        onCancel={editEventId ? () => router.push('/my-submissions') : () => router.back()}
+        onSuccess={() => router.push('/my-submissions?tab=event')}
+        onCancel={
+          editEventId ? () => router.push('/my-submissions?tab=event') : () => router.back()
+        }
       />
     </MainContent>
   );

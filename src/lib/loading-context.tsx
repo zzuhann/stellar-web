@@ -37,14 +37,24 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
     const originalReplace = router.replace;
 
     router.push = (href, options) => {
-      if (href !== pathname) {
+      // 解析當前 URL 和目標 URL
+      const currentUrl = new URL(pathname, window.location.origin);
+      const targetUrl = new URL(href, window.location.origin);
+
+      // 只有當路徑不同時才顯示 loading（忽略 query 參數的變化）
+      if (targetUrl.pathname !== currentUrl.pathname) {
         handleStart();
       }
       return originalPush(href, options);
     };
 
     router.replace = (href, options) => {
-      if (href !== pathname) {
+      // 解析當前 URL 和目標 URL
+      const currentUrl = new URL(pathname, window.location.origin);
+      const targetUrl = new URL(href, window.location.origin);
+
+      // 只有當路徑不同時才顯示 loading（忽略 query 參數的變化）
+      if (targetUrl.pathname !== currentUrl.pathname) {
         handleStart();
       }
       return originalReplace(href, options);

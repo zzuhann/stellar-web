@@ -333,7 +333,7 @@ export default function ArtistSubmissionForm({
       showToast.success('投稿成功');
       onSuccess?.();
       if (!onSuccess) {
-        router.push('/my-submissions');
+        router.push('/my-submissions?tab=artist');
       }
     },
     onError: (error: any) => {

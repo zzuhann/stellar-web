@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { eventsApi } from '@/lib/api';
@@ -276,7 +276,12 @@ const ArtistInfo = styled.div`
 export default function MySubmissionsPage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'artists' | 'events'>('events');
+  const searchParams = useSearchParams();
+
+  // 從 URL 參數讀取 tab，預設為 'events'
+  const tabFromUrl = searchParams.get('tab');
+  const initialTab = tabFromUrl === 'artist' ? 'artists' : 'events';
+  const [activeTab, setActiveTab] = useState<'artists' | 'events'>(initialTab);
 
   const [previewingEvent, setPreviewingEvent] = useState<CoffeeEvent | null>(null);
   const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
@@ -313,6 +318,20 @@ export default function MySubmissionsPage() {
       router.push('/');
     }
   }, [user, authLoading, router]);
+
+  // 當 URL 參數變化時更新 activeTab
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    const newTab = tabFromUrl === 'artist' ? 'artists' : 'events';
+    setActiveTab(newTab);
+  }, [searchParams]);
+
+  // 處理 tab 切換，同時更新 URL
+  const handleTabChange = (tab: 'artists' | 'events') => {
+    setActiveTab(tab);
+    const tabParam = tab === 'artists' ? 'artist' : 'event';
+    router.push(`/my-submissions?tab=${tabParam}`, { scroll: false });
+  };
 
   // 從 API 取得的資料
   const userArtists = useMemo(() => userSubmissions?.artists || [], [userSubmissions?.artists]);
@@ -379,10 +398,13 @@ export default function MySubmissionsPage() {
           {/* 標籤頁 */}
           <TabContainer>
             <TabNav>
-              <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')}>
+              <TabButton active={activeTab === 'events'} onClick={() => handleTabChange('events')}>
                 生咖投稿
               </TabButton>
-              <TabButton active={activeTab === 'artists'} onClick={() => setActiveTab('artists')}>
+              <TabButton
+                active={activeTab === 'artists'}
+                onClick={() => handleTabChange('artists')}
+              >
                 偶像投稿
               </TabButton>
             </TabNav>
