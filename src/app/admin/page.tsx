@@ -11,7 +11,8 @@ import {
   EyeIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
-import { useEventStore, useArtistStore } from '@/store';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { artistsApi, eventsApi } from '@/lib/api';
 import showToast from '@/lib/toast';
 import styled from 'styled-components';
 import EventPreviewModal from '@/components/events/EventPreviewModal';
@@ -281,21 +282,29 @@ export default function AdminPage() {
   const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'artists' | 'events'>('artists');
-  const [loading, setLoading] = useState(false);
   const [previewingEvent, setPreviewingEvent] = useState<CoffeeEvent | null>(null);
   const [rejectingArtist, setRejectingArtist] = useState<Artist | null>(null);
   const [rejectingEvent, setRejectingEvent] = useState<CoffeeEvent | null>(null);
   const [approvingArtist, setApprovingArtist] = useState<Artist | null>(null);
+  const queryClient = useQueryClient();
 
-  // 狀態管理
-  const {
-    artists: pendingArtists,
-    fetchArtists,
-    approveArtist,
-    rejectArtist,
-    markAsExists,
-  } = useArtistStore();
-  const { events: pendingEvents, fetchEvents, admin } = useEventStore();
+  // 使用 React Query 取得待審核藝人
+  const { data: pendingArtists = [], isLoading: artistsLoading } = useQuery({
+    queryKey: ['admin-pending-artists'],
+    queryFn: () => artistsApi.getAll({ status: 'pending', sortBy: 'createdAt', sortOrder: 'desc' }),
+    enabled: !!user && userData?.role === 'admin',
+    staleTime: 5 * 60 * 1000, // 5分鐘內資料視為新鮮，不會重新請求
+    gcTime: 10 * 60 * 1000, // 10分鐘後從快取中移除
+  });
+
+  // 使用 React Query 取得待審核活動
+  const { data: pendingEvents = [], isLoading: eventsLoading } = useQuery({
+    queryKey: ['admin-pending-events'],
+    queryFn: () => eventsApi.admin.getPending(),
+    enabled: !!user && userData?.role === 'admin',
+    staleTime: 5 * 60 * 1000, // 5分鐘內資料視為新鮮，不會重新請求
+    gcTime: 10 * 60 * 1000, // 10分鐘後從快取中移除
+  });
 
   // 權限檢查
   useEffect(() => {
@@ -305,93 +314,118 @@ export default function AdminPage() {
     }
   }, [user, userData, authLoading, router]);
 
-  // 載入資料
-  useEffect(() => {
-    if (user && userData?.role === 'admin') {
-      fetchArtists({ status: 'pending' });
-      fetchEvents({ status: 'pending' });
-    }
-  }, [user, userData, fetchArtists, fetchEvents]);
+  // 審核藝人 mutations
+  const approveArtistMutation = useMutation({
+    mutationFn: ({ id, groupName }: { id: string; groupName?: string }) =>
+      artistsApi.approve(id, groupName),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-pending-artists'] });
+      showToast.success('審核成功');
+    },
+    onError: () => {
+      showToast.error('審核失敗');
+    },
+  });
+
+  const rejectArtistMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      artistsApi.reject(id, { reason }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-pending-artists'] });
+      showToast.success('已拒絕此投稿');
+    },
+    onError: () => {
+      showToast.error('操作失敗');
+    },
+  });
+
+  const markAsExistsMutation = useMutation({
+    mutationFn: (id: string) => artistsApi.reject(id, { reason: '藝人已存在' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-pending-artists'] });
+      showToast.success('已標記為已存在');
+    },
+    onError: () => {
+      showToast.error('操作失敗');
+    },
+  });
+
+  // 審核活動 mutations
+  const approveEventMutation = useMutation({
+    mutationFn: (id: string) => eventsApi.admin.approve(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-pending-events'] });
+      showToast.success('審核成功');
+    },
+    onError: () => {
+      showToast.error('操作失敗');
+    },
+  });
+
+  const rejectEventMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      eventsApi.admin.reject(id, { reason }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-pending-events'] });
+      showToast.success('已拒絕此投稿');
+    },
+    onError: () => {
+      showToast.error('操作失敗');
+    },
+  });
 
   const handleApproveArtist = (artist: Artist) => {
     setApprovingArtist(artist);
   };
 
-  const handleApproveArtistWithGroupName = async (groupName?: string) => {
+  const handleApproveArtistWithGroupName = (groupName?: string) => {
     if (!approvingArtist) return;
 
-    setLoading(true);
-    try {
-      await approveArtist(approvingArtist.id, groupName);
-      showToast.success('審核成功');
-      setApprovingArtist(null);
-      fetchArtists({ status: 'pending' });
-    } catch {
-      showToast.error('審核失敗');
-    } finally {
-      setLoading(false);
-    }
+    approveArtistMutation.mutate(
+      { id: approvingArtist.id, groupName },
+      {
+        onSuccess: () => {
+          setApprovingArtist(null);
+        },
+      }
+    );
   };
 
-  const handleRejectArtist = async (artistId: string, reason: string) => {
-    setLoading(true);
-    try {
-      await rejectArtist(artistId, reason);
-      showToast.success('已拒絕此投稿');
-      setRejectingArtist(null);
-      fetchArtists({ status: 'pending' });
-    } catch {
-      showToast.error('操作失敗');
-    } finally {
-      setLoading(false);
-    }
+  const handleRejectArtist = (artistId: string, reason: string) => {
+    rejectArtistMutation.mutate(
+      { id: artistId, reason },
+      {
+        onSuccess: () => {
+          setRejectingArtist(null);
+        },
+      }
+    );
   };
 
-  const handleExistsArtist = async (artistId: string) => {
-    setLoading(true);
-    try {
-      await markAsExists(artistId);
-      showToast.success('已標記為已存在');
-      fetchArtists({ status: 'pending' });
-    } catch {
-      showToast.error('操作失敗');
-    } finally {
-      setLoading(false);
-    }
+  const handleExistsArtist = (artistId: string) => {
+    markAsExistsMutation.mutate(artistId);
   };
 
-  const handleApproveEvent = async (eventId: string) => {
-    setLoading(true);
-    try {
-      await admin.approveEvent(eventId);
-      showToast.success('審核成功');
-      fetchEvents({ status: 'pending' });
-    } catch {
-      showToast.error('操作失敗');
-    } finally {
-      setLoading(false);
-    }
+  const handleApproveEvent = (eventId: string) => {
+    approveEventMutation.mutate(eventId);
   };
 
-  const handleRejectEvent = async (eventId: string, reason: string) => {
-    setLoading(true);
-    try {
-      await admin.rejectEvent(eventId, reason);
-      showToast.success('已拒絕此投稿');
-      setRejectingEvent(null);
-      fetchEvents({ status: 'pending' });
-    } catch {
-      showToast.error('操作失敗');
-    } finally {
-      setLoading(false);
-    }
+  const handleRejectEvent = (eventId: string, reason: string) => {
+    rejectEventMutation.mutate(
+      { id: eventId, reason },
+      {
+        onSuccess: () => {
+          setRejectingEvent(null);
+        },
+      }
+    );
   };
 
   const handlePreviewEvent = (event: CoffeeEvent) => {
     setPreviewingEvent(event);
   };
 
-  if (authLoading) {
+  if (authLoading || artistsLoading || eventsLoading) {
     return (
       <PageContainer>
         <LoadingContainer>
@@ -453,7 +487,7 @@ export default function AdminPage() {
                         <ActionButton
                           variant="approve"
                           onClick={() => handleApproveArtist(artist)}
-                          disabled={loading}
+                          disabled={approveArtistMutation.isPending}
                         >
                           <CheckCircleIcon />
                           通過
@@ -461,7 +495,7 @@ export default function AdminPage() {
                         <ActionButton
                           variant="exists"
                           onClick={() => handleExistsArtist(artist.id)}
-                          disabled={loading}
+                          disabled={markAsExistsMutation.isPending}
                         >
                           <ExclamationTriangleIcon />
                           已存在
@@ -469,7 +503,7 @@ export default function AdminPage() {
                         <ActionButton
                           variant="reject"
                           onClick={() => setRejectingArtist(artist)}
-                          disabled={loading}
+                          disabled={rejectArtistMutation.isPending}
                         >
                           <XCircleIcon />
                           拒絕
@@ -511,7 +545,7 @@ export default function AdminPage() {
                         <ActionButton
                           variant="approve"
                           onClick={() => handleApproveEvent(event.id)}
-                          disabled={loading}
+                          disabled={approveEventMutation.isPending}
                         >
                           <CheckCircleIcon />
                           通過
@@ -519,7 +553,7 @@ export default function AdminPage() {
                         <ActionButton
                           variant="reject"
                           onClick={() => setRejectingEvent(event)}
-                          disabled={loading}
+                          disabled={rejectEventMutation.isPending}
                         >
                           <XCircleIcon />
                           拒絕
@@ -551,7 +585,7 @@ export default function AdminPage() {
           itemName={rejectingArtist.stageName}
           onConfirm={(reason) => handleRejectArtist(rejectingArtist.id, reason)}
           onClose={() => setRejectingArtist(null)}
-          loading={loading}
+          loading={rejectArtistMutation.isPending}
         />
       )}
 
@@ -563,7 +597,7 @@ export default function AdminPage() {
           itemName={rejectingEvent.title}
           onConfirm={(reason) => handleRejectEvent(rejectingEvent.id, reason)}
           onClose={() => setRejectingEvent(null)}
-          loading={loading}
+          loading={rejectEventMutation.isPending}
         />
       )}
 
@@ -575,7 +609,7 @@ export default function AdminPage() {
           currentGroupName={approvingArtist.groupName}
           onConfirm={handleApproveArtistWithGroupName}
           onCancel={() => setApprovingArtist(null)}
-          isLoading={loading}
+          isLoading={approveArtistMutation.isPending}
         />
       )}
     </PageContainer>
