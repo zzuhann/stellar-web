@@ -1,12 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback } from 'react';
-import {
-  CheckIcon,
-  XMarkIcon,
-  MagnifyingGlassPlusIcon,
-  MagnifyingGlassMinusIcon,
-} from '@heroicons/react/24/outline';
+import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 
 interface CropArea {
@@ -70,53 +65,6 @@ const ModalTitle = styled.h3`
 
   @media (min-width: 768px) {
     font-size: 20px;
-  }
-`;
-
-const ZoomControls = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 16px;
-`;
-
-const ZoomButton = styled.button<{ disabled?: boolean }>`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  transition: all 0.2s ease;
-  cursor: pointer;
-  border: 1px solid var(--color-border-light);
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
-  font-size: 14px;
-
-  &:hover:not(:disabled) {
-    background: var(--color-bg-muted);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  @media (min-width: 768px) {
-    padding: 10px 14px;
-    font-size: 15px;
-  }
-`;
-
-const ZoomDisplay = styled.div`
-  font-size: 14px;
-  min-width: 80px;
-  text-align: center;
-  color: var(--color-text-secondary);
-
-  @media (min-width: 768px) {
-    font-size: 15px;
   }
 `;
 
@@ -758,9 +706,9 @@ export default function ImageCropper({
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
-      // 設定輸出畫布大小
+      // 設定輸出畫布大小 - 始終輸出方形圖片
       canvas.width = outputSize;
-      canvas.height = aspectRatio === 1 ? outputSize : outputSize / aspectRatio;
+      canvas.height = outputSize;
 
       // 計算縮放比例（考慮用戶縮放）
       const currentImageWidth = imageSize.width * zoom;
@@ -773,32 +721,27 @@ export default function ImageCropper({
       const relativeX = cropArea.x - imagePosition.x;
       const relativeY = cropArea.y - imagePosition.y;
 
-      // 計算實際裁切區域
+      // 計算實際裁切區域 - 確保是方形區域
       const sourceX = Math.max(0, relativeX * scaleX);
       const sourceY = Math.max(0, relativeY * scaleY);
       const sourceWidth = cropArea.width * scaleX;
       const sourceHeight = cropArea.height * scaleY;
 
-      // 如果是圓形裁切，建立遮罩
-      if (cropShape === 'circle') {
-        ctx.beginPath();
-        ctx.arc(
-          canvas.width / 2,
-          canvas.height / 2,
-          Math.min(canvas.width, canvas.height) / 2,
-          0,
-          Math.PI * 2
-        );
-        ctx.clip();
-      }
+      // 取方形區域的最小邊長，確保裁切區域是正方形
+      const squareSize = Math.min(sourceWidth, sourceHeight);
+      const adjustedSourceX = sourceX + (sourceWidth - squareSize) / 2;
+      const adjustedSourceY = sourceY + (sourceHeight - squareSize) / 2;
 
-      // 繪製裁切後的圖片
+      // 注意：即使顯示為圓形，實際裁切輸出仍然是方形
+      // 圓形效果通過 CSS 在前端實現
+
+      // 繪製裁切後的圖片 - 輸出方形
       ctx.drawImage(
         img,
-        sourceX,
-        sourceY,
-        sourceWidth,
-        sourceHeight,
+        adjustedSourceX,
+        adjustedSourceY,
+        squareSize,
+        squareSize,
         0,
         0,
         canvas.width,
@@ -836,21 +779,6 @@ export default function ImageCropper({
         <ModalHeader>
           <ModalTitle>裁切圖片</ModalTitle>
         </ModalHeader>
-
-        {/* 縮放控制按鈕 */}
-        <ZoomControls>
-          <ZoomButton onClick={handleZoomOut} disabled={zoom <= 1}>
-            <MagnifyingGlassMinusIcon className="h-4 w-4" />
-            <span>縮小</span>
-          </ZoomButton>
-
-          <ZoomDisplay>{Math.round(zoom * 100)}%</ZoomDisplay>
-
-          <ZoomButton onClick={handleZoomIn} disabled={zoom >= 3}>
-            <MagnifyingGlassPlusIcon className="h-4 w-4" />
-            <span>放大</span>
-          </ZoomButton>
-        </ZoomControls>
 
         {/* 裁切區域 */}
         <CropContainer

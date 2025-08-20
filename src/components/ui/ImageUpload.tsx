@@ -349,7 +349,7 @@ export default function ImageUpload({
       croppedBlob: Blob,
       cropArea?: { x: number; y: number; width: number; height: number }
     ) => {
-      // 保存裁切區域
+      // 保存裁切區域，下次打開裁切時延續當前狀態
       if (cropArea) {
         setLastCropArea(cropArea);
       }
@@ -378,6 +378,9 @@ export default function ImageUpload({
   // 取消裁切
   const handleCropCancel = useCallback(() => {
     setShowCropper(false);
+    // 重置裁切區域，下次打開時回到初始位置
+    setLastCropArea(null);
+
     // 如果還沒裁切過圖片，則清空所有狀態（第一次上傳時取消）
     if (!hasCroppedImage) {
       setPreviewUrl(null);
