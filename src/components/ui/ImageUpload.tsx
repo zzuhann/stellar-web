@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef } from 'react';
 import { PhotoIcon, XMarkIcon, ArrowUpTrayIcon, ScissorsIcon } from '@heroicons/react/24/outline';
 import { uploadImageToAPI, mockUpload, compressImage } from '@/lib/r2-upload';
 import { CDN_DOMAIN } from '@/constants';
@@ -24,6 +24,8 @@ interface ImageUploadProps {
   cropShape?: 'square' | 'circle'; // 裁切形狀
   cropOutputSize?: number; // 輸出尺寸
   onCropCancel?: () => void; // 裁切取消回調
+  delayUpload?: boolean; // 是否延遲上傳，只在表單提交時上傳
+  onFileReady?: (file: File) => void; // 檔案準備好時的回調（延遲上傳模式）
 }
 
 // Styled Components
@@ -242,6 +244,8 @@ export default function ImageUpload({
   cropShape = 'square',
   cropOutputSize = 400,
   onCropCancel,
+  delayUpload = false,
+  onFileReady,
 }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -262,129 +266,130 @@ export default function ImageUpload({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 驗證檔案
-  const validateFile = useCallback(
-    (file: File): string | null => {
-      if (!acceptedFormats.includes(file.type)) {
-        return `不支援的檔案格式，請選擇：${acceptedFormats.join(', ')}`;
-      }
+  const validateFile = (file: File): string | null => {
+    if (!acceptedFormats.includes(file.type)) {
+      return `不支援的檔案格式，請選擇：${acceptedFormats.join(', ')}`;
+    }
 
-      if (file.size > maxSizeMB * 1024 * 1024) {
-        return `檔案大小不能超過 ${maxSizeMB}MB`;
-      }
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      return `檔案大小不能超過 ${maxSizeMB}MB`;
+    }
 
-      return null;
-    },
-    [acceptedFormats, maxSizeMB]
-  );
+    return null;
+  };
 
   // 處理檔案選擇和上傳
-  const handleFileSelect = useCallback(
-    async (file: File) => {
-      setError(null);
+  const handleFileSelect = async (file: File) => {
+    setError(null);
 
-      const validationError = validateFile(file);
-      if (validationError) {
-        setError(validationError);
-        return;
+    const validationError = validateFile(file);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
+    try {
+      // 壓縮圖片
+      const compressedFile = await compressImage(file, 800, 800, 0.8);
+
+      // 通知父組件檔案已選擇
+      onImageSelect?.(compressedFile);
+
+      // 如果啟用裁切功能，保存原始檔案並顯示裁切器
+      if (enableCrop) {
+        setOriginalFile(compressedFile);
+        // 選擇新圖片時重置裁切範圍，回到居中位置
+        setLastCropArea(null);
+        setShowCropper(true);
+        return; // 暫停，等待裁切完成，不要立即更新預覽
       }
 
-      try {
-        // 壓縮圖片
-        const compressedFile = await compressImage(file, 800, 800, 0.8);
+      // 只有在不需要裁切時才立即更新預覽
+      const url = URL.createObjectURL(compressedFile);
+      setPreviewUrl(url);
 
-        // 通知父組件檔案已選擇
-        onImageSelect?.(compressedFile);
-
-        // 如果啟用裁切功能，保存原始檔案並顯示裁切器
-        if (enableCrop) {
-          setOriginalFile(compressedFile);
-          setShowCropper(true);
-          return; // 暫停，等待裁切完成，不要立即更新預覽
-        }
-
-        // 只有在不需要裁切時才立即更新預覽
-        const url = URL.createObjectURL(compressedFile);
-        setPreviewUrl(url);
-
-        // 直接上傳（沒有裁切）
+      if (delayUpload) {
+        // 延遲上傳模式：只保存檔案，不立即上傳
+        onFileReady?.(compressedFile);
+      } else {
+        // 立即上傳模式：直接上傳
         await uploadImage(compressedFile);
-      } catch {
-        setError('圖片處理失敗，請重試');
-        setIsLoading(false);
       }
-    },
-    [validateFile, enableCrop, onImageSelect]
-  );
+    } catch {
+      setError('圖片處理失敗，請重試');
+      setIsLoading(false);
+    }
+  };
 
   // 上傳圖片的共用函數
-  const uploadImage = useCallback(
-    async (file: File) => {
-      if (!onUploadComplete) return;
+  const uploadImage = async (file: File) => {
+    if (!onUploadComplete) return;
 
-      setIsLoading(true);
+    setIsLoading(true);
 
-      try {
-        let uploadResult;
-        if (useRealAPI && authToken) {
-          uploadResult = await uploadImageToAPI(file, authToken);
-        } else {
-          uploadResult = await mockUpload(file);
-        }
-
-        if (uploadResult.success && uploadResult.filename) {
-          const fullImageUrl = CDN_DOMAIN + uploadResult.filename;
-          setConfirmedImageUrl(fullImageUrl); // 保存上傳完成的圖片URL
-          onUploadComplete(fullImageUrl);
-        } else {
-          setError(uploadResult.error || '上傳失敗');
-        }
-      } catch {
-        setError('上傳失敗，請重試');
-      } finally {
-        setIsLoading(false);
+    try {
+      let uploadResult;
+      if (useRealAPI && authToken) {
+        uploadResult = await uploadImageToAPI(file, authToken);
+      } else {
+        uploadResult = await mockUpload(file);
       }
-    },
-    [onUploadComplete, useRealAPI, authToken]
-  );
+
+      if (uploadResult.success && uploadResult.filename) {
+        const fullImageUrl = CDN_DOMAIN + uploadResult.filename;
+        setConfirmedImageUrl(fullImageUrl); // 保存上傳完成的圖片URL
+        onUploadComplete(fullImageUrl);
+      } else {
+        setError(uploadResult.error || '上傳失敗');
+      }
+    } catch {
+      setError('上傳失敗，請重試');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // 處理裁切完成
-  const handleCropComplete = useCallback(
-    async (
-      croppedBlob: Blob,
-      cropArea?: { x: number; y: number; width: number; height: number }
-    ) => {
-      // 保存裁切區域，下次打開裁切時延續當前狀態
-      if (cropArea) {
-        setLastCropArea(cropArea);
-      }
+  const handleCropComplete = async (
+    croppedBlob: Blob,
+    cropArea?: { x: number; y: number; width: number; height: number }
+  ) => {
+    // 保存裁切區域，用於下次重新裁切時維持範圍
+    if (cropArea) {
+      setLastCropArea(cropArea);
+    }
 
-      // 將 Blob 轉換為 File
-      const croppedFile = new File([croppedBlob], `cropped-${Date.now()}.jpg`, {
-        type: 'image/jpeg',
-      });
+    // 將 Blob 轉換為 File
+    const croppedFile = new File([croppedBlob], `cropped-${Date.now()}.jpg`, {
+      type: 'image/jpeg',
+    });
 
-      // 更新預覽
-      const url = URL.createObjectURL(croppedBlob);
-      setPreviewUrl(url);
-      setConfirmedImageUrl(url); // 保存確認的圖片URL
+    // 更新預覽
+    const url = URL.createObjectURL(croppedBlob);
+    setPreviewUrl(url);
+    setConfirmedImageUrl(url); // 保存確認的圖片URL
 
-      // 關閉裁切器
-      setShowCropper(false);
+    // 關閉裁切器
+    setShowCropper(false);
 
-      // 標記已經裁切過圖片
-      setHasCroppedImage(true);
+    // 標記已經裁切過圖片
+    setHasCroppedImage(true);
 
-      // 上傳裁切後的圖片
+    if (delayUpload) {
+      // 延遲上傳模式：只保存檔案，不立即上傳
+      onFileReady?.(croppedFile);
+    } else {
+      // 立即上傳模式：直接上傳
       await uploadImage(croppedFile);
-    },
-    [uploadImage]
-  );
+    }
+  };
 
   // 取消裁切
-  const handleCropCancel = useCallback(() => {
+  const handleCropCancel = () => {
     setShowCropper(false);
-    // 重置裁切區域，下次打開時回到初始位置
-    setLastCropArea(null);
+
+    // 取消裁切時不重置裁切範圍，保持給下次重新裁切使用
+    // setLastCropArea 保持不變
 
     // 如果還沒裁切過圖片，則清空所有狀態（第一次上傳時取消）
     if (!hasCroppedImage) {
@@ -400,54 +405,45 @@ export default function ImageUpload({
     }
     // 呼叫外部傳入的取消回調
     onCropCancel?.();
-  }, [onCropCancel, hasCroppedImage, confirmedImageUrl]);
+  };
 
   // 處理檔案輸入變化
-  const handleInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        handleFileSelect(file);
-      }
-    },
-    [handleFileSelect]
-  );
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileSelect(file);
+    }
+  };
 
   // 處理拖拽
-  const handleDragOver = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      if (!disabled) {
-        setIsDragOver(true);
-      }
-    },
-    [disabled]
-  );
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (!disabled) {
+      setIsDragOver(true);
+    }
+  };
 
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
+  const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOver(false);
-  }, []);
+  };
 
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragOver(false);
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
 
-      if (disabled) return;
+    if (disabled) return;
 
-      const files = Array.from(e.dataTransfer.files);
-      const imageFile = files.find((file) => file.type.startsWith('image/'));
+    const files = Array.from(e.dataTransfer.files);
+    const imageFile = files.find((file) => file.type.startsWith('image/'));
 
-      if (imageFile) {
-        handleFileSelect(imageFile);
-      }
-    },
-    [disabled, handleFileSelect]
-  );
+    if (imageFile) {
+      handleFileSelect(imageFile);
+    }
+  };
 
   // 移除圖片
-  const handleRemove = useCallback(() => {
+  const handleRemove = () => {
     setPreviewUrl(null);
     setError(null);
     setHasCroppedImage(false); // 重置裁切狀態
@@ -456,14 +452,14 @@ export default function ImageUpload({
       fileInputRef.current.value = '';
     }
     onImageRemove?.();
-  }, [onImageRemove]);
+  };
 
   // 點擊上傳區域
-  const handleClick = useCallback(() => {
+  const handleClick = () => {
     if (!disabled && fileInputRef.current) {
       fileInputRef.current.click();
     }
-  }, [disabled]);
+  };
 
   return (
     <UploadContainer>

@@ -17,6 +17,8 @@ import { Artist } from '@/types';
 import { artistsApi } from '@/lib/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import showToast from '@/lib/toast';
+import { uploadImageToAPI } from '@/lib/r2-upload';
+import { CDN_DOMAIN } from '@/constants';
 
 // Styled Components - 與其他組件保持一致的設計風格
 const FormContainer = styled.div`
@@ -298,6 +300,9 @@ export default function ArtistSubmissionForm({
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string>(
     existingArtist?.profileImage || ''
   );
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null); // 存儲選擇的圖片檔案
+  const [isUploadingImage, setIsUploadingImage] = useState(false); // 圖片上傳狀態
+  const [hasImageChanged, setHasImageChanged] = useState(false); // 追蹤圖片是否有變更
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [pendingSubmitData, setPendingSubmitData] = useState<ArtistSubmissionFormData | null>(null);
   const router = useRouter();
@@ -402,13 +407,35 @@ export default function ArtistSubmissionForm({
   };
 
   const submitArtistData = async (data: ArtistSubmissionFormData) => {
+    let finalImageUrl = uploadedImageUrl || data.profileImage || undefined;
+
+    // 如果有選擇新的圖片檔案且圖片確實有變更，先上傳圖片
+    if (selectedImageFile && hasImageChanged) {
+      try {
+        setIsUploadingImage(true);
+        const uploadResult = await uploadImageToAPI(selectedImageFile, token || '');
+        if (uploadResult.success && uploadResult.filename) {
+          finalImageUrl = CDN_DOMAIN + uploadResult.filename;
+          showToast.success('圖片上傳成功');
+        } else {
+          showToast.error(uploadResult.error || '圖片上傳失敗');
+          return;
+        }
+      } catch {
+        showToast.error('圖片上傳失敗，請重試');
+        return;
+      } finally {
+        setIsUploadingImage(false);
+      }
+    }
+
     // 準備藝人資料
     const artistData = {
       stageName: data.stageName,
       stageNameZh: data.stageNameZh || undefined,
       realName: data.realName || undefined,
       birthday: data.birthday || undefined,
-      profileImage: uploadedImageUrl || data.profileImage || undefined,
+      profileImage: finalImageUrl,
     };
 
     if (mode === 'create') {
@@ -525,16 +552,20 @@ export default function ArtistSubmissionForm({
 
             <ImageUpload
               currentImageUrl={uploadedImageUrl}
-              onUploadComplete={(imageUrl) => {
-                setUploadedImageUrl(imageUrl);
-                setValue('profileImage', imageUrl, {
+              delayUpload={true}
+              onFileReady={(file) => {
+                // 保存選擇的檔案，不立即上傳
+                setSelectedImageFile(file);
+                setHasImageChanged(true); // 標記圖片已變更
+                setValue('profileImage', 'pending', {
                   shouldValidate: true,
                   shouldDirty: true,
                 });
-                showToast.success('圖片上傳成功');
               }}
               onImageRemove={() => {
                 setUploadedImageUrl('');
+                setSelectedImageFile(null);
+                setHasImageChanged(true); // 移除圖片也算變更
                 setValue('profileImage', '', {
                   shouldValidate: true,
                   shouldDirty: true,
@@ -544,6 +575,7 @@ export default function ArtistSubmissionForm({
                 // 如果是第一次上傳且取消裁切，清空圖片
                 if (!existingArtist?.profileImage) {
                   setUploadedImageUrl('');
+                  setSelectedImageFile(null);
                   setValue('profileImage', '', {
                     shouldValidate: true,
                     shouldDirty: true,
@@ -551,6 +583,8 @@ export default function ArtistSubmissionForm({
                 } else {
                   // 如果是編輯模式，恢復到原始圖片
                   setUploadedImageUrl(existingArtist.profileImage);
+                  setSelectedImageFile(null);
+                  setHasImageChanged(false); // 取消時重置變更狀態
                   setValue('profileImage', existingArtist.profileImage, {
                     shouldValidate: true,
                     shouldDirty: false,
@@ -559,10 +593,12 @@ export default function ArtistSubmissionForm({
               }}
               placeholder="點擊上傳偶像照片或拖拽至此"
               maxSizeMB={5}
-              disabled={createArtistMutation.isPending || updateArtistMutation.isPending}
+              disabled={
+                createArtistMutation.isPending || updateArtistMutation.isPending || isUploadingImage
+              }
               authToken={token || undefined}
               useRealAPI={!!token}
-              enableCrop={mode === 'create'}
+              enableCrop
               cropAspectRatio={1}
               cropShape="circle"
               cropOutputSize={400}
@@ -587,10 +623,14 @@ export default function ArtistSubmissionForm({
           <Button
             type="button"
             variant="primary"
-            disabled={createArtistMutation.isPending || updateArtistMutation.isPending}
+            disabled={
+              createArtistMutation.isPending || updateArtistMutation.isPending || isUploadingImage
+            }
             onClick={handleSubmit(onSubmit)}
           >
-            {createArtistMutation.isPending || updateArtistMutation.isPending ? (
+            {isUploadingImage ||
+            createArtistMutation.isPending ||
+            updateArtistMutation.isPending ? (
               <>
                 <LoadingSpinner />
                 {mode === 'edit' ? '更新中...' : '投稿中...'}
