@@ -256,6 +256,9 @@ export default function ImageUpload({
     height: number;
   } | null>(null);
   const [hasCroppedImage, setHasCroppedImage] = useState(false); // 追蹤是否已經裁切過圖片
+  const [confirmedImageUrl, setConfirmedImageUrl] = useState<string | null>(
+    currentImageUrl || null
+  ); // 保存已確認的圖片URL
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 驗證檔案
@@ -289,10 +292,6 @@ export default function ImageUpload({
         // 壓縮圖片
         const compressedFile = await compressImage(file, 800, 800, 0.8);
 
-        // 產生預覽
-        const url = URL.createObjectURL(compressedFile);
-        setPreviewUrl(url);
-
         // 通知父組件檔案已選擇
         onImageSelect?.(compressedFile);
 
@@ -300,8 +299,12 @@ export default function ImageUpload({
         if (enableCrop) {
           setOriginalFile(compressedFile);
           setShowCropper(true);
-          return; // 暫停，等待裁切完成
+          return; // 暫停，等待裁切完成，不要立即更新預覽
         }
+
+        // 只有在不需要裁切時才立即更新預覽
+        const url = URL.createObjectURL(compressedFile);
+        setPreviewUrl(url);
 
         // 直接上傳（沒有裁切）
         await uploadImage(compressedFile);
@@ -330,6 +333,7 @@ export default function ImageUpload({
 
         if (uploadResult.success && uploadResult.filename) {
           const fullImageUrl = CDN_DOMAIN + uploadResult.filename;
+          setConfirmedImageUrl(fullImageUrl); // 保存上傳完成的圖片URL
           onUploadComplete(fullImageUrl);
         } else {
           setError(uploadResult.error || '上傳失敗');
@@ -362,6 +366,7 @@ export default function ImageUpload({
       // 更新預覽
       const url = URL.createObjectURL(croppedBlob);
       setPreviewUrl(url);
+      setConfirmedImageUrl(url); // 保存確認的圖片URL
 
       // 關閉裁切器
       setShowCropper(false);
@@ -385,14 +390,17 @@ export default function ImageUpload({
     if (!hasCroppedImage) {
       setPreviewUrl(null);
       setOriginalFile(null);
+      setConfirmedImageUrl(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+    } else {
+      // 如果已經裁切過，恢復到之前確認的圖片
+      setPreviewUrl(confirmedImageUrl);
     }
-    // 如果已經裁切過，就保持現狀（再次裁切時取消）
     // 呼叫外部傳入的取消回調
     onCropCancel?.();
-  }, [onCropCancel, hasCroppedImage]);
+  }, [onCropCancel, hasCroppedImage, confirmedImageUrl]);
 
   // 處理檔案輸入變化
   const handleInputChange = useCallback(
@@ -443,6 +451,7 @@ export default function ImageUpload({
     setPreviewUrl(null);
     setError(null);
     setHasCroppedImage(false); // 重置裁切狀態
+    setConfirmedImageUrl(null); // 重置確認的圖片URL
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
