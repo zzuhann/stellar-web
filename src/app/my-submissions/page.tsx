@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
 
@@ -273,7 +273,7 @@ const ArtistInfo = styled.div`
   justify-content: center;
 `;
 
-export default function MySubmissionsPage() {
+function MySubmissionsContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -548,5 +548,24 @@ export default function MySubmissionsPage() {
         isLoading={deleteEventMutation.isPending}
       />
     </PageContainer>
+  );
+}
+
+export default function MySubmissionsPage() {
+  return (
+    <Suspense
+      fallback={
+        <PageContainer>
+          <MainContainer>
+            <LoadingContainer>
+              <div className="spinner" />
+              <p>載入中...</p>
+            </LoadingContainer>
+          </MainContainer>
+        </PageContainer>
+      }
+    >
+      <MySubmissionsContent />
+    </Suspense>
   );
 }
