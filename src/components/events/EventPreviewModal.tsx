@@ -6,6 +6,7 @@ import Banner from '@/components/layout/Banner';
 import { firebaseTimestampToDate } from '@/utils';
 import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import Image from 'next/image';
 
 interface EventPreviewModalProps {
@@ -200,6 +201,9 @@ const DescriptionContent = styled.div`
 `;
 
 export default function EventPreviewModal({ event, isOpen, onClose }: EventPreviewModalProps) {
+  // 鎖定背景滾動
+  useScrollLock(isOpen);
+
   if (!isOpen) return null;
 
   const formatEventDate = (startDate: any, endDate: any) => {

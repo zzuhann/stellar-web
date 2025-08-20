@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { useAuth } from '@/lib/auth-context';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import SignInForm from './SignInForm';
 
 interface AuthModalProps {
@@ -80,6 +81,9 @@ const ContentContainer = styled.div`
 `;
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
+  // 鎖定背景滾動
+  useScrollLock(isOpen);
+
   const router = useRouter();
   const { redirectUrl } = useAuth();
 

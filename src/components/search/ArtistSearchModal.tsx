@@ -6,6 +6,7 @@ import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { useSearchStore } from '@/store';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { Artist } from '@/types';
 import ArtistCard from '../ArtistCard';
 import { useAuth } from '@/lib/auth-context';
@@ -221,6 +222,8 @@ const CTAButton = styled.button`
 `;
 
 export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModalProps) {
+  // 鎖定背景滾動
+  useScrollLock(isOpen);
   const router = useRouter();
   const { user, toggleAuthModal } = useAuth();
   const { searchResults, searchLoading, searchQuery, searchArtists, clearSearch, setSearchQuery } =

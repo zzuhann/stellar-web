@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useScrollLock } from '@/hooks/useScrollLock';
 
 const ModalOverlay = styled.div`
   position: fixed;
@@ -141,6 +142,9 @@ export default function ConfirmModal({
   cancelText = '取消',
   isLoading = false,
 }: ConfirmModalProps) {
+  // 鎖定背景滾動
+  useScrollLock(isOpen);
+
   if (!isOpen) return null;
 
   return (

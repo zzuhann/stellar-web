@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
+import { useScrollLock } from '@/hooks/useScrollLock';
 
 interface RejectModalProps {
   isOpen: boolean;
@@ -243,6 +244,8 @@ export default function RejectModal({
   onClose,
   loading = false,
 }: RejectModalProps) {
+  useScrollLock(isOpen);
+
   const [reason, setReason] = useState('');
   const [error, setError] = useState('');
 

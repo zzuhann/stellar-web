@@ -6,6 +6,7 @@ import styled from 'styled-components';
 import { useSearchStore } from '@/store';
 import { useArtistStore } from '@/store';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import { Artist } from '@/types';
 import ArtistCard from '../ArtistCard';
 import { useRouter } from 'next/navigation';
@@ -250,6 +251,9 @@ export default function ArtistSelectionModal({
   onArtistSelect,
   selectedArtistIds = [],
 }: ArtistSelectionModalProps) {
+  // 鎖定背景滾動
+  useScrollLock(isOpen);
+
   const router = useRouter();
   const { searchResults, searchLoading, searchQuery, searchArtists, clearSearch, setSearchQuery } =
     useSearchStore();
