@@ -936,6 +936,7 @@ export default function EventSubmissionForm({
                     shouldDirty: true,
                   });
                 }}
+                compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
                 placeholder="點擊上傳主視覺圖片或拖拽至此"
                 maxSizeMB={5}
                 disabled={createEventMutation.isPending || updateEventMutation.isPending}
@@ -1051,6 +1052,7 @@ export default function EventSubmissionForm({
                 disabled={createEventMutation.isPending || updateEventMutation.isPending}
                 authToken={token || undefined}
                 useRealAPI={!!token}
+                compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
               />
               <input type="hidden" {...register('detailImage')} />
               {errors.detailImage && <ErrorText>{errors.detailImage.message}</ErrorText>}

@@ -26,6 +26,12 @@ interface ImageUploadProps {
   onCropCancel?: () => void; // 裁切取消回調
   delayUpload?: boolean; // 是否延遲上傳，只在表單提交時上傳
   onFileReady?: (file: File) => void; // 檔案準備好時的回調（延遲上傳模式）
+  // 新增壓縮參數
+  compressionParams?: {
+    maxWidth?: number;
+    maxHeight?: number;
+    quality?: number;
+  };
 }
 
 // Styled Components
@@ -246,6 +252,7 @@ export default function ImageUpload({
   onCropCancel,
   delayUpload = false,
   onFileReady,
+  compressionParams = { maxWidth: 800, maxHeight: 800, quality: 0.8 }, // 預設值
 }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -289,8 +296,13 @@ export default function ImageUpload({
     }
 
     try {
-      // 壓縮圖片
-      const compressedFile = await compressImage(file, 800, 800, 0.8);
+      // 使用自定義壓縮參數
+      const compressedFile = await compressImage(
+        file,
+        compressionParams.maxWidth,
+        compressionParams.maxHeight,
+        compressionParams.quality
+      );
 
       // 通知父組件檔案已選擇
       onImageSelect?.(compressedFile);

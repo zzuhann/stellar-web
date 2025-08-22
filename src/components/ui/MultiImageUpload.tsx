@@ -22,6 +22,12 @@ interface MultiImageUploadProps {
   disabled?: boolean;
   authToken?: string;
   useRealAPI?: boolean;
+  // 新增壓縮參數
+  compressionParams?: {
+    maxWidth?: number;
+    maxHeight?: number;
+    quality?: number;
+  };
 }
 
 // Styled Components
@@ -220,6 +226,7 @@ export default function MultiImageUpload({
   disabled = false,
   authToken,
   useRealAPI = false,
+  compressionParams = { maxWidth: 800, maxHeight: 800, quality: 0.8 }, // 預設值
 }: MultiImageUploadProps) {
   const [images, setImages] = useState<string[]>(currentImages);
   const [loadingStates, setLoadingStates] = useState<Set<number>>(new Set());
@@ -247,8 +254,13 @@ export default function MultiImageUpload({
   const uploadImage = useCallback(
     async (file: File): Promise<string | null> => {
       try {
-        // 壓縮圖片
-        const compressedFile = await compressImage(file, 800, 800, 0.8);
+        // 使用自定義壓縮參數
+        const compressedFile = await compressImage(
+          file,
+          compressionParams.maxWidth,
+          compressionParams.maxHeight,
+          compressionParams.quality
+        );
 
         let uploadResult;
         if (useRealAPI && authToken) {
