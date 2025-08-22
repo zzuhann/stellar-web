@@ -275,21 +275,19 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
   const endDate = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}`;
 
   // 使用 React Query 獲取當週壽星
-  const { data: artists = [], isLoading: loading } = useBirthdayArtists(
-    startDate,
-    endDate,
-    initialArtists
-  );
+  const { data: artists = [], isLoading: loading } = useBirthdayArtists(startDate, endDate);
 
   // 計算當前週的結束日期
   const currentWeekEnd = useMemo(() => getWeekEnd(currentWeekStart), [currentWeekStart]);
 
   // 後端已經按生咖數量排序，前端只需要把當日壽星提到最前面
   const weekBirthdayArtists = useMemo(() => {
+    const currentArtists = currentWeekStart === weekStart ? initialArtists : artists;
+
     const todayArtists: Artist[] = [];
     const otherArtists: Artist[] = [];
 
-    artists.forEach((artist) => {
+    currentArtists.forEach((artist) => {
       if (artist.birthday && getDaysUntilBirthday(artist.birthday) === 0) {
         todayArtists.push(artist);
       } else {
@@ -299,7 +297,7 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
 
     // 當日壽星在前，其他按 API 原本的順序（已按生咖數量排序）
     return [...todayArtists, ...otherArtists];
-  }, [artists]);
+  }, [currentWeekStart, initialArtists, artists, weekStart]);
 
   // 直接使用當週壽星，搜尋功能在獨立的 modal 中處理
 
