@@ -278,6 +278,103 @@ const LoadingContainer = styled.div`
   }
 `;
 
+const BatchActionsContainer = styled.div`
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--color-border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+`;
+
+const BatchActionsLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const BatchActionsRight = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const Checkbox = styled.input`
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+`;
+
+const BatchButton = styled.button<{ variant: 'approve' | 'reject' | 'exists' }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid;
+
+  ${(props) => {
+    switch (props.variant) {
+      case 'approve':
+        return `
+          background: #16a34a;
+          border-color: #16a34a;
+          color: white;
+          
+          &:hover:not(:disabled) {
+            background: #15803d;
+            border-color: #15803d;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+          }
+        `;
+      case 'reject':
+        return `
+          background: #dc2626;
+          border-color: #dc2626;
+          color: white;
+          
+          &:hover:not(:disabled) {
+            background: #b91c1c;
+            border-color: #b91c1c;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+          }
+        `;
+      case 'exists':
+        return `
+          background: #f59e0b;
+          border-color: #f59e0b;
+          color: white;
+          
+          &:hover:not(:disabled) {
+            background: #d97706;
+            border-color: #d97706;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+          }
+        `;
+    }
+  }}
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+`;
+
 export default function AdminPage() {
   const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -286,6 +383,8 @@ export default function AdminPage() {
   const [rejectingArtist, setRejectingArtist] = useState<Artist | null>(null);
   const [rejectingEvent, setRejectingEvent] = useState<CoffeeEvent | null>(null);
   const [approvingArtist, setApprovingArtist] = useState<Artist | null>(null);
+  const [selectedArtists, setSelectedArtists] = useState<Set<string>>(new Set());
+  const [batchApproving, setBatchApproving] = useState(false);
   const queryClient = useQueryClient();
 
   // 使用 React Query 取得待審核藝人
@@ -352,6 +451,30 @@ export default function AdminPage() {
     },
   });
 
+  // 批次審核藝人 mutation
+  const batchReviewMutation = useMutation({
+    mutationFn: ({
+      artistIds,
+      status,
+      reason,
+      adminUpdate,
+    }: {
+      artistIds: string[];
+      status: 'approved' | 'rejected' | 'exists';
+      reason?: string;
+      adminUpdate?: { groupNames?: string[] };
+    }) => artistsApi.batchReview(artistIds, status, reason, adminUpdate),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-pending-artists'] });
+      setSelectedArtists(new Set());
+      setBatchApproving(false);
+      showToast.success('批次審核成功');
+    },
+    onError: () => {
+      showToast.error('批次審核失敗');
+    },
+  });
+
   // 審核活動 mutations
   const approveEventMutation = useMutation({
     mutationFn: (id: string) => eventsApi.admin.approve(id),
@@ -394,18 +517,74 @@ export default function AdminPage() {
   };
 
   const handleRejectArtist = (artistId: string, reason: string) => {
-    rejectArtistMutation.mutate(
-      { id: artistId, reason },
-      {
-        onSuccess: () => {
-          setRejectingArtist(null);
-        },
-      }
-    );
+    if (artistId === 'batch') {
+      // 批次拒絕
+      handleBatchReject(reason);
+      setRejectingArtist(null);
+    } else {
+      // 單一拒絕
+      rejectArtistMutation.mutate(
+        { id: artistId, reason },
+        {
+          onSuccess: () => {
+            setRejectingArtist(null);
+          },
+        }
+      );
+    }
   };
 
   const handleExistsArtist = (artistId: string) => {
     markAsExistsMutation.mutate(artistId);
+  };
+
+  // 批次審核處理函數
+  const handleBatchApprove = (groupNames?: string[]) => {
+    if (selectedArtists.size === 0) return;
+
+    batchReviewMutation.mutate({
+      artistIds: Array.from(selectedArtists),
+      status: 'approved',
+      adminUpdate: groupNames ? { groupNames } : undefined,
+    });
+  };
+
+  const handleBatchReject = (reason: string) => {
+    if (selectedArtists.size === 0) return;
+
+    batchReviewMutation.mutate({
+      artistIds: Array.from(selectedArtists),
+      status: 'rejected',
+      reason,
+    });
+  };
+
+  const handleBatchExists = () => {
+    if (selectedArtists.size === 0) return;
+
+    batchReviewMutation.mutate({
+      artistIds: Array.from(selectedArtists),
+      status: 'exists',
+      reason: '藝人已存在',
+    });
+  };
+
+  const handleSelectArtist = (artistId: string, selected: boolean) => {
+    const newSelected = new Set(selectedArtists);
+    if (selected) {
+      newSelected.add(artistId);
+    } else {
+      newSelected.delete(artistId);
+    }
+    setSelectedArtists(newSelected);
+  };
+
+  const handleSelectAllArtists = (selected: boolean) => {
+    if (selected) {
+      setSelectedArtists(new Set(pendingArtists.map((artist) => artist.id)));
+    } else {
+      setSelectedArtists(new Set());
+    }
   };
 
   const handleApproveEvent = (eventId: string) => {
@@ -474,47 +653,128 @@ export default function AdminPage() {
                 <p>所有偶像投稿都已處理完成</p>
               </EmptyState>
             ) : (
-              <ItemList>
-                {pendingArtists.map((artist) => (
-                  <VerticalArtistCard
-                    key={artist.id}
-                    artist={artist}
-                    submissionTime={
-                      artist.createdAt
-                        ? new Date(artist.createdAt as string).toLocaleString('zh-TW')
-                        : undefined
-                    }
-                    actionButtons={
-                      <ActionButtons>
-                        <ActionButton
-                          variant="approve"
-                          onClick={() => handleApproveArtist(artist)}
-                          disabled={approveArtistMutation.isPending}
-                        >
-                          <CheckCircleIcon />
-                          通過
-                        </ActionButton>
-                        <ActionButton
-                          variant="exists"
-                          onClick={() => handleExistsArtist(artist.id)}
-                          disabled={markAsExistsMutation.isPending}
-                        >
-                          <ExclamationTriangleIcon />
-                          已存在
-                        </ActionButton>
-                        <ActionButton
-                          variant="reject"
-                          onClick={() => setRejectingArtist(artist)}
-                          disabled={rejectArtistMutation.isPending}
-                        >
-                          <XCircleIcon />
-                          拒絕
-                        </ActionButton>
-                      </ActionButtons>
-                    }
-                  />
-                ))}
-              </ItemList>
+              <>
+                {/* 批次操作區域 */}
+                {selectedArtists.size > 0 && (
+                  <BatchActionsContainer>
+                    <BatchActionsLeft>
+                      <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                        已選擇 {selectedArtists.size} 位偶像
+                      </span>
+                    </BatchActionsLeft>
+                    <BatchActionsRight>
+                      <BatchButton
+                        variant="approve"
+                        onClick={() => setBatchApproving(true)}
+                        disabled={batchReviewMutation.isPending}
+                      >
+                        <CheckCircleIcon />
+                        批次通過
+                      </BatchButton>
+                      <BatchButton
+                        variant="exists"
+                        onClick={handleBatchExists}
+                        disabled={batchReviewMutation.isPending}
+                      >
+                        <ExclamationTriangleIcon />
+                        批次標記已存在
+                      </BatchButton>
+                      <BatchButton
+                        variant="reject"
+                        onClick={() =>
+                          setRejectingArtist({ id: 'batch', stageName: '選中的偶像' } as Artist)
+                        }
+                        disabled={batchReviewMutation.isPending}
+                      >
+                        <XCircleIcon />
+                        批次拒絕
+                      </BatchButton>
+                    </BatchActionsRight>
+                  </BatchActionsContainer>
+                )}
+
+                {/* 全選區域 */}
+                <div
+                  style={{
+                    padding: '12px 20px',
+                    borderBottom: '1px solid var(--color-border-light)',
+                    background: 'white',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Checkbox
+                      type="checkbox"
+                      checked={
+                        selectedArtists.size === pendingArtists.length && pendingArtists.length > 0
+                      }
+                      onChange={(e) => handleSelectAllArtists(e.target.checked)}
+                    />
+                    <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                      全選 ({selectedArtists.size}/{pendingArtists.length})
+                    </span>
+                  </div>
+                </div>
+
+                <ItemList>
+                  {pendingArtists.map((artist) => (
+                    <div key={artist.id} style={{ position: 'relative' }}>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '12px',
+                          left: '12px',
+                          zIndex: 10,
+                          background: 'white',
+                          borderRadius: '4px',
+                          padding: '4px',
+                        }}
+                      >
+                        <Checkbox
+                          type="checkbox"
+                          checked={selectedArtists.has(artist.id)}
+                          onChange={(e) => handleSelectArtist(artist.id, e.target.checked)}
+                        />
+                      </div>
+                      <VerticalArtistCard
+                        artist={artist}
+                        submissionTime={
+                          artist.createdAt
+                            ? new Date(artist.createdAt as string).toLocaleString('zh-TW')
+                            : undefined
+                        }
+                        actionButtons={
+                          <ActionButtons>
+                            <ActionButton
+                              variant="approve"
+                              onClick={() => handleApproveArtist(artist)}
+                              disabled={approveArtistMutation.isPending}
+                            >
+                              <CheckCircleIcon />
+                              通過
+                            </ActionButton>
+                            <ActionButton
+                              variant="exists"
+                              onClick={() => handleExistsArtist(artist.id)}
+                              disabled={markAsExistsMutation.isPending}
+                            >
+                              <ExclamationTriangleIcon />
+                              已存在
+                            </ActionButton>
+                            <ActionButton
+                              variant="reject"
+                              onClick={() => setRejectingArtist(artist)}
+                              disabled={rejectArtistMutation.isPending}
+                            >
+                              <XCircleIcon />
+                              拒絕
+                            </ActionButton>
+                          </ActionButtons>
+                        }
+                      />
+                    </div>
+                  ))}
+                </ItemList>
+              </>
             )}
           </ContentCard>
         )}
@@ -612,6 +872,18 @@ export default function AdminPage() {
           onConfirm={handleApproveArtistWithGroupNames}
           onCancel={() => setApprovingArtist(null)}
           isLoading={approveArtistMutation.isPending}
+        />
+      )}
+
+      {/* 批次審核模態框 */}
+      {batchApproving && (
+        <GroupNameModal
+          isOpen={true}
+          artistName={`${selectedArtists.size} 位偶像`}
+          currentGroupNames={[]}
+          onConfirm={handleBatchApprove}
+          onCancel={() => setBatchApproving(false)}
+          isLoading={batchReviewMutation.isPending}
         />
       )}
     </PageContainer>

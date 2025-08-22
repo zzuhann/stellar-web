@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
+import { useQuery } from '@tanstack/react-query';
 import { useSearchStore } from '@/store';
-import { useArtistStore } from '@/store';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { Artist } from '@/types';
+import { artistsApi } from '@/lib/api';
 import ArtistCard from '../ArtistCard';
 import { useRouter } from 'next/navigation';
 
@@ -254,34 +255,32 @@ export default function ArtistSelectionModal({
   const router = useRouter();
   const { searchResults, searchLoading, searchQuery, searchArtists, clearSearch, setSearchQuery } =
     useSearchStore();
-  const {
-    artists: monthlyBirthdayArtists,
-    loading: monthlyLoading,
-    fetchArtists,
-  } = useArtistStore();
-
-  const [inputValue, setInputValue] = useState('');
-  const [hasLoadedMonthlyArtists, setHasLoadedMonthlyArtists] = useState(false);
-  const debouncedSearchQuery = useDebounce(inputValue, 500);
-
-  // 使用 scroll lock hook
-  useScrollLock(isOpen);
-
-  // 載入當月壽星（模態框打開時）
-  useEffect(() => {
-    if (isOpen && !hasLoadedMonthlyArtists) {
-      const { startDate, endDate } = getCurrentMonthRange();
-      fetchArtists({
+  // 使用 React Query 獲取當月壽星
+  const { startDate, endDate } = getCurrentMonthRange();
+  const { data: monthlyBirthdayArtists = [], isLoading: monthlyLoading } = useQuery({
+    queryKey: ['monthly-birthday-artists', startDate, endDate],
+    queryFn: () =>
+      artistsApi.getAll({
         status: 'approved',
         birthdayStartDate: startDate,
         birthdayEndDate: endDate,
         includeStats: true,
         sortBy: 'coffeeEventCount',
         sortOrder: 'desc',
-      });
-      setHasLoadedMonthlyArtists(true);
-    }
-  }, [isOpen, hasLoadedMonthlyArtists, fetchArtists]);
+      }),
+    staleTime: 1000 * 60 * 5, // 5 分鐘快取
+    gcTime: 1000 * 60 * 15, // 15 分鐘保留
+    enabled: isOpen, // 只在模態框打開時才查詢
+  });
+
+  const [inputValue, setInputValue] = useState('');
+  const debouncedSearchQuery = useDebounce(inputValue, 500);
+
+  // 使用 scroll lock hook
+  useScrollLock(isOpen);
+
+  // 移除手動載入邏輯，React Query 會自動處理
+  // 移除 hasLoadedMonthlyArtists 狀態，因為 React Query 會管理載入狀態
 
   // 使用 debounced 值進行搜尋
   useEffect(() => {
@@ -304,7 +303,6 @@ export default function ArtistSelectionModal({
     if (!isOpen) {
       setInputValue('');
       clearSearch();
-      setHasLoadedMonthlyArtists(false);
     }
   }, [isOpen, clearSearch]);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   ChevronLeftIcon,
@@ -8,9 +8,10 @@ import {
   MagnifyingGlassIcon,
 } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
-import { useArtistStore } from '@/store';
+import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
 import { Artist } from '@/types';
+import { artistsApi } from '@/lib/api';
 import dynamic from 'next/dynamic';
 import ArtistCard from '../ArtistCard';
 
@@ -20,6 +21,25 @@ const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearch
   loading: () => null,
 });
 import { getDaysUntilBirthday } from '@/utils';
+
+// React Query hook for fetching birthday artists
+const useBirthdayArtists = (startDate: string, endDate: string, placeholderData?: Artist[]) => {
+  return useQuery({
+    queryKey: ['birthday-artists', startDate, endDate],
+    queryFn: () =>
+      artistsApi.getAll({
+        status: 'approved',
+        birthdayStartDate: startDate,
+        birthdayEndDate: endDate,
+        includeStats: true,
+        sortBy: 'coffeeEventCount',
+        sortOrder: 'desc',
+      }),
+    placeholderData: placeholderData,
+    staleTime: 1000 * 60 * 5, // 5 分鐘快取
+    gcTime: 1000 * 60 * 15, // 15 分鐘保留
+  });
+};
 
 // Styled Components
 const PageContainer = styled.div`
@@ -244,56 +264,22 @@ interface ArtistHomePageProps {
 export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePageProps) {
   const router = useRouter();
   const { user, toggleAuthModal } = useAuth();
-  const { artists, loading, fetchArtists } = useArtistStore();
 
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => getWeekStart(new Date()));
   const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
 
-  // 初始化 store 數據（只在首次載入時使用 SSR 數據）
-  useEffect(() => {
-    if (initialArtists.length > 0 && !isInitialized) {
-      // 使用 SSR 預取的數據初始化 store
-      useArtistStore.setState({ artists: initialArtists, loading: false });
-      setIsInitialized(true);
-    }
-  }, [initialArtists, isInitialized]);
+  // 計算當週的開始和結束日期
+  const weekStart = getWeekStart(currentWeekStart);
+  const weekEnd = getWeekEnd(weekStart);
+  const startDate = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`;
+  const endDate = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}`;
 
-  // 載入當週壽星（當週變更時重新獲取）
-  useEffect(() => {
-    // 如果是首次載入且有初始數據，跳過 API 調用
-    const currentWeek = getWeekStart(new Date());
-    if (
-      !isInitialized &&
-      currentWeekStart.getTime() === currentWeek.getTime() &&
-      initialArtists.length > 0
-    ) {
-      return;
-    }
-
-    const fetchWeekBirthdayArtists = async () => {
-      const weekStart = getWeekStart(currentWeekStart);
-      const weekEnd = getWeekEnd(weekStart);
-
-      const startDate = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`;
-      const endDate = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}`;
-
-      try {
-        await fetchArtists({
-          status: 'approved',
-          birthdayStartDate: startDate,
-          birthdayEndDate: endDate,
-          includeStats: true,
-          sortBy: 'coffeeEventCount',
-          sortOrder: 'desc',
-        });
-      } catch {
-        // 如果 API 失敗，會使用 Zustand store 的錯誤處理
-      }
-    };
-
-    fetchWeekBirthdayArtists();
-  }, [currentWeekStart, fetchArtists, isInitialized, initialArtists]);
+  // 使用 React Query 獲取當週壽星
+  const { data: artists = [], isLoading: loading } = useBirthdayArtists(
+    startDate,
+    endDate,
+    initialArtists
+  );
 
   // 計算當前週的結束日期
   const currentWeekEnd = useMemo(() => getWeekEnd(currentWeekStart), [currentWeekStart]);

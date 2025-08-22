@@ -187,6 +187,22 @@ export const artistsApi = {
   delete: async (id: string): Promise<void> => {
     await api.delete(`/artists/${id}`);
   },
+
+  // 批次審核藝人（管理員）
+  batchReview: async (
+    artistIds: string[],
+    status: 'approved' | 'rejected' | 'exists',
+    reason?: string,
+    adminUpdate?: { groupNames?: string[] }
+  ): Promise<Artist[]> => {
+    const response = await api.post('/artists/batch-review', {
+      artistIds,
+      status,
+      reason,
+      adminUpdate,
+    });
+    return response.data;
+  },
 };
 
 // 用戶投稿資料格式
