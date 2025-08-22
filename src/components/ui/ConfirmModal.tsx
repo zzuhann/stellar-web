@@ -142,7 +142,7 @@ export default function ConfirmModal({
   cancelText = '取消',
   isLoading = false,
 }: ConfirmModalProps) {
-  // 鎖定背景滾動
+  // 使用 scroll lock hook
   useScrollLock(isOpen);
 
   if (!isOpen) return null;

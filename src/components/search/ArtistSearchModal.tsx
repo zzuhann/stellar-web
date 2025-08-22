@@ -222,8 +222,6 @@ const CTAButton = styled.button`
 `;
 
 export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModalProps) {
-  // 鎖定背景滾動
-  useScrollLock(isOpen);
   const router = useRouter();
   const { user, toggleAuthModal } = useAuth();
   const { searchResults, searchLoading, searchQuery, searchArtists, clearSearch, setSearchQuery } =
@@ -231,6 +229,9 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
 
   const [inputValue, setInputValue] = useState('');
   const debouncedSearchQuery = useDebounce(inputValue, 500);
+
+  // 使用 scroll lock hook
+  useScrollLock(isOpen);
 
   // 使用 debounced 值進行搜尋
   useEffect(() => {
@@ -267,7 +268,7 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
             <MagnifyingGlassIcon />
             <SearchInput
               type="text"
-              placeholder="藝名(英文) 或 本名(中文)"
+              placeholder="藝名(英文)/本名(中文)/團名"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               autoFocus

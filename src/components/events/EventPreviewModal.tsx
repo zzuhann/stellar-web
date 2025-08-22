@@ -201,7 +201,7 @@ const DescriptionContent = styled.div`
 `;
 
 export default function EventPreviewModal({ event, isOpen, onClose }: EventPreviewModalProps) {
-  // 鎖定背景滾動
+  // 使用 scroll lock hook
   useScrollLock(isOpen);
 
   if (!isOpen) return null;

@@ -278,15 +278,11 @@ const artistSubmissionSchema = z.object({
     .max(50, '英文藝名不能超過50個字元'),
   stageNameZh: z.string().max(50, '中文藝名不能超過50個字元').optional().or(z.literal('')),
   realName: z.string().max(50, '本名不能超過50個字元').optional().or(z.literal('')),
-  birthday: z.string().optional().or(z.literal('')),
+  birthday: z.string().min(1, '請填寫生日'),
   profileImage: z
     .string()
-    .optional()
-    .or(z.literal(''))
-    .refine(
-      (val) => !val || val === 'pending' || /^https?:\/\//.test(val),
-      '請輸入正確的圖片連結格式'
-    ),
+    .min(1, '請上傳偶像照片')
+    .refine((val) => val === 'pending' || /^https?:\/\//.test(val), '請輸入正確的圖片連結格式'),
 });
 
 type ArtistSubmissionFormData = z.infer<typeof artistSubmissionSchema>;
@@ -612,6 +608,7 @@ export default function ArtistSubmissionForm({
               cropShape="circle"
               cropOutputSize={400}
             />
+            {errors.profileImage && <ErrorText>{errors.profileImage.message}</ErrorText>}
           </FormGroup>
         </ImageSection>
 

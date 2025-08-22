@@ -4,7 +4,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import styled from 'styled-components';
-import { useScrollLock } from '@/hooks/useScrollLock';
 
 const ModalOverlay = styled.div<{ isOpen: boolean }>`
   position: fixed;
@@ -154,9 +153,6 @@ export default function GroupNameModal({
   onCancel,
   isLoading = false,
 }: GroupNameModalProps) {
-  // 鎖定背景滾動
-  useScrollLock(isOpen);
-
   const {
     register,
     handleSubmit,

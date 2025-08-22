@@ -251,9 +251,6 @@ export default function ArtistSelectionModal({
   onArtistSelect,
   selectedArtistIds = [],
 }: ArtistSelectionModalProps) {
-  // 鎖定背景滾動
-  useScrollLock(isOpen);
-
   const router = useRouter();
   const { searchResults, searchLoading, searchQuery, searchArtists, clearSearch, setSearchQuery } =
     useSearchStore();
@@ -266,6 +263,9 @@ export default function ArtistSelectionModal({
   const [inputValue, setInputValue] = useState('');
   const [hasLoadedMonthlyArtists, setHasLoadedMonthlyArtists] = useState(false);
   const debouncedSearchQuery = useDebounce(inputValue, 500);
+
+  // 使用 scroll lock hook
+  useScrollLock(isOpen);
 
   // 載入當月壽星（模態框打開時）
   useEffect(() => {
@@ -332,7 +332,7 @@ export default function ArtistSelectionModal({
             <UserIcon />
             <SearchInput
               type="text"
-              placeholder="藝名(英文) 或 本名(中文)"
+              placeholder="藝名(英文)/本名(中文)/團名"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               autoFocus

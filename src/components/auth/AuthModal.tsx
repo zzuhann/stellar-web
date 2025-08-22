@@ -81,11 +81,11 @@ const ContentContainer = styled.div`
 `;
 
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  // 鎖定背景滾動
-  useScrollLock(isOpen);
-
   const router = useRouter();
   const { redirectUrl } = useAuth();
+
+  // 使用 scroll lock hook
+  useScrollLock(isOpen);
 
   const handleSuccess = () => {
     onClose();
@@ -107,19 +107,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     if (!isOpen) {
       return;
     }
-  }, [isOpen]);
-
-  // 阻止背景滾動
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
   }, [isOpen]);
 
   return (
