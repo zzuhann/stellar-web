@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
-import { useSearchStore } from '@/store';
+import { useArtistSearch } from '@/hooks/useArtistSearch';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { Artist } from '@/types';
@@ -224,24 +224,15 @@ const CTAButton = styled.button`
 export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModalProps) {
   const router = useRouter();
   const { user, toggleAuthModal } = useAuth();
-  const { searchResults, searchLoading, searchQuery, searchArtists, clearSearch, setSearchQuery } =
-    useSearchStore();
-
   const [inputValue, setInputValue] = useState('');
-  const debouncedSearchQuery = useDebounce(inputValue, 500);
+  const debouncedSearchQuery = useDebounce(inputValue, 800);
+
+  // 使用 React Query 進行搜尋
+  const { data: searchResults = [], isLoading: searchLoading } =
+    useArtistSearch(debouncedSearchQuery);
 
   // 使用 scroll lock hook
   useScrollLock(isOpen);
-
-  // 使用 debounced 值進行搜尋
-  useEffect(() => {
-    if (isOpen && debouncedSearchQuery.trim()) {
-      setSearchQuery(debouncedSearchQuery);
-      searchArtists(debouncedSearchQuery);
-    } else if (isOpen && !debouncedSearchQuery.trim()) {
-      clearSearch();
-    }
-  }, [isOpen, debouncedSearchQuery, searchArtists, clearSearch, setSearchQuery]);
 
   // 處理藝人點擊
   const handleArtistClick = (artist: Artist) => {
@@ -249,15 +240,14 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
     router.push(`/map?artistId=${artist.id}`);
   };
 
-  // 關閉 modal 時清除所有狀態
+  // 關閉 modal 時清除輸入
   useEffect(() => {
     if (!isOpen) {
       setInputValue('');
-      clearSearch();
     }
-  }, [isOpen, clearSearch]);
+  }, [isOpen]);
 
-  const showResults = searchQuery.trim().length > 0;
+  const showResults = debouncedSearchQuery.trim().length > 0;
   const hasResults = searchResults.length > 0;
 
   return (

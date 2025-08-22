@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 import { useQuery } from '@tanstack/react-query';
-import { useSearchStore } from '@/store';
+import { useArtistSearch } from '@/hooks/useArtistSearch';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { Artist } from '@/types';
@@ -253,8 +253,13 @@ export default function ArtistSelectionModal({
   selectedArtistIds = [],
 }: ArtistSelectionModalProps) {
   const router = useRouter();
-  const { searchResults, searchLoading, searchQuery, searchArtists, clearSearch, setSearchQuery } =
-    useSearchStore();
+  const [inputValue, setInputValue] = useState('');
+  const debouncedSearchQuery = useDebounce(inputValue, 500);
+
+  // 使用 React Query 進行搜尋
+  const { data: searchResults = [], isLoading: searchLoading } =
+    useArtistSearch(debouncedSearchQuery);
+
   // 使用 React Query 獲取當月壽星
   const { startDate, endDate } = getCurrentMonthRange();
   const { data: monthlyBirthdayArtists = [], isLoading: monthlyLoading } = useQuery({
@@ -273,24 +278,8 @@ export default function ArtistSelectionModal({
     enabled: isOpen, // 只在模態框打開時才查詢
   });
 
-  const [inputValue, setInputValue] = useState('');
-  const debouncedSearchQuery = useDebounce(inputValue, 500);
-
   // 使用 scroll lock hook
   useScrollLock(isOpen);
-
-  // 移除手動載入邏輯，React Query 會自動處理
-  // 移除 hasLoadedMonthlyArtists 狀態，因為 React Query 會管理載入狀態
-
-  // 使用 debounced 值進行搜尋
-  useEffect(() => {
-    if (isOpen && debouncedSearchQuery.trim()) {
-      setSearchQuery(debouncedSearchQuery);
-      searchArtists(debouncedSearchQuery);
-    } else if (isOpen && !debouncedSearchQuery.trim()) {
-      clearSearch();
-    }
-  }, [isOpen, debouncedSearchQuery, searchArtists, clearSearch, setSearchQuery]);
 
   // 處理藝人選擇
   const handleArtistSelect = (artist: Artist) => {
@@ -298,15 +287,14 @@ export default function ArtistSelectionModal({
     onClose();
   };
 
-  // 關閉 modal 時清除所有狀態
+  // 關閉 modal 時清除輸入
   useEffect(() => {
     if (!isOpen) {
       setInputValue('');
-      clearSearch();
     }
-  }, [isOpen, clearSearch]);
+  }, [isOpen]);
 
-  const isSearching = searchQuery.trim().length > 0;
+  const isSearching = debouncedSearchQuery.trim().length > 0;
 
   // 過濾掉已選擇的藝人
   const filteredSearchResults = searchResults.filter(
