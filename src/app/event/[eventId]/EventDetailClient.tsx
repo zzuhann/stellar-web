@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
-import { eventsApi } from '@/lib/api';
-import { CoffeeEvent } from '@/types';
+import { useEvent } from '@/hooks/useEvent';
 import Banner from '@/components/layout/Banner';
 import { firebaseTimestampToDate } from '@/utils';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
@@ -275,33 +274,10 @@ interface EventDetailClientProps {
 
 export default function EventDetailClient({ eventId }: EventDetailClientProps) {
   const router = useRouter();
-  const [event, setEvent] = useState<CoffeeEvent | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showArtistModal, setShowArtistModal] = useState(false);
 
-  useEffect(() => {
-    const fetchEvent = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const eventData = await eventsApi.getById(eventId);
-        if (eventData) {
-          setEvent(eventData);
-        } else {
-          setError('生咖不存在');
-        }
-      } catch {
-        setError('載入生咖時發生錯誤');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (eventId) {
-      fetchEvent();
-    }
-  }, [eventId]);
+  // 使用 React Query 獲取事件詳情
+  const { data: event, isLoading, error } = useEvent(eventId);
 
   const formatEventDate = (startDate: any, endDate: any) => {
     const start = firebaseTimestampToDate(startDate);
@@ -402,7 +378,7 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
         {error && (
           <ErrorContainer>
             <h1>載入失敗</h1>
-            <p>{error}</p>
+            <p>載入生咖時發生錯誤</p>
           </ErrorContainer>
         )}
 

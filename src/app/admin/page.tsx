@@ -391,7 +391,7 @@ export default function AdminPage() {
   const { data: pendingArtists = [], isLoading: artistsLoading } = useQuery({
     queryKey: ['admin-pending-artists'],
     queryFn: () => artistsApi.getAll({ status: 'pending', sortBy: 'createdAt', sortOrder: 'asc' }),
-    enabled: !!user && userData?.role === 'admin',
+    enabled: !!user && userData?.role === 'admin' && activeTab === 'artists',
     staleTime: 5 * 60 * 1000, // 5分鐘內資料視為新鮮，不會重新請求
     gcTime: 10 * 60 * 1000, // 10分鐘後從快取中移除
   });
@@ -400,7 +400,7 @@ export default function AdminPage() {
   const { data: pendingEventsResponse, isLoading: eventsLoading } = useQuery({
     queryKey: ['admin-pending-events'],
     queryFn: () => eventsApi.getAll({ status: 'pending', sortBy: 'createdAt', sortOrder: 'asc' }),
-    enabled: !!user && userData?.role === 'admin',
+    enabled: !!user && userData?.role === 'admin' && activeTab === 'events',
     staleTime: 5 * 60 * 1000, // 5分鐘內資料視為新鮮，不會重新請求
     gcTime: 10 * 60 * 1000, // 10分鐘後從快取中移除
   });
