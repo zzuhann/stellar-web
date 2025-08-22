@@ -243,6 +243,7 @@ const getCurrentMonthRange = () => {
   return {
     startDate: formatDate(startDate),
     endDate: formatDate(endDate),
+    today: formatDate(now),
   };
 };
 
@@ -257,21 +258,20 @@ export default function ArtistSelectionModal({
   const debouncedSearchQuery = useDebounce(inputValue, 500);
 
   // 使用 React Query 進行搜尋
-  const { data: searchResults = [], isLoading: searchLoading } =
-    useArtistSearch(debouncedSearchQuery);
+  const { data: searchResults = [], isLoading: searchLoading } = useArtistSearch(
+    debouncedSearchQuery,
+    false
+  );
 
   // 使用 React Query 獲取當月壽星
-  const { startDate, endDate } = getCurrentMonthRange();
+  const { startDate, endDate, today } = getCurrentMonthRange();
   const { data: monthlyBirthdayArtists = [], isLoading: monthlyLoading } = useQuery({
     queryKey: ['monthly-birthday-artists', startDate, endDate],
     queryFn: () =>
       artistsApi.getAll({
         status: 'approved',
-        birthdayStartDate: startDate,
+        birthdayStartDate: today,
         birthdayEndDate: endDate,
-        includeStats: true,
-        sortBy: 'coffeeEventCount',
-        sortOrder: 'desc',
       }),
     staleTime: 1000 * 60 * 5, // 5 分鐘快取
     gcTime: 1000 * 60 * 15, // 15 分鐘保留
@@ -367,7 +367,7 @@ export default function ArtistSelectionModal({
           ) : hasMonthlyArtists ? (
             <ArtistList>
               <EmptyState style={{ paddingBottom: '20px' }}>
-                <h3>本月壽星 ✨</h3>
+                <h3>本月即將到來的壽星 ✨</h3>
                 <p>選擇要應援的偶像，或在上方搜尋其他偶像</p>
               </EmptyState>
               {filteredMonthlyArtists.map((artist) => (

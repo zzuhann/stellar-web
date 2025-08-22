@@ -77,6 +77,7 @@ export default function SubmitEventClient() {
   }, [user, loading, router]);
 
   useEffect(() => {
+    if (loadingEvent || loading) return;
     if (isEditMode) {
       if (!existingEvent) {
         showToast.warning('活動不存在');
@@ -89,7 +90,7 @@ export default function SubmitEventClient() {
         return;
       }
     }
-  }, [isEditMode, existingEvent, router, user]);
+  }, [isEditMode, existingEvent, router, user, loadingEvent, loading]);
 
   if (loading || (editEventId && loadingEvent)) {
     return (

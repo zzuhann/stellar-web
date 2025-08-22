@@ -1010,7 +1010,7 @@ export default function EventSubmissionForm({
               <HelperText>搜尋店家名稱或地址</HelperText>
               <PlaceAutocomplete
                 onPlaceSelect={handlePlaceSelect}
-                defaultValue={existingEvent?.location.address}
+                defaultValue={existingEvent?.location.name}
               />
               <input type="hidden" {...register('addressName')} />
               {errors.addressName && <ErrorText>{errors.addressName.message}</ErrorText>}

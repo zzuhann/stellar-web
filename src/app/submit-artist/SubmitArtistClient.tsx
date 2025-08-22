@@ -84,6 +84,7 @@ export default function SubmitArtistClient() {
 
   // 檢查編輯模式下的藝人狀態
   useEffect(() => {
+    if (artistLoading || loading) return;
     if (isEditMode) {
       if (!existingArtist) {
         showToast.warning('偶像不存在');
@@ -108,7 +109,7 @@ export default function SubmitArtistClient() {
         router.push('/my-submissions?tab=artist');
       }
     }
-  }, [isEditMode, existingArtist, router, user]);
+  }, [isEditMode, existingArtist, router, user, artistLoading, loading]);
 
   const handleSuccess = () => {
     router.push('/my-submissions?tab=artist');
