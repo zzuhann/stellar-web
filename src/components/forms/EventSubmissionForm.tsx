@@ -185,6 +185,13 @@ const ErrorText = styled.p`
   margin: 4px 0 0 0;
 `;
 
+const CharacterCount = styled.div<{ isOverLimit: boolean }>`
+  font-size: 12px;
+  color: ${(props) => (props.isOverLimit ? '#ef4444' : 'var(--color-text-secondary)')};
+  text-align: right;
+  margin-top: 4px;
+`;
+
 const GridContainer = styled.div`
   display: grid;
   grid-template-columns: 1fr;
@@ -1025,6 +1032,9 @@ export default function EventSubmissionForm({
                 placeholder="描述生咖內容與資訊，例如：時間/領取應援/注意事項等等"
                 {...register('description')}
               />
+              <CharacterCount isOverLimit={(watch('description')?.length || 0) > 1500}>
+                {watch('description')?.length || 0} / 1500
+              </CharacterCount>
               {errors.description && <ErrorText>{errors.description.message}</ErrorText>}
             </FormGroup>
 

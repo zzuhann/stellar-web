@@ -212,7 +212,7 @@ export default function PlaceAutocomplete({
   const [selectedPlace, setSelectedPlace] = useState<PlacePrediction | null>(null);
   const [isSelectedState, setIsSelectedState] = useState(false);
 
-  const debouncedQuery = useDebounce(query, 500);
+  const debouncedQuery = useDebounce(query, 800);
 
   const {
     data: predictions = [],
