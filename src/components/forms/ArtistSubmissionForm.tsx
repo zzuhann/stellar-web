@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UserIcon, CalendarIcon, PhotoIcon } from '@heroicons/react/24/outline';
-import * as z from 'zod';
 import styled from 'styled-components';
+import { artistSubmissionSchema, ArtistSubmissionFormData } from '@/lib/validations';
 import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
@@ -269,24 +269,6 @@ const LoadingSpinner = styled.div`
   }
 `;
 
-// 藝人投稿表單驗證
-const artistSubmissionSchema = z.object({
-  stageName: z
-    .string()
-    .min(1, '請輸入英文藝名')
-    .min(2, '英文藝名至少需要2個字元')
-    .max(50, '英文藝名不能超過50個字元'),
-  stageNameZh: z.string().max(50, '中文藝名不能超過50個字元').optional().or(z.literal('')),
-  realName: z.string().max(50, '本名不能超過50個字元').optional().or(z.literal('')),
-  birthday: z.string().min(1, '請填寫生日'),
-  profileImage: z
-    .string()
-    .min(1, '請上傳偶像照片')
-    .refine((val) => val === 'pending' || /^https?:\/\//.test(val), '請輸入正確的圖片連結格式'),
-});
-
-type ArtistSubmissionFormData = z.infer<typeof artistSubmissionSchema>;
-
 interface ArtistSubmissionFormProps {
   mode?: 'create' | 'edit';
   existingArtist?: Artist;
@@ -330,7 +312,13 @@ export default function ArtistSubmissionForm({
           birthday: existingArtist.birthday || '',
           profileImage: existingArtist.profileImage || '',
         }
-      : undefined,
+      : {
+          stageName: '',
+          stageNameZh: '',
+          realName: '',
+          birthday: '',
+          profileImage: '',
+        },
   });
 
   // 新增藝人 mutation

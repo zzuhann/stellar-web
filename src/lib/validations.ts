@@ -54,3 +54,25 @@ export const eventSubmissionSchema = z
   );
 
 export type EventSubmissionFormData = z.infer<typeof eventSubmissionSchema>;
+
+// 藝人投稿表單驗證
+export const artistSubmissionSchema = z.object({
+  stageName: z
+    .string()
+    .min(1, '請輸入英文藝名')
+    .min(2, '英文藝名至少需要2個字元')
+    .max(50, '英文藝名不能超過50個字元'),
+  stageNameZh: z.string().max(50, '中文藝名不能超過50個字元').optional().or(z.literal('')),
+  realName: z.string().max(50, '本名不能超過50個字元').optional().or(z.literal('')),
+  birthday: z
+    .string()
+    .min(1, '請填寫生日')
+    .regex(/^\d{4}-\d{2}-\d{2}$/, '請選擇有效的生日日期')
+    .refine((date) => !isNaN(Date.parse(date)), '請選擇有效的生日日期'),
+  profileImage: z
+    .string()
+    .min(1, '請上傳偶像照片')
+    .refine((val) => val === 'pending' || /^https?:\/\//.test(val), '請輸入正確的圖片連結格式'),
+});
+
+export type ArtistSubmissionFormData = z.infer<typeof artistSubmissionSchema>;
