@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 
@@ -76,6 +76,10 @@ const CropContainer = styled.div<{ width: number; height: number }>`
   overflow: hidden;
   width: ${(props) => props.width}px;
   height: ${(props) => props.height}px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 `;
 
 const CropImage = styled.img<{
@@ -91,6 +95,11 @@ const CropImage = styled.img<{
   top: ${(props) => props.top}px;
   max-width: none;
   max-height: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  pointer-events: none; /* 讓圖片本身不響應事件，由容器處理 */
 `;
 
 const CropOverlay = styled.div<{
@@ -394,6 +403,7 @@ export default function ImageCropper({
   // 處理觸控事件
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
+      e.preventDefault(); // 防止觸控預設行為
       if (e.touches.length === 1) {
         const rect = e.currentTarget.getBoundingClientRect();
         const x = e.touches[0].clientX - rect.left;
@@ -535,7 +545,7 @@ export default function ImageCropper({
       if (!isDragging && !isResizing) return;
       if (e.touches.length !== 1) return;
 
-      // 移除 preventDefault() 以避免 passive event listener 錯誤
+      e.preventDefault(); // 防止觸控預設行為，如滾動
       const rect = e.currentTarget.getBoundingClientRect();
       const x = e.touches[0].clientX - rect.left;
       const y = e.touches[0].clientY - rect.top;
@@ -645,10 +655,32 @@ export default function ImageCropper({
   }, []);
 
   // 處理觸控結束事件
-  const handleTouchEnd = useCallback(() => {
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
+    e.preventDefault(); // 防止觸控預設行為
     setIsDragging(false);
     setIsResizing(false);
     setResizeHandle('');
+  }, []);
+
+  // 防止上下文菜單（右鍵菜單、長按菜單）
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+  }, []);
+
+  // 添加全域事件監聽器來防止選擇
+  React.useEffect(() => {
+    const preventDefault = (e: Event) => {
+      e.preventDefault();
+    };
+
+    // 監聽選擇開始事件
+    document.addEventListener('selectstart', preventDefault);
+    document.addEventListener('dragstart', preventDefault);
+
+    return () => {
+      document.removeEventListener('selectstart', preventDefault);
+      document.removeEventListener('dragstart', preventDefault);
+    };
   }, []);
 
   // 縮放控制
@@ -792,6 +824,7 @@ export default function ImageCropper({
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
           onWheel={handleWheel}
+          onContextMenu={handleContextMenu}
           style={{ touchAction: 'none' }}
         >
           <CropImage
@@ -803,6 +836,7 @@ export default function ImageCropper({
             left={imagePosition.x}
             top={imagePosition.y}
             onLoad={handleImageLoad}
+            onContextMenu={handleContextMenu}
             draggable={false}
           />
 
