@@ -77,13 +77,20 @@ export default function SubmitArtistClient() {
 
   useEffect(() => {
     if (!loading && !user) {
+      showToast.warning('請先登入');
       router.push('/');
     }
   }, [user, loading, router]);
 
   // 檢查編輯模式下的藝人狀態
   useEffect(() => {
-    if (isEditMode && existingArtist) {
+    if (isEditMode) {
+      if (!existingArtist) {
+        showToast.warning('偶像不存在');
+        router.push('/my-submissions?tab=artist');
+        return;
+      }
+
       // 只有 rejected 狀態可以編輯
       if (existingArtist.status !== 'rejected') {
         const statusText =
@@ -96,8 +103,12 @@ export default function SubmitArtistClient() {
         showToast.warning(`此偶像目前狀態為「${statusText}」，無法編輯`);
         router.push('/my-submissions?tab=artist');
       }
+      if (existingArtist.createdBy !== user?.uid) {
+        showToast.warning('權限不足，無法編輯');
+        router.push('/my-submissions?tab=artist');
+      }
     }
-  }, [isEditMode, existingArtist, router]);
+  }, [isEditMode, existingArtist, router, user]);
 
   const handleSuccess = () => {
     router.push('/my-submissions?tab=artist');

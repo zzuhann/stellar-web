@@ -385,7 +385,7 @@ export default function ArtistSubmissionForm({
     const hasChanges = checkForChanges();
 
     if (!hasChanges) {
-      showToast.success('沒有變更需要更新');
+      showToast.success('更新成功');
       return;
     }
 

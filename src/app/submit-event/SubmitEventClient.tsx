@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import EventSubmissionForm from '@/components/forms/EventSubmissionForm';
 import { useQuery } from '@tanstack/react-query';
 import { eventsApi } from '@/lib/api';
+import showToast from '@/lib/toast';
 
 const MainContent = styled.main`
   max-width: 1200px;
@@ -60,6 +61,7 @@ export default function SubmitEventClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editEventId = searchParams.get('edit');
+  const isEditMode = !!editEventId;
 
   // 如果是編輯模式，獲取活動資料
   const { data: existingEvent, isLoading: loadingEvent } = useQuery({
@@ -73,6 +75,21 @@ export default function SubmitEventClient() {
       router.push('/');
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    if (isEditMode) {
+      if (!existingEvent) {
+        showToast.warning('活動不存在');
+        router.push('/my-submissions?tab=event');
+        return;
+      }
+      if (existingEvent.createdBy !== user?.uid) {
+        showToast.warning('權限不足，無法編輯');
+        router.push('/my-submissions?tab=event');
+        return;
+      }
+    }
+  }, [isEditMode, existingEvent, router, user]);
 
   if (loading || (editEventId && loadingEvent)) {
     return (
