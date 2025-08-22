@@ -99,7 +99,7 @@ export const artistsApi = {
       id: artist.id,
       stageName: artist.stageName,
       stageNameZh: artist.stageNameZh, // 新增中文藝名
-      groupName: artist.groupName, // 新增團名
+      groupNames: artist.groupNames, // 新增團名陣列
       realName: artist.realName,
       birthday: artist.birthday,
       profileImage: artist.profileImage,
@@ -146,8 +146,8 @@ export const artistsApi = {
   },
 
   // 審核藝人（管理員）- 支援設定團名
-  approve: async (id: string, groupName?: string): Promise<void> => {
-    const body = groupName ? { adminUpdate: { groupName } } : {};
+  approve: async (id: string, groupNames?: string[]): Promise<void> => {
+    const body = groupNames && groupNames.length > 0 ? { adminUpdate: { groupNames } } : {};
     await api.put(`/artists/${id}/approve`, body);
   },
 
@@ -166,7 +166,7 @@ export const artistsApi = {
       id: artist.id,
       stageName: artist.stageName,
       stageNameZh: artist.stageNameZh, // 新增中文藝名
-      groupName: artist.groupName, // 新增團名
+      groupNames: artist.groupNames, // 新增團名陣列
       realName: artist.realName,
       birthday: artist.birthday,
       profileImage: artist.profileImage,

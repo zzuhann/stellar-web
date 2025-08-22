@@ -1,8 +1,10 @@
 'use client';
 
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 
 const ModalOverlay = styled.div<{ isOpen: boolean }>`
@@ -130,8 +132,64 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   `}
 `;
 
+const GroupItemContainer = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+`;
+
+const RemoveButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  color: #dc2626;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #dc2626;
+  background: transparent;
+
+  &:hover {
+    background: #dc2626;
+    color: white;
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
+const AddButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  margin-top: 8px;
+
+  &:hover {
+    background: var(--color-border-light);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+`;
+
 const groupNameSchema = z.object({
-  groupName: z.string().max(50, '團名不能超過50個字元').optional().or(z.literal('')),
+  groupNames: z.array(z.string().min(1, '團名不能為空').max(50, '團名不能超過50個字元')).optional(),
 });
 
 type GroupNameFormData = z.infer<typeof groupNameSchema>;
@@ -139,8 +197,8 @@ type GroupNameFormData = z.infer<typeof groupNameSchema>;
 interface GroupNameModalProps {
   isOpen: boolean;
   artistName: string;
-  currentGroupName?: string;
-  onConfirm: (groupName?: string) => void;
+  currentGroupNames?: string[];
+  onConfirm: (groupNames?: string[]) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -148,36 +206,61 @@ interface GroupNameModalProps {
 export default function GroupNameModal({
   isOpen,
   artistName,
-  currentGroupName,
+  currentGroupNames,
   onConfirm,
   onCancel,
   isLoading = false,
 }: GroupNameModalProps) {
+  const [groupNames, setGroupNames] = useState<string[]>(currentGroupNames || []);
+
   const {
-    register,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
   } = useForm<GroupNameFormData>({
     resolver: zodResolver(groupNameSchema),
     defaultValues: {
-      groupName: currentGroupName || '',
+      groupNames: currentGroupNames || [],
     },
   });
 
+  const addGroupName = () => {
+    const newGroupNames = [...groupNames, ''];
+    setGroupNames(newGroupNames);
+    setValue('groupNames', newGroupNames);
+  };
+
+  const removeGroupName = (index: number) => {
+    const newGroupNames = groupNames.filter((_, i) => i !== index);
+    setGroupNames(newGroupNames);
+    setValue('groupNames', newGroupNames);
+  };
+
+  const updateGroupName = (index: number, value: string) => {
+    const newGroupNames = [...groupNames];
+    newGroupNames[index] = value;
+    setGroupNames(newGroupNames);
+    setValue('groupNames', newGroupNames);
+  };
+
   const onSubmit = (data: GroupNameFormData) => {
-    onConfirm(data.groupName || undefined);
+    const filteredNames = data.groupNames?.filter((name) => name.trim() !== '') || [];
+    onConfirm(filteredNames.length > 0 ? filteredNames : undefined);
     reset();
+    setGroupNames([]);
   };
 
   const handleCancel = () => {
     reset();
+    setGroupNames([]);
     onCancel();
   };
 
   const handleSkip = () => {
     onConfirm(undefined);
     reset();
+    setGroupNames([]);
   };
 
   if (!isOpen) return null;
@@ -194,15 +277,38 @@ export default function GroupNameModal({
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <FormGroup>
-            <Label htmlFor="groupName">團名</Label>
-            <Input
-              id="groupName"
-              type="text"
-              placeholder="例：BOYNEXTDOOR、SEVENTEEN、&TEAM"
-              {...register('groupName')}
-              disabled={isLoading}
-            />
-            {errors.groupName && <ErrorText>{errors.groupName.message}</ErrorText>}
+            <Label>團名</Label>
+            {groupNames.length === 0 && (
+              <AddButton type="button" onClick={addGroupName} disabled={isLoading}>
+                <PlusIcon />
+                新增團名
+              </AddButton>
+            )}
+            {groupNames.map((groupName, index) => (
+              <GroupItemContainer key={index}>
+                <Input
+                  type="text"
+                  placeholder="例：BOYNEXTDOOR、SEVENTEEN、&TEAM"
+                  value={groupName}
+                  onChange={(e) => updateGroupName(index, e.target.value)}
+                  disabled={isLoading}
+                />
+                <RemoveButton
+                  type="button"
+                  onClick={() => removeGroupName(index)}
+                  disabled={isLoading}
+                >
+                  <XMarkIcon />
+                </RemoveButton>
+              </GroupItemContainer>
+            ))}
+            {groupNames.length > 0 && (
+              <AddButton type="button" onClick={addGroupName} disabled={isLoading}>
+                <PlusIcon />
+                新增更多團名
+              </AddButton>
+            )}
+            {errors.groupNames && <ErrorText>{errors.groupNames.message}</ErrorText>}
           </FormGroup>
 
           <ButtonGroup>

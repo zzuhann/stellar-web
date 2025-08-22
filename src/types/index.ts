@@ -10,7 +10,7 @@ export interface Artist {
   id: string;
   stageName: string; // 英文藝名（必填）
   stageNameZh?: string; // 中文藝名（選填）
-  groupName?: string; // 團名（選填）
+  groupNames?: string[]; // 團名陣列（選填，支援多個團名）
   realName?: string; // 本名（選填）
   birthday?: string; // 生日 (YYYY-MM-DD)
   profileImage?: string; // 照片 URL
@@ -241,7 +241,7 @@ export interface CreateEventRequest {
 export interface UpdateArtistRequest {
   stageName?: string;
   stageNameZh?: string;
-  groupName?: string;
+  groupNames?: string[];
   realName?: string;
   birthday?: string; // YYYY-MM-DD
   profileImage?: string;
@@ -252,14 +252,14 @@ export interface ArtistReviewRequest {
   status: 'approved' | 'rejected' | 'exists';
   reason?: string; // 拒絕時使用
   adminUpdate?: {
-    groupName?: string; // 審核通過時可設定團名
+    groupNames?: string[]; // 審核通過時可設定團名陣列
   };
 }
 
 // 藝人審核通過請求格式
 export interface ArtistApproveRequest {
   adminUpdate?: {
-    groupName?: string; // 選填，管理員可設定團名
+    groupNames?: string[]; // 選填，管理員可設定團名陣列
   };
 }
 

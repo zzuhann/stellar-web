@@ -318,8 +318,8 @@ export default function AdminPage() {
 
   // 審核藝人 mutations
   const approveArtistMutation = useMutation({
-    mutationFn: ({ id, groupName }: { id: string; groupName?: string }) =>
-      artistsApi.approve(id, groupName),
+    mutationFn: ({ id, groupNames }: { id: string; groupNames?: string[] }) =>
+      artistsApi.approve(id, groupNames),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-pending-artists'] });
       showToast.success('審核成功');
@@ -380,11 +380,11 @@ export default function AdminPage() {
     setApprovingArtist(artist);
   };
 
-  const handleApproveArtistWithGroupName = (groupName?: string) => {
+  const handleApproveArtistWithGroupNames = (groupNames?: string[]) => {
     if (!approvingArtist) return;
 
     approveArtistMutation.mutate(
-      { id: approvingArtist.id, groupName },
+      { id: approvingArtist.id, groupNames },
       {
         onSuccess: () => {
           setApprovingArtist(null);
@@ -608,8 +608,8 @@ export default function AdminPage() {
         <GroupNameModal
           isOpen={true}
           artistName={approvingArtist.stageNameZh || approvingArtist.stageName}
-          currentGroupName={approvingArtist.groupName}
-          onConfirm={handleApproveArtistWithGroupName}
+          currentGroupNames={approvingArtist.groupNames}
+          onConfirm={handleApproveArtistWithGroupNames}
           onCancel={() => setApprovingArtist(null)}
           isLoading={approveArtistMutation.isPending}
         />
