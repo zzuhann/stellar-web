@@ -81,6 +81,7 @@ const ArtistItem = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
+  cursor: pointer;
 `;
 
 const ArtistAvatar = styled.div<{ imageUrl?: string }>`
@@ -396,7 +397,7 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
                 {event.artists?.map((artist, index) => (
                   <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
                     {index > 0 && <ArtistSeparator>/</ArtistSeparator>}
-                    <ArtistItem>
+                    <ArtistItem onClick={() => router.push(`/map?artistId=${artist.id}`)}>
                       <ArtistAvatar imageUrl={artist.profileImage} />
                       <ArtistName>{artist.name || 'Unknown Artist'}</ArtistName>
                     </ArtistItem>
@@ -482,7 +483,7 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
                   <DetailContent>
                     <DetailValue>
                       <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${event.location.name}`}
+                        href={`https://www.google.com/maps/search/?api=1&query=${event.location.coordinates.lat},${event.location.coordinates.lng}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         style={{ color: '#3a64c7' }}

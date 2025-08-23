@@ -8,6 +8,7 @@ import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline
 import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface EventPreviewModalProps {
   event: CoffeeEvent;
@@ -201,6 +202,7 @@ const DescriptionContent = styled.div`
 `;
 
 export default function EventPreviewModal({ event, isOpen, onClose }: EventPreviewModalProps) {
+  const router = useRouter();
   // 使用 scroll lock hook
   useScrollLock(isOpen);
 
@@ -286,7 +288,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
             {event.artists?.map((artist, index) => (
               <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
                 {index > 0 && <ArtistSeparator>/</ArtistSeparator>}
-                <ArtistItem>
+                <ArtistItem onClick={() => router.push(`/map?artistId=${artist.id}`)}>
                   <ArtistAvatar imageUrl={artist.profileImage} />
                   <ArtistName>{artist.name || 'Unknown Artist'}</ArtistName>
                 </ArtistItem>
@@ -373,7 +375,8 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
               <DetailContent>
                 <DetailValue>
                   <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${event.location.name}`}
+                    // 帶入 lat, lng
+                    href={`https://www.google.com/maps/search/?api=1&query=${event.location.coordinates.lat},${event.location.coordinates.lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ color: '#3a64c7' }}
