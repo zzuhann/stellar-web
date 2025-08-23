@@ -258,10 +258,8 @@ export default function ArtistSelectionModal({
   const debouncedSearchQuery = useDebounce(inputValue, 800);
 
   // 使用 React Query 進行搜尋
-  const { data: searchResults = [], isLoading: searchLoading } = useArtistSearch(
-    debouncedSearchQuery,
-    false
-  );
+  const { data: searchResults = [], isLoading: searchLoading } =
+    useArtistSearch(debouncedSearchQuery);
 
   // 使用 React Query 獲取當月壽星
   const { startDate, endDate, today } = getCurrentMonthRange();

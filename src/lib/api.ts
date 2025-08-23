@@ -71,7 +71,6 @@ export interface ArtistSearchParams {
   birthdayStartDate?: string; // YYYY-MM-DD
   birthdayEndDate?: string; // YYYY-MM-DD
   search?: string;
-  includeStats?: boolean;
   sortBy?: 'stageName' | 'coffeeEventCount' | 'createdAt';
   sortOrder?: 'asc' | 'desc';
 }
@@ -87,7 +86,6 @@ export const artistsApi = {
     if (params?.birthdayStartDate) queryParams.birthdayStartDate = params.birthdayStartDate;
     if (params?.birthdayEndDate) queryParams.birthdayEndDate = params.birthdayEndDate;
     if (params?.search) queryParams.search = params.search;
-    if (params?.includeStats) queryParams.includeStats = 'true';
     if (params?.sortBy) queryParams.sortBy = params.sortBy;
     if (params?.sortOrder) queryParams.sortOrder = params.sortOrder;
 

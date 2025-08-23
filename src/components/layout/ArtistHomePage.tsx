@@ -31,7 +31,6 @@ const useBirthdayArtists = (startDate: string, endDate: string, placeholderData?
         status: 'approved',
         birthdayStartDate: startDate,
         birthdayEndDate: endDate,
-        includeStats: true,
         sortBy: 'coffeeEventCount',
         sortOrder: 'desc',
       }),

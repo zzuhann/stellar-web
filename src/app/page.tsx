@@ -46,7 +46,6 @@ async function getWeekBirthdayArtists(): Promise<Artist[]> {
       status: 'approved',
       birthdayStartDate: startDate,
       birthdayEndDate: endDate,
-      includeStats: 'true',
       sortBy: 'coffeeEventCount',
     });
 

@@ -19,7 +19,7 @@ export interface Artist {
   createdBy: string;
   createdAt: FirebaseTimestamp | string; // ISO string format
   updatedAt: FirebaseTimestamp | string; // ISO string format
-  coffeeEventCount?: number; // 進行中的生咖活動數量（當 includeStats=true 時回傳）
+  coffeeEventCount?: number; // 進行中的生咖活動數量
 }
 
 export interface CoffeeEvent {
