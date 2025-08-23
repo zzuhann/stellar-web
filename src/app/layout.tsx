@@ -34,6 +34,28 @@ export const metadata: Metadata = {
     shortcut: '/icon.png',
     apple: '/icon.png',
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'STELLAR',
+    startupImage: [
+      {
+        url: '/icon.png',
+        media:
+          '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)',
+      },
+      {
+        url: '/icon.png',
+        media:
+          '(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)',
+      },
+      {
+        url: '/icon.png',
+        media:
+          '(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)',
+      },
+    ],
+  },
   twitter: {
     card: 'summary_large_image',
     title: 'STELLAR | 生咖應援地圖',
@@ -56,6 +78,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-TW">
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="STELLAR" />
+        <link rel="apple-touch-icon" href="/icon.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icon.png" />
+        <link rel="apple-touch-icon" sizes="152x152" href="/icon.png" />
+        <link rel="apple-touch-icon" sizes="120x120" href="/icon.png" />
+      </head>
       <body className={`${notoSansTC.variable} antialiased`}>
         <StyledComponentsRegistry>
           <QueryProvider>
