@@ -8,6 +8,7 @@ import { Toaster } from 'react-hot-toast';
 import StyledComponentsRegistry from '@/lib/styled-components-registry';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { Analytics } from '@vercel/analytics/next';
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
@@ -94,6 +95,7 @@ export default function RootLayout({
               <LoadingProvider>
                 <Header />
                 {children}
+                <Analytics />
                 <Toaster
                   position="top-center"
                   toastOptions={{
