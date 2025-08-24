@@ -642,12 +642,12 @@ export default function EventSubmissionForm({
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['map-data'] });
       queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
-      showToast.success('已重新提交審核！');
+      showToast.success('已重新送出審核！');
       router.push(`/my-submissions?tab=event`);
     },
     onError: (error: any) => {
       // 從後端錯誤回應中提取錯誤訊息
-      const errorMessage = error?.response?.data?.error || '重新提交審核時發生錯誤';
+      const errorMessage = error?.response?.data?.error || '重新送出審核時發生錯誤';
       showToast.error(errorMessage);
     },
   });
@@ -1145,7 +1145,7 @@ export default function EventSubmissionForm({
                     投稿中...
                   </>
                 ) : (
-                  '提交投稿'
+                  '送出投稿'
                 )}
               </Button>
             </>
@@ -1166,7 +1166,7 @@ export default function EventSubmissionForm({
                 ) : resubmitEventMutation.isPending ? (
                   <>
                     <LoadingSpinner />
-                    重新提交審核中...
+                    重新送出審核中...
                   </>
                 ) : existingEvent?.status === 'rejected' ? (
                   '重新送審'

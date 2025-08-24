@@ -638,7 +638,7 @@ export default function ArtistSubmissionForm({
             ) : mode === 'edit' ? (
               '更新資料'
             ) : (
-              '提交投稿'
+              '送出投稿'
             )}
           </Button>
 
