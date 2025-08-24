@@ -363,6 +363,8 @@ export default function MapPageStyled() {
   // 追蹤選中的活動
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
+  const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
+
   // 計算地圖中心點與用戶位置的距離
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
     const R = 6371; // 地球半徑（公里）
@@ -402,10 +404,7 @@ export default function MapPageStyled() {
   // 判斷是否應該顯示定位按鈕
   const shouldShowLocationButton = () => {
     if (!latitude || !longitude) return false;
-
-    // 直接從 spring 獲取當前高度，而不依賴狀態
-    const currentHeight = springs.height.get();
-    if (Math.abs(currentHeight - COLLAPSED_HEIGHT) > 10) return false; // 給點容差
+    if (isDrawerExpanded) return false;
 
     const distance = calculateDistance(center.lat, center.lng, latitude, longitude);
 
@@ -435,7 +434,6 @@ export default function MapPageStyled() {
     let isDragging = false;
 
     const onStart = (e: React.MouseEvent | React.TouchEvent) => {
-      e.preventDefault();
       isDragging = true;
       startY = 'touches' in e ? e.touches[0].clientY : e.clientY;
       startHeight = springs.height.get();
@@ -475,16 +473,29 @@ export default function MapPageStyled() {
       }
 
       if (shouldExpand) {
-        api.start({
-          height: targetExpandedHeight,
-          config: config.gentle,
-          immediate: false,
-        });
+        setIsDrawerExpanded(true);
+        // 延遲執行展開動畫，讓 React Spring 完全清理拖拽動畫的內部狀態
+        setTimeout(() => {
+          api.start({
+            height: targetExpandedHeight,
+            config: config.gentle,
+            immediate: false,
+            onRest: () => {
+              // 確保展開完成後狀態正確
+              setIsDrawerExpanded(true);
+            },
+          });
+        }, 100);
       } else {
+        setIsDrawerExpanded(false);
         api.start({
           height: COLLAPSED_HEIGHT,
           config: config.gentle,
           immediate: false,
+          onRest: () => {
+            // 確保收合完成後狀態正確
+            setIsDrawerExpanded(false);
+          },
         });
       }
     };
@@ -503,8 +514,8 @@ export default function MapPageStyled() {
         cleanup();
       };
 
-      document.addEventListener('mousemove', onMove);
-      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('mousemove', onMove, { passive: false });
+      document.addEventListener('mouseup', handleMouseUp, { passive: false });
     };
 
     const handleTouchStart = (e: React.TouchEvent) => {
@@ -553,6 +564,7 @@ export default function MapPageStyled() {
 
     // 先停止任何現有動畫，然後展開到單一活動高度
     api.stop();
+    setIsDrawerExpanded(true);
     setTimeout(() => {
       api.start({
         from: { height: currentHeight },
@@ -562,38 +574,10 @@ export default function MapPageStyled() {
     }, 10);
   };
 
-  // 處理抽屜點擊（取消選中）
-  const handleDrawerClick = () => {
-    if (selectedEventId) {
-      setSelectedEventId(null);
-      // 如果當前是展開狀態，調整到完整高度
-      const currentHeight = springs.height.get();
-      if (currentHeight > COLLAPSED_HEIGHT + 50) {
-        api.start({
-          height: expandedHeight,
-          config: config.gentle,
-          immediate: false,
-        });
-      }
-    }
-  };
-
   const handleCloseButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // 阻止事件冒泡到 drawer
     if (selectedEventId) {
       setSelectedEventId(null);
-      if (latitude && longitude) {
-        setCenter({ lat: latitude, lng: longitude, zoom: 13 });
-      }
-      // 如果當前是展開狀態，調整到完整高度
-      const currentHeight = springs.height.get();
-      if (currentHeight > COLLAPSED_HEIGHT + 50) {
-        api.start({
-          height: expandedHeight,
-          config: config.gentle,
-          immediate: false,
-        });
-      }
     }
   };
 
@@ -642,7 +626,7 @@ export default function MapPageStyled() {
           <DrawerHandle
             onMouseDown={bind.handleMouseDown}
             onTouchStart={bind.handleTouchStart}
-            onClick={handleDrawerClick}
+            // onClick={handleDrawerClick}
           >
             <HandleBar />
             <HandleBarTextContainer>
