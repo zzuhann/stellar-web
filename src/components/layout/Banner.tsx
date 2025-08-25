@@ -104,7 +104,7 @@ const PaginationDots = styled.div`
   z-index: 10;
 `;
 
-const Dot = styled.button<{ active: boolean }>`
+const Dot = styled.button<{ $active: boolean }>`
   width: 8px;
   height: 8px;
   max-width: 8px;
@@ -114,15 +114,15 @@ const Dot = styled.button<{ active: boolean }>`
   padding: 0;
   margin: 0;
   border-radius: 50%;
-  background: ${(props) => (props.active ? 'white' : 'rgba(255, 255, 255, 0.3)')};
-  border: ${(props) => (props.active ? 'none' : '1px solid rgba(255, 255, 255, 0.5)')};
+  background: ${(props) => (props.$active ? 'white' : 'rgba(255, 255, 255, 0.3)')};
+  border: ${(props) => (props.$active ? 'none' : '1px solid rgba(255, 255, 255, 0.5)')};
   cursor: pointer;
   transition: all 0.2s ease;
   box-sizing: border-box;
   flex-shrink: 0;
 
   &:hover {
-    background: ${(props) => (props.active ? 'white' : 'rgba(255, 255, 255, 0.5)')};
+    background: ${(props) => (props.$active ? 'white' : 'rgba(255, 255, 255, 0.5)')};
   }
 `;
 
@@ -235,7 +235,7 @@ export default function Banner({ items = defaultBannerItems }: BannerProps) {
       {items.length > 1 && (
         <PaginationDots>
           {items.map((_, index) => (
-            <Dot key={index} active={index === currentIndex} onClick={() => goToSlide(index)} />
+            <Dot key={index} $active={index === currentIndex} onClick={() => goToSlide(index)} />
           ))}
         </PaginationDots>
       )}

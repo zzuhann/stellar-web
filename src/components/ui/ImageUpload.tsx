@@ -40,25 +40,25 @@ const UploadContainer = styled.div`
 `;
 
 const UploadArea = styled.div<{
-  isDragOver: boolean;
-  hasError: boolean;
-  disabled: boolean;
+  $isDragOver: boolean;
+  $hasError: boolean;
+  $disabled: boolean;
 }>`
   position: relative;
   border: 2px dashed;
   border-radius: var(--radius-lg);
   padding: 24px;
   transition: all 0.2s ease;
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
-  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${(props) => (props.$disabled ? 0.5 : 1)};
 
   ${(props) =>
-    props.isDragOver
+    props.$isDragOver
       ? `
     border-color: var(--color-primary);
     background: var(--color-accent);
   `
-      : props.hasError
+      : props.$hasError
         ? `
     border-color: var(--color-error);
     background: rgba(220, 53, 69, 0.05);
@@ -115,15 +115,15 @@ const PreviewContainer = styled.div`
   position: relative;
 `;
 
-const PreviewImage = styled.img<{ isCircle?: boolean }>`
+const PreviewImage = styled.img<{ $isCircle?: boolean }>`
   width: 100%;
   max-height: 192px;
-  border-radius: ${(props) => (props.isCircle ? '50%' : 'var(--radius-lg)')};
-  object-fit: ${(props) => (props.isCircle ? 'cover' : 'contain')};
-  background-color: ${(props) => (props.isCircle ? 'transparent' : 'var(--color-bg-secondary)')};
-  aspect-ratio: ${(props) => (props.isCircle ? '1' : 'auto')};
-  max-width: ${(props) => (props.isCircle ? '192px' : '100%')};
-  margin: ${(props) => (props.isCircle ? '0 auto' : '0')};
+  border-radius: ${(props) => (props.$isCircle ? '50%' : 'var(--radius-lg)')};
+  object-fit: ${(props) => (props.$isCircle ? 'cover' : 'contain')};
+  background-color: ${(props) => (props.$isCircle ? 'transparent' : 'var(--color-bg-secondary)')};
+  aspect-ratio: ${(props) => (props.$isCircle ? '1' : 'auto')};
+  max-width: ${(props) => (props.$isCircle ? '192px' : '100%')};
+  margin: ${(props) => (props.$isCircle ? '0 auto' : '0')};
 `;
 
 const ActionButtons = styled.div`
@@ -134,7 +134,7 @@ const ActionButtons = styled.div`
   gap: 4px;
 `;
 
-const ActionButton = styled.button<{ variant: 'crop' | 'remove' }>`
+const ActionButton = styled.button<{ $variant: 'crop' | 'remove' }>`
   padding: 4px;
   border-radius: 50%;
   transition: all 0.2s ease;
@@ -145,7 +145,7 @@ const ActionButton = styled.button<{ variant: 'crop' | 'remove' }>`
   justify-content: center;
 
   ${(props) =>
-    props.variant === 'crop'
+    props.$variant === 'crop'
       ? `
     background: var(--color-primary);
     color: white;
@@ -476,9 +476,9 @@ export default function ImageUpload({
   return (
     <UploadContainer>
       <UploadArea
-        isDragOver={isDragOver}
-        hasError={!!error}
-        disabled={disabled}
+        $isDragOver={isDragOver}
+        $hasError={!!error}
+        $disabled={disabled}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -502,14 +502,14 @@ export default function ImageUpload({
             <PreviewImage
               src={previewUrl}
               alt="預覽"
-              isCircle={enableCrop && cropShape === 'circle' && hasCroppedImage}
+              $isCircle={enableCrop && cropShape === 'circle' && hasCroppedImage}
             />
             <ActionButtons>
               {/* 重新裁切按鈕（如果啟用裁切功能） */}
               {enableCrop && originalFile && (
                 <ActionButton
                   type="button"
-                  variant="crop"
+                  $variant="crop"
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowCropper(true);
@@ -522,7 +522,7 @@ export default function ImageUpload({
               )}
               <ActionButton
                 type="button"
-                variant="remove"
+                $variant="remove"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleRemove();

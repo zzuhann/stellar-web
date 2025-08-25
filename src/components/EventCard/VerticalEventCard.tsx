@@ -21,10 +21,10 @@ const VerticalEventCardContainer = styled.div`
   }
 `;
 
-const EventImage = styled.div<{ imageUrl: string }>`
+const EventImage = styled.div<{ $imageUrl: string }>`
   width: 100%;
   height: 360px;
-  background-image: url(${(props) => props.imageUrl});
+  background-image: url(${(props) => props.$imageUrl});
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -202,7 +202,7 @@ const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardP
 
   return (
     <VerticalEventCardContainer>
-      <EventImage imageUrl={event.mainImage ?? ''} />
+      <EventImage $imageUrl={event.mainImage ?? ''} />
 
       <StatusBadge status={event.status}>
         {getStatusText(event.status, event.rejectedReason)}

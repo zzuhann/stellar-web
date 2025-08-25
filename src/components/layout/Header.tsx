@@ -142,7 +142,7 @@ const UserMenuItem = styled.button`
 `;
 
 // Mobile Menu
-const MobileMenuOverlay = styled.div<{ isOpen: boolean }>`
+const MobileMenuOverlay = styled.div<{ $isOpen: boolean }>`
   display: none;
   position: fixed;
   top: 0;
@@ -151,8 +151,8 @@ const MobileMenuOverlay = styled.div<{ isOpen: boolean }>`
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 100;
-  opacity: ${(props) => (props.isOpen ? 1 : 0)};
-  visibility: ${(props) => (props.isOpen ? 'visible' : 'hidden')};
+  opacity: ${(props) => (props.$isOpen ? 1 : 0)};
+  visibility: ${(props) => (props.$isOpen ? 'visible' : 'hidden')};
   transition: all 0.3s ease;
 
   @media (max-width: 768px) {
@@ -160,7 +160,7 @@ const MobileMenuOverlay = styled.div<{ isOpen: boolean }>`
   }
 `;
 
-const MobileMenu = styled.div<{ isOpen: boolean }>`
+const MobileMenu = styled.div<{ $isOpen: boolean }>`
   display: none;
   position: fixed;
   top: 0;
@@ -169,7 +169,7 @@ const MobileMenu = styled.div<{ isOpen: boolean }>`
   width: 280px;
   background: white;
   box-shadow: var(--shadow-lg);
-  transform: translateX(${(props) => (props.isOpen ? '0' : '100%')});
+  transform: translateX(${(props) => (props.$isOpen ? '0' : '100%')});
   transition: transform 0.3s ease;
   z-index: 101;
   overflow-y: auto;
@@ -320,10 +320,10 @@ const Header = () => {
       </HeaderContainer>
 
       {/* Mobile Menu Overlay */}
-      <MobileMenuOverlay isOpen={mobileMenuOpen} onClick={closeMobileMenu} />
+      <MobileMenuOverlay $isOpen={mobileMenuOpen} onClick={closeMobileMenu} />
 
       {/* Mobile Menu */}
-      <MobileMenu isOpen={mobileMenuOpen}>
+      <MobileMenu $isOpen={mobileMenuOpen}>
         <MobileMenuHeader>
           <MobileMenuTitle>選單</MobileMenuTitle>
           <CloseButton onClick={closeMobileMenu}>

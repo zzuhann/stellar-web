@@ -7,14 +7,14 @@ import * as z from 'zod';
 import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
 
-const ModalOverlay = styled.div<{ isOpen: boolean }>`
+const ModalOverlay = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
-  display: ${(props) => (props.isOpen ? 'flex' : 'none')};
+  display: ${(props) => (props.$isOpen ? 'flex' : 'none')};
   align-items: center;
   justify-content: center;
   z-index: 1000;
@@ -93,7 +93,7 @@ const ButtonGroup = styled.div`
   justify-content: flex-end;
 `;
 
-const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+const Button = styled.button<{ $variant?: 'primary' | 'secondary' }>`
   padding: 10px 20px;
   border-radius: var(--radius-lg);
   font-size: 14px;
@@ -103,7 +103,7 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   border: 1px solid;
 
   ${(props) =>
-    props.variant === 'primary'
+    props.$variant === 'primary'
       ? `
     background: var(--color-primary);
     border-color: var(--color-primary);
@@ -266,7 +266,7 @@ export default function GroupNameModal({
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay isOpen={isOpen}>
+    <ModalOverlay $isOpen={isOpen}>
       <ModalContent>
         <ModalHeader>
           <ModalTitle>設定團名</ModalTitle>
@@ -312,13 +312,13 @@ export default function GroupNameModal({
           </FormGroup>
 
           <ButtonGroup>
-            <Button type="button" variant="secondary" onClick={handleSkip} disabled={isLoading}>
+            <Button type="button" $variant="secondary" onClick={handleSkip} disabled={isLoading}>
               略過
             </Button>
-            <Button type="button" variant="secondary" onClick={handleCancel} disabled={isLoading}>
+            <Button type="button" $variant="secondary" onClick={handleCancel} disabled={isLoading}>
               取消
             </Button>
-            <Button type="submit" variant="primary" disabled={isLoading}>
+            <Button type="submit" $variant="primary" disabled={isLoading}>
               {isLoading ? '設定中...' : '確認設定'}
             </Button>
           </ButtonGroup>

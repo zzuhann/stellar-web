@@ -77,7 +77,7 @@ const WeekNavigationContainer = styled.div`
   border: 1px solid var(--color-border-light);
 `;
 
-const WeekNavigationButton = styled.button<{ disabled?: boolean }>`
+const WeekNavigationButton = styled.button<{ $disabled?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -85,8 +85,8 @@ const WeekNavigationButton = styled.button<{ disabled?: boolean }>`
   height: 24px;
   border-radius: var(--radius-md);
   color: ${(props) =>
-    props.disabled ? 'var(--color-text-disabled)' : 'var(--color-text-primary)'};
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+    props.$disabled ? 'var(--color-text-disabled)' : 'var(--color-text-primary)'};
+  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
   transition: all 0.2s ease;
 
   svg {
@@ -366,7 +366,7 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
 
           {/* 週導航 */}
           <WeekNavigationContainer>
-            <WeekNavigationButton onClick={goToPreviousWeek} disabled={!canGoToPreviousWeek}>
+            <WeekNavigationButton onClick={goToPreviousWeek} $disabled={!canGoToPreviousWeek}>
               <ChevronLeftIcon />
             </WeekNavigationButton>
 

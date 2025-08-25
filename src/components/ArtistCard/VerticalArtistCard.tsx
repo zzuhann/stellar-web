@@ -20,10 +20,10 @@ const VerticalArtistCardContainer = styled.div`
   }
 `;
 
-const ArtistImage = styled.div<{ imageUrl: string }>`
+const ArtistImage = styled.div<{ $imageUrl: string }>`
   width: 100%;
   height: 100%;
-  background-image: url(${(props) => props.imageUrl});
+  background-image: url(${(props) => props.$imageUrl});
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -85,7 +85,7 @@ const SubmissionTime = styled.div`
   color: rgba(255, 255, 255, 0.7);
 `;
 
-const StatusBadge = styled.span<{ status: 'pending' | 'approved' | 'rejected' | 'exists' }>`
+const StatusBadge = styled.span<{ $status: 'pending' | 'approved' | 'rejected' | 'exists' }>`
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -99,7 +99,7 @@ const StatusBadge = styled.span<{ status: 'pending' | 'approved' | 'rejected' | 
   z-index: 1;
 
   ${(props) => {
-    switch (props.status) {
+    switch (props.$status) {
       case 'approved':
         return `
           background: #dcfce7;
@@ -169,10 +169,10 @@ const VerticalArtistCard = ({
 
   return (
     <VerticalArtistCardContainer>
-      <ArtistImage imageUrl={artist.profileImage ?? ''} />
+      <ArtistImage $imageUrl={artist.profileImage ?? ''} />
 
       {artist.status && (
-        <StatusBadge status={artist.status}>
+        <StatusBadge $status={artist.status}>
           {getStatusText(artist.status, artist.rejectedReason)}
         </StatusBadge>
       )}

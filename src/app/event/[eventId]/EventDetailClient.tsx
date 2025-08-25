@@ -84,12 +84,12 @@ const ArtistItem = styled.div`
   cursor: pointer;
 `;
 
-const ArtistAvatar = styled.div<{ imageUrl?: string }>`
+const ArtistAvatar = styled.div<{ $imageUrl?: string }>`
   width: 24px;
   height: 24px;
   border-radius: 50%;
   overflow: hidden;
-  background-image: url(${(props) => props.imageUrl ?? ''});
+  background-image: url(${(props) => props.$imageUrl ?? ''});
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -398,7 +398,7 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
                   <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
                     {index > 0 && <ArtistSeparator>/</ArtistSeparator>}
                     <ArtistItem onClick={() => router.push(`/map?artistId=${artist.id}`)}>
-                      <ArtistAvatar imageUrl={artist.profileImage} />
+                      <ArtistAvatar $imageUrl={artist.profileImage} />
                       <ArtistName>{artist.name || 'Unknown Artist'}</ArtistName>
                     </ArtistItem>
                   </div>
@@ -541,7 +541,7 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
             <ModalTitle>選擇要查看的偶像</ModalTitle>
             {event.artists?.map((artist) => (
               <ArtistOption key={artist.id} onClick={() => handleArtistSelect(artist.id)}>
-                <ArtistAvatar imageUrl={artist.profileImage} />
+                <ArtistAvatar $imageUrl={artist.profileImage} />
                 <ArtistName>{artist.name || 'Unknown Artist'}</ArtistName>
               </ArtistOption>
             ))}

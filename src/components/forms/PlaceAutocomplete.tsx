@@ -37,7 +37,7 @@ const ComboboxContainer = styled.div`
   position: relative;
 `;
 
-const ComboboxInput = styled(Combobox.Input)<{ isDisabled: boolean; isError: boolean }>`
+const ComboboxInput = styled(Combobox.Input)<{ $isDisabled: boolean; $isError: boolean }>`
   width: 100%;
   padding: 12px 16px;
   border: 1px solid var(--color-border-light);
@@ -65,7 +65,7 @@ const ComboboxInput = styled(Combobox.Input)<{ isDisabled: boolean; isError: boo
   }
 
   ${(props) =>
-    props.isDisabled &&
+    props.$isDisabled &&
     `
     background: var(--color-bg-secondary);
     color: var(--color-text-disabled);
@@ -73,7 +73,7 @@ const ComboboxInput = styled(Combobox.Input)<{ isDisabled: boolean; isError: boo
   `}
 
   ${(props) =>
-    props.isError &&
+    props.$isError &&
     `
     border-color: #ef4444;
     background: #fef2f2;
@@ -162,12 +162,12 @@ const ComboboxOption = styled(Combobox.Option)`
 
 `;
 
-const OptionContent = styled.div<{ isSelected: boolean }>`
+const OptionContent = styled.div<{ $isSelected: boolean }>`
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-weight: ${(props) => (props.isSelected ? '600' : '400')};
+  font-weight: ${(props) => (props.$isSelected ? '600' : '400')};
 `;
 
 const OptionMainText = styled.div`
@@ -175,19 +175,19 @@ const OptionMainText = styled.div`
   margin-bottom: 2px;
 `;
 
-const OptionSecondaryText = styled.div<{ isActive: boolean }>`
+const OptionSecondaryText = styled.div<{ $isActive: boolean }>`
   font-size: 13px;
   color: var(--color-text-secondary);
 `;
 
-const CheckIconContainer = styled.span<{ isActive: boolean }>`
+const CheckIconContainer = styled.span<{ $isActive: boolean }>`
   position: absolute;
   inset-y: 0;
   left: 0;
   display: flex;
   align-items: center;
   padding-left: 16px;
-  color: ${(props) => (props.isActive ? 'white' : 'var(--color-primary)')};
+  color: ${(props) => (props.$isActive ? 'white' : 'var(--color-primary)')};
 
   @media (min-width: 768px) {
     padding-left: 18px;
@@ -270,8 +270,8 @@ export default function PlaceAutocomplete({
       <Combobox value={selectedPlace} onChange={handlePlaceSelect}>
         <ComboboxContainer>
           <ComboboxInput
-            isError={isError}
-            isDisabled={false}
+            $isError={isError}
+            $isDisabled={false}
             displayValue={(prediction: PlacePrediction | null) =>
               prediction
                 ? prediction.structured_formatting?.main_text || prediction.description
@@ -298,13 +298,13 @@ export default function PlaceAutocomplete({
                 <ComboboxOption key={prediction.place_id} value={prediction}>
                   {({ selected, active }) => (
                     <>
-                      <OptionContent isSelected={selected}>
+                      <OptionContent $isSelected={selected}>
                         {prediction.structured_formatting ? (
                           <>
                             <OptionMainText>
                               {prediction.structured_formatting.main_text}
                             </OptionMainText>
-                            <OptionSecondaryText isActive={active}>
+                            <OptionSecondaryText $isActive={active}>
                               {prediction.structured_formatting.secondary_text}
                             </OptionSecondaryText>
                           </>
@@ -313,7 +313,7 @@ export default function PlaceAutocomplete({
                         )}
                       </OptionContent>
                       {selected && (
-                        <CheckIconContainer isActive={active}>
+                        <CheckIconContainer $isActive={active}>
                           <CheckIcon className="h-5 w-5" aria-hidden="true" />
                         </CheckIconContainer>
                       )}

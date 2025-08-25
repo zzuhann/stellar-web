@@ -14,11 +14,11 @@ interface RejectModalProps {
 }
 
 // Styled Components
-const ModalOverlay = styled.div<{ isOpen: boolean }>`
+const ModalOverlay = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  display: ${(props) => (props.isOpen ? 'flex' : 'none')};
+  display: ${(props) => (props.$isOpen ? 'flex' : 'none')};
   align-items: center;
   justify-content: center;
   z-index: 50;
@@ -158,9 +158,9 @@ const ErrorText = styled.div`
   margin-top: 6px;
 `;
 
-const CharacterCount = styled.div<{ isNearLimit: boolean }>`
+const CharacterCount = styled.div<{ $isNearLimit: boolean }>`
   font-size: 11px;
-  color: ${(props) => (props.isNearLimit ? '#dc2626' : 'var(--color-text-secondary)')};
+  color: ${(props) => (props.$isNearLimit ? '#dc2626' : 'var(--color-text-secondary)')};
   text-align: right;
   margin-top: 4px;
 `;
@@ -173,7 +173,7 @@ const ModalFooter = styled.div`
   border-top: 1px solid var(--color-border-light);
 `;
 
-const Button = styled.button<{ variant: 'primary' | 'secondary' }>`
+const Button = styled.button<{ $variant: 'primary' | 'secondary' }>`
   padding: 10px 20px;
   border-radius: var(--radius-md);
   font-size: 14px;
@@ -186,7 +186,7 @@ const Button = styled.button<{ variant: 'primary' | 'secondary' }>`
   gap: 8px;
 
   ${(props) =>
-    props.variant === 'primary'
+    props.$variant === 'primary'
       ? `
     background: #dc2626;
     border-color: #dc2626;
@@ -289,7 +289,7 @@ export default function RejectModal({
   const isOverLimit = reason.length > MAX_REASON_LENGTH;
 
   return (
-    <ModalOverlay isOpen={isOpen} onClick={handleOverlayClick}>
+    <ModalOverlay $isOpen={isOpen} onClick={handleOverlayClick}>
       <ModalContainer>
         <ModalHeader>
           <ModalTitle>{title}</ModalTitle>
@@ -315,7 +315,7 @@ export default function RejectModal({
               placeholder="請說明拒絕的原因，幫助投稿者了解如何改進..."
               disabled={loading}
             />
-            <CharacterCount isNearLimit={isNearLimit}>
+            <CharacterCount $isNearLimit={isNearLimit}>
               {reason.length}/{MAX_REASON_LENGTH}
             </CharacterCount>
             {error && <ErrorText>{error}</ErrorText>}
@@ -326,11 +326,11 @@ export default function RejectModal({
         </ModalBody>
 
         <ModalFooter>
-          <Button variant="secondary" onClick={handleClose} disabled={loading}>
+          <Button $variant="secondary" onClick={handleClose} disabled={loading}>
             取消
           </Button>
           <Button
-            variant="primary"
+            $variant="primary"
             onClick={handleSubmit}
             disabled={loading || !reason.trim() || isOverLimit}
           >

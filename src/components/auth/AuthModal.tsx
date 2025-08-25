@@ -15,7 +15,7 @@ interface AuthModalProps {
 }
 
 // Styled Components
-const ModalOverlay = styled.div<{ isOpen: boolean }>`
+const ModalOverlay = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
@@ -23,14 +23,14 @@ const ModalOverlay = styled.div<{ isOpen: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: ${(props) => (props.isOpen ? 1 : 0)};
-  visibility: ${(props) => (props.isOpen ? 'visible' : 'hidden')};
+  opacity: ${(props) => (props.$isOpen ? 1 : 0)};
+  visibility: ${(props) => (props.$isOpen ? 'visible' : 'hidden')};
   transition:
     opacity 0.3s ease-out,
     visibility 0.3s ease-out;
 `;
 
-const ModalContent = styled.div<{ isOpen: boolean }>`
+const ModalContent = styled.div<{ $isOpen: boolean }>`
   background: var(--color-bg-primary);
   width: 100%;
   max-width: 480px;
@@ -40,7 +40,7 @@ const ModalContent = styled.div<{ isOpen: boolean }>`
   flex-direction: column;
   margin: 0 16px;
   transform: ${(props) =>
-    props.isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(-20px)'};
+    props.$isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(-20px)'};
   transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 `;
 
@@ -110,8 +110,8 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   }, [isOpen]);
 
   return (
-    <ModalOverlay isOpen={isOpen} onClick={handleClose}>
-      <ModalContent isOpen={isOpen} onClick={(e) => e.stopPropagation()}>
+    <ModalOverlay $isOpen={isOpen} onClick={handleClose}>
+      <ModalContent $isOpen={isOpen} onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
           <CloseButton onClick={handleClose}>
             <XMarkIcon />

@@ -46,7 +46,7 @@ const TabNav = styled.nav`
   padding: 4px;
 `;
 
-const TabButton = styled.button<{ active?: boolean }>`
+const TabButton = styled.button<{ $active?: boolean }>`
   flex: 1;
   padding: 12px 16px;
   border-radius: var(--radius-md);
@@ -55,8 +55,8 @@ const TabButton = styled.button<{ active?: boolean }>`
   transition: all 0.2s ease;
   cursor: pointer;
   border: none;
-  background: ${(props) => (props.active ? 'var(--color-primary)' : 'transparent')};
-  color: ${(props) => (props.active ? 'white' : 'var(--color-text-primary)')};
+  background: ${(props) => (props.$active ? 'var(--color-primary)' : 'transparent')};
+  color: ${(props) => (props.$active ? 'white' : 'var(--color-text-primary)')};
   position: relative;
   display: flex;
   align-items: center;
@@ -64,7 +64,8 @@ const TabButton = styled.button<{ active?: boolean }>`
   gap: 8px;
 
   &:hover {
-    background: ${(props) => (props.active ? 'var(--color-primary)' : 'var(--color-border-light)')};
+    background: ${(props) =>
+      props.$active ? 'var(--color-primary)' : 'var(--color-border-light)'};
   }
 `;
 
@@ -141,7 +142,7 @@ const ActionButtons = styled.div`
   align-items: center;
 `;
 
-const ActionButton = styled.button<{ variant: 'approve' | 'reject' | 'preview' | 'exists' }>`
+const ActionButton = styled.button<{ $variant: 'approve' | 'reject' | 'preview' | 'exists' }>`
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -154,7 +155,7 @@ const ActionButton = styled.button<{ variant: 'approve' | 'reject' | 'preview' |
   border: 1px solid;
 
   ${(props) => {
-    switch (props.variant) {
+    switch (props.$variant) {
       case 'approve':
         return `
           background: #16a34a;
@@ -306,7 +307,7 @@ const Checkbox = styled.input`
   cursor: pointer;
 `;
 
-const BatchButton = styled.button<{ variant: 'approve' | 'reject' | 'exists' }>`
+const BatchButton = styled.button<{ $variant: 'approve' | 'reject' | 'exists' }>`
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -319,7 +320,7 @@ const BatchButton = styled.button<{ variant: 'approve' | 'reject' | 'exists' }>`
   border: 1px solid;
 
   ${(props) => {
-    switch (props.variant) {
+    switch (props.$variant) {
       case 'approve':
         return `
           background: #16a34a;
@@ -628,11 +629,11 @@ export default function AdminPage() {
         {/* Tabs */}
         <TabContainer>
           <TabNav>
-            <TabButton active={activeTab === 'artists'} onClick={() => setActiveTab('artists')}>
+            <TabButton $active={activeTab === 'artists'} onClick={() => setActiveTab('artists')}>
               待審偶像
               {pendingArtists.length > 0 && <Badge>{pendingArtists.length}</Badge>}
             </TabButton>
-            <TabButton active={activeTab === 'events'} onClick={() => setActiveTab('events')}>
+            <TabButton $active={activeTab === 'events'} onClick={() => setActiveTab('events')}>
               待審生咖
               {pendingEvents.length > 0 && <Badge>{pendingEvents.length}</Badge>}
             </TabButton>
@@ -664,7 +665,7 @@ export default function AdminPage() {
                     </BatchActionsLeft>
                     <BatchActionsRight>
                       <BatchButton
-                        variant="approve"
+                        $variant="approve"
                         onClick={() => setBatchApproving(true)}
                         disabled={batchReviewMutation.isPending}
                       >
@@ -672,7 +673,7 @@ export default function AdminPage() {
                         批次通過
                       </BatchButton>
                       <BatchButton
-                        variant="exists"
+                        $variant="exists"
                         onClick={handleBatchExists}
                         disabled={batchReviewMutation.isPending}
                       >
@@ -680,7 +681,7 @@ export default function AdminPage() {
                         批次標記已存在
                       </BatchButton>
                       <BatchButton
-                        variant="reject"
+                        $variant="reject"
                         onClick={() =>
                           setRejectingArtist({ id: 'batch', stageName: '選中的偶像' } as Artist)
                         }
@@ -745,7 +746,7 @@ export default function AdminPage() {
                         actionButtons={
                           <ActionButtons>
                             <ActionButton
-                              variant="approve"
+                              $variant="approve"
                               onClick={() => handleApproveArtist(artist)}
                               disabled={approveArtistMutation.isPending}
                             >
@@ -753,7 +754,7 @@ export default function AdminPage() {
                               通過
                             </ActionButton>
                             <ActionButton
-                              variant="exists"
+                              $variant="exists"
                               onClick={() => handleExistsArtist(artist.id)}
                               disabled={markAsExistsMutation.isPending}
                             >
@@ -761,7 +762,7 @@ export default function AdminPage() {
                               已存在
                             </ActionButton>
                             <ActionButton
-                              variant="reject"
+                              $variant="reject"
                               onClick={() => setRejectingArtist(artist)}
                               disabled={rejectArtistMutation.isPending}
                             >
@@ -800,12 +801,12 @@ export default function AdminPage() {
                     event={event}
                     actionButtons={
                       <ActionButtons>
-                        <ActionButton variant="preview" onClick={() => handlePreviewEvent(event)}>
+                        <ActionButton $variant="preview" onClick={() => handlePreviewEvent(event)}>
                           <EyeIcon />
                           預覽
                         </ActionButton>
                         <ActionButton
-                          variant="approve"
+                          $variant="approve"
                           onClick={() => handleApproveEvent(event.id)}
                           disabled={approveEventMutation.isPending}
                         >
@@ -813,7 +814,7 @@ export default function AdminPage() {
                           通過
                         </ActionButton>
                         <ActionButton
-                          variant="reject"
+                          $variant="reject"
                           onClick={() => setRejectingEvent(event)}
                           disabled={rejectEventMutation.isPending}
                         >

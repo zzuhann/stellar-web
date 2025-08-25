@@ -54,13 +54,13 @@ const Description = styled.div`
   -webkit-box-orient: vertical;
 `;
 
-const ImageContainer = styled.div<{ imageUrl: string }>`
+const ImageContainer = styled.div<{ $imageUrl: string }>`
   width: 100px;
   height: 100px;
   min-width: 100px;
   min-height: 100px;
   border-radius: var(--radius-lg);
-  background-image: url(${(props) => props.imageUrl});
+  background-image: url(${(props) => props.$imageUrl});
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -94,7 +94,7 @@ const EventCard = ({ event, onClick }: EventCardProps) => {
           </Description>
         </DescriptionContainer>
       </InfoContainer>
-      <ImageContainer imageUrl={event.mainImage || ''} />
+      <ImageContainer $imageUrl={event.mainImage || ''} />
     </Container>
   );
 };

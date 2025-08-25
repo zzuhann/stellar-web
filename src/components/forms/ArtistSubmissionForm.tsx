@@ -198,7 +198,7 @@ const ButtonGroup = styled.div`
   }
 `;
 
-const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+const Button = styled.button<{ $variant?: 'primary' | 'secondary' }>`
   padding: 14px 24px;
   border-radius: var(--radius-lg);
   font-size: 16px;
@@ -213,7 +213,7 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   flex: 1;
 
   ${(props) =>
-    props.variant === 'primary'
+    props.$variant === 'primary'
       ? `
     background: var(--color-primary);
     border-color: var(--color-primary);
@@ -616,7 +616,7 @@ export default function ArtistSubmissionForm({
         <ButtonGroup>
           <Button
             type="button"
-            variant="primary"
+            $variant="primary"
             disabled={
               createArtistMutation.isPending || updateArtistMutation.isPending || isUploadingImage
             }
@@ -642,7 +642,7 @@ export default function ArtistSubmissionForm({
             )}
           </Button>
 
-          <Button type="button" variant="secondary" onClick={onCancel || (() => router.push('/'))}>
+          <Button type="button" $variant="secondary" onClick={onCancel || (() => router.push('/'))}>
             取消
           </Button>
         </ButtonGroup>

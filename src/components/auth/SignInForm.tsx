@@ -60,7 +60,7 @@ const Spinner = styled.div`
   }
 `;
 
-const GoogleButton = styled.button<{ loading?: boolean }>`
+const GoogleButton = styled.button<{ $loading?: boolean }>`
   width: 100%;
   padding: 14px 24px;
   border-radius: var(--radius-lg);
@@ -69,8 +69,8 @@ const GoogleButton = styled.button<{ loading?: boolean }>`
   color: var(--color-text-primary);
   font-size: 16px;
   font-weight: 600;
-  cursor: ${(props) => (props.loading ? 'not-allowed' : 'pointer')};
-  opacity: ${(props) => (props.loading ? 0.7 : 1)};
+  cursor: ${(props) => (props.$loading ? 'not-allowed' : 'pointer')};
+  opacity: ${(props) => (props.$loading ? 0.7 : 1)};
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -129,7 +129,7 @@ export default function SignInForm({ onSuccess }: SignInFormProps) {
       <GoogleButton
         type="button"
         onClick={handleGoogleSignIn}
-        loading={isGoogleLoading}
+        $loading={isGoogleLoading}
         disabled={isGoogleLoading}
       >
         {isGoogleLoading ? (

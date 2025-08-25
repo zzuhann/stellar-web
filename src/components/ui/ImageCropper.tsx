@@ -68,14 +68,14 @@ const ModalTitle = styled.h3`
   }
 `;
 
-const CropContainer = styled.div<{ width: number; height: number }>`
+const CropContainer = styled.div<{ $width: number; $height: number }>`
   position: relative;
   margin: 0 auto;
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  width: ${(props) => props.width}px;
-  height: ${(props) => props.height}px;
+  width: ${(props) => props.$width}px;
+  height: ${(props) => props.$height}px;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
@@ -83,16 +83,16 @@ const CropContainer = styled.div<{ width: number; height: number }>`
 `;
 
 const CropImage = styled.img<{
-  width: number;
-  height: number;
-  left: number;
-  top: number;
+  $width: number;
+  $height: number;
+  $left: number;
+  $top: number;
 }>`
   position: absolute;
-  width: ${(props) => props.width}px;
-  height: ${(props) => props.height}px;
-  left: ${(props) => props.left}px;
-  top: ${(props) => props.top}px;
+  width: ${(props) => props.$width}px;
+  height: ${(props) => props.$height}px;
+  left: ${(props) => props.$left}px;
+  top: ${(props) => props.$top}px;
   max-width: none;
   max-height: none;
   user-select: none;
@@ -103,33 +103,33 @@ const CropImage = styled.img<{
 `;
 
 const CropOverlay = styled.div<{
-  left: number;
-  top: number;
-  width: number;
-  height: number;
+  $left: number;
+  $top: number;
+  $width: number;
+  $height: number;
 }>`
   position: absolute;
-  left: ${(props) => props.left}px;
-  top: ${(props) => props.top}px;
-  width: ${(props) => props.width}px;
-  height: ${(props) => props.height}px;
+  left: ${(props) => props.$left}px;
+  top: ${(props) => props.$top}px;
+  width: ${(props) => props.$width}px;
+  height: ${(props) => props.$height}px;
   background: rgba(0, 0, 0, 0.4);
 `;
 
 const CropFrame = styled.div<{
-  left: number;
-  top: number;
-  width: number;
-  height: number;
+  $left: number;
+  $top: number;
+  $width: number;
+  $height: number;
   isCircle?: boolean;
   isDragging?: boolean;
   isResizing?: boolean;
 }>`
   position: absolute;
-  left: ${(props) => props.left}px;
-  top: ${(props) => props.top}px;
-  width: ${(props) => props.width}px;
-  height: ${(props) => props.height}px;
+  left: ${(props) => props.$left}px;
+  top: ${(props) => props.$top}px;
+  width: ${(props) => props.$width}px;
+  height: ${(props) => props.$height}px;
   border: 2px solid var(--color-primary);
   border-radius: ${(props) => (props.isCircle ? '50%' : '0')};
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
@@ -137,9 +137,9 @@ const CropFrame = styled.div<{
 `;
 
 const ResizeHandle = styled.div<{
-  left: number;
-  top: number;
-  cursor: string;
+  $left: number;
+  $top: number;
+  $cursor: string;
 }>`
   position: absolute;
   width: 20px;
@@ -148,9 +148,9 @@ const ResizeHandle = styled.div<{
   border: 2px solid white;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  left: ${(props) => props.left}px;
-  top: ${(props) => props.top}px;
-  cursor: ${(props) => props.cursor};
+  left: ${(props) => props.$left}px;
+  top: ${(props) => props.$top}px;
+  cursor: ${(props) => props.$cursor};
 
   @media (max-width: 768px) {
     width: 24px;
@@ -159,33 +159,33 @@ const ResizeHandle = styled.div<{
 `;
 
 const GridLine = styled.div<{
-  left?: string;
-  top?: string;
-  width?: string;
-  height?: string;
-  isVertical?: boolean;
+  $left?: string;
+  $top?: string;
+  $width?: string;
+  $height?: string;
+  $isVertical?: boolean;
 }>`
   position: absolute;
-  width: ${(props) => (props.isVertical ? '1px' : props.width || '100%')};
-  height: ${(props) => (props.isVertical ? props.height || '100%' : '1px')};
+  width: ${(props) => (props.$isVertical ? '1px' : props.$width || '100%')};
+  height: ${(props) => (props.$isVertical ? props.$height || '100%' : '1px')};
   background: white;
   opacity: 0.5;
-  left: ${(props) => props.left || '0'};
-  top: ${(props) => props.top || '0'};
+  left: ${(props) => props.$left || '0'};
+  top: ${(props) => props.$top || '0'};
   pointer-events: none;
 `;
 
 const GridContainer = styled.div<{
-  left: number;
-  top: number;
-  width: number;
-  height: number;
+  $left: number;
+  $top: number;
+  $width: number;
+  $height: number;
 }>`
   position: absolute;
-  left: ${(props) => props.left}px;
-  top: ${(props) => props.top}px;
-  width: ${(props) => props.width}px;
-  height: ${(props) => props.height}px;
+  left: ${(props) => props.$left}px;
+  top: ${(props) => props.$top}px;
+  width: ${(props) => props.$width}px;
+  height: ${(props) => props.$height}px;
   pointer-events: none;
 `;
 
@@ -201,7 +201,7 @@ const ButtonGroup = styled.div`
   gap: 12px;
 `;
 
-const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+const Button = styled.button<{ $variant?: 'primary' | 'secondary' }>`
   display: flex;
   align-items: center;
   gap: 8px;
@@ -214,7 +214,7 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   border: 1px solid;
 
   ${(props) =>
-    props.variant === 'primary'
+    props.$variant === 'primary'
       ? `
     background: var(--color-primary);
     border-color: var(--color-primary);
@@ -814,8 +814,8 @@ export default function ImageCropper({
 
         {/* 裁切區域 */}
         <CropContainer
-          width={containerSize.width}
-          height={containerSize.height}
+          $width={containerSize.width}
+          $height={containerSize.height}
           onMouseDown={handlePointerDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -831,10 +831,10 @@ export default function ImageCropper({
             ref={imageRef}
             src={imageUrl}
             alt="待裁切圖片"
-            width={imageSize.width * zoom}
-            height={imageSize.height * zoom}
-            left={imagePosition.x}
-            top={imagePosition.y}
+            $width={imageSize.width * zoom}
+            $height={imageSize.height * zoom}
+            $left={imagePosition.x}
+            $top={imagePosition.y}
             onLoad={handleImageLoad}
             onContextMenu={handleContextMenu}
             draggable={false}
@@ -844,30 +844,35 @@ export default function ImageCropper({
           {imageLoaded && (
             <>
               {/* 暗化區域 - 上方 */}
-              <CropOverlay left={0} top={0} width={containerSize.width} height={cropArea.y} />
+              <CropOverlay $left={0} $top={0} $width={containerSize.width} $height={cropArea.y} />
               {/* 暗化區域 - 下方 */}
               <CropOverlay
-                left={0}
-                top={cropArea.y + cropArea.height}
-                width={containerSize.width}
-                height={containerSize.height - (cropArea.y + cropArea.height)}
+                $left={0}
+                $top={cropArea.y + cropArea.height}
+                $width={containerSize.width}
+                $height={containerSize.height - (cropArea.y + cropArea.height)}
               />
               {/* 暗化區域 - 左側 */}
-              <CropOverlay left={0} top={cropArea.y} width={cropArea.x} height={cropArea.height} />
+              <CropOverlay
+                $left={0}
+                $top={cropArea.y}
+                $width={cropArea.x}
+                $height={cropArea.height}
+              />
               {/* 暗化區域 - 右側 */}
               <CropOverlay
-                left={cropArea.x + cropArea.width}
-                top={cropArea.y}
-                width={containerSize.width - (cropArea.x + cropArea.width)}
-                height={cropArea.height}
+                $left={cropArea.x + cropArea.width}
+                $top={cropArea.y}
+                $width={containerSize.width - (cropArea.x + cropArea.width)}
+                $height={cropArea.height}
               />
 
               {/* 裁切框邊界 */}
               <CropFrame
-                left={cropArea.x}
-                top={cropArea.y}
-                width={cropArea.width}
-                height={cropArea.height}
+                $left={cropArea.x}
+                $top={cropArea.y}
+                $width={cropArea.width}
+                $height={cropArea.height}
                 isCircle={cropShape === 'circle'}
                 isDragging={isDragging}
                 isResizing={isResizing}
@@ -876,41 +881,41 @@ export default function ImageCropper({
               {/* 調整大小的控制點 - 圓形和方形都顯示 */}
               <>
                 {/* 西北角 */}
-                <ResizeHandle left={cropArea.x} top={cropArea.y} cursor="nw-resize" />
+                <ResizeHandle $left={cropArea.x} $top={cropArea.y} $cursor="nw-resize" />
                 {/* 東北角 */}
                 <ResizeHandle
-                  left={cropArea.x + cropArea.width}
-                  top={cropArea.y}
-                  cursor="ne-resize"
+                  $left={cropArea.x + cropArea.width}
+                  $top={cropArea.y}
+                  $cursor="ne-resize"
                 />
                 {/* 西南角 */}
                 <ResizeHandle
-                  left={cropArea.x}
-                  top={cropArea.y + cropArea.height}
-                  cursor="sw-resize"
+                  $left={cropArea.x}
+                  $top={cropArea.y + cropArea.height}
+                  $cursor="sw-resize"
                 />
                 {/* 東南角 */}
                 <ResizeHandle
-                  left={cropArea.x + cropArea.width}
-                  top={cropArea.y + cropArea.height}
-                  cursor="se-resize"
+                  $left={cropArea.x + cropArea.width}
+                  $top={cropArea.y + cropArea.height}
+                  $cursor="se-resize"
                 />
               </>
 
               {/* 網格線 - 只在方形模式顯示 */}
               {cropShape === 'square' && (
                 <GridContainer
-                  left={cropArea.x}
-                  top={cropArea.y}
-                  width={cropArea.width}
-                  height={cropArea.height}
+                  $left={cropArea.x}
+                  $top={cropArea.y}
+                  $width={cropArea.width}
+                  $height={cropArea.height}
                 >
                   {/* 垂直線 */}
-                  <GridLine left="33.33%" height="100%" isVertical />
-                  <GridLine left="66.66%" height="100%" isVertical />
+                  <GridLine $left="33.33%" $height="100%" $isVertical />
+                  <GridLine $left="66.66%" $height="100%" $isVertical />
                   {/* 水平線 */}
-                  <GridLine top="33.33%" width="100%" />
-                  <GridLine top="66.66%" width="100%" />
+                  <GridLine $top="33.33%" $width="100%" />
+                  <GridLine $top="66.66%" $width="100%" />
                 </GridContainer>
               )}
             </>
@@ -920,11 +925,11 @@ export default function ImageCropper({
         {/* 操作按鈕 */}
         <ActionBar>
           <ButtonGroup>
-            <Button variant="secondary" onClick={onCancel}>
+            <Button $variant="secondary" onClick={onCancel}>
               <XMarkIcon className="h-4 w-4" />
               <span>取消</span>
             </Button>
-            <Button variant="primary" onClick={handleCrop} disabled={!imageLoaded}>
+            <Button $variant="primary" onClick={handleCrop} disabled={!imageLoaded}>
               <CheckIcon className="h-4 w-4" />
               <span>確認裁切</span>
             </Button>

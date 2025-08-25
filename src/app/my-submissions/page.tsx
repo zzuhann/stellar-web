@@ -54,7 +54,7 @@ const TabNav = styled.nav`
   padding: 4px;
 `;
 
-const TabButton = styled.button<{ active?: boolean }>`
+const TabButton = styled.button<{ $active?: boolean }>`
   flex: 1;
   padding: 8px 16px;
   border-radius: var(--radius-md);
@@ -63,12 +63,13 @@ const TabButton = styled.button<{ active?: boolean }>`
   transition: all 0.2s ease;
   cursor: pointer;
   border: none;
-  background: ${(props) => (props.active ? 'var(--color-primary)' : 'transparent')};
-  color: ${(props) => (props.active ? 'white' : 'var(--color-text-primary)')};
+  background: ${(props) => (props.$active ? 'var(--color-primary)' : 'transparent')};
+  color: ${(props) => (props.$active ? 'white' : 'var(--color-text-primary)')};
   position: relative;
 
   &:hover {
-    background: ${(props) => (props.active ? 'var(--color-primary)' : 'var(--color-border-light)')};
+    background: ${(props) =>
+      props.$active ? 'var(--color-primary)' : 'var(--color-border-light)'};
   }
 `;
 
@@ -201,7 +202,7 @@ const ActionButtons = styled.div`
   margin-top: 8px;
 `;
 
-const ActionButton = styled.button<{ variant: 'edit' | 'delete' }>`
+const ActionButton = styled.button<{ $variant: 'edit' | 'delete' }>`
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -214,7 +215,7 @@ const ActionButton = styled.button<{ variant: 'edit' | 'delete' }>`
   border: 1px solid;
 
   ${(props) => {
-    if (props.variant === 'edit') {
+    if (props.$variant === 'edit') {
       return `
         background: var(--color-bg-primary);
         border-color: var(--color-border-light);
@@ -415,11 +416,11 @@ function MySubmissionsContent() {
           {/* 標籤頁 */}
           <TabContainer>
             <TabNav>
-              <TabButton active={activeTab === 'events'} onClick={() => handleTabChange('events')}>
+              <TabButton $active={activeTab === 'events'} onClick={() => handleTabChange('events')}>
                 生咖投稿
               </TabButton>
               <TabButton
-                active={activeTab === 'artists'}
+                $active={activeTab === 'artists'}
                 onClick={() => handleTabChange('artists')}
               >
                 偶像投稿
@@ -462,7 +463,7 @@ function MySubmissionsContent() {
                             <ActionButtons>
                               {artist.status === 'rejected' && (
                                 <ActionButton
-                                  variant="edit"
+                                  $variant="edit"
                                   onClick={(e) => handleEditArtist(e, artist)}
                                   title="編輯並重新送審"
                                 >
@@ -509,7 +510,7 @@ function MySubmissionsContent() {
                       actionButtons={
                         <ActionButtons>
                           <ActionButton
-                            variant="edit"
+                            $variant="edit"
                             onClick={(e) => handlePreviewEvent(e, event)}
                             title="預覽生咖"
                           >
@@ -517,7 +518,7 @@ function MySubmissionsContent() {
                             預覽
                           </ActionButton>
                           <ActionButton
-                            variant="edit"
+                            $variant="edit"
                             onClick={(e) => handleEditEvent(e, event)}
                             title="編輯生咖"
                           >
@@ -525,7 +526,7 @@ function MySubmissionsContent() {
                             編輯
                           </ActionButton>
                           <ActionButton
-                            variant="delete"
+                            $variant="delete"
                             onClick={(e) => handleDeleteEvent(e, event)}
                             disabled={deleteEventMutation.isPending}
                             title="刪除生咖"

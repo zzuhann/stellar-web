@@ -20,10 +20,10 @@ const DatePickerContainer = styled.div`
   width: 100%;
 `;
 
-const DateInput = styled.button<{ error?: boolean; disabled?: boolean }>`
+const DateInput = styled.button<{ $error?: boolean; $disabled?: boolean }>`
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid ${(props) => (props.error ? '#ef4444' : 'var(--color-border-light)')};
+  border: 1px solid ${(props) => (props.$error ? '#ef4444' : 'var(--color-border-light)')};
   border-radius: var(--radius-lg);
   background: var(--color-bg-primary);
   color: var(--color-text-primary);
@@ -32,8 +32,8 @@ const DateInput = styled.button<{ error?: boolean; disabled?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
-  opacity: ${(props) => (props.disabled ? 0.6 : 1)};
+  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
+  opacity: ${(props) => (props.$disabled ? 0.6 : 1)};
 
   &:hover:not(:disabled) {
     border-color: var(--color-border-medium);
@@ -145,23 +145,24 @@ const YearMonthGrid = styled.div`
   margin-top: 8px;
 `;
 
-const YearMonthButton = styled.button<{ isSelected?: boolean }>`
+const YearMonthButton = styled.button<{ $isSelected?: boolean }>`
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 8px 4px;
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
-  background: ${(props) => (props.isSelected ? 'var(--color-primary)' : 'var(--color-bg-primary)')};
-  color: ${(props) => (props.isSelected ? 'white' : 'var(--color-text-primary)')};
+  background: ${(props) =>
+    props.$isSelected ? 'var(--color-primary)' : 'var(--color-bg-primary)'};
+  color: ${(props) => (props.$isSelected ? 'white' : 'var(--color-text-primary)')};
   font-size: 13px;
-  font-weight: ${(props) => (props.isSelected ? '600' : '400')};
+  font-weight: ${(props) => (props.$isSelected ? '600' : '400')};
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
     background: ${(props) =>
-      props.isSelected ? 'var(--color-primary)' : 'var(--color-bg-secondary)'};
+      props.$isSelected ? 'var(--color-primary)' : 'var(--color-bg-secondary)'};
     border-color: var(--color-border-medium);
   }
 
@@ -201,10 +202,10 @@ const DaysGrid = styled.div`
 `;
 
 const DayButton = styled.button<{
-  isSelected?: boolean;
-  isToday?: boolean;
-  isOtherMonth?: boolean;
-  isDisabled?: boolean;
+  $isSelected?: boolean;
+  $isToday?: boolean;
+  $isOtherMonth?: boolean;
+  $isDisabled?: boolean;
 }>`
   display: flex;
   align-items: center;
@@ -214,24 +215,24 @@ const DayButton = styled.button<{
   border: none;
   border-radius: var(--radius-md);
   background: ${(props) => {
-    if (props.isSelected) return 'var(--color-primary)';
-    if (props.isToday) return 'var(--color-bg-secondary)';
+    if (props.$isSelected) return 'var(--color-primary)';
+    if (props.$isToday) return 'var(--color-bg-secondary)';
     return 'transparent';
   }};
   color: ${(props) => {
-    if (props.isSelected) return 'white';
-    if (props.isOtherMonth) return 'var(--color-text-disabled)';
-    if (props.isDisabled) return 'var(--color-text-disabled)';
+    if (props.$isSelected) return 'white';
+    if (props.$isOtherMonth) return 'var(--color-text-disabled)';
+    if (props.$isDisabled) return 'var(--color-text-disabled)';
     return 'var(--color-text-primary)';
   }};
   font-size: 13px;
-  font-weight: ${(props) => (props.isSelected || props.isToday ? '600' : '400')};
-  cursor: ${(props) => (props.isDisabled ? 'not-allowed' : 'pointer')};
+  font-weight: ${(props) => (props.$isSelected || props.$isToday ? '600' : '400')};
+  cursor: ${(props) => (props.$isDisabled ? 'not-allowed' : 'pointer')};
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
     background: ${(props) => {
-      if (props.isSelected) return 'var(--color-primary)';
+      if (props.$isSelected) return 'var(--color-primary)';
       return 'var(--color-bg-secondary)';
     }};
   }
@@ -380,7 +381,7 @@ export default function DatePicker({
       <Popover>
         {({ open: _open, close }) => (
           <>
-            <Popover.Button as={DateInput} error={error} disabled={disabled} type="button">
+            <Popover.Button as={DateInput} $error={error} $disabled={disabled} type="button">
               <div>
                 {value ? (
                   <DateDisplay>{formatDisplayDate(value)}</DateDisplay>
@@ -440,10 +441,10 @@ export default function DatePicker({
                           key={index}
                           type="button"
                           onClick={() => handleDateSelect(day, close)}
-                          isSelected={isSelected(day)}
-                          isToday={isToday(day)}
-                          isOtherMonth={!isCurrentMonth}
-                          isDisabled={isDisabled(day)}
+                          $isSelected={isSelected(day)}
+                          $isToday={isToday(day)}
+                          $isOtherMonth={!isCurrentMonth}
+                          $isDisabled={isDisabled(day)}
                         >
                           {day.getDate()}
                         </DayButton>
@@ -481,7 +482,7 @@ export default function DatePicker({
                           key={year}
                           type="button"
                           onClick={() => selectYear(year)}
-                          isSelected={year === new Date().getFullYear()}
+                          $isSelected={year === new Date().getFullYear()}
                         >
                           {year}
                         </YearMonthButton>
@@ -530,7 +531,7 @@ export default function DatePicker({
                         key={index}
                         type="button"
                         onClick={() => selectMonth(index)}
-                        isSelected={index === new Date().getMonth()}
+                        $isSelected={index === new Date().getMonth()}
                       >
                         {month}
                       </YearMonthButton>

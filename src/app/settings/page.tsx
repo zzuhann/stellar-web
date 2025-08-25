@@ -92,10 +92,10 @@ const Label = styled.label`
   color: var(--color-text-primary);
 `;
 
-const Input = styled.input<{ hasError?: boolean }>`
+const Input = styled.input<{ $hasError?: boolean }>`
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid ${(props) => (props.hasError ? '#ef4444' : 'var(--color-border-light)')};
+  border: 2px solid ${(props) => (props.$hasError ? '#ef4444' : 'var(--color-border-light)')};
   border-radius: var(--radius-md);
   font-size: 16px;
   transition: all 0.2s ease;
@@ -104,7 +104,7 @@ const Input = styled.input<{ hasError?: boolean }>`
 
   &:focus {
     outline: none;
-    border-color: ${(props) => (props.hasError ? '#ef4444' : 'var(--color-primary)')};
+    border-color: ${(props) => (props.$hasError ? '#ef4444' : 'var(--color-primary)')};
   }
 
   &:disabled {
@@ -127,7 +127,7 @@ const ButtonGroup = styled.div`
   margin-top: 8px;
 `;
 
-const Button = styled.button<{ variant: 'primary' | 'secondary' }>`
+const Button = styled.button<{ $variant: 'primary' | 'secondary' }>`
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -140,7 +140,7 @@ const Button = styled.button<{ variant: 'primary' | 'secondary' }>`
   border: 1px solid;
 
   ${(props) => {
-    if (props.variant === 'primary') {
+    if (props.$variant === 'primary') {
       return `
         background: var(--color-primary);
         border-color: var(--color-primary);
@@ -313,7 +313,7 @@ export default function SettingsPage() {
                 <Input
                   id="displayName"
                   type="text"
-                  hasError={!!errors.displayName}
+                  $hasError={!!errors.displayName}
                   disabled={updateProfileMutation.isPending}
                   {...register('displayName')}
                 />
@@ -324,7 +324,7 @@ export default function SettingsPage() {
                 {hasChanges && (
                   <Button
                     type="button"
-                    variant="secondary"
+                    $variant="secondary"
                     onClick={handleCancel}
                     disabled={updateProfileMutation.isPending}
                   >
@@ -333,7 +333,7 @@ export default function SettingsPage() {
                 )}
                 <Button
                   type="button"
-                  variant="primary"
+                  $variant="primary"
                   onClick={handleSave}
                   disabled={updateProfileMutation.isPending || !hasChanges}
                 >

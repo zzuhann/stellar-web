@@ -153,9 +153,9 @@ const CTAButton = styled.button`
 `;
 
 const LocationButton = styled.button<{
-  loading?: boolean;
-  hasLocation?: boolean;
-  visible?: boolean;
+  $loading?: boolean;
+  $hasLocation?: boolean;
+  $visible?: boolean;
 }>`
   position: absolute;
   bottom: 100px;
@@ -170,12 +170,12 @@ const LocationButton = styled.button<{
   background: var(--color-bg-primary);
   border: 1px solid var(--color-border-light);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  cursor: ${(props) => (props.loading ? 'not-allowed' : 'pointer')};
+  cursor: ${(props) => (props.$loading ? 'not-allowed' : 'pointer')};
   color: var(--color-text-primary);
   transition: all 0.2s ease;
-  opacity: ${(props) => (props.visible ? 1 : 0)};
-  transform: ${(props) => (props.visible ? 'scale(1)' : 'scale(0.8)')};
-  pointer-events: ${(props) => (props.visible ? 'auto' : 'none')};
+  opacity: ${(props) => (props.$visible ? 1 : 0)};
+  transform: ${(props) => (props.$visible ? 'scale(1)' : 'scale(0.8)')};
+  pointer-events: ${(props) => (props.$visible ? 'auto' : 'none')};
 
   &:hover:not(:disabled) {
     background: var(--color-bg-secondary);
@@ -286,12 +286,12 @@ const LoadingSpinnerLarge = styled.div`
   }
 `;
 
-const ProfileImageContainer = styled.div<{ imageUrl: string }>`
+const ProfileImageContainer = styled.div<{ $imageUrl: string }>`
   width: 80px;
   height: 80px;
   border-radius: 50%;
   overflow: hidden;
-  background-image: url(${(props) => props.imageUrl});
+  background-image: url(${(props) => props.$imageUrl});
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -617,9 +617,9 @@ export default function MapPageStyled() {
           <LocationButton
             onClick={handleLocateMe}
             disabled={locationLoading}
-            loading={locationLoading}
-            hasLocation={!!(latitude && longitude)}
-            visible={shouldShowLocationButton()}
+            $loading={locationLoading}
+            $hasLocation={!!(latitude && longitude)}
+            $visible={shouldShowLocationButton()}
           >
             {locationLoading ? <LoadingSpinner /> : <MapPinIcon />}
           </LocationButton>
@@ -661,7 +661,7 @@ export default function MapPageStyled() {
               ) : (
                 <>
                   <EmptyState>
-                    <ProfileImageContainer imageUrl={artistData?.profileImage || ''} />
+                    <ProfileImageContainer $imageUrl={artistData?.profileImage || ''} />
                     <h3>目前{artistData?.stageName}沒有生咖</h3>
                   </EmptyState>
                   <CTAButton

@@ -14,11 +14,11 @@ const ArtistCardContainer = styled.div`
   box-shadow: var(--shadow-sm);
 `;
 
-const ArtistAvatar = styled.div<{ avatarUrl: string }>`
+const ArtistAvatar = styled.div<{ $avatarUrl: string }>`
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background-image: url(${(props) => props.avatarUrl});
+  background-image: url(${(props) => props.$avatarUrl});
   background-size: cover;
   background-position: center;
 `;
@@ -89,10 +89,12 @@ const ArtistCard = ({ artist, handleArtistClick }: ArtistCardProps) => {
 
   return (
     <ArtistCardContainer key={artist.id} onClick={() => handleArtistClick(artist)}>
-      <ArtistAvatar avatarUrl={artist.profileImage ?? ''} />
+      <ArtistAvatar $avatarUrl={artist.profileImage ?? ''} />
 
       <ArtistInfo>
-        <ArtistName>{artist.stageName}</ArtistName>
+        <ArtistName>
+          {artist.stageName.toUpperCase()} {artist.realName}
+        </ArtistName>
         <ArtistBirthday>
           <span className="birthday-label">🎂: </span>
           <span className="birthday-date">{birthdayText}</span>

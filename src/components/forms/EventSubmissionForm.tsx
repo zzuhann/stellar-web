@@ -186,9 +186,9 @@ const ErrorText = styled.p`
   margin: 4px 0 0 0;
 `;
 
-const CharacterCount = styled.div<{ isOverLimit: boolean }>`
+const CharacterCount = styled.div<{ $isOverLimit: boolean }>`
   font-size: 12px;
-  color: ${(props) => (props.isOverLimit ? '#ef4444' : 'var(--color-text-secondary)')};
+  color: ${(props) => (props.$isOverLimit ? '#ef4444' : 'var(--color-text-secondary)')};
   text-align: right;
   margin-top: 4px;
 `;
@@ -225,7 +225,7 @@ const ButtonGroup = styled.div`
   }
 `;
 
-const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
+const Button = styled.button<{ $variant?: 'primary' | 'secondary' }>`
   padding: 14px 24px;
   border-radius: var(--radius-lg);
   font-size: 16px;
@@ -240,7 +240,7 @@ const Button = styled.button<{ variant?: 'primary' | 'secondary' }>`
   flex: 1;
 
   ${(props) =>
-    props.variant === 'primary'
+    props.$variant === 'primary'
       ? `
     background: var(--color-primary);
     border-color: var(--color-primary);
@@ -360,7 +360,7 @@ const StepIndicator = styled.div`
   gap: 16px;
 `;
 
-const Step = styled.div<{ active: boolean; completed: boolean }>`
+const Step = styled.div<{ $active: boolean; $completed: boolean }>`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -378,12 +378,12 @@ const Step = styled.div<{ active: boolean; completed: boolean }>`
     transition: all 0.2s ease;
 
     ${(props) => {
-      if (props.completed) {
+      if (props.$completed) {
         return `
           background: var(--color-primary);
           color: white;
         `;
-      } else if (props.active) {
+      } else if (props.$active) {
         return `
           background: var(--color-primary);
           color: white;
@@ -402,17 +402,17 @@ const Step = styled.div<{ active: boolean; completed: boolean }>`
     font-size: 14px;
     font-weight: 500;
     color: ${(props) =>
-      props.active || props.completed
+      props.$active || props.$completed
         ? 'var(--color-text-primary)'
         : 'var(--color-text-secondary)'};
   }
 `;
 
-const StepConnector = styled.div<{ completed: boolean }>`
+const StepConnector = styled.div<{ $completed: boolean }>`
   width: 40px;
   height: 2px;
   background: ${(props) =>
-    props.completed ? 'var(--color-primary)' : 'var(--color-border-light)'};
+    props.$completed ? 'var(--color-primary)' : 'var(--color-border-light)'};
   transition: all 0.2s ease;
 `;
 
@@ -854,12 +854,12 @@ export default function EventSubmissionForm({
       {/* 步驟指示器 - 只在創建模式顯示 */}
       {mode === 'create' && (
         <StepIndicator>
-          <Step active={currentStep === 1} completed={currentStep > 1}>
+          <Step $active={currentStep === 1} $completed={currentStep > 1}>
             <div className="step-number">1</div>
             <div className="step-title">選擇偶像</div>
           </Step>
-          <StepConnector completed={currentStep > 1} />
-          <Step active={currentStep === 2} completed={false}>
+          <StepConnector $completed={currentStep > 1} />
+          <Step $active={currentStep === 2} $completed={false}>
             <div className="step-number">2</div>
             <div className="step-title">生咖資訊</div>
           </Step>
@@ -1059,7 +1059,7 @@ export default function EventSubmissionForm({
                 placeholder="描述生咖內容與資訊，例如：時間/領取應援/注意事項等等"
                 {...register('description')}
               />
-              <CharacterCount isOverLimit={(watch('description')?.length || 0) > 1500}>
+              <CharacterCount $isOverLimit={(watch('description')?.length || 0) > 1500}>
                 {watch('description')?.length || 0} / 1500
               </CharacterCount>
               {errors.description && <ErrorText>{errors.description.message}</ErrorText>}
@@ -1143,12 +1143,12 @@ export default function EventSubmissionForm({
           {mode === 'create' && currentStep === 1 ? (
             // 第一步：下一步按鈕
             <>
-              <Button type="button" variant="primary" onClick={handleNextStep}>
+              <Button type="button" $variant="primary" onClick={handleNextStep}>
                 下一步
               </Button>
               <Button
                 type="button"
-                variant="secondary"
+                $variant="secondary"
                 onClick={onCancel || (() => router.push('/'))}
               >
                 取消
@@ -1157,12 +1157,12 @@ export default function EventSubmissionForm({
           ) : mode === 'create' && currentStep === 2 ? (
             // 第二步：上一步 + 提交按鈕
             <>
-              <Button type="button" variant="secondary" onClick={handlePrevStep}>
+              <Button type="button" $variant="secondary" onClick={handlePrevStep}>
                 上一步
               </Button>
               <Button
                 type="button"
-                variant="primary"
+                $variant="primary"
                 disabled={createEventMutation.isPending}
                 onClick={handleSubmit(onSubmit)}
               >
@@ -1181,7 +1181,7 @@ export default function EventSubmissionForm({
             <>
               <Button
                 type="button"
-                variant="primary"
+                $variant="primary"
                 disabled={updateEventMutation.isPending || resubmitEventMutation.isPending}
                 onClick={handleSubmit(onSubmit)}
               >
@@ -1203,7 +1203,7 @@ export default function EventSubmissionForm({
               </Button>
               <Button
                 type="button"
-                variant="secondary"
+                $variant="secondary"
                 onClick={onCancel || (() => router.push('/'))}
               >
                 取消

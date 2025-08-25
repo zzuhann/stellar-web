@@ -79,7 +79,7 @@ const ModalFooter = styled.div`
   padding: 0 20px 20px 20px;
 `;
 
-const Button = styled.button<{ variant: 'cancel' | 'confirm' }>`
+const Button = styled.button<{ $variant: 'cancel' | 'confirm' }>`
   flex: 1;
   padding: 10px 16px;
   border-radius: var(--radius-lg);
@@ -90,7 +90,7 @@ const Button = styled.button<{ variant: 'cancel' | 'confirm' }>`
   border: 1px solid;
 
   ${(props) => {
-    if (props.variant === 'cancel') {
+    if (props.$variant === 'cancel') {
       return `
         background: var(--color-bg-primary);
         border-color: var(--color-border-light);
@@ -163,10 +163,10 @@ export default function ConfirmModal({
           <ModalMessage>{message}</ModalMessage>
         </ModalBody>
         <ModalFooter>
-          <Button variant="cancel" onClick={onCancel} disabled={isLoading}>
+          <Button $variant="cancel" onClick={onCancel} disabled={isLoading}>
             {cancelText}
           </Button>
-          <Button variant="confirm" onClick={onConfirm} disabled={isLoading}>
+          <Button $variant="confirm" onClick={onConfirm} disabled={isLoading}>
             {isLoading ? '處理中...' : confirmText}
           </Button>
         </ModalFooter>

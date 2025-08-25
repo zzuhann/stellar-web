@@ -83,9 +83,9 @@ const ActionButtonsContainer = styled.div`
   }
 `;
 
-const ActionButton = styled.button<{ variant: 'move' | 'remove' }>`
+const ActionButton = styled.button<{ $variant: 'move' | 'remove' }>`
   background: ${(props) =>
-    props.variant === 'remove' ? 'rgba(220, 53, 69, 0.9)' : 'rgba(0, 0, 0, 0.7)'};
+    props.$variant === 'remove' ? 'rgba(220, 53, 69, 0.9)' : 'rgba(0, 0, 0, 0.7)'};
   color: white;
   border: none;
   border-radius: 50%;
@@ -99,7 +99,7 @@ const ActionButton = styled.button<{ variant: 'move' | 'remove' }>`
 
   &:hover:not(:disabled) {
     background: ${(props) =>
-      props.variant === 'remove' ? 'rgba(220, 53, 69, 1)' : 'rgba(0, 0, 0, 0.9)'};
+      props.$variant === 'remove' ? 'rgba(220, 53, 69, 1)' : 'rgba(0, 0, 0, 0.9)'};
     transform: scale(1.1);
   }
 
@@ -167,26 +167,26 @@ const LoadingSpinner = styled.div`
   }
 `;
 
-const UploadCard = styled.div<{ isDragOver?: boolean; disabled?: boolean }>`
+const UploadCard = styled.div<{ $isDragOver?: boolean; $disabled?: boolean }>`
   aspect-ratio: 1;
   border: 2px dashed
-    ${(props) => (props.isDragOver ? 'var(--color-primary)' : 'var(--color-border-light)')};
+    ${(props) => (props.$isDragOver ? 'var(--color-primary)' : 'var(--color-border-light)')};
   border-radius: var(--radius-lg);
   background: ${(props) =>
-    props.isDragOver ? 'rgba(90, 125, 154, 0.1)' : 'var(--color-bg-secondary)'};
+    props.$isDragOver ? 'rgba(90, 125, 154, 0.1)' : 'var(--color-bg-secondary)'};
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
+  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
   transition: all 0.2s ease;
-  opacity: ${(props) => (props.disabled ? 0.5 : 1)};
+  opacity: ${(props) => (props.$disabled ? 0.5 : 1)};
 
   &:hover {
     border-color: ${(props) =>
-      props.disabled ? 'var(--color-border-light)' : 'var(--color-border-medium)'};
+      props.$disabled ? 'var(--color-border-light)' : 'var(--color-border-medium)'};
     background: ${(props) =>
-      props.disabled ? 'var(--color-bg-secondary)' : 'var(--color-bg-tertiary)'};
+      props.$disabled ? 'var(--color-bg-secondary)' : 'var(--color-bg-tertiary)'};
   }
 `;
 
@@ -464,7 +464,7 @@ export default function MultiImageUpload({
               {index > 0 && (
                 <ActionButton
                   type="button"
-                  variant="move"
+                  $variant="move"
                   onClick={(e) => {
                     e.stopPropagation();
                     moveImageLeft(index);
@@ -479,7 +479,7 @@ export default function MultiImageUpload({
               {/* 移除按鈕 */}
               <ActionButton
                 type="button"
-                variant="remove"
+                $variant="remove"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeImage(index);
@@ -494,7 +494,7 @@ export default function MultiImageUpload({
               {index < images.length - 1 && (
                 <ActionButton
                   type="button"
-                  variant="move"
+                  $variant="move"
                   onClick={(e) => {
                     e.stopPropagation();
                     moveImageRight(index);
@@ -517,8 +517,8 @@ export default function MultiImageUpload({
 
         {canAddMore && (
           <UploadCard
-            isDragOver={isDragOver}
-            disabled={disabled || isAnyUploading}
+            $isDragOver={isDragOver}
+            $disabled={disabled || isAnyUploading}
             onClick={handleAddClick}
             onDragOver={handleFileDragOver}
             onDragLeave={handleFileDragLeave}

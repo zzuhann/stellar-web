@@ -17,7 +17,7 @@ interface ArtistSearchModalProps {
 }
 
 // Styled Components
-const ModalOverlay = styled.div<{ isOpen: boolean }>`
+const ModalOverlay = styled.div<{ $isOpen: boolean }>`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
@@ -25,8 +25,8 @@ const ModalOverlay = styled.div<{ isOpen: boolean }>`
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  opacity: ${(props) => (props.isOpen ? 1 : 0)};
-  visibility: ${(props) => (props.isOpen ? 'visible' : 'hidden')};
+  opacity: ${(props) => (props.$isOpen ? 1 : 0)};
+  visibility: ${(props) => (props.$isOpen ? 'visible' : 'hidden')};
   transition:
     opacity 0.3s ease-out,
     visibility 0.3s ease-out;
@@ -36,7 +36,7 @@ const ModalOverlay = styled.div<{ isOpen: boolean }>`
   }
 `;
 
-const ModalContent = styled.div<{ isOpen: boolean }>`
+const ModalContent = styled.div<{ $isOpen: boolean }>`
   background: var(--color-bg-primary);
   width: 100%;
   max-width: 600px;
@@ -45,7 +45,7 @@ const ModalContent = styled.div<{ isOpen: boolean }>`
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transform: ${(props) => (props.isOpen ? 'translateY(0)' : 'translateY(100%)')};
+  transform: ${(props) => (props.$isOpen ? 'translateY(0)' : 'translateY(100%)')};
   transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 
   @media (min-width: 768px) {
@@ -54,7 +54,7 @@ const ModalContent = styled.div<{ isOpen: boolean }>`
     min-height: 60vh;
     max-height: 80vh;
     transform: ${(props) =>
-      props.isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(20px)'};
+      props.$isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(20px)'};
     transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
   }
 `;
@@ -251,8 +251,8 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
   const hasResults = searchResults.length > 0;
 
   return (
-    <ModalOverlay isOpen={isOpen} onClick={onClose}>
-      <ModalContent isOpen={isOpen} onClick={(e) => e.stopPropagation()}>
+    <ModalOverlay $isOpen={isOpen} onClick={onClose}>
+      <ModalContent $isOpen={isOpen} onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
           <SearchInputContainer>
             <MagnifyingGlassIcon />

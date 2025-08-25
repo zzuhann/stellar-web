@@ -117,12 +117,12 @@ const ArtistItem = styled.div`
   gap: 6px;
 `;
 
-const ArtistAvatar = styled.div<{ imageUrl?: string }>`
+const ArtistAvatar = styled.div<{ $imageUrl?: string }>`
   width: 24px;
   height: 24px;
   border-radius: 50%;
   overflow: hidden;
-  background-image: url(${(props) => props.imageUrl ?? ''});
+  background-image: url(${(props) => props.$imageUrl ?? ''});
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -289,7 +289,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
               <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
                 {index > 0 && <ArtistSeparator>/</ArtistSeparator>}
                 <ArtistItem onClick={() => router.push(`/map?artistId=${artist.id}`)}>
-                  <ArtistAvatar imageUrl={artist.profileImage} />
+                  <ArtistAvatar $imageUrl={artist.profileImage} />
                   <ArtistName>{artist.name || 'Unknown Artist'}</ArtistName>
                 </ArtistItem>
               </div>
