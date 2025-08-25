@@ -635,7 +635,7 @@ export default function MapPageStyled() {
                   '目前查看中的生咖'
                 ) : (
                   <>
-                    {artistData?.stageName} |{' '}
+                    {artistData?.stageName?.toUpperCase()} {artistData?.realName} |{' '}
                     {mapEvents.length > 0 ? `${mapEvents.length} 個生咖` : '目前沒有生咖'}
                   </>
                 )}
