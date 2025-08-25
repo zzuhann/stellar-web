@@ -3,6 +3,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
+import { useScrollLock } from '@/hooks/useScrollLock';
 
 interface CropArea {
   x: number;
@@ -68,31 +69,37 @@ const ModalTitle = styled.h3`
   }
 `;
 
-const CropContainer = styled.div<{ $width: number; $height: number }>`
+const CropContainer = styled.div.attrs<{ $width: number; $height: number }>((props) => ({
+  style: {
+    width: `${props.$width}px`,
+    height: `${props.$height}px`,
+  },
+}))`
   position: relative;
   margin: 0 auto;
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  width: ${(props) => props.$width}px;
-  height: ${(props) => props.$height}px;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
 `;
 
-const CropImage = styled.img<{
+const CropImage = styled.img.attrs<{
   $width: number;
   $height: number;
   $left: number;
   $top: number;
-}>`
+}>((props) => ({
+  style: {
+    width: `${props.$width}px`,
+    height: `${props.$height}px`,
+    left: `${props.$left}px`,
+    top: `${props.$top}px`,
+  },
+}))`
   position: absolute;
-  width: ${(props) => props.$width}px;
-  height: ${(props) => props.$height}px;
-  left: ${(props) => props.$left}px;
-  top: ${(props) => props.$top}px;
   max-width: none;
   max-height: none;
   user-select: none;
@@ -102,21 +109,24 @@ const CropImage = styled.img<{
   pointer-events: none; /* 讓圖片本身不響應事件，由容器處理 */
 `;
 
-const CropOverlay = styled.div<{
+const CropOverlay = styled.div.attrs<{
   $left: number;
   $top: number;
   $width: number;
   $height: number;
-}>`
+}>((props) => ({
+  style: {
+    left: `${props.$left}px`,
+    top: `${props.$top}px`,
+    width: `${props.$width}px`,
+    height: `${props.$height}px`,
+  },
+}))`
   position: absolute;
-  left: ${(props) => props.$left}px;
-  top: ${(props) => props.$top}px;
-  width: ${(props) => props.$width}px;
-  height: ${(props) => props.$height}px;
   background: rgba(0, 0, 0, 0.4);
 `;
 
-const CropFrame = styled.div<{
+const CropFrame = styled.div.attrs<{
   $left: number;
   $top: number;
   $width: number;
@@ -124,23 +134,32 @@ const CropFrame = styled.div<{
   isCircle?: boolean;
   isDragging?: boolean;
   isResizing?: boolean;
-}>`
+}>((props) => ({
+  style: {
+    left: `${props.$left}px`,
+    top: `${props.$top}px`,
+    width: `${props.$width}px`,
+    height: `${props.$height}px`,
+    borderRadius: props.isCircle ? '50%' : '0',
+    cursor: props.isDragging ? 'grabbing' : props.isResizing ? 'resize' : 'grab',
+  },
+}))`
   position: absolute;
-  left: ${(props) => props.$left}px;
-  top: ${(props) => props.$top}px;
-  width: ${(props) => props.$width}px;
-  height: ${(props) => props.$height}px;
   border: 2px solid var(--color-primary);
-  border-radius: ${(props) => (props.isCircle ? '50%' : '0')};
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
-  cursor: ${(props) => (props.isDragging ? 'grabbing' : props.isResizing ? 'resize' : 'grab')};
 `;
 
-const ResizeHandle = styled.div<{
+const ResizeHandle = styled.div.attrs<{
   $left: number;
   $top: number;
   $cursor: string;
-}>`
+}>((props) => ({
+  style: {
+    left: `${props.$left}px`,
+    top: `${props.$top}px`,
+    cursor: props.$cursor,
+  },
+}))`
   position: absolute;
   width: 20px;
   height: 20px;
@@ -148,9 +167,6 @@ const ResizeHandle = styled.div<{
   border: 2px solid white;
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  left: ${(props) => props.$left}px;
-  top: ${(props) => props.$top}px;
-  cursor: ${(props) => props.$cursor};
 
   @media (max-width: 768px) {
     width: 24px;
@@ -175,17 +191,20 @@ const GridLine = styled.div<{
   pointer-events: none;
 `;
 
-const GridContainer = styled.div<{
+const GridContainer = styled.div.attrs<{
   $left: number;
   $top: number;
   $width: number;
   $height: number;
-}>`
+}>((props) => ({
+  style: {
+    left: `${props.$left}px`,
+    top: `${props.$top}px`,
+    width: `${props.$width}px`,
+    height: `${props.$height}px`,
+  },
+}))`
   position: absolute;
-  left: ${(props) => props.$left}px;
-  top: ${(props) => props.$top}px;
-  width: ${(props) => props.$width}px;
-  height: ${(props) => props.$height}px;
   pointer-events: none;
 `;
 
@@ -268,8 +287,7 @@ export default function ImageCropper({
   const [cropArea, setCropArea] = useState<CropArea>({ x: 0, y: 0, width: 200, height: 200 });
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-  const [zoom, setZoom] = useState(1); // 縮放比例
-  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 }); // 圖片位置
+  // 移除圖片縮放功能，只保留裁切範圍調整
 
   // 圖片載入後設定初始裁切區域
   const handleImageLoad = useCallback(() => {
@@ -301,9 +319,6 @@ export default function ImageCropper({
     setImageSize({ width: displayWidth, height: displayHeight });
     setContainerSize({ width: containerWidth, height: containerHeight });
 
-    // 圖片位置設為 (0,0)，填滿整個容器
-    setImagePosition({ x: 0, y: 0 });
-
     // 設定初始裁切區域
     if (initialCropArea) {
       // 如果有之前的裁切區域，使用它
@@ -326,18 +341,15 @@ export default function ImageCropper({
 
   // 獲取圖片的實際邊界
   const getImageBounds = useCallback(() => {
-    const currentImageWidth = imageSize.width * zoom;
-    const currentImageHeight = imageSize.height * zoom;
-
     return {
-      left: imagePosition.x,
-      top: imagePosition.y,
-      right: imagePosition.x + currentImageWidth,
-      bottom: imagePosition.y + currentImageHeight,
-      width: currentImageWidth,
-      height: currentImageHeight,
+      left: 0,
+      top: 0,
+      right: imageSize.width,
+      bottom: imageSize.height,
+      width: imageSize.width,
+      height: imageSize.height,
     };
-  }, [imageSize, imagePosition, zoom]);
+  }, [imageSize]);
 
   // 檢查是否點擊在調整大小的控制點上
   const getResizeHandle = useCallback(
@@ -400,39 +412,6 @@ export default function ImageCropper({
     [cropArea, getResizeHandle]
   );
 
-  // 處理觸控事件
-  const handleTouchStart = useCallback(
-    (e: React.TouchEvent) => {
-      e.preventDefault(); // 防止觸控預設行為
-      if (e.touches.length === 1) {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = e.touches[0].clientX - rect.left;
-        const y = e.touches[0].clientY - rect.top;
-
-        // 檢查是否點擊在調整大小的控制點上
-        const handle = getResizeHandle(x, y);
-        if (handle) {
-          setIsResizing(true);
-          setResizeHandle(handle);
-          setDragStart({ x, y });
-          return;
-        }
-
-        // 檢查是否點擊在裁切區域內（移動）
-        if (
-          x >= cropArea.x &&
-          x <= cropArea.x + cropArea.width &&
-          y >= cropArea.y &&
-          y <= cropArea.y + cropArea.height
-        ) {
-          setIsDragging(true);
-          setDragStart({ x: x - cropArea.x, y: y - cropArea.y });
-        }
-      }
-    },
-    [cropArea, getResizeHandle]
-  );
-
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
       if (!isDragging && !isResizing) return;
@@ -443,117 +422,8 @@ export default function ImageCropper({
       const imageBounds = getImageBounds();
 
       if (isResizing) {
-        // 調整大小邏輯
-        const deltaX = x - dragStart.x;
-        const minSize = 50; // 最小裁切框大小
-
-        setCropArea((prev) => {
-          const newCrop = { ...prev };
-
-          switch (resizeHandle) {
-            case 'se': // 東南角
-              // 限制寬度不超過右邊界和底邊界
-              const maxWidthSE = imageBounds.right - prev.x;
-              const maxHeightSE = imageBounds.bottom - prev.y;
-              const maxSizeSE =
-                aspectRatio === 1
-                  ? Math.min(maxWidthSE, maxHeightSE)
-                  : Math.min(maxWidthSE, maxHeightSE * aspectRatio);
-
-              newCrop.width = Math.max(minSize, Math.min(maxSizeSE, prev.width + deltaX));
-              newCrop.height = aspectRatio === 1 ? newCrop.width : newCrop.width / aspectRatio;
-              break;
-            case 'sw': // 西南角
-              const maxWidthSW = prev.x + prev.width - imageBounds.left;
-              const maxHeightSW = imageBounds.bottom - prev.y;
-              const maxSizeSW =
-                aspectRatio === 1
-                  ? Math.min(maxWidthSW, maxHeightSW)
-                  : Math.min(maxWidthSW, maxHeightSW * aspectRatio);
-
-              const newWidthSW = Math.max(minSize, Math.min(maxSizeSW, prev.width - deltaX));
-              newCrop.width = newWidthSW;
-              newCrop.height = aspectRatio === 1 ? newWidthSW : newWidthSW / aspectRatio;
-              newCrop.x = prev.x + prev.width - newWidthSW;
-              break;
-            case 'ne': // 東北角
-              const maxWidthNE = imageBounds.right - prev.x;
-              const maxHeightNE = prev.y + prev.height - imageBounds.top;
-              const maxSizeNE =
-                aspectRatio === 1
-                  ? Math.min(maxWidthNE, maxHeightNE)
-                  : Math.min(maxWidthNE, maxHeightNE * aspectRatio);
-
-              const newWidthNE = Math.max(minSize, Math.min(maxSizeNE, prev.width + deltaX));
-              const newHeightNE = aspectRatio === 1 ? newWidthNE : newWidthNE / aspectRatio;
-              newCrop.width = newWidthNE;
-              newCrop.height = newHeightNE;
-              newCrop.y = prev.y + prev.height - newHeightNE;
-              break;
-            case 'nw': // 西北角
-              const maxWidthNW = prev.x + prev.width - imageBounds.left;
-              const maxHeightNW = prev.y + prev.height - imageBounds.top;
-              const maxSizeNW =
-                aspectRatio === 1
-                  ? Math.min(maxWidthNW, maxHeightNW)
-                  : Math.min(maxWidthNW, maxHeightNW * aspectRatio);
-
-              const newWidthNW = Math.max(minSize, Math.min(maxSizeNW, prev.width - deltaX));
-              const newHeightNW = aspectRatio === 1 ? newWidthNW : newWidthNW / aspectRatio;
-              newCrop.width = newWidthNW;
-              newCrop.height = newHeightNW;
-              newCrop.x = prev.x + prev.width - newWidthNW;
-              newCrop.y = prev.y + prev.height - newHeightNW;
-              break;
-          }
-
-          return newCrop;
-        });
-
-        setDragStart({ x, y });
-      } else if (isDragging) {
-        // 移動邏輯
-        const newX = x - dragStart.x;
-        const newY = y - dragStart.y;
-
-        // 限制裁切區域在圖片範圍內
-        const maxX = imageBounds.right - cropArea.width;
-        const maxY = imageBounds.bottom - cropArea.height;
-
-        setCropArea((prev) => ({
-          ...prev,
-          x: Math.max(imageBounds.left, Math.min(maxX, newX)),
-          y: Math.max(imageBounds.top, Math.min(maxY, newY)),
-        }));
-      }
-    },
-    [
-      isDragging,
-      isResizing,
-      dragStart,
-      getImageBounds,
-      cropArea.width,
-      cropArea.height,
-      resizeHandle,
-      aspectRatio,
-    ]
-  );
-
-  // 處理觸控移動事件
-  const handleTouchMove = useCallback(
-    (e: React.TouchEvent) => {
-      if (!isDragging && !isResizing) return;
-      if (e.touches.length !== 1) return;
-
-      e.preventDefault(); // 防止觸控預設行為，如滾動
-      const rect = e.currentTarget.getBoundingClientRect();
-      const x = e.touches[0].clientX - rect.left;
-      const y = e.touches[0].clientY - rect.top;
-      const imageBounds = getImageBounds();
-
-      if (isResizing) {
-        // 調整大小邏輯
-        const deltaX = x - dragStart.x;
+        // 調整大小邏輯 - 降低敏感度讓調整更平順
+        const deltaX = (x - dragStart.x) * 0.8; // 降低80%敏感度
         const minSize = 50; // 最小裁切框大小
 
         setCropArea((prev) => {
@@ -654,20 +524,15 @@ export default function ImageCropper({
     setResizeHandle('');
   }, []);
 
-  // 處理觸控結束事件
-  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
-    e.preventDefault(); // 防止觸控預設行為
-    setIsDragging(false);
-    setIsResizing(false);
-    setResizeHandle('');
-  }, []);
-
   // 防止上下文菜單（右鍵菜單、長按菜單）
   const handleContextMenu = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
   }, []);
 
-  // 添加全域事件監聽器來防止選擇
+  // 使用 useScrollLock hook 防止背景滾動
+  useScrollLock(true);
+
+  // 防止選擇事件
   React.useEffect(() => {
     const preventDefault = (e: Event) => {
       e.preventDefault();
@@ -683,49 +548,160 @@ export default function ImageCropper({
     };
   }, []);
 
-  // 縮放控制
-  const handleZoomIn = useCallback(() => {
-    const newZoom = Math.min(zoom + 0.2, 3); // 最大放大3倍
-    setZoom(newZoom);
+  // 處理觸控事件的 passive: false 配置
+  const cropContainerRef = useRef<HTMLDivElement>(null);
 
-    // 重新計算圖片尺寸和位置
-    const newWidth = imageSize.width * newZoom;
-    const newHeight = imageSize.height * newZoom;
+  React.useEffect(() => {
+    const container = cropContainerRef.current;
+    if (!container) return;
 
-    // 如果縮放後圖片小於容器，保持居中；否則保持在左上角
-    const newX = newWidth <= containerSize.width ? (containerSize.width - newWidth) / 2 : 0;
-    const newY = newHeight <= containerSize.height ? (containerSize.height - newHeight) / 2 : 0;
+    const handleTouchMovePassive = (e: TouchEvent) => {
+      if (!isDragging && !isResizing) return;
+      if (e.touches.length !== 1) return;
 
-    setImagePosition({ x: newX, y: newY });
-  }, [zoom, imageSize, containerSize]);
-
-  const handleZoomOut = useCallback(() => {
-    const newZoom = Math.max(zoom - 0.2, 1); // 最小縮小到原始大小
-    setZoom(newZoom);
-
-    // 重新計算圖片尺寸和位置
-    const newWidth = imageSize.width * newZoom;
-    const newHeight = imageSize.height * newZoom;
-
-    // 如果縮放後圖片小於容器，保持居中；否則保持在左上角
-    const newX = newWidth <= containerSize.width ? (containerSize.width - newWidth) / 2 : 0;
-    const newY = newHeight <= containerSize.height ? (containerSize.height - newHeight) / 2 : 0;
-
-    setImagePosition({ x: newX, y: newY });
-  }, [zoom, imageSize, containerSize]);
-
-  // 滾輪縮放
-  const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
       e.preventDefault();
-      if (e.deltaY < 0) {
-        handleZoomIn();
-      } else {
-        handleZoomOut();
+      // 觸發 React 事件處理邏輯
+      const rect = container.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const y = e.touches[0].clientY - rect.top;
+      const imageBounds = getImageBounds();
+
+      if (isResizing) {
+        // 調整大小邏輯 - 降低敏感度讓調整更平順
+        const deltaX = (x - dragStart.x) * 0.8; // 降低80%敏感度
+        const minSize = 50;
+
+        setCropArea((prev) => {
+          const newCrop = { ...prev };
+
+          switch (resizeHandle) {
+            case 'se':
+              const maxWidthSE = imageBounds.right - prev.x;
+              const maxHeightSE = imageBounds.bottom - prev.y;
+              const maxSizeSE =
+                aspectRatio === 1
+                  ? Math.min(maxWidthSE, maxHeightSE)
+                  : Math.min(maxWidthSE, maxHeightSE * aspectRatio);
+
+              newCrop.width = Math.max(minSize, Math.min(maxSizeSE, prev.width + deltaX));
+              newCrop.height = aspectRatio === 1 ? newCrop.width : newCrop.width / aspectRatio;
+              break;
+            case 'sw':
+              const maxWidthSW = prev.x + prev.width - imageBounds.left;
+              const maxHeightSW = imageBounds.bottom - prev.y;
+              const maxSizeSW =
+                aspectRatio === 1
+                  ? Math.min(maxWidthSW, maxHeightSW)
+                  : Math.min(maxWidthSW, maxHeightSW * aspectRatio);
+
+              const newWidthSW = Math.max(minSize, Math.min(maxSizeSW, prev.width - deltaX));
+              newCrop.width = newWidthSW;
+              newCrop.height = aspectRatio === 1 ? newWidthSW : newWidthSW / aspectRatio;
+              newCrop.x = prev.x + prev.width - newWidthSW;
+              break;
+            case 'ne':
+              const maxWidthNE = imageBounds.right - prev.x;
+              const maxHeightNE = prev.y + prev.height - imageBounds.top;
+              const maxSizeNE =
+                aspectRatio === 1
+                  ? Math.min(maxWidthNE, maxHeightNE)
+                  : Math.min(maxWidthNE, maxHeightNE * aspectRatio);
+
+              const newWidthNE = Math.max(minSize, Math.min(maxSizeNE, prev.width + deltaX));
+              const newHeightNE = aspectRatio === 1 ? newWidthNE : newWidthNE / aspectRatio;
+              newCrop.width = newWidthNE;
+              newCrop.height = newHeightNE;
+              newCrop.y = prev.y + prev.height - newHeightNE;
+              break;
+            case 'nw':
+              const maxWidthNW = prev.x + prev.width - imageBounds.left;
+              const maxHeightNW = prev.y + prev.height - imageBounds.top;
+              const maxSizeNW =
+                aspectRatio === 1
+                  ? Math.min(maxWidthNW, maxHeightNW)
+                  : Math.min(maxWidthNW, maxHeightNW * aspectRatio);
+
+              const newWidthNW = Math.max(minSize, Math.min(maxSizeNW, prev.width - deltaX));
+              const newHeightNW = aspectRatio === 1 ? newWidthNW : newWidthNW / aspectRatio;
+              newCrop.width = newWidthNW;
+              newCrop.height = newHeightNW;
+              newCrop.x = prev.x + prev.width - newWidthNW;
+              newCrop.y = prev.y + prev.height - newHeightNW;
+              break;
+          }
+
+          return newCrop;
+        });
+
+        setDragStart({ x, y });
+      } else if (isDragging) {
+        const newX = x - dragStart.x;
+        const newY = y - dragStart.y;
+
+        const maxX = imageBounds.right - cropArea.width;
+        const maxY = imageBounds.bottom - cropArea.height;
+
+        setCropArea((prev) => ({
+          ...prev,
+          x: Math.max(imageBounds.left, Math.min(maxX, newX)),
+          y: Math.max(imageBounds.top, Math.min(maxY, newY)),
+        }));
       }
-    },
-    [handleZoomIn, handleZoomOut]
-  );
+    };
+
+    const handleTouchStartPassive = (e: TouchEvent) => {
+      e.preventDefault();
+      if (e.touches.length === 1) {
+        const rect = container.getBoundingClientRect();
+        const x = e.touches[0].clientX - rect.left;
+        const y = e.touches[0].clientY - rect.top;
+
+        const handle = getResizeHandle(x, y);
+        if (handle) {
+          setIsResizing(true);
+          setResizeHandle(handle);
+          setDragStart({ x, y });
+          return;
+        }
+
+        if (
+          x >= cropArea.x &&
+          x <= cropArea.x + cropArea.width &&
+          y >= cropArea.y &&
+          y <= cropArea.y + cropArea.height
+        ) {
+          setIsDragging(true);
+          setDragStart({ x: x - cropArea.x, y: y - cropArea.y });
+        }
+      }
+    };
+
+    const handleTouchEndPassive = (e: TouchEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      setIsResizing(false);
+      setResizeHandle('');
+    };
+
+    container.addEventListener('touchstart', handleTouchStartPassive, { passive: false });
+    container.addEventListener('touchmove', handleTouchMovePassive, { passive: false });
+    container.addEventListener('touchend', handleTouchEndPassive, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchstart', handleTouchStartPassive);
+      container.removeEventListener('touchmove', handleTouchMovePassive);
+      container.removeEventListener('touchend', handleTouchEndPassive);
+    };
+  }, [
+    isDragging,
+    isResizing,
+    dragStart,
+    getImageBounds,
+    cropArea,
+    resizeHandle,
+    aspectRatio,
+    getResizeHandle,
+  ]);
 
   // 執行裁切
   const handleCrop = useCallback(
@@ -742,20 +718,13 @@ export default function ImageCropper({
       canvas.width = outputSize;
       canvas.height = outputSize;
 
-      // 計算縮放比例（考慮用戶縮放）
-      const currentImageWidth = imageSize.width * zoom;
-      const currentImageHeight = imageSize.height * zoom;
-
-      const scaleX = img.naturalWidth / currentImageWidth;
-      const scaleY = img.naturalHeight / currentImageHeight;
-
-      // 計算相對於縮放圖片的裁切區域
-      const relativeX = cropArea.x - imagePosition.x;
-      const relativeY = cropArea.y - imagePosition.y;
+      // 計算縮放比例
+      const scaleX = img.naturalWidth / imageSize.width;
+      const scaleY = img.naturalHeight / imageSize.height;
 
       // 計算實際裁切區域 - 確保是方形區域
-      const sourceX = Math.max(0, relativeX * scaleX);
-      const sourceY = Math.max(0, relativeY * scaleY);
+      const sourceX = Math.max(0, cropArea.x * scaleX);
+      const sourceY = Math.max(0, cropArea.y * scaleY);
       const sourceWidth = cropArea.width * scaleX;
       const sourceHeight = cropArea.height * scaleY;
 
@@ -792,17 +761,7 @@ export default function ImageCropper({
         0.9
       );
     },
-    [
-      imageLoaded,
-      cropArea,
-      imageSize,
-      imagePosition,
-      zoom,
-      outputSize,
-      aspectRatio,
-      cropShape,
-      onCropComplete,
-    ]
+    [imageLoaded, cropArea, imageSize, outputSize, onCropComplete]
   );
 
   return (
@@ -814,16 +773,13 @@ export default function ImageCropper({
 
         {/* 裁切區域 */}
         <CropContainer
+          ref={cropContainerRef}
           $width={containerSize.width}
           $height={containerSize.height}
           onMouseDown={handlePointerDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onWheel={handleWheel}
           onContextMenu={handleContextMenu}
           style={{ touchAction: 'none' }}
         >
@@ -831,10 +787,10 @@ export default function ImageCropper({
             ref={imageRef}
             src={imageUrl}
             alt="待裁切圖片"
-            $width={imageSize.width * zoom}
-            $height={imageSize.height * zoom}
-            $left={imagePosition.x}
-            $top={imagePosition.y}
+            $width={imageSize.width}
+            $height={imageSize.height}
+            $left={0}
+            $top={0}
             onLoad={handleImageLoad}
             onContextMenu={handleContextMenu}
             draggable={false}
