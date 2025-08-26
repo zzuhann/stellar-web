@@ -10,6 +10,7 @@ import {
   CalendarIcon,
   EyeIcon,
   ExclamationTriangleIcon,
+  PencilSquareIcon,
 } from '@heroicons/react/24/outline';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { artistsApi, eventsApi } from '@/lib/api';
@@ -18,6 +19,7 @@ import styled from 'styled-components';
 import EventPreviewModal from '@/components/events/EventPreviewModal';
 import RejectModal from '@/components/admin/RejectModal';
 import GroupNameModal from '@/components/admin/GroupNameModal';
+import ArtistSubmissionForm from '@/components/forms/ArtistSubmissionForm';
 import { CoffeeEvent, Artist } from '@/types';
 import VerticalEventCard from '@/components/EventCard/VerticalEventCard';
 import VerticalArtistCard from '@/components/ArtistCard/VerticalArtistCard';
@@ -376,6 +378,26 @@ const BatchButton = styled.button<{ $variant: 'approve' | 'reject' | 'exists' }>
   }
 `;
 
+const EditModal = styled.div<{ $isOpen: boolean }>`
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: ${(props) => (props.$isOpen ? 'flex' : 'none')};
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 16px;
+`;
+
+const EditModalContent = styled.div`
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-lg);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+`;
+
 export default function AdminPage() {
   const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -384,6 +406,7 @@ export default function AdminPage() {
   const [rejectingArtist, setRejectingArtist] = useState<Artist | null>(null);
   const [rejectingEvent, setRejectingEvent] = useState<CoffeeEvent | null>(null);
   const [approvingArtist, setApprovingArtist] = useState<Artist | null>(null);
+  const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
   const [selectedArtists, setSelectedArtists] = useState<Set<string>>(new Set());
   const [batchApproving, setBatchApproving] = useState(false);
   const queryClient = useQueryClient();
@@ -607,6 +630,26 @@ export default function AdminPage() {
     setPreviewingEvent(event);
   };
 
+  const handleEditArtist = (artist: Artist) => {
+    setEditingArtist(artist);
+  };
+
+  const handleEditSuccess = () => {
+    queryClient.invalidateQueries({ queryKey: ['admin-pending-artists'] });
+    const wasRejected = editingArtist?.status === 'rejected';
+    setEditingArtist(null);
+
+    if (wasRejected) {
+      showToast.success('藝人資料已更新並重新送審');
+    } else {
+      showToast.success('藝人資料已更新');
+    }
+  };
+
+  const handleEditCancel = () => {
+    setEditingArtist(null);
+  };
+
   if (authLoading || artistsLoading || eventsLoading) {
     return (
       <PageContainer>
@@ -745,6 +788,13 @@ export default function AdminPage() {
                         }
                         actionButtons={
                           <ActionButtons>
+                            <ActionButton
+                              $variant="preview"
+                              onClick={() => handleEditArtist(artist)}
+                            >
+                              <PencilSquareIcon />
+                              編輯
+                            </ActionButton>
                             <ActionButton
                               $variant="approve"
                               onClick={() => handleApproveArtist(artist)}
@@ -887,6 +937,20 @@ export default function AdminPage() {
           isLoading={batchReviewMutation.isPending}
         />
       )}
+
+      {/* 編輯藝人模態框 */}
+      <EditModal $isOpen={!!editingArtist}>
+        <EditModalContent>
+          {editingArtist && (
+            <ArtistSubmissionForm
+              mode="edit"
+              existingArtist={editingArtist}
+              onSuccess={handleEditSuccess}
+              onCancel={handleEditCancel}
+            />
+          )}
+        </EditModalContent>
+      </EditModal>
     </PageContainer>
   );
 }

@@ -344,8 +344,10 @@ export default function ArtistSubmissionForm({
     mutationFn: async ({ id, data }: { id: string; data: any }) => {
       // 先更新藝人資料
       const updatedArtist = await artistsApi.update(id, data);
-      // 然後自動重新送審
-      await artistsApi.resubmit(id);
+      // 只有在狀態是 rejected 時才重新送審
+      if (existingArtist?.status === 'rejected') {
+        await artistsApi.resubmit(id);
+      }
       return updatedArtist;
     },
     onSuccess: () => {
