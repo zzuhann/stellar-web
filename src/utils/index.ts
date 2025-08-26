@@ -1,30 +1,3 @@
-// 日期格式化
-export function formatDate(date: string | Date, options?: Intl.DateTimeFormatOptions): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleDateString('zh-TW', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    ...options,
-  });
-}
-
-// 相對時間格式化
-export function formatRelativeTime(date: string | Date): string {
-  const now = new Date();
-  const target = typeof date === 'string' ? new Date(date) : date;
-  const diffInMs = target.getTime() - now.getTime();
-  const diffInDays = Math.ceil(diffInMs / (1000 * 60 * 60 * 24));
-
-  if (diffInDays === 0) return '今天';
-  if (diffInDays === 1) return '明天';
-  if (diffInDays === -1) return '昨天';
-  if (diffInDays > 0) return `${diffInDays} 天後`;
-  return `${Math.abs(diffInDays)} 天前`;
-}
-
 // Firebase Timestamp 轉換工具
 export const firebaseTimestampToDate = (timestamp: {
   _seconds: number;
@@ -65,5 +38,7 @@ export const formatDateRange = (startDate: Date | string, endDate: Date | string
     return `${year}/${month}/${day}`;
   };
 
-  return `${formatSingleDate(startDate)} - ${formatSingleDate(endDate)}`;
+  const startDateStr = formatSingleDate(startDate);
+  const endDateStr = formatSingleDate(endDate);
+  return startDateStr === endDateStr ? startDateStr : `${startDateStr} - ${endDateStr}`;
 };
