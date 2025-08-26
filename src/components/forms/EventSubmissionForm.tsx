@@ -790,11 +790,13 @@ export default function EventSubmissionForm({
         description: data.description || '',
         datetime: {
           start: {
-            _seconds: Math.floor(new Date(data.startDate).getTime() / 1000),
+            // 00:00:00
+            _seconds: Math.floor(new Date(data.startDate + 'T00:00:00').getTime() / 1000),
             _nanoseconds: 0,
           },
           end: {
-            _seconds: Math.floor(new Date(data.endDate).getTime() / 1000),
+            // 23:59:59
+            _seconds: Math.floor(new Date(data.endDate + 'T23:59:59').getTime() / 1000),
             _nanoseconds: 0,
           },
         },
@@ -995,10 +997,10 @@ export default function EventSubmissionForm({
                   value={watch('startDate') || ''}
                   onChange={(date) => {
                     setValue('startDate', date, { shouldValidate: true, shouldDirty: true });
-                    // 如果結束日期早於新的開始日期，清空結束日期
+                    // 如果結束日期早於新的開始日期，自動設為開始日期
                     const endDate = watch('endDate');
                     if (endDate && new Date(endDate) < new Date(date)) {
-                      setValue('endDate', '', { shouldValidate: true, shouldDirty: true });
+                      setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
                     }
                   }}
                   placeholder="選擇開始日期"

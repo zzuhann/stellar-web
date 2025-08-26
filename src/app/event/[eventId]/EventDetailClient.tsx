@@ -296,7 +296,7 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
       day: '2-digit',
     });
 
-    return `${startStr} - ${endStr}`;
+    return startStr === endStr ? startStr : `${startStr} - ${endStr}`;
   };
 
   // 準備 banner 數據

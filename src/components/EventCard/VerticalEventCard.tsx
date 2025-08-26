@@ -200,6 +200,14 @@ const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardP
     ? firebaseTimestampToDate(event.createdAt as FirebaseTimestamp).toLocaleDateString('zh-TW')
     : '';
 
+  // 如果同一天就只顯示一天
+  const eventDateText =
+    firebaseTimestampToDate(event.datetime.start).toLocaleDateString('zh-TW') +
+    (firebaseTimestampToDate(event.datetime.start).toLocaleDateString('zh-TW') !==
+    firebaseTimestampToDate(event.datetime.end).toLocaleDateString('zh-TW')
+      ? ' - ' + firebaseTimestampToDate(event.datetime.end).toLocaleDateString('zh-TW')
+      : '');
+
   return (
     <VerticalEventCardContainer>
       <EventImage $imageUrl={event.mainImage ?? ''} />
@@ -232,10 +240,7 @@ const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardP
         <EventDetails>
           <EventDetailItem>
             <CalendarIcon className="h-3 w-3 flex-shrink-0" />
-            <span>
-              {firebaseTimestampToDate(event.datetime.start).toLocaleDateString('zh-TW')} -
-              {firebaseTimestampToDate(event.datetime.end).toLocaleDateString('zh-TW')}
-            </span>
+            <span>{eventDateText}</span>
           </EventDetailItem>
 
           {event.location.name && (

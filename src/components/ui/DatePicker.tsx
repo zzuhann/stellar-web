@@ -317,11 +317,17 @@ export default function DatePicker({
   const isDisabled = (date: Date) => {
     if (min) {
       const minDate = new Date(min);
-      if (date < minDate) return true;
+      // 只比較日期部分，忽略時間
+      const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const minDateOnly = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
+      if (dateOnly < minDateOnly) return true;
     }
     if (max) {
       const maxDate = new Date(max);
-      if (date > maxDate) return true;
+      // 只比較日期部分，忽略時間
+      const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const maxDateOnly = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate());
+      if (dateOnly > maxDateOnly) return true;
     }
     return false;
   };
