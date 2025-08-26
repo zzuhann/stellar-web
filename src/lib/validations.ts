@@ -5,11 +5,7 @@ import { z } from 'zod';
 // 活動投稿表單驗證
 export const eventSubmissionSchema = z
   .object({
-    title: z
-      .string()
-      .min(1, '請輸入標題')
-      .min(5, '標題至少需要 5 個字')
-      .max(100, '標題不能超過 100 個字'),
+    title: z.string().min(1, '請輸入標題').max(100, '標題不能超過 100 個字'),
     artistIds: z.array(z.string()).min(1, '請至少選擇一個偶像').max(10, '最多只能選擇 10 個偶像'),
     description: z.string().max(1500, '描述不能超過 1500 個字').optional(),
     startDate: z
@@ -57,11 +53,7 @@ export type EventSubmissionFormData = z.infer<typeof eventSubmissionSchema>;
 
 // 藝人投稿表單驗證
 export const artistSubmissionSchema = z.object({
-  stageName: z
-    .string()
-    .min(1, '請輸入英文藝名')
-    .min(2, '英文藝名至少需要2個字元')
-    .max(50, '英文藝名不能超過50個字元'),
+  stageName: z.string().min(1, '請輸入英文藝名').max(50, '英文藝名不能超過50個字元'),
   stageNameZh: z.string().max(50, '中文藝名不能超過50個字元').optional().or(z.literal('')),
   realName: z.string().max(50, '本名不能超過50個字元').optional().or(z.literal('')),
   birthday: z
