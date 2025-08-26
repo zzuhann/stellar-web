@@ -750,11 +750,13 @@ export default function EventSubmissionForm({
         description: data.description || '',
         datetime: {
           start: {
-            _seconds: Math.floor(new Date(data.startDate).getTime() / 1000),
+            // 00:00:00
+            _seconds: Math.floor(new Date(data.startDate + 'T00:00:00').getTime() / 1000),
             _nanoseconds: 0,
           },
           end: {
-            _seconds: Math.floor(new Date(data.endDate).getTime() / 1000),
+            // 23:59:59
+            _seconds: Math.floor(new Date(data.endDate + 'T23:59:59').getTime() / 1000),
             _nanoseconds: 0,
           },
         },
