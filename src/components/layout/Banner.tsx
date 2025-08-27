@@ -54,6 +54,18 @@ const ProductImage = styled(Image)`
   height: 100%;
 `;
 
+// 隱藏的預載入容器
+const PreloadContainer = styled.div`
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+`;
+
 const NavigationButton = styled.button`
   position: absolute;
   top: 50%;
@@ -170,6 +182,7 @@ interface BannerProps {
 
 export default function Banner({ items = defaultBannerItems }: BannerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set());
 
   // React Spring 動畫
   const [springs, api] = useSpring(() => ({
@@ -178,14 +191,37 @@ export default function Banner({ items = defaultBannerItems }: BannerProps) {
     config: { tension: 200, friction: 20, mass: 1 },
   }));
 
+  // 計算下一張和上一張的索引
+  const nextIndex = (currentIndex + 1) % items.length;
+  const prevIndex = (currentIndex - 1 + items.length) % items.length;
+
+  // 預載入圖片
+  useEffect(() => {
+    const preloadImages = () => {
+      const imagesToPreload = [nextIndex, prevIndex].filter(
+        (index) => !preloadedImages.has(items[index].imageUrl)
+      );
+
+      imagesToPreload.forEach((index) => {
+        const img = new window.Image();
+        img.src = items[index].imageUrl;
+        setPreloadedImages((prev) => new Set(prev).add(items[index].imageUrl));
+      });
+    };
+
+    if (items.length > 1) {
+      preloadImages();
+    }
+  }, [currentIndex, items, nextIndex, prevIndex, preloadedImages]);
+
   // 切換到下一張
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % items.length);
+    setCurrentIndex(nextIndex);
   };
 
   // 切換到上一張
   const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+    setCurrentIndex(prevIndex);
   };
 
   // 直接跳轉到指定索引
@@ -218,6 +254,14 @@ export default function Banner({ items = defaultBannerItems }: BannerProps) {
           />
         </SlideContent>
       </SlideContainer>
+
+      {/* 隱藏的預載入圖片 */}
+      {items.length > 1 && (
+        <PreloadContainer>
+          <Image src={items[nextIndex].imageUrl} alt="preload next" width={1} height={1} />
+          <Image src={items[prevIndex].imageUrl} alt="preload prev" width={1} height={1} />
+        </PreloadContainer>
+      )}
 
       {/* 導航按鈕 */}
       {items.length > 1 && (
