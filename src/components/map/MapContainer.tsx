@@ -225,6 +225,7 @@ interface MapComponentProps {
   events?: MapEvent[];
   onEventSelect?: (event: { id: string }) => void;
   onMarkerClick?: (eventId: string) => void;
+  onLocationClick?: (locationKey: string, events: MapEvent[]) => void; // 新增：處理地點點擊
   selectedEventId?: string | null;
   userLocation?: { lat: number; lng: number } | null;
   artistData?: { profileImage?: string; stageName?: string } | null;
@@ -234,6 +235,7 @@ export default function MapComponent({
   events = [],
   onEventSelect,
   onMarkerClick,
+  onLocationClick,
   selectedEventId,
   userLocation,
   artistData,
@@ -241,6 +243,21 @@ export default function MapComponent({
   const { center, selectMarker, setCenter } = useMapStore();
   const [isMounted, setIsMounted] = useState(false);
   const clusterGroupRef = useRef<any>(null);
+
+  // 將同地點的活動分組
+  const groupedEvents = useMemo(() => {
+    const groups = new Map<string, MapEvent[]>();
+
+    events.forEach((event) => {
+      const key = `${event.location.coordinates.lat.toFixed(6)}_${event.location.coordinates.lng.toFixed(6)}`;
+      if (!groups.has(key)) {
+        groups.set(key, []);
+      }
+      groups.get(key)!.push(event);
+    });
+
+    return groups;
+  }, [events]);
 
   // 緩存所有 marker 圖標，只在相關數據變化時重新計算
   const markerIcons = useMemo(() => {
@@ -277,28 +294,25 @@ export default function MapComponent({
   // 處理聚合點擊事件
   const handleClusterClick = (event: any) => {
     const cluster = event.layer;
-    const map = event.target._map;
-    const currentZoom = map.getZoom();
     const clusterBounds = cluster.getBounds();
     const clusterCenter = clusterBounds.getCenter();
-
-    const newZoom = Math.min(currentZoom + 2, 18);
-
-    // 直接操作地圖，不使用動畫
-    map.setView([clusterCenter.lat, clusterCenter.lng], newZoom, {
-      animate: false,
-    });
-
-    // 同步更新 store
-    setCenter({
-      lat: clusterCenter.lat,
-      lng: clusterCenter.lng,
-      zoom: newZoom,
-    });
 
     // 阻止預設行為
     event.originalEvent.preventDefault();
     event.originalEvent.stopPropagation();
+
+    // 找到該地點的所有活動
+    const locationKey = `${clusterCenter.lat.toFixed(6)}_${clusterCenter.lng.toFixed(6)}`;
+    const eventsAtLocation = groupedEvents.get(locationKey) || [];
+
+    if (eventsAtLocation.length > 1) {
+      // 如果同地點有多個活動，顯示列表
+      onLocationClick?.(locationKey, eventsAtLocation);
+    } else if (eventsAtLocation.length === 1) {
+      // 如果只有一個活動，直接選中
+      const event = eventsAtLocation[0];
+      handleMarkerClick(event);
+    }
   };
 
   // 台灣地圖中心點
@@ -345,8 +359,8 @@ export default function MapComponent({
           ref={clusterGroupRef}
           // 控制聚合行為的選項
           maxClusterRadius={80} // 聚合半徑 (像素)，預設 80
-          disableClusteringAtZoom={14} // 在此縮放等級以上停用聚合
-          spiderfyOnMaxZoom={true} // 在最大縮放時展開 marker
+          disableClusteringAtZoom={20} // 在最大縮放等級才停用聚合，讓同地點的活動始終聚合
+          spiderfyOnMaxZoom={false} // 停用 spiderfy，讓同地點的活動保持聚合
           eventHandlers={{
             clusterclick: handleClusterClick,
           }}

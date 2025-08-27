@@ -11,6 +11,7 @@ import { useMapData } from '@/hooks/useMapData';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useArtist } from '@/hooks/useArtist';
 import EventCard from '../EventCard';
+import { MapEvent } from '@/types';
 
 // Styled Components
 const PageContainer = styled.div`
@@ -365,6 +366,10 @@ export default function MapPageStyled() {
 
   const [isDrawerExpanded, setIsDrawerExpanded] = useState(false);
 
+  // 追蹤選中的地點（當同地點有多個活動時）
+  const [selectedLocationEvents, setSelectedLocationEvents] = useState<MapEvent[]>([]);
+  const [isLocationSelected, setIsLocationSelected] = useState(false);
+
   // 計算地圖中心點與用戶位置的距離
   const calculateDistance = (lat1: number, lng1: number, lat2: number, lng2: number) => {
     const R = 6371; // 地球半徑（公里）
@@ -555,12 +560,15 @@ export default function MapPageStyled() {
   // 根據選中狀態篩選顯示的活動
   const displayEvents = selectedEventId
     ? mapEvents.filter((event) => event.id === selectedEventId)
-    : mapEvents;
+    : isLocationSelected
+      ? selectedLocationEvents
+      : mapEvents;
 
   // 處理地圖 marker 點擊
   const handleMarkerClick = (eventId: string) => {
     const currentHeight = springs.height.get();
     setSelectedEventId(eventId);
+    setIsLocationSelected(false); // 清除地點選擇狀態
 
     // 先停止任何現有動畫，然後展開到單一活動高度
     api.stop();
@@ -574,10 +582,31 @@ export default function MapPageStyled() {
     }, 10);
   };
 
+  // 處理地點點擊（當同地點有多個活動時）
+  const handleLocationClick = (locationKey: string, events: MapEvent[]) => {
+    setSelectedLocationEvents(events);
+    setIsLocationSelected(true);
+    setSelectedEventId(null); // 清除單一活動選擇
+
+    // 展開 drawer 顯示該地點的所有活動
+    api.stop();
+    setIsDrawerExpanded(true);
+    setTimeout(() => {
+      api.start({
+        height: expandedHeight,
+        config: config.gentle,
+      });
+    }, 10);
+  };
+
   const handleCloseButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // 阻止事件冒泡到 drawer
     if (selectedEventId) {
       setSelectedEventId(null);
+    }
+    if (isLocationSelected) {
+      setIsLocationSelected(false);
+      setSelectedLocationEvents([]);
     }
   };
 
@@ -593,6 +622,7 @@ export default function MapPageStyled() {
                 events={mapEvents}
                 userLocation={latitude && longitude ? { lat: latitude, lng: longitude } : null}
                 onMarkerClick={handleMarkerClick}
+                onLocationClick={handleLocationClick}
                 selectedEventId={selectedEventId}
                 artistData={artistData}
               />
@@ -603,7 +633,7 @@ export default function MapPageStyled() {
                 <ErrorContent>
                   <ErrorIcon>⚠️</ErrorIcon>
                   <ErrorText>
-                    <div className="title">定位失敗</div>
+                    <div className="title">無法取得位置</div>
                     <div className="message">{locationError}</div>
                   </ErrorText>
                 </ErrorContent>
@@ -633,6 +663,8 @@ export default function MapPageStyled() {
               <HandleBarText>
                 {selectedEventId ? (
                   '目前查看中的生咖'
+                ) : isLocationSelected ? (
+                  `此地點有 ${selectedLocationEvents.length} 個生咖`
                 ) : (
                   <>
                     {artistData?.stageName?.toUpperCase()} {artistData?.realName} |{' '}
@@ -641,7 +673,7 @@ export default function MapPageStyled() {
                 )}
               </HandleBarText>
             </HandleBarTextContainer>
-            {selectedEventId && (
+            {(selectedEventId || isLocationSelected) && (
               <CloseButton onClick={handleCloseButtonClick}>
                 <XMarkIcon />
               </CloseButton>
