@@ -1045,7 +1045,7 @@ export default function EventSubmissionForm({
                 <MapPinIcon />
                 地點*
               </Label>
-              <HelperText>搜尋店家名稱或地址</HelperText>
+              <HelperText>搜尋店家名稱或地址（出現選項之後，選擇正確的店家即可！）</HelperText>
               <PlaceAutocomplete
                 onPlaceSelect={handlePlaceSelect}
                 defaultValue={existingEvent?.location.name}

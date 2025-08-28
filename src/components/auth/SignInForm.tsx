@@ -122,7 +122,15 @@ export default function SignInForm({ onSuccess }: SignInFormProps) {
     <FormContainer>
       <FormHeader>
         <Title>登入帳號</Title>
-        <Subtitle>歡迎回來！請登入您的帳號</Subtitle>
+        <Subtitle>
+          若是從 IG / Threads / FB 開啟
+          <br />
+          建議先點擊右上角三個點點
+          <br />
+          再點擊<span style={{ color: '#8f2d28', fontWeight: 'bold' }}>「用外部瀏覽器開啟」</span>
+          <br />
+          登入會更容易哦！
+        </Subtitle>
       </FormHeader>
 
       {/* Google 登入按鈕 */}
