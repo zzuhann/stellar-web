@@ -19,6 +19,7 @@ import styled from 'styled-components';
 import EventPreviewModal from '@/components/events/EventPreviewModal';
 import RejectModal from '@/components/admin/RejectModal';
 import GroupNameModal from '@/components/admin/GroupNameModal';
+import BatchGroupNameModal from '@/components/admin/BatchGroupNameModal';
 import ArtistSubmissionForm from '@/components/forms/ArtistSubmissionForm';
 import { CoffeeEvent, Artist } from '@/types';
 import VerticalEventCard from '@/components/EventCard/VerticalEventCard';
@@ -477,17 +478,14 @@ export default function AdminPage() {
 
   // 批次審核藝人 mutation
   const batchReviewMutation = useMutation({
-    mutationFn: ({
-      artistIds,
-      status,
-      reason,
-      adminUpdate,
-    }: {
-      artistIds: string[];
-      status: 'approved' | 'rejected' | 'exists';
-      reason?: string;
-      adminUpdate?: { groupNames?: string[] };
-    }) => artistsApi.batchReview(artistIds, status, reason, adminUpdate),
+    mutationFn: (
+      updates: Array<{
+        artistId: string;
+        status: 'approved' | 'rejected' | 'exists';
+        groupNames?: string[];
+        reason?: string;
+      }>
+    ) => artistsApi.batchReview(updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-pending-artists'] });
       setSelectedArtists(new Set());
@@ -563,34 +561,40 @@ export default function AdminPage() {
   };
 
   // 批次審核處理函數
-  const handleBatchApprove = (groupNames?: string[]) => {
+  const handleBatchApprove = (artistGroupNames: { [artistId: string]: string[] }) => {
     if (selectedArtists.size === 0) return;
 
-    batchReviewMutation.mutate({
-      artistIds: Array.from(selectedArtists),
-      status: 'approved',
-      adminUpdate: groupNames ? { groupNames } : undefined,
-    });
+    const updates = Array.from(selectedArtists).map((artistId) => ({
+      artistId,
+      status: 'approved' as const,
+      groupNames: artistGroupNames[artistId] || [],
+    }));
+
+    batchReviewMutation.mutate(updates);
   };
 
   const handleBatchReject = (reason: string) => {
     if (selectedArtists.size === 0) return;
 
-    batchReviewMutation.mutate({
-      artistIds: Array.from(selectedArtists),
-      status: 'rejected',
+    const updates = Array.from(selectedArtists).map((artistId) => ({
+      artistId,
+      status: 'rejected' as const,
       reason,
-    });
+    }));
+
+    batchReviewMutation.mutate(updates);
   };
 
   const handleBatchExists = () => {
     if (selectedArtists.size === 0) return;
 
-    batchReviewMutation.mutate({
-      artistIds: Array.from(selectedArtists),
-      status: 'exists',
+    const updates = Array.from(selectedArtists).map((artistId) => ({
+      artistId,
+      status: 'exists' as const,
       reason: '藝人已存在',
-    });
+    }));
+
+    batchReviewMutation.mutate(updates);
   };
 
   const handleSelectArtist = (artistId: string, selected: boolean) => {
@@ -928,10 +932,9 @@ export default function AdminPage() {
 
       {/* 批次審核模態框 */}
       {batchApproving && (
-        <GroupNameModal
+        <BatchGroupNameModal
           isOpen={true}
-          artistName={`${selectedArtists.size} 位偶像`}
-          currentGroupNames={[]}
+          artists={pendingArtists.filter((artist) => selectedArtists.has(artist.id))}
           onConfirm={handleBatchApprove}
           onCancel={() => setBatchApproving(false)}
           isLoading={batchReviewMutation.isPending}

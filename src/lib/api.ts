@@ -188,16 +188,15 @@ export const artistsApi = {
 
   // 批次審核藝人（管理員）
   batchReview: async (
-    artistIds: string[],
-    status: 'approved' | 'rejected' | 'exists',
-    reason?: string,
-    adminUpdate?: { groupNames?: string[] }
+    updates: Array<{
+      artistId: string;
+      status: 'approved' | 'rejected' | 'exists';
+      groupNames?: string[];
+      reason?: string;
+    }>
   ): Promise<Artist[]> => {
     const response = await api.post('/artists/batch-review', {
-      artistIds,
-      status,
-      reason,
-      adminUpdate,
+      updates,
     });
     return response.data;
   },
