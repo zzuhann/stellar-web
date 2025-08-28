@@ -96,7 +96,7 @@ const HandleBar = styled.div`
 `;
 
 const DrawerContent = styled.div`
-  height: calc(100% - 60px);
+  height: calc(100% - 80px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
