@@ -322,20 +322,20 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
           id: 'detail',
           imageUrl: image,
           title: event.title,
-          subtitle: '生咖詳情',
+          subtitle: '應援詳情',
         });
       });
     }
 
-    // 如果沒有圖片，使用預設圖片
-    if (items.length === 0) {
-      items.push({
-        id: 'default',
-        imageUrl: '/api/placeholder/400/600',
-        title: event.title,
-        subtitle: '生咖圖片',
-      });
-    }
+    // // 如果沒有圖片，使用預設圖片
+    // if (items.length === 0) {
+    //   items.push({
+    //     id: 'default',
+    //     imageUrl: '/api/placeholder/400/600',
+    //     title: event.title,
+    //     subtitle: '應援圖片',
+    //   });
+    // }
 
     return items;
   };
@@ -379,14 +379,14 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
         {error && (
           <ErrorContainer>
             <h1>載入失敗</h1>
-            <p>載入生咖時發生錯誤</p>
+            <p>載入生日應援時發生錯誤</p>
           </ErrorContainer>
         )}
 
         {event && !isLoading && !error && (
           <>
             {/* Banner 區域 */}
-            <Banner items={getBannerItems()} />
+            {getBannerItems().length > 0 && <Banner items={getBannerItems()} />}
 
             {/* 主要內容 */}
             <ContentSection>
@@ -527,7 +527,7 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
               <CTAButton onClick={handleBackToMap}>
                 回地圖頁
                 <br />
-                看其他生咖
+                看其他生日應援
               </CTAButton>
             </ContentSection>
           </>

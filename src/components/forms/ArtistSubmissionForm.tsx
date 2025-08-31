@@ -466,7 +466,7 @@ export default function ArtistSubmissionForm({
     <FormContainer>
       <FormHeader>
         <h2>{mode === 'edit' ? '編輯偶像' : '投稿偶像'}</h2>
-        {mode !== 'edit' && <p>新增偶像到我們的資料庫，審核通過後其他用戶可以為他們建立生咖應援</p>}
+        {mode !== 'edit' && <p>新增偶像到我們的資料庫，審核通過後其他用戶可以為他們建立生日應援</p>}
         {mode === 'edit' && (
           <p style={{ fontSize: '14px', color: '#ef4444', margin: '8px 0 0 0' }}>
             編輯後的資料將重新進入審核流程
@@ -607,7 +607,7 @@ export default function ArtistSubmissionForm({
           <div className="title">投稿說明：</div>
           <ul>
             <li>投稿的偶像將經過審核</li>
-            <li>審核通過後，所有用戶都可以選擇這位偶像來建立生咖應援</li>
+            <li>審核通過後，所有用戶都可以選擇這位偶像來建立生日應援</li>
             <li>請確保偶像資訊的正確性以及照片來源是否可公開使用</li>
             <li>資料錯誤、重複的偶像投稿審核不會通過</li>
             <li>若有多人重複投稿偶像，將以投稿時間較早者為準</li>

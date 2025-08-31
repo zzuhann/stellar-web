@@ -248,18 +248,8 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
           id: `detail-${index}`,
           imageUrl: image,
           title: event.title,
-          subtitle: '生咖詳情',
+          subtitle: '應援詳情',
         });
-      });
-    }
-
-    // 如果沒有圖片，使用預設圖片
-    if (items.length === 0) {
-      items.push({
-        id: 'default',
-        imageUrl: '/api/placeholder/400/600',
-        title: event.title,
-        subtitle: '生咖圖片',
       });
     }
 
@@ -270,14 +260,14 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
-          <ModalTitle>生咖預覽</ModalTitle>
+          <ModalTitle>預覽</ModalTitle>
           <CloseButton onClick={onClose}>
             <XMarkIcon />
           </CloseButton>
         </ModalHeader>
 
         {/* Banner 區域 */}
-        <Banner items={getBannerItems()} />
+        {getBannerItems().length > 0 && <Banner items={getBannerItems()} />}
 
         {/* 主要內容 */}
         <ContentSection>

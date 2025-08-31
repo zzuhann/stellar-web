@@ -279,7 +279,7 @@ const Header = () => {
             <RightSection>
               <Description onClick={() => router.push('/my-submissions')}>我的投稿</Description>
               <Description onClick={() => router.push('/admin')}>管理員審核</Description>
-              <Description onClick={() => router.push('/submit-event')}>舉辦生咖應援</Description>
+              <Description onClick={() => router.push('/submit-event')}>舉辦生日應援</Description>
               <UserSection>
                 <UserButton onClick={() => setUserMenuOpen(!userMenuOpen)}>
                   <UserIcon16 />
@@ -360,7 +360,7 @@ const Header = () => {
                   closeMobileMenu();
                 }}
               >
-                舉辦生咖應援
+                舉辦生日應援
               </MobileMenuButton>
               <MobileMenuButton
                 onClick={() => {
@@ -396,7 +396,7 @@ const Header = () => {
                   closeMobileMenu();
                 }}
               >
-                舉辦生咖應援
+                舉辦生日應援
               </MobileMenuButton>
             </>
           )}

@@ -274,7 +274,7 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
             <EmptyState>
               <div className="icon">🔍</div>
               <h3>搜尋偶像</h3>
-              <p>輸入偶像名稱來尋找生咖</p>
+              <p>輸入偶像名稱來尋找生日應援</p>
             </EmptyState>
           ) : searchLoading ? (
             <LoadingState>

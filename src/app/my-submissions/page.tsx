@@ -417,7 +417,7 @@ function MySubmissionsContent() {
           <TabContainer>
             <TabNav>
               <TabButton $active={activeTab === 'events'} onClick={() => handleTabChange('events')}>
-                生咖投稿
+                生日應援投稿
               </TabButton>
               <TabButton
                 $active={activeTab === 'artists'}
@@ -485,15 +485,15 @@ function MySubmissionsContent() {
           {activeTab === 'events' && userSubmissions && (
             <ContentCard>
               <CardHeader>
-                <h2>我投稿的生咖</h2>
-                <p>共 {userEvents.length} 個生咖投稿</p>
+                <h2>我投稿的生日應援</h2>
+                <p>共 {userEvents.length} 個生日應援投稿</p>
               </CardHeader>
 
               {userEvents.length === 0 ? (
                 <EmptyState>
                   <div className="icon">🍰</div>
-                  <h3>還沒有舉辦過生咖</h3>
-                  <p>如果你是生咖主辦，可以點擊投稿生咖 ✨</p>
+                  <h3>還沒有舉辦過生日應援</h3>
+                  <p>如果你是主辦，可以點擊投稿生日應援 ✨</p>
                   <CTAButton onClick={() => router.push('/submit-event')}>前往投稿</CTAButton>
                 </EmptyState>
               ) : (
@@ -512,7 +512,7 @@ function MySubmissionsContent() {
                           <ActionButton
                             $variant="edit"
                             onClick={(e) => handlePreviewEvent(e, event)}
-                            title="預覽生咖"
+                            title="預覽"
                           >
                             <EyeIcon />
                             預覽
@@ -520,7 +520,7 @@ function MySubmissionsContent() {
                           <ActionButton
                             $variant="edit"
                             onClick={(e) => handleEditEvent(e, event)}
-                            title="編輯生咖"
+                            title="編輯"
                           >
                             <PencilIcon />
                             編輯
@@ -529,7 +529,7 @@ function MySubmissionsContent() {
                             $variant="delete"
                             onClick={(e) => handleDeleteEvent(e, event)}
                             disabled={deleteEventMutation.isPending}
-                            title="刪除生咖"
+                            title="刪除"
                           >
                             <TrashIcon />
                             {deleteEventMutation.isPending ? '刪除中...' : '刪除'}
@@ -557,8 +557,8 @@ function MySubmissionsContent() {
       {/* 確認刪除模態框 */}
       <ConfirmModal
         isOpen={deleteConfirmModal.isOpen}
-        title="確認刪除生咖"
-        message={`確定要刪除生咖「${deleteConfirmModal.event?.title}」嗎？此操作無法復原。`}
+        title="確認刪除"
+        message={`確定要刪除「${deleteConfirmModal.event?.title}」嗎？此操作無法復原。`}
         onConfirm={handleConfirmDelete}
         onCancel={handleCancelDelete}
         confirmText="刪除"

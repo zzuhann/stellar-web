@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     if (!event) {
       return {
-        title: '生咖不存在',
+        title: '生日應援不存在',
         description: '',
       };
     }
@@ -38,7 +38,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   } catch {
     return {
-      title: '生咖詳情',
+      title: '生日應援詳情',
       description: '',
     };
   }

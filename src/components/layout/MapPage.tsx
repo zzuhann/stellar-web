@@ -662,13 +662,13 @@ export default function MapPageStyled() {
             <HandleBarTextContainer>
               <HandleBarText>
                 {selectedEventId ? (
-                  '目前查看中的生咖'
+                  '目前查看中的生日應援'
                 ) : isLocationSelected ? (
-                  `此地點有 ${selectedLocationEvents.length} 個生咖`
+                  `此地點有 ${selectedLocationEvents.length} 個生日應援`
                 ) : (
                   <>
                     {artistData?.stageName?.toUpperCase()} {artistData?.realName} |{' '}
-                    {mapEvents.length > 0 ? `${mapEvents.length} 個生咖` : '目前沒有生咖'}
+                    {mapEvents.length > 0 ? `${mapEvents.length} 個生日應援` : '目前沒有生日應援'}
                   </>
                 )}
               </HandleBarText>
@@ -694,15 +694,15 @@ export default function MapPageStyled() {
                 <>
                   <EmptyState>
                     <ProfileImageContainer $imageUrl={artistData?.profileImage || ''} />
-                    <h3>目前{artistData?.stageName}沒有生咖</h3>
+                    <h3>目前{artistData?.stageName}沒有生日應援</h3>
                   </EmptyState>
                   <CTAButton
                     onClick={() => {
                       router.push('/submit-event');
                     }}
                   >
-                    是生咖主辦嗎? <br />
-                    點擊前往新增生咖
+                    是生日應援主辦嗎? <br />
+                    點擊前往新增生日應援
                   </CTAButton>
                 </>
               )}

@@ -103,8 +103,8 @@ const ArtistCard = ({ artist, handleArtistClick }: ArtistCardProps) => {
           <span className="icon">📍</span>
           <span>
             {artist.coffeeEventCount !== undefined && artist.coffeeEventCount > 0
-              ? `${artist.coffeeEventCount} 個生咖`
-              : '目前無任何生咖'}
+              ? `${artist.coffeeEventCount} 個生日應援`
+              : '目前無任何生日應援'}
           </span>
         </EventStatus>
       </ArtistInfo>

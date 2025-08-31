@@ -305,13 +305,7 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
     const newWeekStart = new Date(currentWeekStart);
     newWeekStart.setDate(newWeekStart.getDate() - 7);
 
-    // 不能選擇比當前週更早的週（允許回到當前週）
-    const today = new Date();
-    const thisWeekStart = getWeekStart(today);
-
-    if (newWeekStart.getTime() >= thisWeekStart.getTime()) {
-      setCurrentWeekStart(newWeekStart);
-    }
+    setCurrentWeekStart(newWeekStart);
   };
 
   const goToNextWeek = () => {
@@ -319,20 +313,6 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
     newWeekStart.setDate(newWeekStart.getDate() + 7);
     setCurrentWeekStart(newWeekStart);
   };
-
-  // 判斷是否可以點擊上一週（只要不是回到本週之前就可以）
-  const canGoToPreviousWeek = useMemo(() => {
-    const today = new Date();
-    const thisWeekStart = getWeekStart(today);
-
-    // 計算如果點擊上一週，會回到哪一週
-    const wouldGoToWeek = new Date(currentWeekStart.getTime());
-    wouldGoToWeek.setDate(wouldGoToWeek.getDate() - 7);
-    wouldGoToWeek.setHours(0, 0, 0, 0);
-
-    // 允許回到當前週或之後的週，不允許回到當前週之前
-    return wouldGoToWeek.getTime() >= thisWeekStart.getTime();
-  }, [currentWeekStart]);
 
   // 判斷是否為當前週（用於顯示文字）
   const isCurrentWeek = useMemo(() => {
@@ -359,14 +339,14 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
               }
             }}
           >
-            生咖主辦 ✨
+            生日應援主辦 ✨
             <br />
-            點擊前往新增生咖 ➡️
+            點擊前往新增生日應援 ➡️
           </CTAButton>
 
           {/* 週導航 */}
           <WeekNavigationContainer>
-            <WeekNavigationButton onClick={goToPreviousWeek} $disabled={!canGoToPreviousWeek}>
+            <WeekNavigationButton onClick={goToPreviousWeek}>
               <ChevronLeftIcon />
             </WeekNavigationButton>
 
@@ -390,7 +370,7 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
                 setSearchModalOpen(true);
               }}
             >
-              搜尋你的偶像的生咖
+              搜尋你的偶像的生日應援
             </SearchInput>
           </SearchContainer>
 

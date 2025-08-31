@@ -846,11 +846,11 @@ export default function EventSubmissionForm({
   return (
     <FormContainer>
       <FormHeader>
-        <h2>{mode === 'edit' ? '編輯生咖應援' : '投稿生咖應援'}</h2>
-        {mode !== 'edit' && <p>審核通過之後其他用戶可以在地圖/列表上看到此生咖!</p>}
+        <h2>{mode === 'edit' ? '編輯' : '投稿'}</h2>
+        {mode !== 'edit' && <p>審核通過之後其他用戶可以在地圖/列表上看到此生日應援!</p>}
         {mode === 'edit' && (
           <p style={{ fontSize: '14px', color: '#ef4444', margin: '8px 0 0 0' }}>
-            無法修改生咖的藝人資訊
+            無法修改藝人資訊
           </p>
         )}
       </FormHeader>
@@ -865,7 +865,7 @@ export default function EventSubmissionForm({
           <StepConnector $completed={currentStep > 1} />
           <Step $active={currentStep === 2} $completed={false}>
             <div className="step-number">2</div>
-            <div className="step-title">生咖資訊</div>
+            <div className="step-title">應援資訊</div>
           </Step>
         </StepIndicator>
       )}
@@ -1060,7 +1060,7 @@ export default function EventSubmissionForm({
               <Textarea
                 id="description"
                 rows={10}
-                placeholder="描述生咖內容與資訊，例如：時間/領取應援/注意事項等等"
+                placeholder="描述應援內容與資訊，例如：時間/領取應援/注意事項等等"
                 {...register('description')}
               />
               <CharacterCount $isOverLimit={(watch('description')?.length || 0) > 1500}>
@@ -1076,7 +1076,7 @@ export default function EventSubmissionForm({
                 詳細說明圖片
               </Label>
               <HelperText>
-                生咖的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳5張
+                應援的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳5張
               </HelperText>
               <MultiImageUpload
                 currentImages={detailImageUrls}

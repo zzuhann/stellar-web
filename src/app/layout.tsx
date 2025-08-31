@@ -19,15 +19,15 @@ const notoSansTC = Noto_Sans_TC({
 
 export const metadata: Metadata = {
   title: {
-    default: 'STELLAR | 生咖應援地圖',
-    template: '%s | STELLAR 生咖應援地圖',
+    default: 'STELLAR | 台灣生咖應援地圖',
+    template: '%s | STELLAR 台灣生咖應援地圖',
   },
-  description: '在 STELLAR 尋找在你附近的生咖應援吧！',
+  description: '在 STELLAR 尋找在你附近的生日應援吧！',
   keywords: ['生咖', 'K-POP', '生日咖啡廳', '應援', 'idol'],
   openGraph: {
     type: 'website',
-    title: 'STELLAR | 生咖應援地圖',
-    description: '在 STELLAR 尋找在你附近的生咖應援吧！',
+    title: 'STELLAR | 台灣生咖應援地圖',
+    description: '在 STELLAR 尋找在你附近的生日應援吧！',
     images: [{ url: 'https://cdn.stellar-zone.com/images/og-image.png' }],
   },
   icons: {
@@ -59,8 +59,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'STELLAR | 生咖應援地圖',
-    description: '在 STELLAR 尋找在你附近的生咖應援吧！',
+    title: 'STELLAR | 台灣生咖應援地圖',
+    description: '在 STELLAR 尋找在你附近的生日應援吧！',
     images: [{ url: 'https://cdn.stellar-zone.com/images/og-image.png' }],
     creator: '@STELLAR_TW',
   },
