@@ -341,7 +341,7 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
           >
             生日應援主辦 ✨
             <br />
-            點擊前往新增生日應援 ➡️
+            前往投稿生日應援 ➡️
           </CTAButton>
 
           {/* 週導航 */}
