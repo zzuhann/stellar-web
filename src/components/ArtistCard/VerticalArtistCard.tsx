@@ -188,9 +188,7 @@ const VerticalArtistCard = ({
         }}
       >
         <ArtistName>
-          {artist.stageName}
-          {artist.stageNameZh && `/${artist.stageNameZh}`}{' '}
-          {artist.realName && `(${artist.realName})`}
+          {artist.stageName.toUpperCase()} {artist.realName}
         </ArtistName>
 
         {birthdayText && <ArtistBirthday>🎂 {birthdayText}</ArtistBirthday>}

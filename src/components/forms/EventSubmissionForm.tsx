@@ -903,7 +903,7 @@ export default function EventSubmissionForm({
                       </ImageContainer>
                       <div>
                         <ArtistName>
-                          {artist.stageName} {artist.realName && `(${artist.realName})`}
+                          {artist.stageName.toUpperCase()} {artist.realName}
                         </ArtistName>
                       </div>
                     </div>
