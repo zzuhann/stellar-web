@@ -1,23 +1,22 @@
 import dynamic from 'next/dynamic';
+import { redirect } from 'next/navigation';
 
 const MapPage = dynamic(() => import('@/components/layout/MapPage'), {
   ssr: false,
-  loading: () => (
-    <div
-      style={{
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'var(--color-bg-primary)',
-        color: 'var(--color-text-primary)',
-      }}
-    >
-      載入地圖中...
-    </div>
-  ),
 });
 
-export default function MapPageRoute() {
-  return <MapPage />;
+interface MapPageRouteProps {
+  searchParams?: {
+    artistId?: string;
+    search?: string;
+  };
+}
+
+export default function MapPageRoute({ searchParams }: MapPageRouteProps) {
+  // 如果沒有 artistId 參數，重導向到首頁
+  if (!searchParams?.artistId) {
+    redirect('/');
+  }
+
+  return <MapPage artistId={searchParams.artistId} search={searchParams.search} />;
 }

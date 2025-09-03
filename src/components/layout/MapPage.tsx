@@ -331,7 +331,15 @@ const CloseButton = styled.button`
   }
 `;
 
-export default function MapPageStyled() {
+interface MapPageProps {
+  artistId?: string;
+  search?: string;
+}
+
+export default function MapPageStyled({
+  artistId: propsArtistId,
+  search: propsSearch,
+}: MapPageProps = {}) {
   const { center, setCenter } = useMapStore();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -344,8 +352,9 @@ export default function MapPageStyled() {
     error: locationError,
   } = useGeolocation({ autoGetPosition: true });
 
-  const search = searchParams?.get('search') || '';
-  const artistId = searchParams?.get('artistId') || '';
+  const search = propsSearch || searchParams?.get('search') || '';
+  // Props artistId (from URL path) 優先於 searchParams artistId (from query)
+  const artistId = propsArtistId || searchParams?.get('artistId') || '';
 
   // 使用新的 API hooks - MVP 階段先全部載入
   const { data: mapData, isLoading: mapLoading } = useMapData({

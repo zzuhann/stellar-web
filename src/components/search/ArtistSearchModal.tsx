@@ -237,7 +237,7 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
   // 處理藝人點擊
   const handleArtistClick = (artist: Artist) => {
     onClose();
-    router.push(`/map?artistId=${artist.id}`);
+    router.push(`/map/${artist.id}`);
   };
 
   // 關閉 modal 時清除輸入

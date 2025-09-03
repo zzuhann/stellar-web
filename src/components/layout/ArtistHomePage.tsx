@@ -322,7 +322,7 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
 
   const handleArtistClick = (artist: Artist) => {
     // 導航到地圖頁面，並傳遞選中的藝人 ID
-    router.push(`/map?artistId=${artist.id}`);
+    router.push(`/map/${artist.id}`);
   };
 
   return (

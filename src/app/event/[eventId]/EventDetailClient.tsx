@@ -343,13 +343,12 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
   // 處理回到地圖頁按鈕點擊
   const handleBackToMap = () => {
     if (!event?.artists || event.artists.length === 0) {
-      router.push('/map');
       return;
     }
 
     if (event.artists.length === 1) {
       // 只有一個藝人，直接跳轉
-      router.push(`/map?artistId=${event.artists[0].id}`);
+      router.push(`/map/${event.artists[0].id}`);
     } else {
       // 多個藝人，顯示選擇模態框
       setShowArtistModal(true);
@@ -359,7 +358,7 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
   // 處理藝人選擇
   const handleArtistSelect = (artistId: string) => {
     setShowArtistModal(false);
-    router.push(`/map?artistId=${artistId}`);
+    router.push(`/map/${artistId}`);
   };
 
   // 關閉模態框
@@ -397,7 +396,7 @@ export default function EventDetailClient({ eventId }: EventDetailClientProps) {
                 {event.artists?.map((artist, index) => (
                   <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
                     {index > 0 && <ArtistSeparator>/</ArtistSeparator>}
-                    <ArtistItem onClick={() => router.push(`/map?artistId=${artist.id}`)}>
+                    <ArtistItem onClick={() => router.push(`/map/${artist.id}`)}>
                       <ArtistAvatar $imageUrl={artist.profileImage} />
                       <ArtistName>{artist.name || 'Unknown Artist'}</ArtistName>
                     </ArtistItem>

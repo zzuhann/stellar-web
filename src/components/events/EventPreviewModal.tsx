@@ -278,7 +278,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
             {event.artists?.map((artist, index) => (
               <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
                 {index > 0 && <ArtistSeparator>/</ArtistSeparator>}
-                <ArtistItem onClick={() => router.push(`/map?artistId=${artist.id}`)}>
+                <ArtistItem onClick={() => router.push(`/map/${artist.id}`)}>
                   <ArtistAvatar $imageUrl={artist.profileImage} />
                   <ArtistName>{artist.name || 'Unknown Artist'}</ArtistName>
                 </ArtistItem>

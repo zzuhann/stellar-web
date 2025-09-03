@@ -448,7 +448,7 @@ function MySubmissionsContent() {
                       key={artist.id}
                       artist={artist}
                       onClick={(artist) => {
-                        router.push(`/map?artistId=${artist.id}`);
+                        router.push(`/map/${artist.id}`);
                       }}
                       submissionTime={
                         artist.createdAt
