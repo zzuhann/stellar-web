@@ -9,6 +9,7 @@ import StyledComponentsRegistry from '@/lib/styled-components-registry';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Analytics } from '@vercel/analytics/next';
+import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
@@ -19,22 +20,30 @@ const notoSansTC = Noto_Sans_TC({
 
 export const metadata: Metadata = {
   title: {
-    default: 'STELLAR | 台灣生咖應援地圖',
-    template: '%s | STELLAR 台灣生咖應援地圖',
+    default: 'STELLAR | 台灣生日應援地圖',
+    template: '%s | STELLAR 台灣生日應援地圖',
   },
   description: '在 STELLAR 尋找在你附近的生日應援吧！',
-  keywords: ['生咖', 'K-POP', '生日咖啡廳', '應援', 'idol'],
+  keywords: ['生日應援', 'K-POP', '生日咖啡廳', '應援', 'idol', 'PWA'],
   openGraph: {
     type: 'website',
-    title: 'STELLAR | 台灣生咖應援地圖',
+    title: 'STELLAR | 台灣生日應援地圖',
     description: '在 STELLAR 尋找在你附近的生日應援吧！',
     images: [{ url: 'https://cdn.stellar-zone.com/images/og-image.png' }],
   },
   icons: {
-    icon: '/icon.png',
+    icon: [
+      { url: '/icon.png' },
+      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
     shortcut: '/icon.png',
-    apple: '/icon.png',
+    apple: [
+      { url: '/icon.png' },
+      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+    ],
   },
+  manifest: '/manifest.webmanifest',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -96,6 +105,7 @@ export default function RootLayout({
                 <Header />
                 {children}
                 <Analytics />
+                <ServiceWorkerRegistration />
                 <Toaster
                   position="top-center"
                   toastOptions={{
