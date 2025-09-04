@@ -19,14 +19,10 @@ interface BannerItem {
 const BannerContainer = styled.div`
   position: relative;
   width: 100%;
-  height: 600px;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
   margin-bottom: 24px;
   border-bottom: 1px solid var(--color-border-light);
-
-  @media (max-width: 500px) {
-    height: 450px;
-  }
 `;
 
 const SlideContainer = styled(animated.div)`
@@ -249,8 +245,8 @@ export default function Banner({ items = defaultBannerItems }: BannerProps) {
           <ProductImage
             src={items[currentIndex].imageUrl}
             alt={items[currentIndex].title}
-            width={800}
-            height={600}
+            width={600}
+            height={800}
           />
         </SlideContent>
       </SlideContainer>
