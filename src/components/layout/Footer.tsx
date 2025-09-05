@@ -52,16 +52,16 @@ const Footer = () => {
   return (
     <FooterContainer>
       <FooterContent>
-        <CopyrightText>Copyright © {currentYear} _muri.ri</CopyrightText>
+        <CopyrightText>Copyright © {currentYear} _stellar.tw</CopyrightText>
 
         <SocialLinks>
           <SocialLink
-            href="https://www.instagram.com/_muri.ri"
+            href="https://www.instagram.com/_stellar.tw"
             target="_blank"
             rel="noopener noreferrer"
           >
             <InstagramIcon size={16} />
-            _muri.ri
+            _stellar.tw
           </SocialLink>
         </SocialLinks>
       </FooterContent>
