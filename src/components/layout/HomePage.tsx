@@ -29,7 +29,14 @@ export default function HomePage() {
   const weekEnd = getWeekEnd(weekStart);
   const startDate = formatDateForAPI(weekStart);
   const endDate = formatDateForAPI(weekEnd);
-  const startDateISO = weekStart.toISOString();
+
+  // 對於 events，使用今天作為開始時間，避免顯示已結束的活動
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const eventStartDate =
+    currentWeekStart.getTime() === getWeekStart(new Date()).getTime()
+      ? today.toISOString() // 如果是本週，從今天開始
+      : weekStart.toISOString(); // 如果是其他週，從該週開始
   const endDateISO = new Date(weekEnd.getTime() + 24 * 60 * 60 * 1000 - 1).toISOString();
 
   // 使用 React Query 獲取當週壽星
@@ -42,7 +49,7 @@ export default function HomePage() {
 
   // 使用 React Query 獲取當週生咖活動
   const { data: eventsResponse, isLoading: eventsLoading } = useWeeklyEvents(
-    startDateISO,
+    eventStartDate,
     endDateISO,
     { enabled: activeTab === 'events' }
   );

@@ -1,6 +1,6 @@
 // Service Worker for STELLAR PWA
 const CACHE_NAME = 'stellar-cache-v1';
-const STATIC_CACHE_URLS = ['/', '/map', '/manifest.json', '/icon-192x192.png', '/icon-512x512.png'];
+const STATIC_CACHE_URLS = ['/', '/map', '/manifest.webmanifest', '/icon-192x192.png', '/icon-512x512.png'];
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {

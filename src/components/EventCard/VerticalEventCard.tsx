@@ -87,7 +87,7 @@ const EventArtistSection = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
-  font-size: 14px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 8px;
 `;
@@ -99,8 +99,8 @@ const EventArtistItem = styled.div`
 `;
 
 const EventArtistAvatar = styled.div<{ imageUrl?: string }>`
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   overflow: hidden;
   background-image: url(${(props) => props.imageUrl ?? ''});
@@ -112,13 +112,13 @@ const EventArtistAvatar = styled.div<{ imageUrl?: string }>`
 `;
 
 const EventArtistName = styled.span`
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
 `;
 
 const EventArtistSeparator = styled.span`
-  font-size: 14px;
+  font-size: 16px;
   color: rgba(255, 255, 255, 0.7);
   margin: 0 2px;
 `;
@@ -127,8 +127,8 @@ const EventDetails = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 16px;
+  color: rgba(255, 255, 255);
 `;
 
 const EventDetailItem = styled.div`
@@ -149,7 +149,7 @@ const StatusBadge = styled.span<{ status: 'pending' | 'approved' | 'rejected' }>
   gap: 2px;
   padding: 6px 8px;
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   position: absolute;
   top: 6px;
@@ -215,9 +215,11 @@ const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardP
     <VerticalEventCardContainer>
       <EventImage $imageUrl={event.mainImage ?? ''} />
 
-      <StatusBadge status={event.status}>
-        {getStatusText(event.status, event.rejectedReason)}
-      </StatusBadge>
+      {!isIndexPage && (
+        <StatusBadge status={event.status}>
+          {getStatusText(event.status, event.rejectedReason)}
+        </StatusBadge>
+      )}
 
       <ImageOverlay
         $hasActionButtons={!!actionButtons}
@@ -242,13 +244,13 @@ const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardP
 
         <EventDetails>
           <EventDetailItem>
-            <CalendarIcon className="h-3 w-3 flex-shrink-0" />
+            <CalendarIcon className="h-4 w-4 flex-shrink-0" />
             <span>{eventDateText}</span>
           </EventDetailItem>
 
           {event.location.name && (
             <EventDetailItem>
-              <MapPinIcon className="h-3 w-3 flex-shrink-0" />
+              <MapPinIcon className="h-4 w-4 flex-shrink-0" />
               <span>{event.location.name}</span>
             </EventDetailItem>
           )}
