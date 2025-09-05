@@ -1,30 +1,13 @@
 import { Suspense } from 'react';
 import axios from 'axios';
-import ArtistHomePage from '@/components/layout/ArtistHomePage';
+import HomePage from '@/components/layout/HomePage';
 import { Artist } from '@/types';
+import { getWeekStart, getWeekEnd, formatDateForAPI } from '@/utils/weekHelpers';
 
 // ISR: 每小時重新驗證一次數據
 export const revalidate = 3600;
 
-// 獲取當前週的開始日期
-function getWeekStart(date: Date): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day;
-  return new Date(d.setDate(diff));
-}
-
-// 獲取當前週的結束日期
-function getWeekEnd(weekStart: Date): Date {
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 6);
-  return weekEnd;
-}
-
-// 格式化日期為 YYYY-MM-DD
-function formatDate(date: Date): string {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-}
+// 移除重複的函數，使用 weekHelpers 中的統一實現
 
 // 創建不需要認證的 API 實例（用於 SSR）
 const publicApi = axios.create({
@@ -38,8 +21,8 @@ async function getWeekBirthdayArtists(): Promise<Artist[]> {
     const weekStart = getWeekStart(new Date());
     const weekEnd = getWeekEnd(weekStart);
 
-    const startDate = formatDate(weekStart);
-    const endDate = formatDate(weekEnd);
+    const startDate = formatDateForAPI(weekStart);
+    const endDate = formatDateForAPI(weekEnd);
 
     // 使用公開 API，不需要認證
     const queryParams = new URLSearchParams({
@@ -137,7 +120,7 @@ export default async function Home() {
 
   return (
     <Suspense fallback={<HomePageSkeleton />}>
-      <ArtistHomePage initialArtists={initialArtists} />
+      <HomePage initialArtists={initialArtists} />
     </Suspense>
   );
 }
