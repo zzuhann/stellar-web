@@ -231,6 +231,8 @@ export const eventsApi = {
     if (params?.limit) queryParams.limit = params.limit.toString();
     if (params?.sortBy) queryParams.sortBy = params.sortBy;
     if (params?.sortOrder) queryParams.sortOrder = params.sortOrder;
+    if (params?.startTimeFrom) queryParams.startTimeFrom = params.startTimeFrom;
+    if (params?.startTimeTo) queryParams.startTimeTo = params.startTimeTo;
 
     const response = await api.get('/events', { params: queryParams });
     return response.data as EventsResponse;

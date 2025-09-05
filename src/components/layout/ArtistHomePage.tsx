@@ -10,8 +10,8 @@ import {
 import styled from 'styled-components';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/lib/auth-context';
-import { Artist } from '@/types';
-import { artistsApi } from '@/lib/api';
+import { Artist, CoffeeEvent } from '@/types';
+import { artistsApi, eventsApi } from '@/lib/api';
 import dynamic from 'next/dynamic';
 import ArtistCard from '../ArtistCard';
 
@@ -20,10 +20,16 @@ const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearch
   ssr: false,
   loading: () => null,
 });
+import VerticalEventCard from '../EventCard/VerticalEventCard';
 import { getDaysUntilBirthday } from '@/utils';
 
 // React Query hook for fetching birthday artists
-const useBirthdayArtists = (startDate: string, endDate: string, placeholderData?: Artist[]) => {
+const useBirthdayArtists = (
+  startDate: string,
+  endDate: string,
+  placeholderData?: Artist[],
+  options?: { enabled?: boolean }
+) => {
   return useQuery({
     queryKey: ['birthday-artists', startDate, endDate],
     queryFn: () =>
@@ -37,6 +43,24 @@ const useBirthdayArtists = (startDate: string, endDate: string, placeholderData?
     placeholderData: placeholderData,
     staleTime: 1000 * 60 * 5, // 5 分鐘快取
     gcTime: 1000 * 60 * 15, // 15 分鐘保留
+    enabled: options?.enabled,
+  });
+};
+
+const useWeeklyEvents = (startDate: string, endDate: string, options?: { enabled?: boolean }) => {
+  return useQuery({
+    queryKey: ['weekly-events', startDate, endDate],
+    queryFn: () =>
+      eventsApi.getAll({
+        status: 'approved',
+        startTimeFrom: startDate,
+        startTimeTo: endDate,
+        sortBy: 'startTime',
+        sortOrder: 'asc',
+      }),
+    staleTime: 1000 * 60 * 5, // 5 分鐘快取
+    gcTime: 1000 * 60 * 15, // 15 分鐘保留
+    enabled: options?.enabled,
   });
 };
 
@@ -234,6 +258,49 @@ const LoadingContainer = styled.div`
   }
 `;
 
+const TabContainer = styled.div`
+  margin-bottom: 16px;
+`;
+
+const TabNav = styled.nav`
+  display: flex;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+`;
+
+const TabButton = styled.button<{ $active?: boolean }>`
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  background: ${(props) => (props.$active ? 'var(--color-primary)' : 'transparent')};
+  color: ${(props) => (props.$active ? 'white' : 'var(--color-text-primary)')};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  &:hover {
+    background: ${(props) =>
+      props.$active ? 'var(--color-primary)' : 'var(--color-border-light)'};
+  }
+`;
+
+const EventList = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+`;
+
 // 工具函數
 const getWeekStart = (date: Date): Date => {
   const d = new Date(date.getTime()); // 確保不修改原始 date
@@ -266,15 +333,31 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
 
   const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => getWeekStart(new Date()));
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'birthday' | 'events'>('birthday');
 
   // 計算當週的開始和結束日期
   const weekStart = getWeekStart(currentWeekStart);
   const weekEnd = getWeekEnd(weekStart);
   const startDate = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, '0')}-${String(weekStart.getDate()).padStart(2, '0')}`;
   const endDate = `${weekEnd.getFullYear()}-${String(weekEnd.getMonth() + 1).padStart(2, '0')}-${String(weekEnd.getDate()).padStart(2, '0')}`;
+  const startDateISO = weekStart.toISOString();
+  const endDateISO = new Date(weekEnd.getTime() + 24 * 60 * 60 * 1000 - 1).toISOString();
 
   // 使用 React Query 獲取當週壽星
-  const { data: artists = [], isLoading: loading } = useBirthdayArtists(startDate, endDate);
+  const { data: artists = [], isLoading: loading } = useBirthdayArtists(
+    startDate,
+    endDate,
+    undefined,
+    { enabled: activeTab === 'birthday' }
+  );
+
+  // 使用 React Query 獲取當週生咖活動
+  const { data: eventsResponse, isLoading: eventsLoading } = useWeeklyEvents(
+    startDateISO,
+    endDateISO,
+    { enabled: activeTab === 'events' }
+  );
+  const weeklyEvents = eventsResponse?.events || [];
 
   // 計算當前週的結束日期
   const currentWeekEnd = useMemo(() => getWeekEnd(currentWeekStart), [currentWeekStart]);
@@ -325,6 +408,10 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
     router.push(`/map/${artist.id}`);
   };
 
+  const handleEventClick = (event: CoffeeEvent) => {
+    router.push(`/event/${event.id}`);
+  };
+
   return (
     <PageContainer>
       <MainContainer>
@@ -344,6 +431,21 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
             前往投稿生日應援 ➡️
           </CTAButton>
 
+          {/* Tab 導航 */}
+          <TabContainer>
+            <TabNav>
+              <TabButton
+                $active={activeTab === 'birthday'}
+                onClick={() => setActiveTab('birthday')}
+              >
+                壽星
+              </TabButton>
+              <TabButton $active={activeTab === 'events'} onClick={() => setActiveTab('events')}>
+                生日應援
+              </TabButton>
+            </TabNav>
+          </TabContainer>
+
           {/* 週導航 */}
           <WeekNavigationContainer>
             <WeekNavigationButton onClick={goToPreviousWeek}>
@@ -351,7 +453,15 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
             </WeekNavigationButton>
 
             <WeekInfo>
-              <div className="title">{isCurrentWeek ? '本週壽星' : '當週壽星'}</div>
+              <div className="title">
+                {activeTab === 'birthday'
+                  ? isCurrentWeek
+                    ? '本週壽星'
+                    : '當週壽星'
+                  : isCurrentWeek
+                    ? '本週生日應援'
+                    : '當週生日應援'}
+              </div>
               <div className="date-range">
                 {formatDate(currentWeekStart)} - {formatDate(currentWeekEnd)}
               </div>
@@ -362,45 +472,73 @@ export default function ArtistHomePage({ initialArtists = [] }: ArtistHomePagePr
             </WeekNavigationButton>
           </WeekNavigationContainer>
 
-          {/* 搜尋區域 */}
-          <SearchContainer>
-            <MagnifyingGlassIcon />
-            <SearchInput
-              onClick={() => {
-                setSearchModalOpen(true);
-              }}
-            >
-              搜尋你的偶像的生日應援
-            </SearchInput>
-          </SearchContainer>
+          {activeTab === 'birthday' && (
+            <>
+              {/* 搜尋區域 */}
+              <SearchContainer>
+                <MagnifyingGlassIcon />
+                <SearchInput
+                  onClick={() => {
+                    setSearchModalOpen(true);
+                  }}
+                >
+                  搜尋你的偶像的生日應援
+                </SearchInput>
+              </SearchContainer>
 
-          {/* 藝人列表區域 - 包含 loading 狀態 */}
-          {loading ? (
-            <LoadingContainer>
-              <div className="spinner" />
-              <p>載入當週壽星中...</p>
-            </LoadingContainer>
-          ) : weekBirthdayArtists.length > 0 ? (
-            <ArtistList>
-              {weekBirthdayArtists.map((artist) => {
-                if (!artist.birthday) return null;
-                return (
-                  <>
-                    <ArtistCard
-                      key={artist.id}
-                      artist={artist}
-                      handleArtistClick={handleArtistClick}
-                    />
-                  </>
-                );
-              })}
-            </ArtistList>
-          ) : (
-            <EmptyState>
-              <div className="icon">🎂</div>
-              <h3>本週沒有壽星</h3>
-              <p>可以切換查看其他週的壽星，或直接搜尋你的偶像</p>
-            </EmptyState>
+              {/* 藝人列表區域 - 包含 loading 狀態 */}
+              {loading ? (
+                <LoadingContainer>
+                  <div className="spinner" />
+                  <p>載入當週壽星中...</p>
+                </LoadingContainer>
+              ) : weekBirthdayArtists.length > 0 ? (
+                <ArtistList>
+                  {weekBirthdayArtists.map((artist) => {
+                    if (!artist.birthday) return null;
+                    return (
+                      <>
+                        <ArtistCard
+                          key={artist.id}
+                          artist={artist}
+                          handleArtistClick={handleArtistClick}
+                        />
+                      </>
+                    );
+                  })}
+                </ArtistList>
+              ) : (
+                <EmptyState>
+                  <div className="icon">🎂</div>
+                  <h3>本週沒有壽星</h3>
+                  <p>可以切換查看其他週的壽星，或直接搜尋你的偶像</p>
+                </EmptyState>
+              )}
+            </>
+          )}
+
+          {activeTab === 'events' && (
+            <>
+              {/* 生日應援活動列表 */}
+              {eventsLoading ? (
+                <LoadingContainer>
+                  <div className="spinner" />
+                  <p>載入當週生日應援中...</p>
+                </LoadingContainer>
+              ) : weeklyEvents.length > 0 ? (
+                <EventList>
+                  {weeklyEvents.map((event) => (
+                    <VerticalEventCard key={event.id} event={event} onClick={handleEventClick} />
+                  ))}
+                </EventList>
+              ) : (
+                <EmptyState>
+                  <div className="icon">🎉</div>
+                  <h3>本週沒有生日應援</h3>
+                  <p>可以切換查看其他週的生日應援活動</p>
+                </EmptyState>
+              )}
+            </>
           )}
         </ContentWrapper>
       </MainContainer>

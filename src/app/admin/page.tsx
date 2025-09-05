@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import {
@@ -11,6 +11,8 @@ import {
   EyeIcon,
   ExclamationTriangleIcon,
   PencilSquareIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from '@heroicons/react/24/outline';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { artistsApi, eventsApi } from '@/lib/api';
@@ -402,7 +404,7 @@ const EditModalContent = styled.div`
 export default function AdminPage() {
   const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'artists' | 'events'>('artists');
+  const [activeTab, setActiveTab] = useState<'artists' | 'events' | 'weekly-events'>('artists');
   const [previewingEvent, setPreviewingEvent] = useState<CoffeeEvent | null>(null);
   const [rejectingArtist, setRejectingArtist] = useState<Artist | null>(null);
   const [rejectingEvent, setRejectingEvent] = useState<CoffeeEvent | null>(null);
@@ -410,6 +412,15 @@ export default function AdminPage() {
   const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
   const [selectedArtists, setSelectedArtists] = useState<Set<string>>(new Set());
   const [batchApproving, setBatchApproving] = useState(false);
+  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() + diff);
+    weekStart.setHours(0, 0, 0, 0);
+    return weekStart;
+  });
   const queryClient = useQueryClient();
 
   // 使用 React Query 取得待審核藝人
@@ -431,6 +442,52 @@ export default function AdminPage() {
   });
 
   const pendingEvents = pendingEventsResponse?.events || [];
+
+  // 計算當週日期範圍
+  const weekEnd = new Date(currentWeekStart);
+  weekEnd.setDate(currentWeekStart.getDate() + 6);
+  weekEnd.setHours(23, 59, 59, 999);
+
+  const formatDateForAPI = (date: Date): string => {
+    return date.toISOString();
+  };
+
+  // 使用 React Query 取得當週生咖列表
+  const { data: weeklyEventsResponse, isLoading: weeklyEventsLoading } = useQuery({
+    queryKey: ['admin-weekly-events', currentWeekStart.toISOString()],
+    queryFn: () =>
+      eventsApi.getAll({
+        status: 'approved',
+        startTimeFrom: formatDateForAPI(currentWeekStart),
+        startTimeTo: formatDateForAPI(weekEnd),
+        sortBy: 'startTime',
+        sortOrder: 'asc',
+      }),
+    enabled: !!user && userData?.role === 'admin' && activeTab === 'weekly-events',
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  const weeklyEvents = weeklyEventsResponse?.events || [];
+
+  const weeklyEventsTitle = useMemo(() => {
+    const formatDate = (date: Date): string => `${date.getMonth() + 1}/${date.getDate()}`;
+    return `${formatDate(currentWeekStart)} - ${formatDate(weekEnd)} (${weeklyEvents.length} 個生咖)`;
+  }, [currentWeekStart, weekEnd, weeklyEvents.length]);
+
+  const weekNavigationTitle = useMemo(() => {
+    const thisWeekStart = new Date();
+    const day = thisWeekStart.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    thisWeekStart.setDate(thisWeekStart.getDate() + diff);
+    thisWeekStart.setHours(0, 0, 0, 0);
+    return currentWeekStart.getTime() === thisWeekStart.getTime() ? '本週生咖' : '當週生咖';
+  }, [currentWeekStart]);
+
+  const weekNavigationDateRange = useMemo(() => {
+    const formatDate = (date: Date): string => `${date.getMonth() + 1}/${date.getDate()}`;
+    return `${formatDate(currentWeekStart)} - ${formatDate(weekEnd)}`;
+  }, [currentWeekStart, weekEnd]);
 
   // 權限檢查
   useEffect(() => {
@@ -654,7 +711,7 @@ export default function AdminPage() {
     setEditingArtist(null);
   };
 
-  if (authLoading || artistsLoading || eventsLoading) {
+  if (authLoading || artistsLoading || eventsLoading || weeklyEventsLoading) {
     return (
       <PageContainer>
         <LoadingContainer>
@@ -683,6 +740,12 @@ export default function AdminPage() {
             <TabButton $active={activeTab === 'events'} onClick={() => setActiveTab('events')}>
               待審生咖
               {pendingEvents.length > 0 && <Badge>{pendingEvents.length}</Badge>}
+            </TabButton>
+            <TabButton
+              $active={activeTab === 'weekly-events'}
+              onClick={() => setActiveTab('weekly-events')}
+            >
+              生咖列表
             </TabButton>
           </TabNav>
         </TabContainer>
@@ -877,6 +940,129 @@ export default function AdminPage() {
                         </ActionButton>
                       </ActionButtons>
                     }
+                  />
+                ))}
+              </ItemList>
+            )}
+          </ContentCard>
+        )}
+
+        {/* Weekly Events Tab */}
+        {activeTab === 'weekly-events' && (
+          <ContentCard>
+            <CardHeader>
+              <h2>生咖列表</h2>
+              <p>{weeklyEventsTitle}</p>
+            </CardHeader>
+
+            {/* 週導航 */}
+            <div
+              style={{
+                padding: '16px 20px',
+                borderBottom: '1px solid var(--color-border-light)',
+                background: 'white',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '8px 16px',
+                  background: 'var(--color-bg-secondary)',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--color-border-light)',
+                }}
+              >
+                <button
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: 'var(--radius-md)',
+                    color: 'var(--color-text-primary)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    border: 'none',
+                    background: 'transparent',
+                  }}
+                  onClick={() => {
+                    const newWeekStart = new Date(currentWeekStart);
+                    newWeekStart.setDate(newWeekStart.getDate() - 7);
+                    setCurrentWeekStart(newWeekStart);
+                  }}
+                >
+                  <ChevronLeftIcon style={{ width: '20px', height: '20px' }} />
+                </button>
+
+                <div
+                  style={{
+                    textAlign: 'center',
+                    flex: 1,
+                    margin: '0 16px',
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      color: 'var(--color-text-primary)',
+                      margin: '0 0 4px 0',
+                    }}
+                  >
+                    {weekNavigationTitle}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      color: 'var(--color-text-secondary)',
+                      margin: 0,
+                    }}
+                  >
+                    {weekNavigationDateRange}
+                  </div>
+                </div>
+
+                <button
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: 'var(--radius-md)',
+                    color: 'var(--color-text-primary)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    border: 'none',
+                    background: 'transparent',
+                  }}
+                  onClick={() => {
+                    const newWeekStart = new Date(currentWeekStart);
+                    newWeekStart.setDate(newWeekStart.getDate() + 7);
+                    setCurrentWeekStart(newWeekStart);
+                  }}
+                >
+                  <ChevronRightIcon style={{ width: '20px', height: '20px' }} />
+                </button>
+              </div>
+            </div>
+
+            {weeklyEvents.length === 0 ? (
+              <EmptyState>
+                <CalendarIcon className="icon" width={48} height={48} />
+                <h3>本週沒有生咖</h3>
+                <p>當週沒有已審核通過的生日應援活動</p>
+              </EmptyState>
+            ) : (
+              <ItemList>
+                {weeklyEvents.map((event) => (
+                  <VerticalEventCard
+                    key={event.id}
+                    event={event}
+                    onClick={(event) => handlePreviewEvent(event)}
                   />
                 ))}
               </ItemList>

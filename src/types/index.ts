@@ -184,6 +184,8 @@ export interface EventSearchParams {
   limit?: number; // 每頁筆數，預設50，最大100
   sortBy?: 'title' | 'startTime' | 'createdAt'; // 排序欄位
   sortOrder?: 'asc' | 'desc'; // 排序方向
+  startTimeFrom?: string; // 開始時間範圍（從）
+  startTimeTo?: string; // 開始時間範圍（到）
 }
 
 // 地圖相關型別

@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { firebaseTimestampToDate } from '@/utils';
 import { FirebaseTimestamp } from '@/types';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { usePathname } from 'next/navigation';
 
 const VerticalEventCardContainer = styled.div`
   display: flex;
@@ -23,7 +24,7 @@ const VerticalEventCardContainer = styled.div`
 
 const EventImage = styled.div<{ $imageUrl: string }>`
   width: 100%;
-  height: 360px;
+  aspect-ratio: 3/4;
   background-image: url(${(props) => props.$imageUrl});
   background-size: cover;
   background-position: center;
@@ -196,6 +197,8 @@ interface VerticalEventCardProps {
 }
 
 const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardProps) => {
+  const pathname = usePathname();
+  const isIndexPage = pathname === '/';
   const submissionTime = event.createdAt
     ? firebaseTimestampToDate(event.createdAt as FirebaseTimestamp).toLocaleDateString('zh-TW')
     : '';
@@ -251,7 +254,9 @@ const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardP
           )}
         </EventDetails>
 
-        {submissionTime && <SubmissionTime>投稿時間：{submissionTime}</SubmissionTime>}
+        {submissionTime && !isIndexPage && (
+          <SubmissionTime>投稿時間：{submissionTime}</SubmissionTime>
+        )}
       </ImageOverlay>
 
       {actionButtons && <ButtonContainer>{actionButtons}</ButtonContainer>}
