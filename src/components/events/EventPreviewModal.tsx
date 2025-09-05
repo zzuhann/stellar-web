@@ -7,6 +7,7 @@ import { firebaseTimestampToDate } from '@/utils';
 import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { cleanSocialMediaHandle } from '@/utils/socialMedia';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
@@ -295,12 +296,12 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                 <DetailContent>
                   <DetailValue>
                     <a
-                      href={`https://www.instagram.com/${event.socialMedia.instagram}`}
+                      href={`https://www.instagram.com/${cleanSocialMediaHandle(event.socialMedia.instagram)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ color: '#3a64c7' }}
                     >
-                      @{event.socialMedia.instagram}
+                      @{cleanSocialMediaHandle(event.socialMedia.instagram)}
                     </a>
                   </DetailValue>
                 </DetailContent>
@@ -313,12 +314,12 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                 <DetailContent>
                   <DetailValue>
                     <a
-                      href={`https://www.threads.net/@${event.socialMedia.threads}`}
+                      href={`https://www.threads.net/@${cleanSocialMediaHandle(event.socialMedia.threads)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ color: '#3a64c7' }}
                     >
-                      @{event.socialMedia.threads}
+                      @{cleanSocialMediaHandle(event.socialMedia.threads)}
                     </a>
                   </DetailValue>
                 </DetailContent>
@@ -331,12 +332,12 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                 <DetailContent>
                   <DetailValue>
                     <a
-                      href={`https://x.com/${event.socialMedia.x}`}
+                      href={`https://x.com/${cleanSocialMediaHandle(event.socialMedia.x)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{ color: '#3a64c7' }}
                     >
-                      @{event.socialMedia.x}
+                      @{cleanSocialMediaHandle(event.socialMedia.x)}
                     </a>
                   </DetailValue>
                 </DetailContent>
