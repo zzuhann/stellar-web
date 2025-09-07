@@ -24,13 +24,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
   const router = useRouter();
 
   useEffect(() => {
-    const handleStart = () => {
-      setIsLoading(true);
-    };
-
-    const handleComplete = () => {
-      setIsLoading(false);
-    };
+    let timeoutId: NodeJS.Timeout;
 
     // 監聽路由變化
     const originalPush = router.push;
@@ -43,7 +37,11 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
 
       // 只有當路徑不同時才顯示 loading（忽略 query 參數的變化）
       if (targetUrl.pathname !== currentUrl.pathname) {
-        handleStart();
+        setIsLoading(true);
+        // 設定一個最大超時時間，防止 loading 卡住
+        timeoutId = setTimeout(() => {
+          setIsLoading(false);
+        }, 5000);
       }
       return originalPush(href, options);
     };
@@ -55,19 +53,19 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
 
       // 只有當路徑不同時才顯示 loading（忽略 query 參數的變化）
       if (targetUrl.pathname !== currentUrl.pathname) {
-        handleStart();
+        setIsLoading(true);
+        // 設定一個最大超時時間，防止 loading 卡住
+        timeoutId = setTimeout(() => {
+          setIsLoading(false);
+        }, 5000);
       }
       return originalReplace(href, options);
     };
 
-    // 頁面載入完成時停止 loading
-    const stopLoading = () => handleComplete();
-
-    // 監聽頁面載入事件
-    window.addEventListener('beforeunload', stopLoading);
-
     return () => {
-      window.removeEventListener('beforeunload', stopLoading);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       router.push = originalPush;
       router.replace = originalReplace;
     };
