@@ -107,7 +107,7 @@ export default function HomePage() {
   };
 
   const handleEventClick = (event: CoffeeEvent) => {
-    router.push(`/events/${event.id}`);
+    router.push(`/event/${event.id}`);
   };
 
   const handleTabChange = (tab: 'birthday' | 'events') => {
