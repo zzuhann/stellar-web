@@ -133,8 +133,17 @@ const EventDetails = styled.div`
 
 const EventDetailItem = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 4px;
+`;
+
+const DetailText = styled.span`
+  // 最多兩行
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const SubmissionTime = styled.div`
@@ -244,14 +253,14 @@ const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardP
 
         <EventDetails>
           <EventDetailItem>
-            <CalendarIcon className="h-4 w-4 flex-shrink-0" />
-            <span>{eventDateText}</span>
+            <CalendarIcon className="h-4 w-4 flex-shrink-0 mt-1" />
+            <DetailText>{eventDateText}</DetailText>
           </EventDetailItem>
 
           {event.location.name && (
             <EventDetailItem>
-              <MapPinIcon className="h-4 w-4 flex-shrink-0" />
-              <span>{event.location.name}</span>
+              <MapPinIcon className="h-4 w-4 flex-shrink-0 mt-1" />
+              <DetailText>{event.location.name}</DetailText>
             </EventDetailItem>
           )}
         </EventDetails>
