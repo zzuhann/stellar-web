@@ -8,7 +8,7 @@ import { useBirthdayArtists, useWeeklyEvents } from '@/hooks/useHomePage';
 import { getWeekStart, getWeekEnd, formatDateForAPI } from '@/utils/weekHelpers';
 import { shouldShowBirthdayHat } from '@/utils/birthdayHelpers';
 import { useQueryState } from '@/hooks/useQueryState';
-import { useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
+import { useQueryStateContextMergeUpdates, QueryStateProvider } from '@/hooks/useQueryStateContext';
 import { PageContainer, MainContainer, ContentWrapper } from '@/components/HomePage/styles';
 import CTASection from '@/components/HomePage/CTASection';
 import WeekNavigation from '@/components/HomePage/WeekNavigation';
@@ -20,7 +20,7 @@ const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearch
   loading: () => null,
 });
 
-export default function HomePage() {
+function HomePageContent() {
   const router = useRouter();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const { mergeUpdates } = useQueryStateContextMergeUpdates();
@@ -189,5 +189,13 @@ export default function HomePage() {
 
       <ArtistSearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
     </PageContainer>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <QueryStateProvider>
+      <HomePageContent />
+    </QueryStateProvider>
   );
 }

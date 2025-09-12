@@ -4,7 +4,6 @@ import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
 import { QueryProvider } from '@/lib/query-client';
 import { LoadingProvider } from '@/lib/loading-context';
-import { QueryStateProvider } from '@/hooks/useQueryStateContext';
 import { Toaster } from 'react-hot-toast';
 import StyledComponentsRegistry from '@/lib/styled-components-registry';
 import Header from '@/components/layout/Header';
@@ -104,48 +103,46 @@ export default function RootLayout({
           <QueryProvider>
             <AuthProvider>
               <LoadingProvider>
-                <QueryStateProvider>
-                  <Header />
-                  {children}
-                  <Analytics />
-                  <ServiceWorkerRegistration />
-                  <Toaster
-                    position="top-center"
-                    toastOptions={{
-                      duration: 4000,
+                <Header />
+                {children}
+                <Analytics />
+                <ServiceWorkerRegistration />
+                <Toaster
+                  position="top-center"
+                  toastOptions={{
+                    duration: 4000,
+                    style: {
+                      background: '#fff',
+                      color: '#333',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      padding: '12px 16px',
+                      maxWidth: '400px',
+                    },
+                    success: {
                       style: {
-                        background: '#fff',
-                        color: '#333',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        padding: '12px 16px',
-                        maxWidth: '400px',
+                        border: '1px solid #10b981',
+                        color: '#065f46',
                       },
-                      success: {
-                        style: {
-                          border: '1px solid #10b981',
-                          color: '#065f46',
-                        },
-                        iconTheme: {
-                          primary: '#10b981',
-                          secondary: '#ffffff',
-                        },
+                      iconTheme: {
+                        primary: '#10b981',
+                        secondary: '#ffffff',
                       },
-                      error: {
-                        style: {
-                          border: '1px solid #ef4444',
-                          color: '#991b1b',
-                        },
-                        iconTheme: {
-                          primary: '#ef4444',
-                          secondary: '#ffffff',
-                        },
+                    },
+                    error: {
+                      style: {
+                        border: '1px solid #ef4444',
+                        color: '#991b1b',
                       },
-                    }}
-                  />
-                  <Footer />
-                </QueryStateProvider>
+                      iconTheme: {
+                        primary: '#ef4444',
+                        secondary: '#ffffff',
+                      },
+                    },
+                  }}
+                />
+                <Footer />
               </LoadingProvider>
             </AuthProvider>
           </QueryProvider>

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, useEffect, useMemo, Suspense } from 'react';
+
+// 禁用靜態生成，因為使用了 useSearchParams
+export const dynamic = 'force-dynamic';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
 
