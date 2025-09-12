@@ -1,8 +1,10 @@
-'use client';
-
 import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import styled from 'styled-components';
-import SubmitEventClient from './SubmitEventClient';
+
+const SubmitEventClient = dynamic(() => import('./SubmitEventClient'), {
+  ssr: false,
+});
 
 // Styled Components
 const PageContainer = styled.div`

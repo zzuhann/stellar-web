@@ -74,12 +74,13 @@ export const metadata: Metadata = {
     images: [{ url: 'https://cdn.stellar-zone.com/images/og-image.png' }],
     creator: '@STELLAR_TW',
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({

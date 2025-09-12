@@ -1,8 +1,10 @@
-'use client';
-
 import { Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import styled from 'styled-components';
-import SubmitArtistClient from './SubmitArtistClient';
+
+const SubmitArtistClient = dynamic(() => import('./SubmitArtistClient'), {
+  ssr: false,
+});
 
 const PageContainer = styled.div`
   min-height: 100vh;
