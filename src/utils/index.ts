@@ -11,20 +11,29 @@ export const getDaysUntilBirthday = (birthdayStr: string): number => {
   const today = new Date();
   const birthday = new Date(birthdayStr);
 
-  // 設定為今年的生日
+  // 將今天的時間設為午夜 00:00:00
+  const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+  // 設定為今年的生日（午夜 00:00:00）
   const thisYearBirthday = new Date(today.getFullYear(), birthday.getMonth(), birthday.getDate());
 
-  if (thisYearBirthday < today) {
+  // 計算天數差異
+  const diffTime = thisYearBirthday.getTime() - todayMidnight.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
     // 如果今年的生日已過，計算到明年生日的天數
     const nextYearBirthday = new Date(
       today.getFullYear() + 1,
       birthday.getMonth(),
       birthday.getDate()
     );
-    return Math.ceil((nextYearBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.ceil(
+      (nextYearBirthday.getTime() - todayMidnight.getTime()) / (1000 * 60 * 60 * 24)
+    );
   } else {
-    // 今年的生日還沒到
-    return Math.ceil((thisYearBirthday.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    // 今年的生日還沒到或就是今天（diffDays = 0）
+    return diffDays;
   }
 };
 

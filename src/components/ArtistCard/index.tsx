@@ -1,4 +1,5 @@
 import { Artist } from '@/types';
+import { getDaysUntilBirthday } from '@/utils';
 import styled from 'styled-components';
 
 const ArtistCardContainer = styled.div`
@@ -14,6 +15,12 @@ const ArtistCardContainer = styled.div`
   box-shadow: var(--shadow-sm);
 `;
 
+const AvatarContainer = styled.div`
+  position: relative;
+  width: 64px;
+  height: 64px;
+`;
+
 const ArtistAvatar = styled.div<{ $avatarUrl: string }>`
   width: 64px;
   height: 64px;
@@ -21,6 +28,17 @@ const ArtistAvatar = styled.div<{ $avatarUrl: string }>`
   background-image: url(${(props) => props.$avatarUrl});
   background-size: cover;
   background-position: center;
+`;
+
+const BirthdayHat = styled.img`
+  position: absolute;
+  top: -8px;
+  right: -4px;
+  width: 24px;
+  height: 24px;
+  transform: rotate(15deg);
+  z-index: 2;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
 `;
 
 const ArtistInfo = styled.div`
@@ -86,10 +104,14 @@ interface ArtistCardProps {
 
 const ArtistCard = ({ artist, handleArtistClick }: ArtistCardProps) => {
   const { text: birthdayText } = getBirthdayText(artist.birthday ?? '');
+  const isBirthday = artist.birthday && getDaysUntilBirthday(artist.birthday) === 0;
 
   return (
     <ArtistCardContainer key={artist.id} onClick={() => handleArtistClick(artist)}>
-      <ArtistAvatar $avatarUrl={artist.profileImage ?? ''} />
+      <AvatarContainer>
+        <ArtistAvatar $avatarUrl={artist.profileImage ?? ''} />
+        {isBirthday && <BirthdayHat src="/party-hat.png" alt="生日帽" />}
+      </AvatarContainer>
 
       <ArtistInfo>
         <ArtistName>
