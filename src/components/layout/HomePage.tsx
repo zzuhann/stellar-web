@@ -7,6 +7,8 @@ import { Artist, CoffeeEvent } from '@/types';
 import { getDaysUntilBirthday } from '@/utils';
 import { useBirthdayArtists, useWeeklyEvents } from '@/hooks/useHomePage';
 import { getWeekStart, getWeekEnd, formatDateForAPI } from '@/utils/weekHelpers';
+import { useQueryState } from '@/hooks/useQueryState';
+import { useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
 import { PageContainer, MainContainer, ContentWrapper } from '@/components/HomePage/styles';
 import CTASection from '@/components/HomePage/CTASection';
 import WeekNavigation from '@/components/HomePage/WeekNavigation';
@@ -20,9 +22,30 @@ const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearch
 
 export default function HomePage() {
   const router = useRouter();
-  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => getWeekStart(new Date()));
   const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'birthday' | 'events'>('birthday');
+  const { mergeUpdates } = useQueryStateContextMergeUpdates();
+
+  // 使用多個 useQueryState 管理 URL 參數
+  const [activeTab, setActiveTab] = useQueryState('tab', {
+    defaultValue: 'birthday' as 'birthday' | 'events',
+    parse: (value) => {
+      return value === 'birthday' || value === 'events' ? value : 'birthday';
+    },
+  });
+
+  const [currentWeekStart, setCurrentWeekStart] = useQueryState('week', {
+    defaultValue: getWeekStart(new Date()),
+    parse: (value) => {
+      // 將 YYYY-MM-DD 字符串反序列化為 Date，並確保是週的開始日期
+      if (!value) return getWeekStart(new Date());
+      try {
+        const date = new Date(value);
+        return getWeekStart(date);
+      } catch {
+        return getWeekStart(new Date());
+      }
+    },
+  });
 
   // 計算當週的開始和結束日期
   const weekStart = getWeekStart(currentWeekStart);
@@ -40,19 +63,20 @@ export default function HomePage() {
   const endDateISO = new Date(weekEnd.getTime() + 24 * 60 * 60 * 1000 - 1).toISOString();
 
   // 使用 React Query 獲取當週壽星
-  const { data: artists = [], isLoading: loading } = useBirthdayArtists(
-    startDate,
-    endDate,
-    undefined,
-    { enabled: activeTab === 'birthday' }
-  );
+  const {
+    data: artists = [],
+    isLoading,
+    isFetching,
+  } = useBirthdayArtists(startDate, endDate, undefined, { enabled: activeTab === 'birthday' });
+  const loading = isLoading || isFetching;
 
   // 使用 React Query 獲取當週生咖活動
-  const { data: eventsResponse, isLoading: eventsLoading } = useWeeklyEvents(
-    eventStartDate,
-    endDateISO,
-    { enabled: activeTab === 'events' }
-  );
+  const {
+    data: eventsResponse,
+    isLoading: eventsIsLoading,
+    isFetching: eventsIsFetching,
+  } = useWeeklyEvents(eventStartDate, endDateISO, { enabled: activeTab === 'events' });
+  const eventsLoading = eventsIsLoading || eventsIsFetching;
   const weeklyEvents = eventsResponse?.events || [];
 
   // 計算當前週的結束日期
@@ -111,15 +135,21 @@ export default function HomePage() {
   };
 
   const handleTabChange = (tab: 'birthday' | 'events') => {
-    setActiveTab(tab);
-
-    // 如果切換到生咖tab且當前在看過去的週，自動跳回本週
+    // 如果切換到生咖tab且當前在看過去的週，需要同時更新 tab 和 week
     if (tab === 'events') {
       const thisWeekStart = getWeekStart(new Date());
       if (currentWeekStart.getTime() < thisWeekStart.getTime()) {
-        setCurrentWeekStart(thisWeekStart);
+        // 使用 mergeUpdates 批次更新，避免兩次導航
+        mergeUpdates(() => {
+          setActiveTab(tab);
+          setCurrentWeekStart(thisWeekStart);
+        });
+        return;
       }
     }
+
+    // 其他情況只需要更新 tab
+    setActiveTab(tab);
   };
 
   return (
