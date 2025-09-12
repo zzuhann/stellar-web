@@ -1,5 +1,5 @@
 import { Artist } from '@/types';
-import { getDaysUntilBirthday } from '@/utils';
+import { shouldShowBirthdayHat } from '@/utils/birthdayHelpers';
 import styled from 'styled-components';
 
 const ArtistCardContainer = styled.div`
@@ -104,7 +104,7 @@ interface ArtistCardProps {
 
 const ArtistCard = ({ artist, handleArtistClick }: ArtistCardProps) => {
   const { text: birthdayText } = getBirthdayText(artist.birthday ?? '');
-  const isBirthday = artist.birthday && getDaysUntilBirthday(artist.birthday) === 0;
+  const isBirthday = shouldShowBirthdayHat(artist.birthday ?? '');
 
   return (
     <ArtistCardContainer key={artist.id} onClick={() => handleArtistClick(artist)}>

@@ -4,9 +4,9 @@ import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Artist, CoffeeEvent } from '@/types';
-import { getDaysUntilBirthday } from '@/utils';
 import { useBirthdayArtists, useWeeklyEvents } from '@/hooks/useHomePage';
 import { getWeekStart, getWeekEnd, formatDateForAPI } from '@/utils/weekHelpers';
+import { shouldShowBirthdayHat } from '@/utils/birthdayHelpers';
 import { useQueryState } from '@/hooks/useQueryState';
 import { useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
 import { PageContainer, MainContainer, ContentWrapper } from '@/components/HomePage/styles';
@@ -82,13 +82,13 @@ export default function HomePage() {
   // 計算當前週的結束日期
   const currentWeekEnd = useMemo(() => getWeekEnd(currentWeekStart), [currentWeekStart]);
 
-  // 後端已經按生咖數量排序，前端只需要把當日壽星提到最前面
+  // 後端已經按生咖數量排序，前端只需要把當日壽星提到最前面（配合韓國時間）
   const weekBirthdayArtists = useMemo(() => {
     const todayArtists: Artist[] = [];
     const otherArtists: Artist[] = [];
 
     artists.forEach((artist) => {
-      if (artist.birthday && getDaysUntilBirthday(artist.birthday) === 0) {
+      if (shouldShowBirthdayHat(artist.birthday ?? '')) {
         todayArtists.push(artist);
       } else {
         otherArtists.push(artist);
