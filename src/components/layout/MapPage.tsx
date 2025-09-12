@@ -340,7 +340,7 @@ export default function MapPageStyled({
   artistId: propsArtistId,
   search: propsSearch,
 }: MapPageProps = {}) {
-  const { center, setCenter } = useMapStore();
+  const { center, setCenter, resetMap } = useMapStore();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -433,6 +433,13 @@ export default function MapPageStyled({
       setShouldAutoCenter(false); // 只自動定位一次
     }
   }, [latitude, longitude, setCenter, shouldAutoCenter]);
+
+  // 離開頁面時重置地圖狀態
+  useEffect(() => {
+    return () => {
+      resetMap();
+    };
+  }, [resetMap]);
 
   // 處理定位到我的位置
   const handleLocateMe = () => {
