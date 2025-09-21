@@ -505,11 +505,6 @@ function MySubmissionsContent() {
                     <VerticalEventCard
                       key={event.id}
                       event={event}
-                      onClick={() => {
-                        if (event.status === 'approved') {
-                          router.push(`/event/${event.id}`);
-                        }
-                      }}
                       actionButtons={
                         <ActionButtons>
                           <ActionButton

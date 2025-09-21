@@ -9,7 +9,7 @@ import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { cleanSocialMediaHandle } from '@/utils/socialMedia';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface EventPreviewModalProps {
   event: CoffeeEvent;
@@ -203,7 +203,6 @@ const DescriptionContent = styled.div`
 `;
 
 export default function EventPreviewModal({ event, isOpen, onClose }: EventPreviewModalProps) {
-  const router = useRouter();
   // 使用 scroll lock hook
   useScrollLock(isOpen);
 
@@ -279,10 +278,12 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
             {event.artists?.map((artist, index) => (
               <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
                 {index > 0 && <ArtistSeparator>/</ArtistSeparator>}
-                <ArtistItem onClick={() => router.push(`/map/${artist.id}`)}>
-                  <ArtistAvatar $imageUrl={artist.profileImage} />
-                  <ArtistName>{artist.name || 'Unknown Artist'}</ArtistName>
-                </ArtistItem>
+                <Link href={`/map/${artist.id}`}>
+                  <ArtistItem>
+                    <ArtistAvatar $imageUrl={artist.profileImage} />
+                    <ArtistName>{artist.name || 'Unknown Artist'}</ArtistName>
+                  </ArtistItem>
+                </Link>
               </div>
             ))}
           </ArtistSection>

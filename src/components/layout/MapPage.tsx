@@ -699,13 +699,7 @@ export default function MapPageStyled({
           <DrawerContent>
             <EventList>
               {displayEvents.length > 0 ? (
-                displayEvents.map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    onClick={() => router.push(`/event/${event.id}`)}
-                  />
-                ))
+                displayEvents.map((event) => <EventCard key={event.id} event={event} />)
               ) : (
                 <>
                   <EmptyState>

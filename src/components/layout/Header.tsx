@@ -243,6 +243,12 @@ const MobileMenuButton = styled.button`
   }
 `;
 
+const StyledLink = styled(Link)`
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+`;
+
 const Description = styled.div`
   font-size: 14px;
   color: var(--color-text-secondary);
@@ -277,9 +283,9 @@ const Header = () => {
         <DesktopNav>
           {user ? (
             <RightSection>
-              <Description onClick={() => router.push('/my-submissions')}>我的投稿</Description>
-              <Description onClick={() => router.push('/admin')}>管理員審核</Description>
-              <Description onClick={() => router.push('/submit-event')}>舉辦生日應援</Description>
+              <StyledLink href="/my-submissions">我的投稿</StyledLink>
+              <StyledLink href="/admin">管理員審核</StyledLink>
+              <StyledLink href="/submit-event">舉辦生日應援</StyledLink>
               <UserSection>
                 <UserButton onClick={() => setUserMenuOpen(!userMenuOpen)}>
                   <UserIcon16 />

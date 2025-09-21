@@ -4,6 +4,7 @@ import { firebaseTimestampToDate } from '@/utils';
 import { FirebaseTimestamp } from '@/types';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 const VerticalEventCardContainer = styled.div`
   display: flex;
@@ -201,11 +202,10 @@ const getStatusText = (status: 'pending' | 'approved' | 'rejected', rejectedReas
 
 interface VerticalEventCardProps {
   event: CoffeeEvent;
-  onClick?: (event: CoffeeEvent) => void;
   actionButtons?: React.ReactElement;
 }
 
-const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardProps) => {
+const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => {
   const pathname = usePathname();
   const isIndexPage = pathname === '/';
   const submissionTime = event.createdAt
@@ -221,57 +221,108 @@ const VerticalEventCard = ({ event, onClick, actionButtons }: VerticalEventCardP
       : '');
 
   return (
-    <VerticalEventCardContainer>
-      <EventImage $imageUrl={event.mainImage ?? ''} />
+    <>
+      {event.status === 'approved' && (
+        <Link href={`/event/${event.id}`}>
+          <VerticalEventCardContainer>
+            <EventImage $imageUrl={event.mainImage ?? ''} />
 
-      {!isIndexPage && (
-        <StatusBadge status={event.status}>
-          {getStatusText(event.status, event.rejectedReason)}
-        </StatusBadge>
+            {!isIndexPage && (
+              <StatusBadge status={event.status}>
+                {getStatusText(event.status, event.rejectedReason)}
+              </StatusBadge>
+            )}
+
+            <ImageOverlay $hasActionButtons={!!actionButtons} $isApproved={true}>
+              <EventTitle>{event.title}</EventTitle>
+
+              {event.artists && event.artists.length > 0 && (
+                <EventArtistSection>
+                  {event.artists.map((artist, index) => (
+                    <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
+                      {index > 0 && <EventArtistSeparator>/</EventArtistSeparator>}
+                      <EventArtistItem>
+                        <EventArtistAvatar imageUrl={artist.profileImage} />
+                        <EventArtistName>{artist.name || 'Unknown Artist'}</EventArtistName>
+                      </EventArtistItem>
+                    </div>
+                  ))}
+                </EventArtistSection>
+              )}
+
+              <EventDetails>
+                <EventDetailItem>
+                  <CalendarIcon className="h-4 w-4 flex-shrink-0" />
+                  <DetailText>{eventDateText}</DetailText>
+                </EventDetailItem>
+
+                {event.location.name && (
+                  <EventDetailItem>
+                    <MapPinIcon className="h-4 w-4 flex-shrink-0 mt-1" />
+                    <DetailText>{event.location.name}</DetailText>
+                  </EventDetailItem>
+                )}
+              </EventDetails>
+
+              {submissionTime && !isIndexPage && (
+                <SubmissionTime>投稿時間：{submissionTime}</SubmissionTime>
+              )}
+            </ImageOverlay>
+
+            {actionButtons && <ButtonContainer>{actionButtons}</ButtonContainer>}
+          </VerticalEventCardContainer>
+        </Link>
       )}
+      {event.status !== 'approved' && (
+        <VerticalEventCardContainer>
+          <EventImage $imageUrl={event.mainImage ?? ''} />
 
-      <ImageOverlay
-        $hasActionButtons={!!actionButtons}
-        $isApproved={event.status === 'approved'}
-        onClick={() => onClick?.(event)}
-      >
-        <EventTitle>{event.title}</EventTitle>
-
-        {event.artists && event.artists.length > 0 && (
-          <EventArtistSection>
-            {event.artists.map((artist, index) => (
-              <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
-                {index > 0 && <EventArtistSeparator>/</EventArtistSeparator>}
-                <EventArtistItem>
-                  <EventArtistAvatar imageUrl={artist.profileImage} />
-                  <EventArtistName>{artist.name || 'Unknown Artist'}</EventArtistName>
-                </EventArtistItem>
-              </div>
-            ))}
-          </EventArtistSection>
-        )}
-
-        <EventDetails>
-          <EventDetailItem>
-            <CalendarIcon className="h-4 w-4 flex-shrink-0 mt-1" />
-            <DetailText>{eventDateText}</DetailText>
-          </EventDetailItem>
-
-          {event.location.name && (
-            <EventDetailItem>
-              <MapPinIcon className="h-4 w-4 flex-shrink-0 mt-1" />
-              <DetailText>{event.location.name}</DetailText>
-            </EventDetailItem>
+          {!isIndexPage && (
+            <StatusBadge status={event.status}>
+              {getStatusText(event.status, event.rejectedReason)}
+            </StatusBadge>
           )}
-        </EventDetails>
 
-        {submissionTime && !isIndexPage && (
-          <SubmissionTime>投稿時間：{submissionTime}</SubmissionTime>
-        )}
-      </ImageOverlay>
+          <ImageOverlay $hasActionButtons={!!actionButtons} $isApproved={false}>
+            <EventTitle>{event.title}</EventTitle>
 
-      {actionButtons && <ButtonContainer>{actionButtons}</ButtonContainer>}
-    </VerticalEventCardContainer>
+            {event.artists && event.artists.length > 0 && (
+              <EventArtistSection>
+                {event.artists.map((artist, index) => (
+                  <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
+                    {index > 0 && <EventArtistSeparator>/</EventArtistSeparator>}
+                    <EventArtistItem>
+                      <EventArtistAvatar imageUrl={artist.profileImage} />
+                      <EventArtistName>{artist.name || 'Unknown Artist'}</EventArtistName>
+                    </EventArtistItem>
+                  </div>
+                ))}
+              </EventArtistSection>
+            )}
+
+            <EventDetails>
+              <EventDetailItem>
+                <CalendarIcon className="h-4 w-4 flex-shrink-0" />
+                <DetailText>{eventDateText}</DetailText>
+              </EventDetailItem>
+
+              {event.location.name && (
+                <EventDetailItem>
+                  <MapPinIcon className="h-4 w-4 flex-shrink-0 mt-1" />
+                  <DetailText>{event.location.name}</DetailText>
+                </EventDetailItem>
+              )}
+            </EventDetails>
+
+            {submissionTime && !isIndexPage && (
+              <SubmissionTime>投稿時間：{submissionTime}</SubmissionTime>
+            )}
+          </ImageOverlay>
+
+          {actionButtons && <ButtonContainer>{actionButtons}</ButtonContainer>}
+        </VerticalEventCardContainer>
+      )}
+    </>
   );
 };
 

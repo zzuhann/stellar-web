@@ -5,10 +5,9 @@ import { EventList, EmptyState, LoadingContainer } from './styles';
 interface EventsTabProps {
   events: CoffeeEvent[];
   loading: boolean;
-  onEventClick: (event: CoffeeEvent) => void;
 }
 
-export default function EventsTab({ events, loading, onEventClick }: EventsTabProps) {
+export default function EventsTab({ events, loading }: EventsTabProps) {
   return (
     <>
       {loading ? (
@@ -19,7 +18,7 @@ export default function EventsTab({ events, loading, onEventClick }: EventsTabPr
       ) : events.length > 0 ? (
         <EventList>
           {events.map((event) => (
-            <VerticalEventCard key={event.id} event={event} onClick={onEventClick} />
+            <VerticalEventCard key={event.id} event={event} />
           ))}
         </EventList>
       ) : (

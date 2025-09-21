@@ -1,6 +1,7 @@
 import { MapEvent } from '@/types';
 import { formatDateRange } from '@/utils';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
 import { styled } from 'styled-components';
 
 const Container = styled.div`
@@ -75,27 +76,28 @@ const ImageContainer = styled.div<{ $imageUrl: string }>`
 
 type EventCardProps = {
   event: MapEvent;
-  onClick: () => void;
 };
 
-const EventCard = ({ event, onClick }: EventCardProps) => {
+const EventCard = ({ event }: EventCardProps) => {
   return (
-    <Container key={event.id} onClick={onClick}>
-      <InfoContainer>
-        <Title>{event.title}</Title>
-        <DescriptionContainer>
-          <CalendarIcon className="w-4 h-4 flex-shrink-0" />
-          <Description>{formatDateRange(event.datetime.start, event.datetime.end)}</Description>
-        </DescriptionContainer>
-        <DescriptionContainer>
-          <MapPinIcon className="w-4 h-4 flex-shrink-0" />
-          <Description>
-            {event.location.name} ({event.location.address})
-          </Description>
-        </DescriptionContainer>
-      </InfoContainer>
-      <ImageContainer $imageUrl={event.mainImage || ''} />
-    </Container>
+    <Link href={`/event/${event.id}`}>
+      <Container key={event.id}>
+        <InfoContainer>
+          <Title>{event.title}</Title>
+          <DescriptionContainer>
+            <CalendarIcon className="w-4 h-4 flex-shrink-0" />
+            <Description>{formatDateRange(event.datetime.start, event.datetime.end)}</Description>
+          </DescriptionContainer>
+          <DescriptionContainer>
+            <MapPinIcon className="w-4 h-4 flex-shrink-0" />
+            <Description>
+              {event.location.name} ({event.location.address})
+            </Description>
+          </DescriptionContainer>
+        </InfoContainer>
+        <ImageContainer $imageUrl={event.mainImage || ''} />
+      </Container>
+    </Link>
   );
 };
 

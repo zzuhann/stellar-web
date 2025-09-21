@@ -956,7 +956,7 @@ export default function EventSubmissionForm({
                 <PhotoIcon />
                 主視覺圖片*
               </Label>
-              <HelperText>主要宣傳圖片</HelperText>
+              <HelperText>主要宣傳圖片(推薦上傳比例 3:4)</HelperText>
               <ImageUpload
                 currentImageUrl={mainImageUrl}
                 onUploadComplete={(imageUrl) => {
@@ -975,7 +975,7 @@ export default function EventSubmissionForm({
                   });
                 }}
                 compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
-                placeholder="點擊上傳主視覺圖片或拖拽至此"
+                placeholder="點擊上傳主視覺圖片或拖曳至此"
                 maxSizeMB={5}
                 disabled={createEventMutation.isPending || updateEventMutation.isPending}
                 authToken={token || undefined}
@@ -1076,7 +1076,7 @@ export default function EventSubmissionForm({
                 詳細說明圖片
               </Label>
               <HelperText>
-                應援的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳5張
+                應援的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳 5 張
               </HelperText>
               <MultiImageUpload
                 currentImages={detailImageUrls}

@@ -1059,11 +1059,7 @@ export default function AdminPage() {
             ) : (
               <ItemList>
                 {weeklyEvents.map((event) => (
-                  <VerticalEventCard
-                    key={event.id}
-                    event={event}
-                    onClick={(event) => handlePreviewEvent(event)}
-                  />
+                  <VerticalEventCard key={event.id} event={event} />
                 ))}
               </ItemList>
             )}

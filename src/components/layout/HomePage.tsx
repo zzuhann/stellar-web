@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Artist, CoffeeEvent } from '@/types';
+import { Artist } from '@/types';
 import { useBirthdayArtists, useWeeklyEvents } from '@/hooks/useHomePage';
 import { getWeekStart, getWeekEnd, formatDateForAPI } from '@/utils/weekHelpers';
 import { shouldShowBirthdayHat } from '@/utils/birthdayHelpers';
@@ -130,10 +130,6 @@ function HomePageContent() {
     router.push(`/map/${artist.id}`);
   };
 
-  const handleEventClick = (event: CoffeeEvent) => {
-    router.push(`/event/${event.id}`);
-  };
-
   const handleTabChange = (tab: 'birthday' | 'events') => {
     // 如果切換到生咖tab且當前在看過去的週，需要同時更新 tab 和 week
     if (tab === 'events') {
@@ -177,13 +173,7 @@ function HomePageContent() {
             />
           )}
 
-          {activeTab === 'events' && (
-            <EventsTab
-              events={weeklyEvents}
-              loading={eventsLoading}
-              onEventClick={handleEventClick}
-            />
-          )}
+          {activeTab === 'events' && <EventsTab events={weeklyEvents} loading={eventsLoading} />}
         </ContentWrapper>
       </MainContainer>
 
