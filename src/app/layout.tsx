@@ -33,14 +33,14 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/icon.png' },
-      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+      { url: '/icon.png?v=2' },
+      { url: '/icon-192x192.png?v=2', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512x512.png?v=2', sizes: '512x512', type: 'image/png' },
     ],
-    shortcut: '/icon.png',
+    shortcut: '/icon.png?v=2',
     apple: [
-      { url: '/icon.png' },
-      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon.png?v=2' },
+      { url: '/icon-192x192.png?v=2', sizes: '192x192', type: 'image/png' },
     ],
   },
   manifest: '/manifest.webmanifest',
@@ -50,17 +50,17 @@ export const metadata: Metadata = {
     title: 'STELLAR',
     startupImage: [
       {
-        url: '/icon.png',
+        url: '/icon.png?v=2',
         media:
           '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)',
       },
       {
-        url: '/icon.png',
+        url: '/icon.png?v=2',
         media:
           '(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)',
       },
       {
-        url: '/icon.png',
+        url: '/icon.png?v=2',
         media:
           '(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)',
       },
@@ -93,10 +93,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="STELLAR" />
-        <link rel="apple-touch-icon" href="/icon.png" />
-        <link rel="apple-touch-icon" sizes="180x180" href="/icon.png" />
-        <link rel="apple-touch-icon" sizes="152x152" href="/icon.png" />
-        <link rel="apple-touch-icon" sizes="120x120" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/icon.png?v=2" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png?v=2" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png?v=2" />
       </head>
       <body className={`${notoSansTC.variable} antialiased`}>
         <StyledComponentsRegistry>
