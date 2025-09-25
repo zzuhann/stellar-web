@@ -1,5 +1,5 @@
 // Service Worker for STELLAR PWA
-const VERSION = '20250921T15213';
+const VERSION = '20250925T02502';
 const CACHE_NAME = `stellar-cache-v${VERSION}`;
 const STATIC_CACHE_URLS = [
   '/',
@@ -8,6 +8,10 @@ const STATIC_CACHE_URLS = [
   '/icon-192x192.png?v=2',
   '/icon-512x512.png?v=2',
 ];
+
+// Push notification configuration
+const NOTIFICATION_ICON = '/icon-192x192.png?v=2';
+const NOTIFICATION_BADGE = '/icon-192x192.png?v=2';
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
@@ -71,4 +75,26 @@ self.addEventListener('fetch', (event) => {
         }
       })
   );
+});
+
+self.addEventListener('push', function (event) {
+  if (event.data) {
+    const data = event.data.json();
+    const options = {
+      body: data.body,
+      icon: NOTIFICATION_ICON,
+      badge: NOTIFICATION_BADGE,
+      vibrate: [100, 50, 100],
+      data: {
+        dateOfArrival: Date.now(),
+        primaryKey: '2',
+      },
+    };
+    event.waitUntil(self.registration.showNotification(data.title, options));
+  }
+});
+
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+  event.waitUntil(clients.openWindow('https://google.com'));
 });

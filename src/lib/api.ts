@@ -392,6 +392,43 @@ export const usersApi = {
   },
 };
 
+// 推播通知相關 API
+export const notificationsApi = {
+  // 獲取 VAPID 公鑰
+  getVapidKey: async (): Promise<{ publicKey: string }> => {
+    const response = await api.get('/notifications/vapid-key');
+    return response.data;
+  },
+
+  // 訂閱推播通知
+  subscribe: async (subscriptionData: {
+    userId: string;
+    subscription: PushSubscriptionJSON;
+    platform: string;
+  }): Promise<{ success: boolean; message: string }> => {
+    const response = await api.post('/notifications/subscribe', subscriptionData);
+    return response.data;
+  },
+
+  // 取消訂閱推播通知
+  unsubscribe: async (userId: string): Promise<{ success: boolean; message: string }> => {
+    const response = await api.delete(`/notifications/unsubscribe/${userId}`);
+    return response.data;
+  },
+
+  // 發送審核通過通知 (Admin 使用)
+  sendApprovalNotification: async (notificationData: {
+    userId: string;
+    type: 'artist' | 'event';
+    submissionId: string;
+    title?: string;
+    message?: string;
+  }): Promise<{ success: boolean; message: string; sentAt: string }> => {
+    const response = await api.post('/notifications/send-approval', notificationData);
+    return response.data;
+  },
+};
+
 // 統一錯誤處理函數
 export function handleApiError(error: unknown): string {
   console.error('API Error:', error);
