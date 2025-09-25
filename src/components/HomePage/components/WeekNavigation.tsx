@@ -8,7 +8,7 @@ interface WeekNavigationProps {
   currentWeekEnd: Date;
   isCurrentWeek: boolean;
   activeTab: 'birthday' | 'events';
-  onPreviousWeek: () => void;
+  onPreviousWeek: (activeTab: 'birthday' | 'events') => void;
   onNextWeek: () => void;
   onTabChange: (tab: 'birthday' | 'events') => void;
 }
@@ -32,7 +32,7 @@ export default function WeekNavigation({
       <TabNavigation activeTab={activeTab} onTabChange={onTabChange} />
       <WeekNavigationContainer>
         <WeekNavigationButton
-          onClick={onPreviousWeek}
+          onClick={() => onPreviousWeek(activeTab)}
           $disabled={!canGoToPrevious}
           style={{ opacity: canGoToPrevious ? 1 : 0.5 }}
         >

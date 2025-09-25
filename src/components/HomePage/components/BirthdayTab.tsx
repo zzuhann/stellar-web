@@ -1,5 +1,5 @@
 import { Artist } from '@/types';
-import ArtistCard from '../ArtistCard';
+import ArtistCard from '../../ArtistCard';
 import SearchSection from './SearchSection';
 import { ArtistList, EmptyState, LoadingContainer } from './styles';
 

@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import HomePage from '@/components/layout/HomePage';
+import HomePage from '@/components/HomePage';
 
 function HomePageFallback() {
   return (

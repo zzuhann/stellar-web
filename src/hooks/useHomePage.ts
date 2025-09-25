@@ -1,11 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { Artist } from '@/types';
 import { artistsApi, eventsApi } from '@/lib/api';
 
-export const useBirthdayArtists = (
+export const useBirthdayArtistsQuery = (
   startDate: string,
   endDate: string,
-  placeholderData?: Artist[],
   options?: { enabled?: boolean }
 ) => {
   return useQuery({
@@ -18,14 +16,13 @@ export const useBirthdayArtists = (
         sortBy: 'coffeeEventCount',
         sortOrder: 'desc',
       }),
-    placeholderData: placeholderData,
     staleTime: 1000 * 60 * 5, // 5 分鐘快取
     gcTime: 1000 * 60 * 15, // 15 分鐘保留
     enabled: options?.enabled,
   });
 };
 
-export const useWeeklyEvents = (
+export const useWeeklyEventsQuery = (
   startDate: string,
   endDate: string,
   options?: { enabled?: boolean }

@@ -1,5 +1,5 @@
 import { CoffeeEvent } from '@/types';
-import VerticalEventCard from '../EventCard/VerticalEventCard';
+import VerticalEventCard from '../../EventCard/VerticalEventCard';
 import { EventList, EmptyState, LoadingContainer } from './styles';
 
 interface EventsTabProps {
