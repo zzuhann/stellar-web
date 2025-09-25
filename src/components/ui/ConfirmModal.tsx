@@ -152,7 +152,7 @@ export default function ConfirmModal({
       <ModalContent>
         <ModalHeader>
           <ModalTitle>
-            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
+            <ExclamationTriangleIcon style={{ width: '20px', height: '20px', color: '#eab308' }} />
             {title}
           </ModalTitle>
           <CloseButton onClick={onCancel}>

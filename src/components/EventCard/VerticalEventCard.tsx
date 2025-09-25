@@ -252,13 +252,15 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
 
               <EventDetails>
                 <EventDetailItem>
-                  <CalendarIcon className="h-4 w-4 flex-shrink-0" />
+                  <CalendarIcon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
                   <DetailText>{eventDateText}</DetailText>
                 </EventDetailItem>
 
                 {event.location.name && (
                   <EventDetailItem>
-                    <MapPinIcon className="h-4 w-4 flex-shrink-0 mt-1" />
+                    <MapPinIcon
+                      style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
+                    />
                     <DetailText>{event.location.name}</DetailText>
                   </EventDetailItem>
                 )}
@@ -302,13 +304,15 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
 
             <EventDetails>
               <EventDetailItem>
-                <CalendarIcon className="h-4 w-4 flex-shrink-0" />
+                <CalendarIcon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
                 <DetailText>{eventDateText}</DetailText>
               </EventDetailItem>
 
               {event.location.name && (
                 <EventDetailItem>
-                  <MapPinIcon className="h-4 w-4 flex-shrink-0 mt-1" />
+                  <MapPinIcon
+                    style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
+                  />
                   <DetailText>{event.location.name}</DetailText>
                 </EventDetailItem>
               )}

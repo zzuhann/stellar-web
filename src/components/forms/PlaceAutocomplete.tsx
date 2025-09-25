@@ -285,9 +285,12 @@ export default function PlaceAutocomplete({
           />
           <ComboboxButton>
             {isError ? (
-              <ExclamationTriangleIcon className="h-5 w-5 text-red-400" aria-hidden="true" />
+              <ExclamationTriangleIcon
+                style={{ width: '20px', height: '20px', color: '#f87171' }}
+                aria-hidden="true"
+              />
             ) : (
-              <ChevronUpDownIcon className="h-5 w-5" aria-hidden="true" />
+              <ChevronUpDownIcon style={{ width: '20px', height: '20px' }} aria-hidden="true" />
             )}
           </ComboboxButton>
 
@@ -314,7 +317,7 @@ export default function PlaceAutocomplete({
                       </OptionContent>
                       {selected && (
                         <CheckIconContainer $isActive={active}>
-                          <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                          <CheckIcon style={{ width: '20px', height: '20px' }} aria-hidden="true" />
                         </CheckIconContainer>
                       )}
                     </>

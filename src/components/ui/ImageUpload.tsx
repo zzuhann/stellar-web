@@ -517,7 +517,7 @@ export default function ImageUpload({
                   disabled={disabled}
                   title="重新裁切"
                 >
-                  <ScissorsIcon className="h-4 w-4" />
+                  <ScissorsIcon style={{ width: '16px', height: '16px' }} />
                 </ActionButton>
               )}
               <ActionButton
@@ -530,7 +530,7 @@ export default function ImageUpload({
                 disabled={disabled}
                 title="移除圖片"
               >
-                <XMarkIcon className="h-4 w-4" />
+                <XMarkIcon style={{ width: '16px', height: '16px' }} />
               </ActionButton>
             </ActionButtons>
             <ImageHint>{enableCrop ? '點擊更換圖片或重新裁切' : '點擊更換圖片'}</ImageHint>
@@ -538,7 +538,9 @@ export default function ImageUpload({
         ) : (
           <UploadContent>
             <UploadIcon>
-              <PhotoIcon className="h-12 w-12" style={{ color: 'var(--color-text-secondary)' }} />
+              <PhotoIcon
+                style={{ width: '48px', height: '48px', color: 'var(--color-text-secondary)' }}
+              />
             </UploadIcon>
             <UploadTitle>{placeholder}</UploadTitle>
             <UploadSubtitle>
@@ -546,7 +548,9 @@ export default function ImageUpload({
               MB
             </UploadSubtitle>
             <UploadArrow>
-              <ArrowUpTrayIcon className="h-5 w-5" style={{ color: 'var(--color-primary)' }} />
+              <ArrowUpTrayIcon
+                style={{ width: '20px', height: '20px', color: 'var(--color-primary)' }}
+              />
             </UploadArrow>
           </UploadContent>
         )}

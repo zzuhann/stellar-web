@@ -85,11 +85,11 @@ const EventCard = ({ event }: EventCardProps) => {
         <InfoContainer>
           <Title>{event.title}</Title>
           <DescriptionContainer>
-            <CalendarIcon className="w-4 h-4 flex-shrink-0" />
+            <CalendarIcon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
             <Description>{formatDateRange(event.datetime.start, event.datetime.end)}</Description>
           </DescriptionContainer>
           <DescriptionContainer>
-            <MapPinIcon className="w-4 h-4 flex-shrink-0" />
+            <MapPinIcon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
             <Description>
               {event.location.name} ({event.location.address})
             </Description>

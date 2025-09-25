@@ -5,15 +5,15 @@ import toast from 'react-hot-toast';
 
 export default function ServiceWorkerRegistration() {
   useEffect(() => {
+    // 在開發環境中不註冊 service worker
+    if (process.env.NODE_ENV === 'development') {
+      return;
+    }
+
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
         .then((registration) => {
-          if (process.env.NODE_ENV === 'development') {
-            // eslint-disable-next-line no-console
-            console.log('SW registered (dev mode): ', registration);
-          }
-
           // 監聽 SW 更新
           registration.addEventListener('updatefound', () => {
             const newWorker = registration.installing;
@@ -34,12 +34,7 @@ export default function ServiceWorkerRegistration() {
             }
           });
         })
-        .catch((registrationError) => {
-          if (process.env.NODE_ENV === 'development') {
-            // eslint-disable-next-line no-console
-            console.log('SW registration failed: ', registrationError);
-          }
-        });
+        .catch(() => {});
     }
   }, []);
 

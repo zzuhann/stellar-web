@@ -882,11 +882,11 @@ export default function ImageCropper({
         <ActionBar>
           <ButtonGroup>
             <Button $variant="secondary" onClick={onCancel}>
-              <XMarkIcon className="h-4 w-4" />
+              <XMarkIcon style={{ width: '16px', height: '16px' }} />
               <span>取消</span>
             </Button>
             <Button $variant="primary" onClick={handleCrop} disabled={!imageLoaded}>
-              <CheckIcon className="h-4 w-4" />
+              <CheckIcon style={{ width: '16px', height: '16px' }} />
               <span>確認裁切</span>
             </Button>
           </ButtonGroup>
