@@ -43,3 +43,11 @@ export const PAGINATION = {
 
 // CDN 域名
 export const CDN_DOMAIN = 'https://cdn.stellar-zone.com/';
+
+// 功能標誌
+export const FEATURE_FLAGS = {
+  NOTIFICATIONS: 'NOTIFICATIONS',
+} as const;
+
+export type FeatureFlagName = keyof typeof FEATURE_FLAGS;
+export type FeatureFlagValue = 'admin' | 'all';

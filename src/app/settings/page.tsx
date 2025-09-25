@@ -6,6 +6,8 @@ import { showToast } from '@/lib/toast';
 import styled from 'styled-components';
 import { UserIcon, BellIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useEffect } from 'react';
+import { useFeatureFlag } from '@/hooks/useFeatureFlag';
+import { FEATURE_FLAGS } from '@/constants';
 
 // 設定項目介面
 interface SettingItem {
@@ -190,6 +192,9 @@ function SettingItem({ item }: { item: SettingItem }) {
 export default function SettingsPage() {
   const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
+  const { isEnabled: isNotificationsEnabled, loading: isNotificationsLoading } = useFeatureFlag(
+    FEATURE_FLAGS.NOTIFICATIONS
+  );
 
   // 權限檢查
   useEffect(() => {
@@ -254,10 +259,14 @@ export default function SettingsPage() {
             {accountItems.map((item) => (
               <SettingItem key={item.id} item={item} />
             ))}
-            <SectionTitle>通知</SectionTitle>
-            {appItems.map((item) => (
-              <SettingItem key={item.id} item={item} />
-            ))}
+            {!isNotificationsLoading && isNotificationsEnabled && (
+              <>
+                <SectionTitle>通知</SectionTitle>
+                {appItems.map((item) => (
+                  <SettingItem key={item.id} item={item} />
+                ))}
+              </>
+            )}
           </SettingsSection>
         </ContentWrapper>
       </MainContainer>
