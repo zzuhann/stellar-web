@@ -9,9 +9,10 @@ const weekNavigationContainer = css({
   alignItems: 'center',
   justifyContent: 'space-between',
   padding: '8px 16px',
-  background: 'var(--color-bg-secondary)',
-  borderRadius: 'var(--radius-lg)',
-  border: '1px solid var(--color-border-light)',
+  background: 'color.background.secondary',
+  borderRadius: 'radius.lg',
+  border: '1px solid',
+  borderColor: 'color.border.light',
 });
 
 const weekNavigationButton = cva({
@@ -21,18 +22,18 @@ const weekNavigationButton = cva({
     justifyContent: 'center',
     width: '24px',
     height: '24px',
-    borderRadius: 'var(--radius-md)',
+    borderRadius: 'radius.md',
     transition: 'all 0.2s ease',
   },
   variants: {
     disabled: {
       true: {
-        color: 'var(--color-text-disabled)',
+        color: 'color.text.disabled',
         cursor: 'not-allowed',
         opacity: 0.5,
       },
       false: {
-        color: 'var(--color-text-primary)',
+        color: 'color.text.primary',
         cursor: 'pointer',
         opacity: 1,
       },
@@ -52,13 +53,13 @@ const weekInfoContainer = css({
 const weekInfoTitle = css({
   fontSize: '16px',
   fontWeight: 600,
-  color: 'var(--color-text-primary)',
+  color: 'color.text.primary',
   margin: '0 0 4px 0',
 });
 
 const weekInfoDateRange = css({
   fontSize: '14px',
-  color: 'var(--color-text-secondary)',
+  color: 'color.text.secondary',
   margin: 0,
 });
 

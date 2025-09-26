@@ -4,14 +4,14 @@ import { css } from '@/styled-system/css';
 
 const ctaButton = css({
   padding: '12px 24px',
-  borderRadius: 'var(--radius-lg)',
+  borderRadius: 'radius.lg',
   fontSize: '14px',
   fontWeight: 600,
   transition: 'all 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
-  background: 'var(--color-primary)',
-  borderColor: 'var(--color-primary)',
+  background: 'color.primary',
+  borderColor: 'color.primary',
   color: 'white',
   maxWidth: '60%',
   margin: '0 auto',

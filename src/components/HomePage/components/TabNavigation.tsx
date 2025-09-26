@@ -6,9 +6,10 @@ const tabContainer = css({
 
 const tabNav = css({
   display: 'flex',
-  background: 'var(--color-bg-secondary)',
-  border: '1px solid var(--color-border-light)',
-  borderRadius: 'var(--radius-lg)',
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
   padding: '4px',
 });
 
@@ -16,7 +17,7 @@ const tabButton = cva({
   base: {
     flex: 1,
     padding: '12px 16px',
-    borderRadius: 'var(--radius-md)',
+    borderRadius: 'radius.md',
     fontSize: '14px',
     fontWeight: '600',
     transition: 'all 0.2s ease',
@@ -30,17 +31,17 @@ const tabButton = cva({
   variants: {
     active: {
       true: {
-        background: 'var(--color-primary)',
+        background: 'color.primary',
         color: 'white',
         '&:hover': {
-          background: 'var(--color-primary)',
+          background: 'color.primary',
         },
       },
       false: {
         background: 'transparent',
-        color: 'var(--color-text-primary)',
+        color: 'color.text.primary',
         '&:hover': {
-          background: 'var(--color-border-light)',
+          background: 'color.border.light',
         },
       },
     },

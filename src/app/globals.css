@@ -3,9 +3,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-
   /* 品牌色彩系統 */
   --color-primary: #3f5a72;
   --color-secondary: #a3b4c4;
@@ -43,20 +40,6 @@
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-xl: 12px;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-noto-sans-tc);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {

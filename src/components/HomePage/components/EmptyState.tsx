@@ -3,7 +3,7 @@ import { css } from '@/styled-system/css';
 const emptyStateContainer = css({
   textAlign: 'center',
   padding: '40px 20px',
-  color: 'var(--color-text-secondary)',
+  color: 'color.text.secondary',
 });
 
 const emptyStateIcon = css({
@@ -14,7 +14,7 @@ const emptyStateIcon = css({
 const emptyStateTitle = css({
   fontSize: '18px',
   fontWeight: '600',
-  color: 'var(--color-text-primary)',
+  color: 'color.text.primary',
   margin: '0 0 8px 0',
 });
 

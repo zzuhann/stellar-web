@@ -22,7 +22,7 @@ const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearch
 
 export const pageContainer = css({
   minHeight: '100vh',
-  background: 'var(--color-bg-primary)',
+  background: 'color.background.primary',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'space-between',

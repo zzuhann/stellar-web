@@ -6,9 +6,10 @@ const container = css({
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
-  background: 'var(--color-bg-secondary)',
-  border: '1px solid var(--color-border-light)',
-  borderRadius: 'var(--radius-lg)',
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
   padding: '8px 16px',
 });
 
@@ -16,7 +17,7 @@ const searchInput = css({
   flex: 1,
   background: 'transparent',
   border: 'none',
-  color: 'var(--color-text-primary)',
+  color: 'color.text.primary',
   fontSize: '14px',
   outline: 'none',
   cursor: 'pointer',
