@@ -36,11 +36,12 @@ const text = css({
 
 type LoadingProps = {
   description?: string;
+  height?: string;
 };
 
-const Loading = ({ description }: LoadingProps) => {
+const Loading = ({ description, height = '100%' }: LoadingProps) => {
   return (
-    <div className={loadingContainer}>
+    <div className={loadingContainer} style={{ height }}>
       <div className={spinner} />
       {description && <p className={text}>{description}</p>}
     </div>

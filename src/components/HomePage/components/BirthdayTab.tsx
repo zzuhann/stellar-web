@@ -3,7 +3,7 @@ import ArtistCard from '../../ArtistCard';
 import SearchSection from './SearchSection';
 import { css } from '@/styled-system/css';
 import EmptyState from './EmptyState';
-import Loading from './Loading';
+import Loading from '../../Loading';
 
 const artistListContainer = css({
   display: 'flex',

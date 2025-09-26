@@ -4,7 +4,7 @@ import useMapPageData from './hook/useMapPageData';
 import useMapLocation from './hook/useMapLocation';
 import useDrawer from './hook/useDrawer';
 import { useMapStore } from '@/store';
-import Loading from '../HomePage/components/Loading';
+import Loading from '../Loading';
 import { css } from '@/styled-system/css';
 import LocationError from './components/LocationError';
 import Drawer from './components/Drawer';

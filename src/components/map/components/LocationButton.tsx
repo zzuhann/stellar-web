@@ -1,6 +1,6 @@
 import { cva } from '@/styled-system/css';
 import useMapLocation from '../hook/useMapLocation';
-import Loading from '@/components/HomePage/components/Loading';
+import Loading from '@/components/Loading';
 import { MapPinIcon } from '@heroicons/react/24/outline';
 
 const locationButton = cva({
