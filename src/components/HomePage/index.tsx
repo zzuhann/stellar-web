@@ -5,11 +5,6 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Artist } from '@/types';
 import { QueryStateProvider } from '@/hooks/useQueryStateContext';
-import {
-  PageContainer,
-  MainContainer,
-  ContentWrapper,
-} from '@/components/HomePage/components/styles';
 import CTASection from '@/components/HomePage/components/CTASection';
 import WeekNavigation from '@/components/HomePage/components/WeekNavigation';
 import BirthdayTab from '@/components/HomePage/components/BirthdayTab';
@@ -18,10 +13,36 @@ import useWeekNavigation from './hook/useWeekNavigation';
 import useTabState from './hook/useTabState';
 import useWeeklyEvents from './hook/useWeeklyEvents';
 import useBirthdayArtists from './hook/useBirthdayArtists';
+import { css } from '@/styled-system/css';
 
 const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearchModal'), {
   ssr: false,
   loading: () => null,
+});
+
+export const pageContainer = css({
+  minHeight: '100vh',
+  background: 'var(--color-bg-primary)',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'space-between',
+});
+
+export const mainContainer = css({
+  paddingTop: '100px',
+  maxWidth: '600px',
+  padding: '100px 30px 40px',
+  margin: '0 auto',
+  width: '100%',
+  '@media (min-width: 768px)': {
+    padding: '100px 24px 60px',
+  },
+});
+
+export const contentWrapper = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '16px',
 });
 
 function HomePageContent() {
@@ -41,9 +62,9 @@ function HomePageContent() {
   };
 
   return (
-    <PageContainer>
-      <MainContainer>
-        <ContentWrapper>
+    <div className={pageContainer}>
+      <div className={mainContainer}>
+        <div className={contentWrapper}>
           <CTASection />
 
           <WeekNavigation
@@ -66,11 +87,11 @@ function HomePageContent() {
           )}
 
           {activeTab === 'events' && <EventsTab events={weeklyEvents} loading={isEventsLoading} />}
-        </ContentWrapper>
-      </MainContainer>
+        </div>
+      </div>
 
       <ArtistSearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
-    </PageContainer>
+    </div>
   );
 }
 

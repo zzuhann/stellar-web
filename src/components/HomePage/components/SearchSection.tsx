@@ -1,5 +1,30 @@
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { SearchContainer, SearchInput } from './styles';
+import { css } from '@/styled-system/css';
+
+const container = css({
+  position: 'relative',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  background: 'var(--color-bg-secondary)',
+  border: '1px solid var(--color-border-light)',
+  borderRadius: 'var(--radius-lg)',
+  padding: '8px 16px',
+});
+
+const searchInput = css({
+  flex: 1,
+  background: 'transparent',
+  border: 'none',
+  color: 'var(--color-text-primary)',
+  fontSize: '14px',
+  outline: 'none',
+  cursor: 'pointer',
+  padding: '0',
+  minHeight: '20px',
+  display: 'flex',
+  alignItems: 'center',
+});
 
 interface SearchSectionProps {
   onSearchClick: () => void;
@@ -7,9 +32,11 @@ interface SearchSectionProps {
 
 export default function SearchSection({ onSearchClick }: SearchSectionProps) {
   return (
-    <SearchContainer>
-      <MagnifyingGlassIcon />
-      <SearchInput onClick={onSearchClick}>搜尋你的偶像的生日應援</SearchInput>
-    </SearchContainer>
+    <div className={container}>
+      <MagnifyingGlassIcon width={20} height={20} color="var(--color-text-secondary)" />
+      <div className={searchInput} onClick={onSearchClick}>
+        搜尋你的偶像的生日應援
+      </div>
+    </div>
   );
 }

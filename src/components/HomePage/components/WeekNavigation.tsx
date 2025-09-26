@@ -1,7 +1,66 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { WeekNavigationContainer, WeekNavigationButton, WeekInfo } from './styles';
 import { formatDate, getWeekStart } from '@/utils/weekHelpers';
 import TabNavigation from './TabNavigation';
+import { css } from '@/styled-system/css';
+import { cva } from '@/styled-system/css';
+
+const weekNavigationContainer = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: '8px 16px',
+  background: 'var(--color-bg-secondary)',
+  borderRadius: 'var(--radius-lg)',
+  border: '1px solid var(--color-border-light)',
+});
+
+const weekNavigationButton = cva({
+  base: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '24px',
+    height: '24px',
+    borderRadius: 'var(--radius-md)',
+    transition: 'all 0.2s ease',
+  },
+  variants: {
+    disabled: {
+      true: {
+        color: 'var(--color-text-disabled)',
+        cursor: 'not-allowed',
+        opacity: 0.5,
+      },
+      false: {
+        color: 'var(--color-text-primary)',
+        cursor: 'pointer',
+        opacity: 1,
+      },
+    },
+  },
+  defaultVariants: {
+    disabled: false,
+  },
+});
+
+const weekInfoContainer = css({
+  textAlign: 'center',
+  flex: 1,
+  margin: '0 16px',
+});
+
+const weekInfoTitle = css({
+  fontSize: '16px',
+  fontWeight: 600,
+  color: 'var(--color-text-primary)',
+  margin: '0 0 4px 0',
+});
+
+const weekInfoDateRange = css({
+  fontSize: '14px',
+  color: 'var(--color-text-secondary)',
+  margin: 0,
+});
 
 interface WeekNavigationProps {
   currentWeekStart: Date;
@@ -30,17 +89,16 @@ export default function WeekNavigation({
   return (
     <div>
       <TabNavigation activeTab={activeTab} onTabChange={onTabChange} />
-      <WeekNavigationContainer>
-        <WeekNavigationButton
+      <div className={weekNavigationContainer}>
+        <button
+          className={weekNavigationButton({ disabled: !canGoToPrevious })}
           onClick={() => onPreviousWeek(activeTab)}
-          $disabled={!canGoToPrevious}
-          style={{ opacity: canGoToPrevious ? 1 : 0.5 }}
         >
-          <ChevronLeftIcon />
-        </WeekNavigationButton>
+          <ChevronLeftIcon width={20} height={20} />
+        </button>
 
-        <WeekInfo>
-          <div className="title">
+        <div className={weekInfoContainer}>
+          <div className={weekInfoTitle}>
             {activeTab === 'birthday'
               ? isCurrentWeek
                 ? '本週壽星'
@@ -49,15 +107,15 @@ export default function WeekNavigation({
                 ? '本週生日應援'
                 : '當週生日應援'}
           </div>
-          <div className="date-range">
+          <div className={weekInfoDateRange}>
             {formatDate(currentWeekStart)} - {formatDate(currentWeekEnd)}
           </div>
-        </WeekInfo>
+        </div>
 
-        <WeekNavigationButton onClick={onNextWeek}>
-          <ChevronRightIcon />
-        </WeekNavigationButton>
-      </WeekNavigationContainer>
+        <button className={weekNavigationButton({ disabled: false })} onClick={onNextWeek}>
+          <ChevronRightIcon width={20} height={20} />
+        </button>
+      </div>
     </div>
   );
 }

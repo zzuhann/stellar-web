@@ -1,7 +1,15 @@
 import { Artist } from '@/types';
 import ArtistCard from '../../ArtistCard';
 import SearchSection from './SearchSection';
-import { ArtistList, EmptyState, LoadingContainer } from './styles';
+import { css } from '@/styled-system/css';
+import EmptyState from './EmptyState';
+import Loading from './Loading';
+
+const artistListContainer = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '16px',
+});
 
 interface BirthdayTabProps {
   artists: Artist[];
@@ -21,23 +29,20 @@ export default function BirthdayTab({
       <SearchSection onSearchClick={onSearchClick} />
 
       {loading ? (
-        <LoadingContainer>
-          <div className="spinner" />
-          <p>載入當週壽星中...</p>
-        </LoadingContainer>
+        <Loading description="載入當週壽星中..." />
       ) : artists.length > 0 ? (
-        <ArtistList>
+        <div className={artistListContainer}>
           {artists.map((artist) => {
             if (!artist.birthday) return null;
             return <ArtistCard key={artist.id} artist={artist} handleArtistClick={onArtistClick} />;
           })}
-        </ArtistList>
+        </div>
       ) : (
-        <EmptyState>
-          <div className="icon">🎂</div>
-          <h3>本週沒有壽星</h3>
-          <p>可以切換查看其他週的壽星，或直接搜尋你的偶像</p>
-        </EmptyState>
+        <EmptyState
+          icon="🎂"
+          title="本週沒有壽星"
+          description="可以切換查看其他週的壽星，或直接搜尋你的偶像"
+        />
       )}
     </>
   );
