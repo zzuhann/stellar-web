@@ -3,6 +3,7 @@
 import { notificationsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { useState, useEffect } from 'react';
+import { getServiceWorkerRegistration } from '@/components/pwa/ServiceWorkerRegistration';
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -28,18 +29,17 @@ function PushNotificationManager() {
   useEffect(() => {
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       setIsSupported(true);
-      registerServiceWorker();
+      checkExistingSubscription();
     }
   }, []);
 
-  async function registerServiceWorker() {
+  async function checkExistingSubscription() {
     try {
-      const registration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/',
-        updateViaCache: 'none',
-      });
-      const sub = await registration.pushManager.getSubscription();
-      setSubscription(sub);
+      const registration = await getServiceWorkerRegistration();
+      if (registration) {
+        const sub = await registration.pushManager.getSubscription();
+        setSubscription(sub);
+      }
     } catch {
       setError('請重新整理頁面後再試');
     }
@@ -50,7 +50,10 @@ function PushNotificationManager() {
     setError('');
 
     try {
-      const registration = await navigator.serviceWorker.ready;
+      const registration = await getServiceWorkerRegistration();
+      if (!registration) {
+        throw new Error('Service Worker 未就緒');
+      }
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || ''),
