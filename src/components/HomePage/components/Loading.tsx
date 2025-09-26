@@ -13,6 +13,7 @@ const loadingContainer = css({
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
+  height: '100%',
 });
 
 const spinner = css({
@@ -34,14 +35,14 @@ const text = css({
 });
 
 type LoadingProps = {
-  description: string;
+  description?: string;
 };
 
 const Loading = ({ description }: LoadingProps) => {
   return (
     <div className={loadingContainer}>
       <div className={spinner} />
-      <p className={text}>{description}</p>
+      {description && <p className={text}>{description}</p>}
     </div>
   );
 };

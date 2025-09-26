@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { devtools, persist, createJSONStorage } from 'zustand/middleware';
-import { MapCenter, EventMarker } from '@/types';
+import { MapCenter, EventMarker, MapEvent } from '@/types';
 import { TAIWAN_MAP_CENTER, STORAGE_KEYS } from '@/constants';
 
 interface MapState {
@@ -10,14 +10,22 @@ interface MapState {
   center: MapCenter;
   markers: EventMarker[];
   selectedMarkerId: string | null;
-  zoom: number;
+  selectedEventId: string | null;
+  isDrawerExpanded: boolean;
+  expandedHeight: number;
+  selectedLocationEvents: MapEvent[];
+  isLocationSelected: boolean;
 
   // 動作
   setCenter: (center: Partial<MapCenter>) => void;
   setMarkers: (markers: EventMarker[]) => void;
   selectMarker: (id: string | null) => void;
-  setZoom: (zoom: number) => void;
   resetMap: () => void;
+  setSelectedEventId: (id: string | null) => void;
+  setIsDrawerExpanded: (isExpanded: boolean) => void;
+  setExpandedHeight: (height: number) => void;
+  setSelectedLocationEvents: (events: MapEvent[]) => void;
+  setIsLocationSelected: (isSelected: boolean) => void;
 }
 
 export const useMapStore = create<MapState>()(
@@ -28,8 +36,11 @@ export const useMapStore = create<MapState>()(
         center: TAIWAN_MAP_CENTER,
         markers: [],
         selectedMarkerId: null,
-        zoom: TAIWAN_MAP_CENTER.zoom,
-
+        selectedEventId: null,
+        isDrawerExpanded: false,
+        expandedHeight: 500,
+        selectedLocationEvents: [],
+        isLocationSelected: false,
         // 設定地圖中心
         setCenter: (centerUpdate) => {
           set((state) => ({
@@ -47,21 +58,42 @@ export const useMapStore = create<MapState>()(
           set({ selectedMarkerId: id });
         },
 
-        // 設定縮放級別
-        setZoom: (zoom) => {
-          set((state) => ({
-            zoom,
-            center: { ...state.center, zoom },
-          }));
-        },
-
         // 重設地圖
         resetMap: () => {
           set({
             center: TAIWAN_MAP_CENTER,
-            zoom: TAIWAN_MAP_CENTER.zoom,
             selectedMarkerId: null,
+            selectedEventId: null,
+            isDrawerExpanded: false,
+            expandedHeight: 500,
+            selectedLocationEvents: [],
+            isLocationSelected: false,
           });
+        },
+
+        // 設定選中的活動
+        setSelectedEventId: (id) => {
+          set({ selectedEventId: id });
+        },
+
+        // 設定 drawer 是否展開
+        setIsDrawerExpanded: (isExpanded) => {
+          set({ isDrawerExpanded: isExpanded });
+        },
+
+        // 設定 drawer 展開高度
+        setExpandedHeight: (height) => {
+          set({ expandedHeight: height });
+        },
+
+        // 設定選中的地點活動
+        setSelectedLocationEvents: (events) => {
+          set({ selectedLocationEvents: events });
+        },
+
+        // 設定是否選中地點
+        setIsLocationSelected: (isSelected) => {
+          set({ isLocationSelected: isSelected });
         },
       }),
       {
@@ -69,7 +101,9 @@ export const useMapStore = create<MapState>()(
         storage: createJSONStorage(() => localStorage),
         partialize: (state) => ({
           center: state.center,
-          zoom: state.zoom,
+          selectedEventId: state.selectedEventId,
+          isDrawerExpanded: state.isDrawerExpanded,
+          expandedHeight: state.expandedHeight,
         }),
       }
     ),

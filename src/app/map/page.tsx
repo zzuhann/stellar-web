@@ -1,7 +1,7 @@
 import dynamicImport from 'next/dynamic';
 import { redirect } from 'next/navigation';
 
-const MapPage = dynamicImport(() => import('@/components/layout/MapPage'), {
+const MapPage = dynamicImport(() => import('@/components/map/MapPage'), {
   ssr: false,
 });
 

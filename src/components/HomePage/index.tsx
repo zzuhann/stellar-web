@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Artist } from '@/types';
 import { QueryStateProvider } from '@/hooks/useQueryStateContext';
-import CTASection from '@/components/HomePage/components/CTASection';
 import WeekNavigation from '@/components/HomePage/components/WeekNavigation';
 import BirthdayTab from '@/components/HomePage/components/BirthdayTab';
 import EventsTab from '@/components/HomePage/components/EventsTab';
@@ -14,6 +13,8 @@ import useTabState from './hook/useTabState';
 import useWeeklyEvents from './hook/useWeeklyEvents';
 import useBirthdayArtists from './hook/useBirthdayArtists';
 import { css } from '@/styled-system/css';
+import CTAButton from '@/components/CTAButton';
+import { useAuth } from '@/lib/auth-context';
 
 const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearchModal'), {
   ssr: false,
@@ -47,6 +48,7 @@ export const contentWrapper = css({
 
 function HomePageContent() {
   const router = useRouter();
+  const { user, toggleAuthModal } = useAuth();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   const { currentWeekStart, goToPreviousWeek, goToNextWeek, isCurrentWeek, currentWeekEnd } =
@@ -65,7 +67,19 @@ function HomePageContent() {
     <div className={pageContainer}>
       <div className={mainContainer}>
         <div className={contentWrapper}>
-          <CTASection />
+          <CTAButton
+            onClick={() => {
+              if (!user) {
+                toggleAuthModal('/submit-event');
+              } else {
+                router.push('/submit-event');
+              }
+            }}
+          >
+            生日應援主辦 ✨
+            <br />
+            前往投稿生日應援 ➡️
+          </CTAButton>
 
           <WeekNavigation
             currentWeekStart={currentWeekStart}

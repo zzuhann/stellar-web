@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { artistsApi } from '@/lib/api';
 
-const MapPage = dynamic(() => import('@/components/layout/MapPage'), {
+const MapPage = dynamic(() => import('@/components/map/MapPage'), {
   ssr: false,
 });
 
