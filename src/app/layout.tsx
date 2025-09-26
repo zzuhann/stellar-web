@@ -6,7 +6,7 @@ import { QueryProvider } from '@/lib/query-client';
 import { LoadingProvider } from '@/lib/loading-context';
 import { Toaster } from 'react-hot-toast';
 import StyledComponentsRegistry from '@/lib/styled-components-registry';
-import Header from '@/components/layout/Header';
+import Header from '@/components/header';
 import Footer from '@/components/layout/Footer';
 import { Analytics } from '@vercel/analytics/next';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
