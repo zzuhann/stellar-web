@@ -33,6 +33,17 @@ export async function generateMetadata({ params }: MapWithArtistPageProps): Prom
     return {
       title,
       description,
+      openGraph: {
+        title,
+        description,
+        images: artist.profileImage ? [artist.profileImage] : [],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: artist.profileImage ? [artist.profileImage] : [],
+      },
     };
   } catch {
     return {
