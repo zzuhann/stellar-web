@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Noto_Sans_TC } from 'next/font/google';
+import { Noto_Sans_TC } from 'next/font/google'; // 改用 CSS 引入
 import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
 import { QueryProvider } from '@/lib/query-client';
@@ -97,7 +97,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png?v=2" />
         <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png?v=2" />
       </head>
-      <body className={`${notoSansTC.variable} antialiased`}>
+      <body className={`antialiased ${notoSansTC.variable}`}>
         <StyledComponentsRegistry>
           <QueryProvider>
             <AuthProvider>

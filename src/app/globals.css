@@ -1,64 +1,6 @@
-@stylex;
+@layer reset, base, tokens, recipes, utilities;
 @import '../styles/marker-cluster.css';
-
-/* CSS Reset (替代 Tailwind Preflight) */
-*,
-::before,
-::after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
-  border-color: #e5e7eb;
-}
-
-html {
-  line-height: 1.5;
-  -webkit-text-size-adjust: 100%;
-  /* font-family: ui-sans-serif, system-ui, sans-serif; */
-}
-
-body {
-  margin: 0;
-  line-height: inherit;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-size: inherit;
-  font-weight: inherit;
-}
-
-button,
-input,
-optgroup,
-select,
-textarea {
-  font-family: inherit;
-  font-size: 100%;
-  font-weight: inherit;
-  line-height: inherit;
-  color: inherit;
-  margin: 0;
-  padding: 0;
-}
-
-button,
-select {
-  text-transform: none;
-}
-
-button,
-[type='button'],
-[type='reset'],
-[type='submit'] {
-  -webkit-appearance: button;
-  background-color: transparent;
-  background-image: none;
-}
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 :root {
   --background: #ffffff;
@@ -121,7 +63,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family:
-    var(--font-noto-sans-tc),
+    'Noto Sans TC',
     -apple-system,
     BlinkMacSystemFont,
     'Segoe UI',
@@ -142,87 +84,4 @@ body {
 
 .leaflet-control-container {
   z-index: 2 !important;
-}
-
-/* 氣泡動畫效果 */
-@keyframes bubble-float {
-  0%,
-  100% {
-    transform: translateY(0px) translateX(0px) scale(1);
-    opacity: 0.6;
-  }
-  25% {
-    transform: translateY(-40px) translateX(25px) scale(1.05);
-    opacity: 0.8;
-  }
-  50% {
-    transform: translateY(-80px) translateX(-15px) scale(0.95);
-    opacity: 1;
-  }
-  75% {
-    transform: translateY(-40px) translateX(-25px) scale(1.02);
-    opacity: 0.7;
-  }
-}
-
-@keyframes bubble-drift {
-  0% {
-    transform: translateX(-80px) rotate(0deg);
-    opacity: 0;
-  }
-  15%,
-  85% {
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateX(calc(100vw + 80px)) rotate(360deg);
-    opacity: 0;
-  }
-}
-
-@keyframes bubble-rise {
-  0% {
-    transform: translateY(120px) scale(0.3);
-    opacity: 0;
-  }
-  20% {
-    opacity: 0.7;
-    transform: translateY(0px) scale(1);
-  }
-  80% {
-    opacity: 0.8;
-    transform: translateY(-120px) scale(1);
-  }
-  100% {
-    transform: translateY(-240px) scale(0.2);
-    opacity: 0;
-  }
-}
-
-@keyframes sparkle-twinkle {
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.3);
-  }
-}
-
-.animate-bubble-float {
-  animation: bubble-float 15s infinite ease-in-out;
-}
-
-.animate-bubble-drift {
-  animation: bubble-drift 12s infinite linear;
-}
-
-.animate-bubble-rise {
-  animation: bubble-rise 8s infinite ease-out;
-}
-
-.animate-sparkle-twinkle {
-  animation: sparkle-twinkle 4s infinite ease-in-out;
 }

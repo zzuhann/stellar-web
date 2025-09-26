@@ -9,7 +9,7 @@
     "lint": "next lint --fix",
     "lint:check": "next lint",
     "type-check": "tsc -p tsconfig.json --noEmit",
-    "prepare": "husky"
+    "prepare": "husky && panda codegen"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
@@ -18,7 +18,6 @@
     "@hookform/resolvers": "^5.2.1",
     "@react-leaflet/core": "^2.1.0",
     "@react-spring/web": "^10.0.1",
-    "@stylexjs/stylex": "^0.15.4",
     "@tanstack/react-query": "^5.83.0",
     "@types/leaflet": "^1.9.20",
     "@types/styled-components": "^5.1.34",
@@ -40,9 +39,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@stylexjs/babel-plugin": "^0.15.4",
-    "@stylexjs/eslint-plugin": "^0.15.4",
-    "@stylexjs/postcss-plugin": "^0.15.4",
+    "@pandacss/dev": "^1.4.0",
     "@types/node": "^20",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
