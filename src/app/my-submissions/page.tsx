@@ -23,18 +23,18 @@ const mainContainer = css({
 
 export default function MySubmissionsPage() {
   return (
-    <QueryStateProvider>
-      <Suspense
-        fallback={
-          <div className={pageContainer}>
-            <div className={mainContainer}>
-              <Loading description="載入中..." height="100vh" />
-            </div>
+    <Suspense
+      fallback={
+        <div className={pageContainer}>
+          <div className={mainContainer}>
+            <Loading description="載入中..." height="100vh" />
           </div>
-        }
-      >
+        </div>
+      }
+    >
+      <QueryStateProvider>
         <MySubmissions />
-      </Suspense>
-    </QueryStateProvider>
+      </QueryStateProvider>
+    </Suspense>
   );
 }
