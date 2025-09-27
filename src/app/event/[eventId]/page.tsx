@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { eventsApi } from '@/lib/api';
-import EventDetailClient from './EventDetailClient';
+import EventDetail from '@/components/EventDetail';
 
 interface PageProps {
   params: {
@@ -45,5 +45,5 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default function EventDetailPage({ params }: PageProps) {
-  return <EventDetailClient eventId={params.eventId} />;
+  return <EventDetail eventId={params.eventId} />;
 }

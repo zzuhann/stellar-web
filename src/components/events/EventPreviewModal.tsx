@@ -2,7 +2,7 @@
 
 import styled from 'styled-components';
 import { CoffeeEvent } from '@/types';
-import Banner from '@/components/layout/Banner';
+import SwiperBanner from '@/components/SwiperBanner';
 import { firebaseTimestampToDate } from '@/utils';
 import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
@@ -202,6 +202,10 @@ const DescriptionContent = styled.div`
   white-space: pre-wrap;
 `;
 
+const BottomImagesContainer = styled.div`
+  margin-top: 24px;
+`;
+
 export default function EventPreviewModal({ event, isOpen, onClose }: EventPreviewModalProps) {
   // 使用 scroll lock hook
   useScrollLock(isOpen);
@@ -267,7 +271,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
         </ModalHeader>
 
         {/* Banner 區域 */}
-        {getBannerItems().length > 0 && <Banner items={getBannerItems()} />}
+        {getBannerItems().length > 0 && <SwiperBanner items={getBannerItems()} />}
 
         {/* 主要內容 */}
         <ContentSection>
@@ -390,7 +394,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
         </ContentSection>
 
         {/* Banner 項目圖片 - 滿版顯示 */}
-        <div>
+        <BottomImagesContainer>
           {getBannerItems().map((item, index) => (
             <div key={item.id}>
               <Image
@@ -408,7 +412,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
               />
             </div>
           ))}
-        </div>
+        </BottomImagesContainer>
       </ModalContent>
     </ModalOverlay>
   );

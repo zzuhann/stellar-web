@@ -1,3 +1,5 @@
+'use client';
+
 import { useRouter } from 'next/navigation';
 import { formatEventDate } from './utils';
 import { useState } from 'react';
@@ -5,7 +7,7 @@ import { useEvent } from '@/hooks/useEvent';
 import { css } from '@/styled-system/css';
 import { cleanSocialMediaHandle } from '@/utils/socialMedia';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import Banner from '../layout/Banner';
+import SwiperBanner from '../SwiperBanner';
 import Loading from '../Loading';
 import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
 import Image from 'next/image';
@@ -181,6 +183,10 @@ const ctaButton = css({
   },
 });
 
+const bottomImagesContainer = css({
+  marginTop: '24px',
+});
+
 type EventDetailProps = {
   eventId: string;
 };
@@ -258,7 +264,7 @@ const EventDetail = ({ eventId }: EventDetailProps) => {
         {event && !isLoading && !error && (
           <>
             {/* Banner 區域 */}
-            {bannerItems.length > 0 && <Banner items={bannerItems} />}
+            {bannerItems.length > 0 && <SwiperBanner items={bannerItems} />}
 
             {/* 主要內容 */}
             <div className={contentSection}>
@@ -378,7 +384,7 @@ const EventDetail = ({ eventId }: EventDetailProps) => {
                 </div>
               )}
 
-              <div>
+              <div className={bottomImagesContainer}>
                 {bannerItems.map((item, index) => (
                   <div key={item.id}>
                     <Image
@@ -388,6 +394,8 @@ const EventDetail = ({ eventId }: EventDetailProps) => {
                       height={600}
                       quality={95}
                       priority={index === 0}
+                      fetchPriority={index === 0 ? 'high' : 'auto'}
+                      loading={index === 0 ? 'eager' : 'lazy'}
                       style={{
                         width: '100%',
                         height: 'auto',
