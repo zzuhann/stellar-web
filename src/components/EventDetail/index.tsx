@@ -8,10 +8,10 @@ import { css } from '@/styled-system/css';
 import { cleanSocialMediaHandle } from '@/utils/socialMedia';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import SwiperBanner from '../SwiperBanner';
-import Loading from '../Loading';
 import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
 import Image from 'next/image';
 import ArtistModal from './ArtistModal';
+import DetailSkeleton from './DetailSkeleton';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -195,8 +195,7 @@ const EventDetail = ({ eventId }: EventDetailProps) => {
   const router = useRouter();
   const [showArtistModal, setShowArtistModal] = useState(false);
 
-  const { data: event, isLoading, error } = useEvent(eventId);
-
+  const { data: event, error, isLoading } = useEvent(eventId);
   const bannerItems = (() => {
     if (!event) return [];
 
@@ -252,7 +251,7 @@ const EventDetail = ({ eventId }: EventDetailProps) => {
   return (
     <div className={pageContainer}>
       <div className={mainContainer}>
-        {isLoading && <Loading description="載入中..." height="100vh" />}
+        {isLoading && <DetailSkeleton />}
 
         {error && (
           <div className={errorContainer}>

@@ -1,5 +1,6 @@
 import { defineConfig } from '@pandacss/dev';
 import { borderRadius, colors, shadows } from './src/styles/theme';
+import { shimmer, spin } from './src/styles/keyframes';
 
 export default defineConfig({
   // Whether to use css reset
@@ -15,10 +16,8 @@ export default defineConfig({
   theme: {
     extend: {
       keyframes: {
-        spin: {
-          '0%': { transform: 'rotate(0deg)' },
-          '100%': { transform: 'rotate(360deg)' },
-        },
+        spin,
+        shimmer,
       },
       tokens: {
         colors: { ...colors },
