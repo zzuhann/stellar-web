@@ -4,83 +4,64 @@ import { useState, useRef } from 'react';
 import { PhotoIcon, XMarkIcon, ArrowUpTrayIcon, ScissorsIcon } from '@heroicons/react/24/outline';
 import { uploadImageToAPI, mockUpload, compressImage } from '@/lib/r2-upload';
 import { CDN_DOMAIN } from '@/constants';
-import ImageCropper from './ImageCropper';
+import ImageCropper from './ui/ImageCropper';
 import styled from 'styled-components';
+import { css, cva } from '@/styled-system/css';
 
-interface ImageUploadProps {
-  onImageSelect?: (file: File) => void;
-  onImageRemove?: () => void;
-  onUploadComplete?: (imageUrl: string) => void;
-  currentImageUrl?: string;
-  maxSizeMB?: number;
-  acceptedFormats?: string[];
-  placeholder?: string;
-  disabled?: boolean;
-  authToken?: string;
-  useRealAPI?: boolean;
-  // 新增裁切功能相關屬性
-  enableCrop?: boolean; // 是否啟用裁切功能
-  cropAspectRatio?: number; // 裁切比例，1 = 正方形
-  cropShape?: 'square' | 'circle'; // 裁切形狀
-  cropOutputSize?: number; // 輸出尺寸
-  onCropCancel?: () => void; // 裁切取消回調
-  delayUpload?: boolean; // 是否延遲上傳，只在表單提交時上傳
-  onFileReady?: (file: File) => void; // 檔案準備好時的回調（延遲上傳模式）
-  // 新增壓縮參數
-  compressionParams?: {
-    maxWidth?: number;
-    maxHeight?: number;
-    quality?: number;
-  };
-}
+const uploadContainer = css({
+  width: '100%',
+});
 
-// Styled Components
-const UploadContainer = styled.div`
-  width: 100%;
-`;
+const uploadArea = cva({
+  base: {
+    position: 'relative',
+    border: '2px dashed',
+    borderRadius: 'radius.lg',
+    padding: '24px',
+    transition: 'all 0.2s ease',
+    borderColor: 'color.border.light',
+    background: 'color.bg.primary',
 
-const UploadArea = styled.div<{
-  $isDragOver: boolean;
-  $hasError: boolean;
-  $disabled: boolean;
-}>`
-  position: relative;
-  border: 2px dashed;
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  transition: all 0.2s ease;
-  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
-  opacity: ${(props) => (props.$disabled ? 0.5 : 1)};
+    '@media (min-width: 768px)': {
+      padding: '32px',
+    },
 
-  ${(props) =>
-    props.$isDragOver
-      ? `
-    border-color: var(--color-primary);
-    background: var(--color-accent);
-  `
-      : props.$hasError
-        ? `
-    border-color: var(--color-error);
-    background: rgba(220, 53, 69, 0.05);
-  `
-        : `
-    border-color: var(--color-border-light);
-    background: var(--color-bg-primary);
+    '&:hover': {
+      borderColor: 'color.border.medium',
+      background: 'color.bg.secondary',
+    },
+  },
+  variants: {
+    hasError: {
+      true: {
+        borderColor: 'color.error !important',
+        background: 'rgba(220, 53, 69, 0.05) !important',
 
-    &:hover {
-      border-color: var(--color-border-medium);
-      background: var(--color-bg-secondary);
-    }
-  `}
+        '&:hover': {
+          borderColor: 'color.error !important',
+          background: 'rgba(220, 53, 69, 0.05) !important',
+        },
+      },
+    },
+    disabled: {
+      true: {
+        cursor: 'not-allowed',
+        opacity: '0.5',
+      },
+      false: {
+        cursor: 'pointer',
+      },
+    },
+  },
+  defaultVariants: {
+    hasError: false,
+    disabled: false,
+  },
+});
 
-  @media (min-width: 768px) {
-    padding: 32px;
-  }
-`;
-
-const HiddenInput = styled.input`
-  display: none;
-`;
+const hiddenInput = css({
+  display: 'none',
+});
 
 const LoadingContainer = styled.div`
   text-align: center;
@@ -234,6 +215,33 @@ const HelperText = styled.p`
   }
 `;
 
+interface ImageUploadProps {
+  onImageSelect?: (file: File) => void;
+  onImageRemove?: () => void;
+  onUploadComplete?: (imageUrl: string) => void;
+  currentImageUrl?: string;
+  maxSizeMB?: number;
+  acceptedFormats?: string[];
+  placeholder?: string;
+  disabled?: boolean;
+  authToken?: string;
+  useRealAPI?: boolean;
+  // 新增裁切功能相關屬性
+  enableCrop?: boolean; // 是否啟用裁切功能
+  cropAspectRatio?: number; // 裁切比例，1 = 正方形
+  cropShape?: 'square' | 'circle'; // 裁切形狀
+  cropOutputSize?: number; // 輸出尺寸
+  onCropCancel?: () => void; // 裁切取消回調
+  delayUpload?: boolean; // 是否延遲上傳，只在表單提交時上傳
+  onFileReady?: (file: File) => void; // 檔案準備好時的回調（延遲上傳模式）
+  // 新增壓縮參數
+  compressionParams?: {
+    maxWidth?: number;
+    maxHeight?: number;
+    quality?: number;
+  };
+}
+
 export default function ImageUpload({
   onImageSelect,
   onImageRemove,
@@ -241,7 +249,7 @@ export default function ImageUpload({
   currentImageUrl,
   maxSizeMB = 5,
   acceptedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
-  placeholder = '點擊上傳圖片或拖拽至此',
+  placeholder = '點擊上傳圖片',
   disabled = false,
   authToken,
   useRealAPI = false,
@@ -255,7 +263,6 @@ export default function ImageUpload({
   compressionParams = { maxWidth: 800, maxHeight: 800, quality: 0.8 }, // 預設值
 }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
-  const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showCropper, setShowCropper] = useState(false);
@@ -427,33 +434,6 @@ export default function ImageUpload({
     }
   };
 
-  // 處理拖拽
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (!disabled) {
-      setIsDragOver(true);
-    }
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-
-    if (disabled) return;
-
-    const files = Array.from(e.dataTransfer.files);
-    const imageFile = files.find((file) => file.type.startsWith('image/'));
-
-    if (imageFile) {
-      handleFileSelect(imageFile);
-    }
-  };
-
   // 移除圖片
   const handleRemove = () => {
     setPreviewUrl(null);
@@ -474,22 +454,15 @@ export default function ImageUpload({
   };
 
   return (
-    <UploadContainer>
-      <UploadArea
-        $isDragOver={isDragOver}
-        $hasError={!!error}
-        $disabled={disabled}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={handleClick}
-      >
-        <HiddenInput
+    <div className={uploadContainer}>
+      <div className={uploadArea({ hasError: !!error, disabled })} onClick={handleClick}>
+        <input
           ref={fileInputRef}
           type="file"
           accept={acceptedFormats.join(',')}
           onChange={handleInputChange}
           disabled={disabled}
+          className={hiddenInput}
         />
 
         {isLoading ? (
@@ -554,7 +527,7 @@ export default function ImageUpload({
             </UploadArrow>
           </UploadContent>
         )}
-      </UploadArea>
+      </div>
 
       {error && <ErrorMessage>{error}</ErrorMessage>}
 
@@ -575,6 +548,6 @@ export default function ImageUpload({
           initialCropArea={lastCropArea}
         />
       )}
-    </UploadContainer>
+    </div>
   );
 }

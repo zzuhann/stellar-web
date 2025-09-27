@@ -11,6 +11,7 @@ import { uploadImageToAPI, mockUpload, compressImage } from '@/lib/r2-upload';
 import { CDN_DOMAIN } from '@/constants';
 import styled from 'styled-components';
 import showToast from '@/lib/toast';
+import { css } from '@/styled-system/css';
 
 interface MultiImageUploadProps {
   onImagesChange?: (imageUrls: string[]) => void;
@@ -167,13 +168,11 @@ const LoadingSpinner = styled.div`
   }
 `;
 
-const UploadCard = styled.div<{ $isDragOver?: boolean; $disabled?: boolean }>`
+const UploadCard = styled.div<{ $disabled?: boolean }>`
   aspect-ratio: 1;
-  border: 2px dashed
-    ${(props) => (props.$isDragOver ? 'var(--color-primary)' : 'var(--color-border-light)')};
+  border: 2px dashed var(--color-border-light);
   border-radius: var(--radius-lg);
-  background: ${(props) =>
-    props.$isDragOver ? 'rgba(90, 125, 154, 0.1)' : 'var(--color-bg-secondary)'};
+  background: var(--color-bg-secondary);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -216,13 +215,17 @@ const HelperText = styled.p`
   margin: 8px 0 0 0;
 `;
 
+const hiddenInput = css({
+  display: 'none',
+});
+
 export default function MultiImageUpload({
   onImagesChange,
   currentImages = [],
   maxImages = 5,
   maxSizeMB = 5,
   acceptedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
-  placeholder = '點擊添加圖片',
+  placeholder = '點擊新增圖片',
   disabled = false,
   authToken,
   useRealAPI = false,
@@ -230,7 +233,6 @@ export default function MultiImageUpload({
 }: MultiImageUploadProps) {
   const [images, setImages] = useState<string[]>(currentImages);
   const [loadingStates, setLoadingStates] = useState<Set<number>>(new Set());
-  const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -366,39 +368,6 @@ export default function MultiImageUpload({
     [handleFilesSelect]
   );
 
-  // 處理文件拖拽上傳
-  const handleFileDragOver = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      if (!disabled && images.length < maxImages) {
-        setIsDragOver(true);
-      }
-    },
-    [disabled, images.length, maxImages]
-  );
-
-  const handleFileDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  }, []);
-
-  const handleFileDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      setIsDragOver(false);
-
-      if (disabled || images.length >= maxImages) return;
-
-      const files = Array.from(e.dataTransfer.files);
-      const imageFiles = files.filter((file) => file.type.startsWith('image/'));
-
-      if (imageFiles.length > 0) {
-        handleFilesSelect(imageFiles);
-      }
-    },
-    [disabled, images.length, maxImages, handleFilesSelect]
-  );
-
   // 圖片順序調整功能
   const moveImage = useCallback(
     (fromIndex: number, toIndex: number) => {
@@ -428,7 +397,6 @@ export default function MultiImageUpload({
     [moveImage]
   );
 
-  // 點擊添加
   const handleAddClick = useCallback(() => {
     if (!disabled && images.length < maxImages && fileInputRef.current) {
       fileInputRef.current.click();
@@ -447,7 +415,7 @@ export default function MultiImageUpload({
         onChange={handleInputChange}
         disabled={disabled}
         multiple
-        className="hidden"
+        className={hiddenInput}
       />
 
       <ImageGrid>
@@ -516,14 +484,7 @@ export default function MultiImageUpload({
         ))}
 
         {canAddMore && (
-          <UploadCard
-            $isDragOver={isDragOver}
-            $disabled={disabled || isAnyUploading}
-            onClick={handleAddClick}
-            onDragOver={handleFileDragOver}
-            onDragLeave={handleFileDragLeave}
-            onDrop={handleFileDrop}
-          >
+          <UploadCard $disabled={disabled || isAnyUploading} onClick={handleAddClick}>
             {isAnyUploading ? (
               <>
                 <LoadingSpinner />

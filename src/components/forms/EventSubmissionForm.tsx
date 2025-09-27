@@ -17,7 +17,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import PlaceAutocomplete from './PlaceAutocomplete';
 import ArtistSelectionModal from './ArtistSelectionModal';
-import ImageUpload from '@/components/ui/ImageUpload';
+import ImageUpload from '@/components/ImageUpload';
 import MultiImageUpload from '@/components/ui/MultiImageUpload';
 import DatePicker from '@/components/ui/DatePicker';
 import ConfirmModal from '@/components/ui/ConfirmModal';
@@ -975,7 +975,7 @@ export default function EventSubmissionForm({
                   });
                 }}
                 compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
-                placeholder="點擊上傳主視覺圖片或拖曳至此"
+                placeholder="點擊上傳主視覺圖片"
                 maxSizeMB={5}
                 disabled={createEventMutation.isPending || updateEventMutation.isPending}
                 authToken={token || undefined}
@@ -1088,7 +1088,7 @@ export default function EventSubmissionForm({
                   });
                 }}
                 maxImages={5}
-                placeholder="點擊添加圖片"
+                placeholder="點擊新增圖片"
                 maxSizeMB={5}
                 disabled={createEventMutation.isPending || updateEventMutation.isPending}
                 authToken={token || undefined}

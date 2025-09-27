@@ -379,7 +379,7 @@ export default function ImageCropper({
     [cropArea]
   );
 
-  // 處理拖拽事件（滑鼠和觸控）
+  // 處理拖曳事件（滑鼠和觸控）
   const handlePointerDown = useCallback(
     (e: React.PointerEvent | React.MouseEvent) => {
       e.preventDefault();

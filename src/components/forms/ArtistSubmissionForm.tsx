@@ -9,7 +9,7 @@ import { artistSubmissionSchema, ArtistSubmissionFormData } from '@/lib/validati
 import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
-import ImageUpload from '@/components/ui/ImageUpload';
+import ImageUpload from '@/components/ImageUpload';
 import DatePicker from '@/components/ui/DatePicker';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
@@ -586,7 +586,7 @@ export default function ArtistSubmissionForm({
                   });
                 }
               }}
-              placeholder="點擊上傳偶像照片或拖拽至此"
+              placeholder="點擊上傳偶像照片"
               maxSizeMB={5}
               disabled={
                 createArtistMutation.isPending || updateArtistMutation.isPending || isUploadingImage

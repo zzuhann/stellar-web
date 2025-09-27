@@ -31,7 +31,7 @@ const useDrawer = () => {
     config: config.gentle,
   }));
 
-  // 跟隨拖拽的兩段式邏輯
+  // 跟隨拖曳的兩段式邏輯
   const bind = (() => {
     let startY = 0;
     let startHeight = 0;
@@ -55,11 +55,11 @@ const useDrawer = () => {
       e.preventDefault();
 
       const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-      const deltaY = (startY - clientY) * 1; // 向上為正值，提高敏感度讓拖拽更輕鬆
+      const deltaY = (startY - clientY) * 1; // 向上為正值，提高敏感度讓拖曳更輕鬆
       const maxHeight = getTargetExpandedHeight();
       const newHeight = Math.max(COLLAPSED_HEIGHT, Math.min(maxHeight, startHeight + deltaY));
 
-      // 即時跟隨拖拽
+      // 即時跟隨拖曳
       api.start({ height: newHeight, immediate: true });
     };
 
