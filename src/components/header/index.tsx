@@ -22,7 +22,7 @@ const headerContainer = css({
   justifyContent: 'space-between',
   alignItems: 'center',
   borderBottom: '1px solid',
-  borderColor: 'color.border.medium',
+  borderBottomColor: 'color.border.medium',
   boxShadow: 'shadow.md',
   backgroundColor: 'color.background.primary',
   boxSizing: 'border-box',
