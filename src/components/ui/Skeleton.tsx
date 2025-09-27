@@ -12,9 +12,21 @@ interface SkeletonProps {
 const skeletonBase = css({
   display: 'block',
   backgroundColor: '#e6e6e6',
-  backgroundImage: 'linear-gradient(to right, #e6e6e6 5%, #cccccc 25%, #e6e6e6 35%)',
-  backgroundSize: '1000px 100%',
-  animation: 'shimmer 2.5s linear infinite',
+  position: 'relative',
+  overflow: 'hidden',
+
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    top: '0',
+    left: '0',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, #cccccc, transparent)',
+    transform: 'translateX(-100%)',
+    animation: 'shimmer 1.8s ease-in-out infinite',
+    willChange: 'transform',
+  },
 });
 
 export default function Skeleton({

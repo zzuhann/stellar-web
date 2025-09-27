@@ -4,6 +4,6 @@ export const spin = {
 };
 
 export const shimmer = {
-  '0%': { backgroundPosition: '-1000px 0' },
-  '100%': { backgroundPosition: '1000px 0' },
+  '0%': { transform: 'translateX(-100%)' },
+  '100%': { transform: 'translateX(100%)' },
 };
