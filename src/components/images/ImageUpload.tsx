@@ -2,11 +2,12 @@
 
 import { useState, useRef } from 'react';
 import { PhotoIcon, XMarkIcon, ArrowUpTrayIcon, ScissorsIcon } from '@heroicons/react/24/outline';
-import { uploadImageToAPI, mockUpload, compressImage } from '@/lib/r2-upload';
+import { uploadImageToAPI, compressImage } from '@/lib/r2-upload';
 import { CDN_DOMAIN } from '@/constants';
-import ImageCropper from './ui/ImageCropper';
-import styled from 'styled-components';
+import ImageCropper from './ImageCropper';
 import { css, cva } from '@/styled-system/css';
+import Loading from '../Loading';
+import Image from 'next/image';
 
 const uploadContainer = css({
   width: '100%',
@@ -20,7 +21,7 @@ const uploadArea = cva({
     padding: '24px',
     transition: 'all 0.2s ease',
     borderColor: 'color.border.light',
-    background: 'color.bg.primary',
+    background: 'color.background.primary',
 
     '@media (min-width: 768px)': {
       padding: '32px',
@@ -28,7 +29,7 @@ const uploadArea = cva({
 
     '&:hover': {
       borderColor: 'color.border.medium',
-      background: 'color.bg.secondary',
+      background: 'color.background.secondary',
     },
   },
   variants: {
@@ -63,178 +64,161 @@ const hiddenInput = css({
   display: 'none',
 });
 
-const LoadingContainer = styled.div`
-  text-align: center;
-`;
+const previewContainer = css({
+  position: 'relative',
+});
 
-const LoadingSpinner = styled.div`
-  width: 32px;
-  height: 32px;
-  border: 2px solid transparent;
-  border-bottom-color: var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 8px;
+const previewImage = cva({
+  base: {
+    width: '100%',
+    maxHeight: '192px',
+    borderRadius: 'radius.lg',
+    objectFit: 'contain',
+    backgroundColor: 'color.background.secondary',
+    aspectRatio: 'auto',
+    maxWidth: '100%',
+    margin: '0',
+  },
+  variants: {
+    isCropped: {
+      true: {
+        borderRadius: 'radius.circle',
+        objectFit: 'cover',
+        backgroundColor: 'transparent',
+        aspectRatio: '1',
+        maxWidth: '192px',
+        margin: '0 auto',
+      },
+    },
+  },
+});
 
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
+const actionButtons = css({
+  position: 'absolute',
+  top: '8px',
+  right: '8px',
+  display: 'flex',
+  gap: '4px',
+});
 
-const LoadingText = styled.p`
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  margin: 0;
-`;
+const actionButton = cva({
+  base: {
+    padding: '4px',
+    borderRadius: 'radius.circle',
+    transition: 'all 0.2s ease',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    '&:disabled': {
+      opacity: 0.5,
+      cursor: 'not-allowed',
+    },
+  },
+  variants: {
+    variant: {
+      crop: {
+        background: 'color.primary',
+        color: 'white',
+        '&:hover:not(:disabled)': {
+          background: '#2d4a5f',
+        },
+      },
+      remove: {
+        background: 'color.error',
+        color: 'white',
+        '&:hover:not(:disabled)': {
+          background: '#c82333',
+        },
+      },
+    },
+  },
+});
 
-const PreviewContainer = styled.div`
-  position: relative;
-`;
+const imageHint = css({
+  position: 'absolute',
+  bottom: '8px',
+  left: '8px',
+  background: 'rgba(0, 0, 0, 0.6)',
+  color: 'white',
+  fontSize: '12px',
+  padding: '4px 8px',
+  borderRadius: 'radius.sm',
+});
 
-const PreviewImage = styled.img<{ $isCircle?: boolean }>`
-  width: 100%;
-  max-height: 192px;
-  border-radius: ${(props) => (props.$isCircle ? '50%' : 'var(--radius-lg)')};
-  object-fit: ${(props) => (props.$isCircle ? 'cover' : 'contain')};
-  background-color: ${(props) => (props.$isCircle ? 'transparent' : 'var(--color-bg-secondary)')};
-  aspect-ratio: ${(props) => (props.$isCircle ? '1' : 'auto')};
-  max-width: ${(props) => (props.$isCircle ? '192px' : '100%')};
-  margin: ${(props) => (props.$isCircle ? '0 auto' : '0')};
-`;
+const uploadContent = css({
+  textAlign: 'center',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
 
-const ActionButtons = styled.div`
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  display: flex;
-  gap: 4px;
-`;
+const uploadIcon = css({
+  display: 'flex',
+  justifyContent: 'center',
+  marginBottom: '12px',
+});
 
-const ActionButton = styled.button<{ $variant: 'crop' | 'remove' }>`
-  padding: 4px;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+const uploadTitle = css({
+  fontSize: '14px',
+  color: 'color.text.primary',
+  margin: '0 0 4px 0',
+  '@media (min-width: 768px)': {
+    fontSize: '15px',
+  },
+});
 
-  ${(props) =>
-    props.$variant === 'crop'
-      ? `
-    background: var(--color-primary);
-    color: white;
+const uploadSubtitle = css({
+  fontSize: '12px',
+  color: 'color.text.secondary',
+  margin: '0 0 12px 0',
+  '@media (min-width: 768px)': {
+    fontSize: '13px',
+  },
+});
 
-    &:hover:not(:disabled) {
-      background: #2d4a5f;
-    }
-  `
-      : `
-    background: var(--color-error);
-    color: white;
+const uploadArrow = css({
+  marginTop: '12px',
+});
 
-    &:hover:not(:disabled) {
-      background: #c82333;
-    }
-  `}
+const errorMessage = css({
+  margin: '8px 0 0 0',
+  fontSize: '13px',
+  color: 'color.error',
+});
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-`;
-
-const ImageHint = styled.div`
-  position: absolute;
-  bottom: 8px;
-  left: 8px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
-`;
-
-const UploadContent = styled.div`
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`;
-
-const UploadIcon = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: 12px;
-`;
-
-const UploadTitle = styled.p`
-  font-size: 14px;
-  color: var(--color-text-primary);
-  margin: 0 0 4px 0;
-
-  @media (min-width: 768px) {
-    font-size: 15px;
-  }
-`;
-
-const UploadSubtitle = styled.p`
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  margin: 0 0 12px 0;
-
-  @media (min-width: 768px) {
-    font-size: 13px;
-  }
-`;
-
-const UploadArrow = styled.div`
-  margin-top: 12px;
-`;
-
-const ErrorMessage = styled.p`
-  margin: 8px 0 0 0;
-  font-size: 13px;
-  color: var(--color-error);
-`;
-
-const HelperText = styled.p`
-  margin: 8px 0 0 0;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-
-  @media (min-width: 768px) {
-    font-size: 13px;
-  }
-`;
+const helperText = css({
+  margin: '8px 0 0 0',
+  fontSize: '12px',
+  color: 'color.text.secondary',
+  '@media (min-width: 768px)': {
+    fontSize: '13px',
+  },
+});
 
 interface ImageUploadProps {
-  onImageSelect?: (file: File) => void;
   onImageRemove?: () => void;
   onUploadComplete?: (imageUrl: string) => void;
   currentImageUrl?: string;
   maxSizeMB?: number;
-  acceptedFormats?: string[];
   placeholder?: string;
   disabled?: boolean;
   authToken?: string;
-  useRealAPI?: boolean;
-  // 新增裁切功能相關屬性
-  enableCrop?: boolean; // 是否啟用裁切功能
-  cropAspectRatio?: number; // 裁切比例，1 = 正方形
-  cropShape?: 'square' | 'circle'; // 裁切形狀
-  cropOutputSize?: number; // 輸出尺寸
-  onCropCancel?: () => void; // 裁切取消回調
-  delayUpload?: boolean; // 是否延遲上傳，只在表單提交時上傳
-  onFileReady?: (file: File) => void; // 檔案準備好時的回調（延遲上傳模式）
-  // 新增壓縮參數
+  // 是否啟用裁切功能
+  enableCrop?: boolean;
+  // 裁切比例 (1 = 正方形)
+  cropAspectRatio?: number;
+  // 裁切輸出尺寸
+  cropOutputSize?: number;
+  // 裁切取消時的 callback
+  onCropCancel?: () => void;
+  // 是否只在 submit 時上傳
+  delayUpload?: boolean;
+  // 檔案準備好時的 callback(延遲上傳)
+  onFileReady?: (file: File) => void;
+  // 壓縮參數
   compressionParams?: {
     maxWidth?: number;
     maxHeight?: number;
@@ -242,25 +226,23 @@ interface ImageUploadProps {
   };
 }
 
+const acceptedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
 export default function ImageUpload({
-  onImageSelect,
   onImageRemove,
   onUploadComplete,
   currentImageUrl,
   maxSizeMB = 5,
-  acceptedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
   placeholder = '點擊上傳圖片',
   disabled = false,
   authToken,
-  useRealAPI = false,
   enableCrop = false,
   cropAspectRatio = 1,
-  cropShape = 'square',
   cropOutputSize = 400,
   onCropCancel,
   delayUpload = false,
   onFileReady,
-  compressionParams = { maxWidth: 800, maxHeight: 800, quality: 0.8 }, // 預設值
+  compressionParams = { maxWidth: 800, maxHeight: 800, quality: 0.8 },
 }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
   const [error, setError] = useState<string | null>(null);
@@ -273,16 +255,15 @@ export default function ImageUpload({
     width: number;
     height: number;
   } | null>(null);
-  const [hasCroppedImage, setHasCroppedImage] = useState(false); // 追蹤是否已經裁切過圖片
+  const [hasCroppedImage, setHasCroppedImage] = useState(false);
   const [confirmedImageUrl, setConfirmedImageUrl] = useState<string | null>(
     currentImageUrl || null
-  ); // 保存已確認的圖片URL
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 驗證檔案
   const validateFile = (file: File): string | null => {
     if (!acceptedFormats.includes(file.type)) {
-      return `不支援的檔案格式，請選擇：${acceptedFormats.join(', ')}`;
+      return `不支援上傳的檔案格式，請選擇：${acceptedFormats.join(', ')}`;
     }
 
     if (file.size > maxSizeMB * 1024 * 1024) {
@@ -292,7 +273,6 @@ export default function ImageUpload({
     return null;
   };
 
-  // 處理檔案選擇和上傳
   const handleFileSelect = async (file: File) => {
     setError(null);
 
@@ -310,9 +290,6 @@ export default function ImageUpload({
         compressionParams.maxHeight,
         compressionParams.quality
       );
-
-      // 通知父組件檔案已選擇
-      onImageSelect?.(compressedFile);
 
       // 如果啟用裁切功能，保存原始檔案並顯示裁切器
       if (enableCrop) {
@@ -340,7 +317,6 @@ export default function ImageUpload({
     }
   };
 
-  // 上傳圖片的共用函數
   const uploadImage = async (file: File) => {
     if (!onUploadComplete) return;
 
@@ -348,18 +324,17 @@ export default function ImageUpload({
 
     try {
       let uploadResult;
-      if (useRealAPI && authToken) {
+      if (authToken) {
         uploadResult = await uploadImageToAPI(file, authToken);
+        if (uploadResult.success && uploadResult.filename) {
+          const fullImageUrl = CDN_DOMAIN + uploadResult.filename;
+          setConfirmedImageUrl(fullImageUrl);
+          onUploadComplete(fullImageUrl);
+        } else {
+          setError(uploadResult.error || '上傳失敗');
+        }
       } else {
-        uploadResult = await mockUpload(file);
-      }
-
-      if (uploadResult.success && uploadResult.filename) {
-        const fullImageUrl = CDN_DOMAIN + uploadResult.filename;
-        setConfirmedImageUrl(fullImageUrl); // 保存上傳完成的圖片URL
-        onUploadComplete(fullImageUrl);
-      } else {
-        setError(uploadResult.error || '上傳失敗');
+        setError('請先登入');
       }
     } catch {
       setError('上傳失敗，請重試');
@@ -368,7 +343,6 @@ export default function ImageUpload({
     }
   };
 
-  // 處理裁切完成
   const handleCropComplete = async (
     croppedBlob: Blob,
     cropArea?: { x: number; y: number; width: number; height: number }
@@ -403,7 +377,6 @@ export default function ImageUpload({
     }
   };
 
-  // 取消裁切
   const handleCropCancel = () => {
     setShowCropper(false);
 
@@ -426,7 +399,6 @@ export default function ImageUpload({
     onCropCancel?.();
   };
 
-  // 處理檔案輸入變化
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -434,7 +406,6 @@ export default function ImageUpload({
     }
   };
 
-  // 移除圖片
   const handleRemove = () => {
     setPreviewUrl(null);
     setError(null);
@@ -466,23 +437,22 @@ export default function ImageUpload({
         />
 
         {isLoading ? (
-          <LoadingContainer>
-            <LoadingSpinner />
-            <LoadingText>上傳中...</LoadingText>
-          </LoadingContainer>
+          <Loading description="上傳中..." />
         ) : previewUrl ? (
-          <PreviewContainer>
-            <PreviewImage
+          <div className={previewContainer}>
+            <Image
+              className={previewImage({ isCropped: enableCrop && hasCroppedImage })}
               src={previewUrl}
               alt="預覽"
-              $isCircle={enableCrop && cropShape === 'circle' && hasCroppedImage}
+              width={0}
+              height={0}
             />
-            <ActionButtons>
+            <div className={actionButtons}>
               {/* 重新裁切按鈕（如果啟用裁切功能） */}
               {enableCrop && originalFile && (
-                <ActionButton
+                <button
+                  className={actionButton({ variant: 'crop' })}
                   type="button"
-                  $variant="crop"
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowCropper(true);
@@ -491,11 +461,11 @@ export default function ImageUpload({
                   title="重新裁切"
                 >
                   <ScissorsIcon style={{ width: '16px', height: '16px' }} />
-                </ActionButton>
+                </button>
               )}
-              <ActionButton
+              <button
+                className={actionButton({ variant: 'remove' })}
                 type="button"
-                $variant="remove"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleRemove();
@@ -504,46 +474,42 @@ export default function ImageUpload({
                 title="移除圖片"
               >
                 <XMarkIcon style={{ width: '16px', height: '16px' }} />
-              </ActionButton>
-            </ActionButtons>
-            <ImageHint>{enableCrop ? '點擊更換圖片或重新裁切' : '點擊更換圖片'}</ImageHint>
-          </PreviewContainer>
+              </button>
+            </div>
+            <div className={imageHint}>
+              {enableCrop ? '可更換圖片或重新選擇裁切範圍' : '點擊更換圖片'}
+            </div>
+          </div>
         ) : (
-          <UploadContent>
-            <UploadIcon>
-              <PhotoIcon
-                style={{ width: '48px', height: '48px', color: 'var(--color-text-secondary)' }}
-              />
-            </UploadIcon>
-            <UploadTitle>{placeholder}</UploadTitle>
-            <UploadSubtitle>
+          <div className={uploadContent}>
+            <div className={uploadIcon}>
+              <PhotoIcon width={48} height={48} color="var(--color-text-secondary)" />
+            </div>
+            <p className={uploadTitle}>{placeholder}</p>
+            <p className={uploadSubtitle}>
               支援格式：{acceptedFormats.map((f) => f.split('/')[1]).join(', ')} • 最大 {maxSizeMB}
               MB
-            </UploadSubtitle>
-            <UploadArrow>
-              <ArrowUpTrayIcon
-                style={{ width: '20px', height: '20px', color: 'var(--color-primary)' }}
-              />
-            </UploadArrow>
-          </UploadContent>
+            </p>
+            <div className={uploadArrow}>
+              <ArrowUpTrayIcon width={20} height={20} color="var(--color-primary)" />
+            </div>
+          </div>
         )}
       </div>
 
-      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {error && <p className={errorMessage}>{error}</p>}
 
-      <HelperText>
-        圖片會自動壓縮至適當大小以提升載入速度
-        {enableCrop && ` • 支援${cropShape === 'circle' ? '圓形' : '方形'}裁切`}
-      </HelperText>
+      <p className={helperText}>
+        圖片會自動壓縮至適當大小
+        {enableCrop && ` • 支援圓形裁切`}
+      </p>
 
-      {/* 圖片裁切器 */}
       {showCropper && originalFile && (
         <ImageCropper
           imageUrl={URL.createObjectURL(originalFile)}
           onCropComplete={handleCropComplete}
           onCancel={handleCropCancel}
           aspectRatio={cropAspectRatio}
-          cropShape={cropShape}
           outputSize={cropOutputSize}
           initialCropArea={lastCropArea}
         />

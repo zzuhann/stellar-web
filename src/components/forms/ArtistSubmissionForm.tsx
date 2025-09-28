@@ -9,7 +9,7 @@ import { artistSubmissionSchema, ArtistSubmissionFormData } from '@/lib/validati
 import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
-import ImageUpload from '@/components/ImageUpload';
+import ImageUpload from '@/components/images/ImageUpload';
 import DatePicker from '@/components/ui/DatePicker';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
@@ -592,10 +592,8 @@ export default function ArtistSubmissionForm({
                 createArtistMutation.isPending || updateArtistMutation.isPending || isUploadingImage
               }
               authToken={token || undefined}
-              useRealAPI={!!token}
               enableCrop
               cropAspectRatio={1}
-              cropShape="circle"
               cropOutputSize={400}
             />
             {errors.profileImage && <ErrorText>{errors.profileImage.message}</ErrorText>}

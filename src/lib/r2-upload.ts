@@ -127,38 +127,3 @@ export function compressImage(
     img.src = URL.createObjectURL(file);
   });
 }
-
-// 模擬上傳功能（開發階段使用）
-export async function mockUpload(file: File): Promise<UploadResponse> {
-  try {
-    // 壓縮圖片
-    const compressedFile = await compressImage(file, 800, 800, 0.8);
-
-    // 轉換為 Base64（臨時存儲方案）
-    const base64 = await convertToBase64(compressedFile);
-
-    // 模擬 2 秒上傳時間
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    return {
-      success: true,
-      imageUrl: base64, // 暫時返回 base64，實際應該是 R2 URL
-      filename: `images/mock-${Date.now()}.jpg`,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : '上傳失敗',
-    };
-  }
-}
-
-// 轉換為 Base64
-function convertToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}

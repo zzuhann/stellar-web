@@ -11,7 +11,7 @@ const burgerButton = css({
   borderRadius: 'radius.sm',
   transition: 'all 0.2s ease',
   '&:hover': {
-    background: 'color.bg.secondary',
+    background: 'color.background.secondary',
   },
   '@media (max-width: 768px)': {
     display: 'flex',

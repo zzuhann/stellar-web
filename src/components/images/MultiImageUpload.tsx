@@ -7,123 +7,93 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
 } from '@heroicons/react/24/outline';
-import { uploadImageToAPI, mockUpload, compressImage } from '@/lib/r2-upload';
+import { uploadImageToAPI, compressImage } from '@/lib/r2-upload';
 import { CDN_DOMAIN } from '@/constants';
 import styled from 'styled-components';
 import showToast from '@/lib/toast';
-import { css } from '@/styled-system/css';
+import { css, cva } from '@/styled-system/css';
+import Image from 'next/image';
 
-interface MultiImageUploadProps {
-  onImagesChange?: (imageUrls: string[]) => void;
-  currentImages?: string[];
-  maxImages?: number;
-  maxSizeMB?: number;
-  acceptedFormats?: string[];
-  placeholder?: string;
-  disabled?: boolean;
-  authToken?: string;
-  useRealAPI?: boolean;
-  // 新增壓縮參數
-  compressionParams?: {
-    maxWidth?: number;
-    maxHeight?: number;
-    quality?: number;
-  };
-}
+const container = css({
+  width: '100%',
+});
 
-// Styled Components
-const Container = styled.div`
-  width: 100%;
-`;
+const imageGrid = css({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+  gap: '12px',
+  marginBottom: '16px',
+});
 
-const ImageGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
-  margin-bottom: 16px;
-`;
+const imageCard = css({
+  position: 'relative',
+  aspectRatio: '3/4',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  overflow: 'hidden',
+  background: 'color.background.secondary',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    borderColor: 'color.border.medium',
+  },
+});
 
-const ImageCard = styled.div`
-  position: relative;
-  aspect-ratio: 9/16;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  background: var(--color-bg-secondary);
-  transition: all 0.2s ease;
+const imagePreview = css({
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+});
 
-  &:hover {
-    border-color: var(--color-border-medium);
-  }
-`;
+const actionButtonsContainer = css({
+  position: 'absolute',
+  inset: '0',
+  background: 'rgba(0, 0, 0, 0.3)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  opacity: '1',
+  transition: 'opacity 0.2s ease',
+  gap: '8px',
+});
 
-const ImagePreview = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-`;
-
-const ActionButtonsContainer = styled.div`
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  gap: 8px;
-
-  ${ImageCard}:hover & {
-    opacity: 1;
-  }
-
-  @media (max-width: 768px) {
-    opacity: 1;
-    background: rgba(0, 0, 0, 0.3);
-  }
-`;
-
-const ActionButton = styled.button<{ $variant: 'move' | 'remove' }>`
-  background: ${(props) =>
-    props.$variant === 'remove' ? 'rgba(220, 53, 69, 0.9)' : 'rgba(0, 0, 0, 0.7)'};
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover:not(:disabled) {
-    background: ${(props) =>
-      props.$variant === 'remove' ? 'rgba(220, 53, 69, 1)' : 'rgba(0, 0, 0, 0.9)'};
-    transform: scale(1.1);
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  @media (max-width: 768px) {
-    width: 36px;
-    height: 36px;
-
-    svg {
-      width: 18px;
-      height: 18px;
-    }
-  }
-`;
+const actionButton = cva({
+  base: {
+    color: 'white',
+    border: 'none',
+    borderRadius: 'radius.circle',
+    width: '32px',
+    height: '32px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    '&:hover:not(:disabled)': {
+      transform: 'scale(1.1)',
+    },
+    '&:disabled': {
+      opacity: 0.5,
+      cursor: 'not-allowed',
+    },
+  },
+  variants: {
+    variant: {
+      move: {
+        background: 'rgba(0, 0, 0, 0.7)',
+        '&:hover:not(:disabled)': {
+          background: 'rgba(0, 0, 0, 0.9)',
+        },
+      },
+      remove: {
+        background: 'rgba(220, 53, 69, 0.9)',
+        '&:hover:not(:disabled)': {
+          background: 'rgba(220, 53, 69, 1)',
+        },
+      },
+    },
+  },
+});
 
 const OrderIndicator = styled.div`
   position: absolute;
@@ -219,16 +189,32 @@ const hiddenInput = css({
   display: 'none',
 });
 
+interface MultiImageUploadProps {
+  onImagesChange?: (imageUrls: string[]) => void;
+  currentImages?: string[];
+  maxImages?: number;
+  maxSizeMB?: number;
+  placeholder?: string;
+  disabled?: boolean;
+  authToken?: string;
+  // 壓縮參數
+  compressionParams?: {
+    maxWidth?: number;
+    maxHeight?: number;
+    quality?: number;
+  };
+}
+
+const acceptedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
 export default function MultiImageUpload({
   onImagesChange,
   currentImages = [],
   maxImages = 5,
   maxSizeMB = 5,
-  acceptedFormats = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
   placeholder = '點擊新增圖片',
   disabled = false,
   authToken,
-  useRealAPI = false,
   compressionParams = { maxWidth: 800, maxHeight: 800, quality: 0.8 }, // 預設值
 }: MultiImageUploadProps) {
   const [images, setImages] = useState<string[]>(currentImages);
@@ -265,22 +251,21 @@ export default function MultiImageUpload({
         );
 
         let uploadResult;
-        if (useRealAPI && authToken) {
+        if (authToken) {
           uploadResult = await uploadImageToAPI(compressedFile, authToken);
+          if (uploadResult.success && uploadResult.filename) {
+            return CDN_DOMAIN + uploadResult.filename;
+          } else {
+            throw new Error(uploadResult.error || '上傳失敗');
+          }
         } else {
-          uploadResult = await mockUpload(compressedFile);
-        }
-
-        if (uploadResult.success && uploadResult.filename) {
-          return CDN_DOMAIN + uploadResult.filename;
-        } else {
-          throw new Error(uploadResult.error || '上傳失敗');
+          throw new Error('請先登入');
         }
       } catch (error) {
         throw error;
       }
     },
-    [useRealAPI, authToken]
+    [authToken, compressionParams]
   );
 
   // 處理多檔案選擇
@@ -407,7 +392,7 @@ export default function MultiImageUpload({
   const isAnyUploading = loadingStates.size > 0;
 
   return (
-    <Container>
+    <div className={container}>
       <input
         ref={fileInputRef}
         type="file"
@@ -418,21 +403,21 @@ export default function MultiImageUpload({
         className={hiddenInput}
       />
 
-      <ImageGrid>
+      <div className={imageGrid}>
         {images.map((imageUrl, index) => (
-          <ImageCard key={index}>
-            <ImagePreview src={imageUrl} alt={`詳細說明圖片 ${index + 1}`} />
+          <div className={imageCard} key={index}>
+            <Image src={imageUrl} alt={`詳細說明圖片 ${index + 1}`} className={imagePreview} fill />
 
             {/* 順序指示器 */}
             <OrderIndicator>{index + 1}</OrderIndicator>
 
             {/* 操作按鈕 */}
-            <ActionButtonsContainer>
+            <div className={actionButtonsContainer}>
               {/* 向左移動 */}
               {index > 0 && (
-                <ActionButton
+                <button
+                  className={actionButton({ variant: 'move' })}
                   type="button"
-                  $variant="move"
                   onClick={(e) => {
                     e.stopPropagation();
                     moveImageLeft(index);
@@ -440,14 +425,14 @@ export default function MultiImageUpload({
                   disabled={disabled}
                   title="向左移動"
                 >
-                  <ChevronLeftIcon />
-                </ActionButton>
+                  <ChevronLeftIcon width={16} height={16} />
+                </button>
               )}
 
               {/* 移除按鈕 */}
-              <ActionButton
+              <button
+                className={actionButton({ variant: 'remove' })}
                 type="button"
-                $variant="remove"
                 onClick={(e) => {
                   e.stopPropagation();
                   removeImage(index);
@@ -456,13 +441,13 @@ export default function MultiImageUpload({
                 title="移除圖片"
               >
                 <XMarkIcon />
-              </ActionButton>
+              </button>
 
               {/* 向右移動 */}
               {index < images.length - 1 && (
-                <ActionButton
+                <button
+                  className={actionButton({ variant: 'move' })}
                   type="button"
-                  $variant="move"
                   onClick={(e) => {
                     e.stopPropagation();
                     moveImageRight(index);
@@ -471,16 +456,16 @@ export default function MultiImageUpload({
                   title="向右移動"
                 >
                   <ChevronRightIcon />
-                </ActionButton>
+                </button>
               )}
-            </ActionButtonsContainer>
+            </div>
 
             {loadingStates.has(index) && (
               <LoadingOverlay>
                 <LoadingSpinner />
               </LoadingOverlay>
             )}
-          </ImageCard>
+          </div>
         ))}
 
         {canAddMore && (
@@ -498,7 +483,7 @@ export default function MultiImageUpload({
             )}
           </UploadCard>
         )}
-      </ImageGrid>
+      </div>
 
       {error && <ErrorText>{error}</ErrorText>}
 
@@ -507,6 +492,6 @@ export default function MultiImageUpload({
         {acceptedFormats.map((f) => f.split('/')[1]).join(', ')} • 最大 {maxSizeMB}MB
         {images.length > 1 && ' • 點擊箭頭調整順序'}
       </HelperText>
-    </Container>
+    </div>
   );
 }

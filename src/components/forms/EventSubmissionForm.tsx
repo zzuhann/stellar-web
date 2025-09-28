@@ -17,8 +17,8 @@ import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import PlaceAutocomplete from './PlaceAutocomplete';
 import ArtistSelectionModal from './ArtistSelectionModal';
-import ImageUpload from '@/components/ImageUpload';
-import MultiImageUpload from '@/components/ui/MultiImageUpload';
+import ImageUpload from '@/components/images/ImageUpload';
+import MultiImageUpload from '@/components/images/MultiImageUpload';
 import DatePicker from '@/components/ui/DatePicker';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
@@ -979,7 +979,6 @@ export default function EventSubmissionForm({
                 maxSizeMB={5}
                 disabled={createEventMutation.isPending || updateEventMutation.isPending}
                 authToken={token || undefined}
-                useRealAPI={!!token}
                 enableCrop={false}
               />
               <input type="hidden" {...register('mainImage')} />
@@ -1092,7 +1091,6 @@ export default function EventSubmissionForm({
                 maxSizeMB={5}
                 disabled={createEventMutation.isPending || updateEventMutation.isPending}
                 authToken={token || undefined}
-                useRealAPI={!!token}
                 compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
               />
               <input type="hidden" {...register('detailImage')} />
