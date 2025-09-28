@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import toast from 'react-hot-toast';
 
 // 全域變數來追蹤 SW 註冊狀態
 let swRegistrationPromise: Promise<ServiceWorkerRegistration> | null = null;
@@ -16,29 +15,7 @@ export default function ServiceWorkerRegistration() {
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       navigator.serviceWorker
         .register('/sw.js')
-        .then((registration) => {
-          // 監聽 SW 更新
-          registration.addEventListener('updatefound', () => {
-            const newWorker = registration.installing;
-            if (newWorker) {
-              newWorker.addEventListener('statechange', () => {
-                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                  // 新版本可用，提示用戶刷新
-                  toast(
-                    () => (
-                      <div onClick={() => window.location.reload()} style={{ cursor: 'pointer' }}>
-                        🔄 \ 版本更新，點擊重新整理頁面吧 /
-                      </div>
-                    ),
-                    { duration: 10000 }
-                  );
-                }
-              });
-            }
-          });
-
-          return registration;
-        })
+        .then(() => {})
         .catch(() => {
           swRegistrationPromise = null; // 重置以便重試
           return null;
