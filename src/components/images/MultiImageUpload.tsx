@@ -9,7 +9,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { uploadImageToAPI, compressImage } from '@/lib/r2-upload';
 import { CDN_DOMAIN } from '@/constants';
-import styled from 'styled-components';
 import showToast from '@/lib/toast';
 import { css, cva } from '@/styled-system/css';
 import Image from 'next/image';
@@ -95,95 +94,97 @@ const actionButton = cva({
   },
 });
 
-const OrderIndicator = styled.div`
-  position: absolute;
-  top: 4px;
-  left: 4px;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
-`;
+const orderIndicator = css({
+  position: 'absolute',
+  top: '4px',
+  left: '4px',
+  background: 'rgba(0, 0, 0, 0.5)',
+  color: 'white',
+  borderRadius: 'radius.circle',
+  width: '20px',
+  height: '20px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '12px',
+  fontWeight: '600',
+});
 
-const LoadingOverlay = styled.div`
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
+const loadingOverlay = css({
+  position: 'absolute',
+  inset: '0',
+  background: 'rgba(255, 255, 255, 0.8)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
 
-const LoadingSpinner = styled.div`
-  width: 20px;
-  height: 20px;
-  border: 2px solid var(--color-border-light);
-  border-top: 2px solid var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
+const loadingSpinner = css({
+  width: '20px',
+  height: '20px',
+  border: '2px solid',
+  borderColor: 'color.border.light',
+  borderTopColor: 'color.primary',
+  borderRadius: 'radius.circle',
+  animation: 'spin 1s linear infinite',
+});
 
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
+const uploadCard = cva({
+  base: {
+    aspectRatio: '1',
+    border: '2px dashed',
+    borderColor: 'color.border.light',
+    borderRadius: 'radius.lg',
+    background: 'color.background.secondary',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s ease',
+  },
+  variants: {
+    disabled: {
+      true: {
+        opacity: '0.5',
+        cursor: 'not-allowed',
+        '&:hover': {
+          borderColor: 'color.border.light',
+          background: 'color.background.secondary',
+        },
+      },
+      false: {
+        cursor: 'pointer',
+        opacity: '1',
+        '&:hover': {
+          borderColor: 'color.border.medium',
+          background: 'color.background.secondary',
+        },
+      },
+    },
+  },
+  defaultVariants: {
+    disabled: false,
+  },
+});
 
-const UploadCard = styled.div<{ $disabled?: boolean }>`
-  aspect-ratio: 1;
-  border: 2px dashed var(--color-border-light);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-secondary);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: ${(props) => (props.$disabled ? 'not-allowed' : 'pointer')};
-  transition: all 0.2s ease;
-  opacity: ${(props) => (props.$disabled ? 0.5 : 1)};
+const uploadText = css({
+  fontSize: '12px',
+  color: 'color.text.secondary',
+  textAlign: 'center',
+  margin: '0',
+});
 
-  &:hover {
-    border-color: ${(props) =>
-      props.$disabled ? 'var(--color-border-light)' : 'var(--color-border-medium)'};
-    background: ${(props) =>
-      props.$disabled ? 'var(--color-bg-secondary)' : 'var(--color-bg-tertiary)'};
-  }
-`;
+const errorText = css({
+  fontSize: '12px',
+  color: 'color.status.error',
+  margin: '4px 0 0 0',
+});
 
-const UploadIcon = styled(PlusIcon)`
-  width: 24px;
-  height: 24px;
-  color: var(--color-text-secondary);
-  margin-bottom: 8px;
-`;
-
-const UploadText = styled.p`
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  text-align: center;
-  margin: 0;
-`;
-
-const ErrorText = styled.p`
-  font-size: 12px;
-  color: #ef4444;
-  margin: 4px 0 0 0;
-`;
-
-const HelperText = styled.p`
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  margin: 8px 0 0 0;
-`;
+const helperText = css({
+  fontSize: '12px',
+  color: 'color.text.secondary',
+  margin: '8px 0 0 0',
+});
 
 const hiddenInput = css({
   display: 'none',
@@ -222,7 +223,6 @@ export default function MultiImageUpload({
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 驗證檔案
   const validateFile = useCallback(
     (file: File): string | null => {
       if (!acceptedFormats.includes(file.type)) {
@@ -235,10 +235,9 @@ export default function MultiImageUpload({
 
       return null;
     },
-    [acceptedFormats, maxSizeMB]
+    [maxSizeMB]
   );
 
-  // 上傳圖片
   const uploadImage = useCallback(
     async (file: File): Promise<string | null> => {
       try {
@@ -331,7 +330,6 @@ export default function MultiImageUpload({
     [images, maxImages, validateFile, uploadImage, onImagesChange]
   );
 
-  // 移除圖片
   const removeImage = useCallback(
     (index: number) => {
       const newImages = images.filter((_, i) => i !== index);
@@ -342,7 +340,6 @@ export default function MultiImageUpload({
     [images, onImagesChange]
   );
 
-  // 處理檔案輸入變化
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
@@ -353,7 +350,6 @@ export default function MultiImageUpload({
     [handleFilesSelect]
   );
 
-  // 圖片順序調整功能
   const moveImage = useCallback(
     (fromIndex: number, toIndex: number) => {
       if (disabled || fromIndex === toIndex || toIndex < 0 || toIndex >= images.length) return;
@@ -408,8 +404,8 @@ export default function MultiImageUpload({
           <div className={imageCard} key={index}>
             <Image src={imageUrl} alt={`詳細說明圖片 ${index + 1}`} className={imagePreview} fill />
 
-            {/* 順序指示器 */}
-            <OrderIndicator>{index + 1}</OrderIndicator>
+            {/* 左上角順序 */}
+            <div className={orderIndicator}>{index + 1}</div>
 
             {/* 操作按鈕 */}
             <div className={actionButtonsContainer}>
@@ -461,37 +457,42 @@ export default function MultiImageUpload({
             </div>
 
             {loadingStates.has(index) && (
-              <LoadingOverlay>
-                <LoadingSpinner />
-              </LoadingOverlay>
+              <div className={loadingOverlay}>
+                <div className={loadingSpinner} />
+              </div>
             )}
           </div>
         ))}
 
         {canAddMore && (
-          <UploadCard $disabled={disabled || isAnyUploading} onClick={handleAddClick}>
+          <div
+            className={uploadCard({ disabled: disabled || isAnyUploading })}
+            onClick={handleAddClick}
+          >
             {isAnyUploading ? (
               <>
-                <LoadingSpinner />
-                <UploadText>上傳中...</UploadText>
+                <div className={loadingSpinner} />
+                <p className={uploadText}>上傳中...</p>
               </>
             ) : (
               <>
-                <UploadIcon />
-                <UploadText>{placeholder}</UploadText>
+                <PlusIcon width={24} height={24} color="var(--color-text-secondary)" />
+                <p className={uploadText} style={{ margin: '8px 0 0 0' }}>
+                  {placeholder}
+                </p>
               </>
             )}
-          </UploadCard>
+          </div>
         )}
       </div>
 
-      {error && <ErrorText>{error}</ErrorText>}
+      {error && <p className={errorText}>{error}</p>}
 
-      <HelperText>
+      <p className={helperText}>
         已上傳 {images.length}/{maxImages} 張圖片 • 支援格式：
         {acceptedFormats.map((f) => f.split('/')[1]).join(', ')} • 最大 {maxSizeMB}MB
         {images.length > 1 && ' • 點擊箭頭調整順序'}
-      </HelperText>
+      </p>
     </div>
   );
 }
