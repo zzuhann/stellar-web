@@ -35,11 +35,11 @@ const uploadArea = cva({
   variants: {
     hasError: {
       true: {
-        borderColor: 'color.error !important',
+        borderColor: 'color.status.color !important',
         background: 'rgba(220, 53, 69, 0.05) !important',
 
         '&:hover': {
-          borderColor: 'color.error !important',
+          borderColor: 'color.status.color !important',
           background: 'rgba(220, 53, 69, 0.05) !important',
         },
       },
@@ -126,7 +126,7 @@ const actionButton = cva({
         },
       },
       remove: {
-        background: 'color.error',
+        background: 'color.status.color',
         color: 'white',
         '&:hover:not(:disabled)': {
           background: '#c82333',
@@ -186,7 +186,7 @@ const uploadArrow = css({
 const errorMessage = css({
   margin: '8px 0 0 0',
   fontSize: '13px',
-  color: 'color.error',
+  color: 'color.status.color',
 });
 
 const helperText = css({
