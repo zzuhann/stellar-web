@@ -10,27 +10,13 @@ import { useScrollLock } from '@/hooks/useScrollLock';
 import { cleanSocialMediaHandle } from '@/utils/socialMedia';
 import Image from 'next/image';
 import Link from 'next/link';
+import ModalOverlay from '../ui/ModalOverlay';
 
 interface EventPreviewModalProps {
   event: CoffeeEvent;
   isOpen: boolean;
   onClose: () => void;
 }
-
-// Styled Components - 重用 event detail 頁面的樣式
-const ModalOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  padding: 16px;
-`;
 
 const ModalContent = styled.div`
   background: white;
@@ -261,7 +247,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
   };
 
   return (
-    <ModalOverlay onClick={onClose}>
+    <ModalOverlay isOpen={isOpen} zIndex={100} padding="16px" onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalHeader>
           <ModalTitle>預覽</ModalTitle>

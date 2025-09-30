@@ -6,20 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
-
-const ModalOverlay = styled.div<{ $isOpen: boolean }>`
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: ${(props) => (props.$isOpen ? 'flex' : 'none')};
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-`;
+import ModalOverlay from '../ui/ModalOverlay';
 
 const ModalContent = styled.div`
   background: var(--color-bg-primary);
@@ -266,7 +253,7 @@ export default function GroupNameModal({
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay $isOpen={isOpen}>
+    <ModalOverlay isOpen={isOpen}>
       <ModalContent>
         <ModalHeader>
           <ModalTitle>設定團名</ModalTitle>

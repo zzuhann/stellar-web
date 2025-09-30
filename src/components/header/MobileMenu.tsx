@@ -132,7 +132,7 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
 
   return (
     <>
-      <div className={mobileMenuOverlay({ isOpen })} />
+      <div className={mobileMenuOverlay({ isOpen })} onClick={closeMobileMenu} />
       <div className={mobileMenu({ isOpen })}>
         <div className={mobileMenuHeader}>
           <h3 className={mobileMenuTitle}>選單</h3>

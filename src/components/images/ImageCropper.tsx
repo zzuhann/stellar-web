@@ -3,7 +3,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import ModalOverlay from '../ui/ModalOverlay';
+import ModalOverlay from './ModalOverlay';
 import { css, cva } from '@/styled-system/css';
 import Image from 'next/image';
 

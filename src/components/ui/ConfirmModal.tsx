@@ -2,17 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useScrollLock } from '@/hooks/useScrollLock';
-
-const ModalOverlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-  padding: 16px;
-`;
+import ModalOverlay from './ModalOverlay';
 
 const ModalContent = styled.div`
   background: white;
@@ -148,7 +138,7 @@ export default function ConfirmModal({
   if (!isOpen) return null;
 
   return (
-    <ModalOverlay>
+    <ModalOverlay isOpen={isOpen} zIndex={50} padding="16px">
       <ModalContent>
         <ModalHeader>
           <ModalTitle>

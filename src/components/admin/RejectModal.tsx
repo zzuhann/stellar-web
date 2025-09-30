@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import styled from 'styled-components';
+import ModalOverlay from '../ui/ModalOverlay';
 
 interface RejectModalProps {
   isOpen: boolean;
@@ -12,18 +13,6 @@ interface RejectModalProps {
   onClose: () => void;
   loading?: boolean;
 }
-
-// Styled Components
-const ModalOverlay = styled.div<{ $isOpen: boolean }>`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: ${(props) => (props.$isOpen ? 'flex' : 'none')};
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-  padding: 16px;
-`;
 
 const ModalContainer = styled.div`
   background: var(--color-bg-primary);
@@ -274,22 +263,13 @@ export default function RejectModal({
     }
   }, [loading, onClose]);
 
-  const handleOverlayClick = useCallback(
-    (e: React.MouseEvent) => {
-      if (e.target === e.currentTarget) {
-        handleClose();
-      }
-    },
-    [handleClose]
-  );
-
   if (!isOpen) return null;
 
   const isNearLimit = reason.length > MAX_REASON_LENGTH * 0.8;
   const isOverLimit = reason.length > MAX_REASON_LENGTH;
 
   return (
-    <ModalOverlay $isOpen={isOpen} onClick={handleOverlayClick}>
+    <ModalOverlay isOpen={isOpen} zIndex={50} padding="16px">
       <ModalContainer>
         <ModalHeader>
           <ModalTitle>{title}</ModalTitle>
