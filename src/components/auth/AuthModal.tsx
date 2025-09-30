@@ -3,10 +3,65 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import styled from 'styled-components';
 import { useAuth } from '@/lib/auth-context';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import SignInForm from './SignInForm';
+import ModalOverlayWithTransition from '../ui/ModalOverlayWithTransition';
+import { css, cva } from '@/styled-system/css';
+
+const modalContent = cva({
+  base: {
+    background: 'color.background.primary',
+    width: '100%',
+    maxWidth: '480px',
+    borderRadius: 'radius.lg',
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    margin: '0 16px',
+    transition: 'all 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+  },
+  variants: {
+    isOpen: {
+      true: {
+        transform: 'scale(1) translateY(0)',
+      },
+      false: {
+        transform: 'scale(0.95) translateY(-20px)',
+      },
+    },
+  },
+});
+
+const modalHeader = css({
+  padding: '20px 20px 0',
+  display: 'flex',
+  justifyContent: 'flex-end',
+  flexShrink: '0',
+});
+
+const closeButton = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '32px',
+  height: '32px',
+  borderRadius: 'radius.md',
+  color: 'color.text.secondary',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: 'color.background.secondary',
+    color: 'color.text.primary',
+  },
+});
+
+const contentContainer = css({
+  flex: 1,
+  padding: '0 20px 20px',
+  overflowY: 'auto',
+  minHeight: 0,
+});
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -14,83 +69,15 @@ interface AuthModalProps {
   initialMode?: 'signin' | 'signup' | 'reset';
 }
 
-// Styled Components
-const ModalOverlay = styled.div<{ $isOpen: boolean }>`
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: ${(props) => (props.$isOpen ? 1 : 0)};
-  visibility: ${(props) => (props.$isOpen ? 'visible' : 'hidden')};
-  transition:
-    opacity 0.3s ease-out,
-    visibility 0.3s ease-out;
-`;
-
-const ModalContent = styled.div<{ $isOpen: boolean }>`
-  background: var(--color-bg-primary);
-  width: 100%;
-  max-width: 480px;
-  border-radius: 16px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  margin: 0 16px;
-  transform: ${(props) =>
-    props.$isOpen ? 'scale(1) translateY(0)' : 'scale(0.95) translateY(-20px)'};
-  transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-`;
-
-const ModalHeader = styled.div`
-  padding: 20px 20px 0;
-  display: flex;
-  justify-content: flex-end;
-  flex-shrink: 0;
-`;
-
-const CloseButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: var(--color-bg-secondary);
-    color: var(--color-text-primary);
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-`;
-
-const ContentContainer = styled.div`
-  flex: 1;
-  padding: 0 20px 20px;
-  overflow-y: auto;
-  min-height: 0;
-`;
-
 export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const router = useRouter();
   const { redirectUrl } = useAuth();
 
-  // 使用 scroll lock hook
   useScrollLock(isOpen);
 
   const handleSuccess = () => {
     onClose();
 
-    // 如果有重定向 URL，等待一小段時間後跳轉
     if (redirectUrl) {
       setTimeout(() => {
         router.push(redirectUrl);
@@ -102,7 +89,6 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
     onClose();
   };
 
-  // 關閉 modal 時重置模式
   useEffect(() => {
     if (!isOpen) {
       return;
@@ -110,18 +96,18 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   }, [isOpen]);
 
   return (
-    <ModalOverlay $isOpen={isOpen} onClick={handleClose}>
-      <ModalContent $isOpen={isOpen} onClick={(e) => e.stopPropagation()}>
-        <ModalHeader>
-          <CloseButton onClick={handleClose}>
-            <XMarkIcon />
-          </CloseButton>
-        </ModalHeader>
+    <ModalOverlayWithTransition isOpen={isOpen} onClick={handleClose}>
+      <div className={modalContent({ isOpen })} onClick={(e) => e.stopPropagation()}>
+        <div className={modalHeader}>
+          <button className={closeButton} onClick={handleClose}>
+            <XMarkIcon width={20} height={20} />
+          </button>
+        </div>
 
-        <ContentContainer>
+        <div className={contentContainer}>
           <SignInForm onSuccess={handleSuccess} />
-        </ContentContainer>
-      </ModalContent>
-    </ModalOverlay>
+        </div>
+      </div>
+    </ModalOverlayWithTransition>
   );
 }
