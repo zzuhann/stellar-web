@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import ModalOverlay from './ModalOverlay';
@@ -449,11 +449,71 @@ export default function ImageCropper({
     e.preventDefault();
   };
 
+  const handleCrop = useCallback(
+    async (e: React.MouseEvent) => {
+      e.preventDefault();
+      const img = imageRef.current;
+      const canvas = canvasRef.current;
+      if (!img || !canvas || !imageLoaded) return;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      // 設定輸出畫布大小 - 始終輸出方形圖片
+      canvas.width = outputSize;
+      canvas.height = outputSize;
+
+      // 計算縮放比例
+      const scaleX = img.naturalWidth / imageSize.width;
+      const scaleY = img.naturalHeight / imageSize.height;
+
+      // 計算實際裁切區域 - 確保是方形區域
+      const sourceX = Math.max(0, cropArea.x * scaleX);
+      const sourceY = Math.max(0, cropArea.y * scaleY);
+      const sourceWidth = cropArea.width * scaleX;
+      const sourceHeight = cropArea.height * scaleY;
+
+      // 取方形區域的最小邊長，確保裁切區域是正方形
+      const squareSize = Math.min(sourceWidth, sourceHeight);
+      const adjustedSourceX = sourceX + (sourceWidth - squareSize) / 2;
+      const adjustedSourceY = sourceY + (sourceHeight - squareSize) / 2;
+
+      // 注意：即使顯示為圓形，實際裁切輸出仍然是方形
+      // 圓形效果通過 CSS 在前端實現
+
+      // 繪製裁切後的圖片 - 輸出方形
+      ctx.drawImage(
+        img,
+        adjustedSourceX,
+        adjustedSourceY,
+        squareSize,
+        squareSize,
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      // 轉換為 Blob
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            // 傳遞當前的裁切區域給回調函數
+            onCropComplete(blob, cropArea);
+          }
+        },
+        'image/jpeg',
+        0.9
+      );
+    },
+    [imageLoaded, cropArea, imageSize, outputSize, onCropComplete]
+  );
+
   // 使用 useScrollLock hook 防止背景滾動
   useScrollLock(true);
 
   // 防止選擇事件
-  React.useEffect(() => {
+  useEffect(() => {
     const preventDefault = (e: Event) => {
       e.preventDefault();
     };
@@ -471,7 +531,7 @@ export default function ImageCropper({
   // 處理觸控事件的 passive: false 配置
   const cropContainerRef = useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const container = cropContainerRef.current;
     if (!container) return;
 
@@ -622,67 +682,6 @@ export default function ImageCropper({
     aspectRatio,
     getResizeHandle,
   ]);
-
-  // 執行裁切
-  const handleCrop = useCallback(
-    async (e: React.MouseEvent) => {
-      e.preventDefault();
-      const img = imageRef.current;
-      const canvas = canvasRef.current;
-      if (!img || !canvas || !imageLoaded) return;
-
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      // 設定輸出畫布大小 - 始終輸出方形圖片
-      canvas.width = outputSize;
-      canvas.height = outputSize;
-
-      // 計算縮放比例
-      const scaleX = img.naturalWidth / imageSize.width;
-      const scaleY = img.naturalHeight / imageSize.height;
-
-      // 計算實際裁切區域 - 確保是方形區域
-      const sourceX = Math.max(0, cropArea.x * scaleX);
-      const sourceY = Math.max(0, cropArea.y * scaleY);
-      const sourceWidth = cropArea.width * scaleX;
-      const sourceHeight = cropArea.height * scaleY;
-
-      // 取方形區域的最小邊長，確保裁切區域是正方形
-      const squareSize = Math.min(sourceWidth, sourceHeight);
-      const adjustedSourceX = sourceX + (sourceWidth - squareSize) / 2;
-      const adjustedSourceY = sourceY + (sourceHeight - squareSize) / 2;
-
-      // 注意：即使顯示為圓形，實際裁切輸出仍然是方形
-      // 圓形效果通過 CSS 在前端實現
-
-      // 繪製裁切後的圖片 - 輸出方形
-      ctx.drawImage(
-        img,
-        adjustedSourceX,
-        adjustedSourceY,
-        squareSize,
-        squareSize,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
-
-      // 轉換為 Blob
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            // 傳遞當前的裁切區域給回調函數
-            onCropComplete(blob, cropArea);
-          }
-        },
-        'image/jpeg',
-        0.9
-      );
-    },
-    [imageLoaded, cropArea, imageSize, outputSize, onCropComplete]
-  );
 
   return (
     <ModalOverlay>
