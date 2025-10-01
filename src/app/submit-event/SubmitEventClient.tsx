@@ -3,58 +3,21 @@
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
-import styled from 'styled-components';
+import { css } from '@/styled-system/css';
 import EventSubmissionForm from '@/components/forms/EventSubmissionForm';
 import { useQuery } from '@tanstack/react-query';
 import { eventsApi } from '@/lib/api';
 import showToast from '@/lib/toast';
+import Loading from '@/components/Loading';
 
-const MainContent = styled.main`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 100px 16px 40px;
-
-  @media (min-width: 768px) {
-    padding: 100px 24px 60px;
-  }
-`;
-
-const LoadingContainer = styled.div`
-  min-height: 100vh;
-  background: var(--color-bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
-const LoadingContent = styled.div`
-  text-align: center;
-`;
-
-const LoadingSpinner = styled.div`
-  width: 48px;
-  height: 48px;
-  border: 3px solid var(--color-border-light);
-  border-top: 3px solid var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 16px;
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const LoadingText = styled.p`
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  margin: 0;
-`;
+const mainContent = css({
+  maxWidth: '1200px',
+  margin: '0 auto',
+  padding: '100px 16px 40px',
+  '@media (min-width: 768px)': {
+    padding: '100px 24px 60px',
+  },
+});
 
 export default function SubmitEventClient() {
   const { user, loading } = useAuth();
@@ -92,15 +55,10 @@ export default function SubmitEventClient() {
     }
   }, [isEditMode, existingEvent, router, user, loadingEvent, loading]);
 
-  if (loading || (editEventId && loadingEvent)) {
-    return (
-      <LoadingContainer>
-        <LoadingContent>
-          <LoadingSpinner />
-          <LoadingText>載入中...</LoadingText>
-        </LoadingContent>
-      </LoadingContainer>
-    );
+  const isLoading = loading || (editEventId && loadingEvent);
+
+  if (isLoading) {
+    return <Loading description="載入中..." style={{ height: '100vh' }} />;
   }
 
   if (!user) {
@@ -108,7 +66,7 @@ export default function SubmitEventClient() {
   }
 
   return (
-    <MainContent>
+    <main className={mainContent}>
       <EventSubmissionForm
         mode={editEventId ? 'edit' : 'create'}
         existingEvent={existingEvent || undefined}
@@ -117,6 +75,6 @@ export default function SubmitEventClient() {
           editEventId ? () => router.push('/my-submissions?tab=event') : () => router.back()
         }
       />
-    </MainContent>
+    </main>
   );
 }

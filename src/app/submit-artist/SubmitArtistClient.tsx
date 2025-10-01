@@ -5,56 +5,37 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { artistsApi } from '@/lib/api';
-import styled from 'styled-components';
+import { css } from '@/styled-system/css';
 import ArtistSubmissionForm from '@/components/forms/ArtistSubmissionForm';
 import { showToast } from '@/lib/toast';
+import Loading from '@/components/Loading';
 
-const MainContent = styled.main`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 100px 16px 40px;
+const mainContent = css({
+  maxWidth: '1200px',
+  margin: '0 auto',
+  padding: '100px 16px 40px',
+  '@media (min-width: 768px)': {
+    padding: '100px 24px 60px',
+  },
+});
 
-  @media (min-width: 768px) {
-    padding: 100px 24px 60px;
-  }
-`;
+const loadingContainer = css({
+  minHeight: '100vh',
+  background: 'color.background.secondary',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
 
-const LoadingContainer = styled.div`
-  min-height: 100vh;
-  background: var(--color-bg-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
+const loadingContent = css({
+  textAlign: 'center',
+});
 
-const LoadingContent = styled.div`
-  text-align: center;
-`;
-
-const LoadingSpinner = styled.div`
-  width: 48px;
-  height: 48px;
-  border: 3px solid var(--color-border-light);
-  border-top: 3px solid var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 16px;
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const LoadingText = styled.p`
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  margin: 0;
-`;
+const loadingText = css({
+  color: 'color.text.secondary',
+  fontSize: '14px',
+  margin: '0',
+});
 
 export default function SubmitArtistClient() {
   const { user, loading } = useAuth();
@@ -119,14 +100,14 @@ export default function SubmitArtistClient() {
     router.push('/my-submissions?tab=artist');
   };
 
-  if (loading || (isEditMode && artistLoading)) {
+  const isLoading = loading || (isEditMode && artistLoading);
+
+  if (isLoading) {
     return (
-      <LoadingContainer>
-        <LoadingContent>
-          <LoadingSpinner />
-          <LoadingText>{isEditMode ? '載入偶像資料中...' : '載入中...'}</LoadingText>
-        </LoadingContent>
-      </LoadingContainer>
+      <Loading
+        description={isEditMode ? '載入偶像資料中...' : '載入中...'}
+        style={{ height: '100vh' }}
+      />
     );
   }
 
@@ -136,24 +117,24 @@ export default function SubmitArtistClient() {
 
   if (isEditMode && error) {
     return (
-      <MainContent>
-        <LoadingContainer>
-          <LoadingContent>
-            <LoadingText>載入偶像資料失敗，請重試</LoadingText>
-          </LoadingContent>
-        </LoadingContainer>
-      </MainContent>
+      <main className={mainContent}>
+        <div className={loadingContainer}>
+          <div className={loadingContent}>
+            <p className={loadingText}>載入偶像資料失敗，請重試</p>
+          </div>
+        </div>
+      </main>
     );
   }
 
   return (
-    <MainContent>
+    <main className={mainContent}>
       <ArtistSubmissionForm
         mode={isEditMode ? 'edit' : 'create'}
         existingArtist={existingArtist}
         onSuccess={handleSuccess}
         onCancel={handleCancel}
       />
-    </MainContent>
+    </main>
   );
 }

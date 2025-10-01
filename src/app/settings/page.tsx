@@ -3,13 +3,13 @@
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/lib/toast';
-import styled from 'styled-components';
+import { css } from '@/styled-system/css';
 import { UserIcon, BellIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useEffect } from 'react';
 import { useFeatureFlag } from '@/hooks/useFeatureFlag';
 import { FEATURE_FLAGS } from '@/constants';
+import Loading from '@/components/Loading';
 
-// 設定項目介面
 interface SettingItem {
   id: string;
   title: string;
@@ -20,172 +20,142 @@ interface SettingItem {
   onClick: () => void;
 }
 
-// Styled Components
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background: var(--color-bg-primary);
-`;
+const pageContainer = css({
+  minHeight: '100vh',
+  background: 'color.background.primary',
+});
 
-const MainContainer = styled.div`
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 100px 16px 40px;
+const mainContainer = css({
+  maxWidth: '600px',
+  margin: '0 auto',
+  padding: '100px 16px 40px',
+  '@media (min-width: 768px)': {
+    padding: '100px 24px 60px',
+  },
+});
 
-  @media (min-width: 768px) {
-    padding: 100px 24px 60px;
-  }
-`;
+const contentWrapper = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '24px',
+});
 
-const ContentWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
+const pageHeader = css({
+  textAlign: 'center',
+  '& h1': {
+    fontSize: '28px',
+    fontWeight: 700,
+    color: 'color.text.primary',
+    margin: '0 0 8px 0',
+  },
+  '& p': {
+    fontSize: '16px',
+    color: 'color.text.secondary',
+    margin: '0',
+  },
+});
 
-const PageHeader = styled.div`
-  text-align: center;
+const settingsSection = css({
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  overflow: 'hidden',
+  boxShadow: 'shadow.sm',
+  marginBottom: '16px',
+});
 
-  h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin: 0 0 8px 0;
-  }
+const sectionTitle = css({
+  padding: '20px 20px 8px 20px',
+  fontSize: '18px',
+  fontWeight: 600,
+  color: 'color.text.primary',
+});
 
-  p {
-    font-size: 16px;
-    color: var(--color-text-secondary);
-    margin: 0;
-  }
-`;
+const settingItemContainer = css({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '16px 20px',
+  cursor: 'pointer',
+  transition: 'background-color 0.2s ease',
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+  '&:last-child': {
+    borderBottom: 'none',
+  },
+});
 
-const SettingsSection = styled.div`
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 16px;
-`;
+const iconContainer = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '40px',
+  height: '40px',
+  marginRight: '16px',
+  '& svg': {
+    width: '20px',
+    height: '20px',
+    color: 'color.text.secondary',
+  },
+});
 
-const SectionTitle = styled.div`
-  padding: 20px 20px 8px 20px;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-`;
+const itemContent = css({
+  flex: 1,
+  minWidth: 0,
+});
 
-const SettingItemContainer = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 16px 20px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  border-bottom: 1px solid var(--color-border-light);
+const itemTitle = css({
+  fontSize: '16px',
+  fontWeight: 500,
+  color: 'color.text.primary',
+  marginBottom: '2px',
+});
 
-  &:last-child {
-    border-bottom: none;
-  }
-`;
+const itemValue = css({
+  fontSize: '14px',
+  color: 'color.text.secondary',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+});
 
-const IconContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  margin-right: 16px;
+const verifiedBadge = css({
+  fontSize: '12px',
+  color: '#10b981',
+  fontWeight: 500,
+});
 
-  svg {
-    width: 20px;
-    height: 20px;
-    color: var(--color-text-secondary);
-  }
-`;
-
-const ItemContent = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
-
-const ItemTitle = styled.div`
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  margin-bottom: 2px;
-`;
-
-const ItemValue = styled.div`
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const VerifiedBadge = styled.span`
-  font-size: 12px;
-  color: #10b981;
-  font-weight: 500;
-`;
-
-const ChevronContainer = styled.div`
-  display: flex;
-  align-items: center;
-
-  svg {
-    width: 16px;
-    height: 16px;
-    color: var(--color-text-tertiary);
-  }
-`;
-
-const LoadingContainer = styled.div`
-  padding: 60px 20px;
-  text-align: center;
-  color: var(--color-text-secondary);
-
-  .spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid var(--color-border-light);
-    border-top: 3px solid var(--color-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 16px;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
+const chevronContainer = css({
+  display: 'flex',
+  alignItems: 'center',
+  '& svg': {
+    width: '16px',
+    height: '16px',
+    color: 'color.text.tertiary',
+  },
+});
 
 // 設定項目元件
 function SettingItem({ item }: { item: SettingItem }) {
   return (
-    <SettingItemContainer onClick={item.onClick}>
-      <IconContainer>
+    <div className={settingItemContainer} onClick={item.onClick}>
+      <div className={iconContainer}>
         <item.icon />
-      </IconContainer>
-      <ItemContent>
-        <ItemTitle>{item.title}</ItemTitle>
+      </div>
+      <div className={itemContent}>
+        <div className={itemTitle}>{item.title}</div>
         {item.value && (
-          <ItemValue>
+          <div className={itemValue}>
             {item.value}
-            {item.isVerified && <VerifiedBadge>已驗證</VerifiedBadge>}
-          </ItemValue>
+            {item.isVerified && <span className={verifiedBadge}>已驗證</span>}
+          </div>
         )}
-        {item.subtitle && !item.value && <ItemValue>{item.subtitle}</ItemValue>}
-      </ItemContent>
-      <ChevronContainer>
+        {item.subtitle && !item.value && <div className={itemValue}>{item.subtitle}</div>}
+      </div>
+      <div className={chevronContainer}>
         <ChevronRightIcon />
-      </ChevronContainer>
-    </SettingItemContainer>
+      </div>
+    </div>
   );
 }
 
@@ -205,16 +175,7 @@ export default function SettingsPage() {
   }, [user, authLoading, router]);
 
   if (authLoading) {
-    return (
-      <PageContainer>
-        <MainContainer>
-          <LoadingContainer>
-            <div className="spinner" />
-            <p>載入設定中...</p>
-          </LoadingContainer>
-        </MainContainer>
-      </PageContainer>
-    );
+    return <Loading description="載入設定中..." style={{ height: '100vh', width: '100%' }} />;
   }
 
   if (!user) {
@@ -247,29 +208,29 @@ export default function SettingsPage() {
   ];
 
   return (
-    <PageContainer>
-      <MainContainer>
-        <ContentWrapper>
-          <PageHeader>
+    <div className={pageContainer}>
+      <div className={mainContainer}>
+        <div className={contentWrapper}>
+          <div className={pageHeader}>
             <h1>設定</h1>
-          </PageHeader>
+          </div>
 
-          <SettingsSection>
-            <SectionTitle>帳戶資料</SectionTitle>
+          <div className={settingsSection}>
+            <div className={sectionTitle}>帳戶資料</div>
             {accountItems.map((item) => (
               <SettingItem key={item.id} item={item} />
             ))}
             {!isNotificationsLoading && isNotificationsEnabled && (
               <>
-                <SectionTitle>通知</SectionTitle>
+                <div className={sectionTitle}>通知</div>
                 {appItems.map((item) => (
                   <SettingItem key={item.id} item={item} />
                 ))}
               </>
             )}
-          </SettingsSection>
-        </ContentWrapper>
-      </MainContainer>
-    </PageContainer>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -17,7 +17,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { artistsApi, eventsApi } from '@/lib/api';
 import showToast from '@/lib/toast';
-import styled from 'styled-components';
+import { css, cva } from '@/styled-system/css';
 import EventPreviewModal from '@/components/events/EventPreviewModal';
 import RejectModal from '@/components/admin/RejectModal';
 import GroupNameModal from '@/components/admin/GroupNameModal';
@@ -26,380 +26,336 @@ import ArtistSubmissionForm from '@/components/forms/ArtistSubmissionForm';
 import { CoffeeEvent, Artist } from '@/types';
 import VerticalEventCard from '@/components/EventCard/VerticalEventCard';
 import VerticalArtistCard from '@/components/ArtistCard/VerticalArtistCard';
+import Loading from '@/components/Loading';
 
-// Styled Components
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background: var(--color-bg-primary);
-`;
+const pageContainer = css({
+  minHeight: '100vh',
+  background: 'color.background.primary',
+});
 
-const MainContainer = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 100px 16px;
-`;
+const mainContainer = css({
+  maxWidth: '1200px',
+  margin: '0 auto',
+  padding: '100px 16px',
+});
 
-const TabContainer = styled.div`
-  margin-bottom: 24px;
-`;
+const tabContainer = css({
+  marginBottom: '24px',
+});
 
-const TabNav = styled.nav`
-  display: flex;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  padding: 4px;
-`;
+const tabNav = css({
+  display: 'flex',
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  padding: '4px',
+});
 
-const TabButton = styled.button<{ $active?: boolean }>`
-  flex: 1;
-  padding: 12px 16px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  border: none;
-  background: ${(props) => (props.$active ? 'var(--color-primary)' : 'transparent')};
-  color: ${(props) => (props.$active ? 'white' : 'var(--color-text-primary)')};
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+const tabButton = cva({
+  base: {
+    flex: 1,
+    padding: '12px 16px',
+    borderRadius: 'radius.md',
+    fontSize: '14px',
+    fontWeight: 600,
+    transition: 'all 0.2s ease',
+    cursor: 'pointer',
+    border: 'none',
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+  },
+  variants: {
+    active: {
+      true: {
+        background: 'color.primary',
+        color: 'white',
+        '&:hover': {
+          background: 'color.primary',
+        },
+      },
+      false: {
+        background: 'transparent',
+        color: 'color.text.primary',
+        '&:hover': {
+          background: 'color.border.light',
+        },
+      },
+    },
+  },
+});
 
-  &:hover {
-    background: ${(props) =>
-      props.$active ? 'var(--color-primary)' : 'var(--color-border-light)'};
-  }
-`;
+const badge = css({
+  background: '#fee2e2',
+  color: '#991b1b',
+  fontSize: '12px',
+  fontWeight: 600,
+  padding: '2px 8px',
+  borderRadius: 'radius.md',
+});
 
-const Badge = styled.span`
-  background: #fee2e2;
-  color: #991b1b;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--radius-md);
-`;
+const contentCard = css({
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  overflow: 'hidden',
+});
 
-const ContentCard = styled.div`
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-`;
+const cardHeader = css({
+  padding: '20px',
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+  background: 'white',
+  '& h2': {
+    fontSize: '18px',
+    fontWeight: 600,
+    color: 'color.text.primary',
+    margin: '0 0 4px 0',
+  },
+  '& p': {
+    fontSize: '14px',
+    color: 'color.text.secondary',
+    margin: '0',
+  },
+});
 
-const CardHeader = styled.div`
-  padding: 20px;
-  border-bottom: 1px solid var(--color-border-light);
-  background: white;
+const emptyState = css({
+  textAlign: 'center',
+  padding: '60px 20px',
+  color: 'color.text.secondary',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '16px',
+  '& h3': {
+    fontSize: '18px',
+    fontWeight: 600,
+    color: 'color.text.primary',
+  },
+  '& p': {
+    fontSize: '14px',
+    margin: '0',
+    lineHeight: 1.5,
+  },
+});
 
-  h2 {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    margin: 0 0 4px 0;
-  }
+const itemList = css({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+  gap: '20px',
+  padding: '20px',
+});
 
-  p {
-    font-size: 14px;
-    color: var(--color-text-secondary);
-    margin: 0;
-  }
-`;
+const actionButtons = css({
+  display: 'flex',
+  gap: '8px',
+  flexShrink: 0,
+  justifyContent: 'flex-end',
+  height: '60px',
+  alignItems: 'center',
+});
 
-const EmptyState = styled.div`
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--color-text-secondary);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
+const actionButton = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '6px',
+  padding: '8px 12px',
+  borderRadius: 'radius.md',
+  fontSize: '13px',
+  fontWeight: 600,
+  transition: 'all 0.2s ease',
+  cursor: 'pointer',
+  border: '1px solid',
+  '&:disabled': {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+    transform: 'none',
+    boxShadow: 'none',
+  },
+  '& svg': {
+    width: '14px',
+    height: '14px',
+  },
+});
 
-  h3 {
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--color-text-primary);
-  }
+const actionButtonApprove = css({
+  background: '#16a34a',
+  borderColor: '#16a34a',
+  color: 'white',
+  '&:hover:not(:disabled)': {
+    background: '#15803d',
+    borderColor: '#15803d',
+    transform: 'translateY(-1px)',
+    boxShadow: 'shadow.sm',
+  },
+  '&:active:not(:disabled)': {
+    transform: 'translateY(0)',
+  },
+});
 
-  p {
-    font-size: 14px;
-    margin: 0;
-    line-height: 1.5;
-  }
-`;
+const actionButtonReject = css({
+  background: '#dc2626',
+  borderColor: '#dc2626',
+  color: 'white',
+  '&:hover:not(:disabled)': {
+    background: '#b91c1c',
+    borderColor: '#b91c1c',
+    transform: 'translateY(-1px)',
+    boxShadow: 'shadow.sm',
+  },
+  '&:active:not(:disabled)': {
+    transform: 'translateY(0)',
+  },
+});
 
-const ItemList = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  padding: 20px;
-`;
+const actionButtonPreview = css({
+  background: 'color.background.primary',
+  borderColor: 'color.border.light',
+  color: 'color.text.primary',
+  '&:hover:not(:disabled)': {
+    background: 'color.background.secondary',
+    borderColor: 'color.border.medium',
+    transform: 'translateY(-1px)',
+    boxShadow: 'shadow.sm',
+  },
+  '&:active:not(:disabled)': {
+    transform: 'translateY(0)',
+  },
+});
 
-const ActionButtons = styled.div`
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-  justify-content: flex-end;
-  height: 60px;
-  align-items: center;
-`;
+const actionButtonExists = css({
+  background: '#f59e0b',
+  borderColor: '#f59e0b',
+  color: 'white',
+  '&:hover:not(:disabled)': {
+    background: '#d97706',
+    borderColor: '#d97706',
+    transform: 'translateY(-1px)',
+    boxShadow: 'shadow.sm',
+  },
+  '&:active:not(:disabled)': {
+    transform: 'translateY(0)',
+  },
+});
 
-const ActionButton = styled.button<{ $variant: 'approve' | 'reject' | 'preview' | 'exists' }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  border: 1px solid;
+const batchActionsContainer = css({
+  padding: '16px 20px',
+  background: '#f8fafc',
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '16px',
+});
 
-  ${(props) => {
-    switch (props.$variant) {
-      case 'approve':
-        return `
-          background: #16a34a;
-          border-color: #16a34a;
-          color: white;
-          
-          &:hover:not(:disabled) {
-            background: #15803d;
-            border-color: #15803d;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-          }
-          
-          &:active:not(:disabled) {
-            transform: translateY(0);
-          }
-        `;
-      case 'reject':
-        return `
-          background: #dc2626;
-          border-color: #dc2626;
-          color: white;
-          
-          &:hover:not(:disabled) {
-            background: #b91c1c;
-            border-color: #b91c1c;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-          }
-          
-          &:active:not(:disabled) {
-            transform: translateY(0);
-          }
-        `;
-      case 'preview':
-        return `
-          background: var(--color-bg-primary);
-          border-color: var(--color-border-light);
-          color: var(--color-text-primary);
-          
-          &:hover:not(:disabled) {
-            background: var(--color-bg-secondary);
-            border-color: var(--color-border-medium);
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-          }
-          
-          &:active:not(:disabled) {
-            transform: translateY(0);
-          }
-        `;
-      case 'exists':
-        return `
-          background: #f59e0b;
-          border-color: #f59e0b;
-          color: white;
-          
-          &:hover:not(:disabled) {
-            background: #d97706;
-            border-color: #d97706;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-          }
-          
-          &:active:not(:disabled) {
-            transform: translateY(0);
-          }
-        `;
-    }
-  }}
+const batchActionsLeft = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+});
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
+const batchActionsRight = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+});
 
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
+const checkbox = css({
+  width: '16px',
+  height: '16px',
+  cursor: 'pointer',
+});
 
-const LoadingContainer = styled.div`
-  padding: 60px 20px;
-  text-align: center;
-  color: var(--color-text-secondary);
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  min-height: 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+const batchButton = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '6px',
+  padding: '8px 12px',
+  borderRadius: 'radius.md',
+  fontSize: '13px',
+  fontWeight: 600,
+  transition: 'all 0.2s ease',
+  cursor: 'pointer',
+  border: '1px solid',
+  '&:disabled': {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+    transform: 'none',
+    boxShadow: 'none',
+  },
+  '& svg': {
+    width: '14px',
+    height: '14px',
+  },
+});
 
-  .spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid var(--color-border-light);
-    border-top: 3px solid var(--color-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 16px;
-  }
+const batchButtonApprove = css({
+  background: '#16a34a',
+  borderColor: '#16a34a',
+  color: 'white',
+  '&:hover:not(:disabled)': {
+    background: '#15803d',
+    borderColor: '#15803d',
+    transform: 'translateY(-1px)',
+    boxShadow: 'shadow.sm',
+  },
+});
 
-  p {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 500;
-  }
+const batchButtonReject = css({
+  background: '#dc2626',
+  borderColor: '#dc2626',
+  color: 'white',
+  '&:hover:not(:disabled)': {
+    background: '#b91c1c',
+    borderColor: '#b91c1c',
+    transform: 'translateY(-1px)',
+    boxShadow: 'shadow.sm',
+  },
+});
 
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
+const batchButtonExists = css({
+  background: '#f59e0b',
+  borderColor: '#f59e0b',
+  color: 'white',
+  '&:hover:not(:disabled)': {
+    background: '#d97706',
+    borderColor: '#d97706',
+    transform: 'translateY(-1px)',
+    boxShadow: 'shadow.sm',
+  },
+});
 
-const BatchActionsContainer = styled.div`
-  padding: 16px 20px;
-  background: #f8fafc;
-  border-bottom: 1px solid var(--color-border-light);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-`;
+const editModal = css({
+  position: 'fixed',
+  inset: '0',
+  zIndex: 1000,
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: 'rgba(0, 0, 0, 0.5)',
+  padding: '16px',
+});
 
-const BatchActionsLeft = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
+const editModalOpen = css({
+  display: 'flex',
+});
 
-const BatchActionsRight = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
+const editModalClosed = css({
+  display: 'none',
+});
 
-const Checkbox = styled.input`
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
-`;
-
-const BatchButton = styled.button<{ $variant: 'approve' | 'reject' | 'exists' }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  border: 1px solid;
-
-  ${(props) => {
-    switch (props.$variant) {
-      case 'approve':
-        return `
-          background: #16a34a;
-          border-color: #16a34a;
-          color: white;
-          
-          &:hover:not(:disabled) {
-            background: #15803d;
-            border-color: #15803d;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-          }
-        `;
-      case 'reject':
-        return `
-          background: #dc2626;
-          border-color: #dc2626;
-          color: white;
-          
-          &:hover:not(:disabled) {
-            background: #b91c1c;
-            border-color: #b91c1c;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-          }
-        `;
-      case 'exists':
-        return `
-          background: #f59e0b;
-          border-color: #f59e0b;
-          color: white;
-          
-          &:hover:not(:disabled) {
-            background: #d97706;
-            border-color: #d97706;
-            transform: translateY(-1px);
-            box-shadow: var(--shadow-sm);
-          }
-        `;
-    }
-  }}
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-`;
-
-const EditModal = styled.div<{ $isOpen: boolean }>`
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: ${(props) => (props.$isOpen ? 'flex' : 'none')};
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 16px;
-`;
-
-const EditModalContent = styled.div`
-  background: var(--color-bg-primary);
-  border-radius: var(--radius-lg);
-  max-width: 90vw;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-`;
+const editModalContent = css({
+  background: 'color.background.primary',
+  borderRadius: 'radius.lg',
+  maxWidth: '90vw',
+  maxHeight: '90vh',
+  overflowY: 'auto',
+  position: 'relative',
+});
 
 export default function AdminPage() {
   const { user, userData, loading: authLoading } = useAuth();
@@ -711,15 +667,10 @@ export default function AdminPage() {
     setEditingArtist(null);
   };
 
-  if (authLoading || artistsLoading || eventsLoading || weeklyEventsLoading) {
-    return (
-      <PageContainer>
-        <LoadingContainer>
-          <div className="spinner" />
-          <p>載入中...</p>
-        </LoadingContainer>
-      </PageContainer>
-    );
+  const isLoading = authLoading || artistsLoading || eventsLoading || weeklyEventsLoading;
+
+  if (isLoading) {
+    return <Loading description="載入中..." style={{ height: '100vh', width: '100%' }} />;
   }
 
   if (!user || userData?.role !== 'admin') {
@@ -727,71 +678,77 @@ export default function AdminPage() {
   }
 
   return (
-    <PageContainer>
+    <div className={pageContainer}>
       {/* Main Content */}
-      <MainContainer>
+      <div className={mainContainer}>
         {/* Tabs */}
-        <TabContainer>
-          <TabNav>
-            <TabButton $active={activeTab === 'artists'} onClick={() => setActiveTab('artists')}>
+        <div className={tabContainer}>
+          <nav className={tabNav}>
+            <button
+              className={tabButton({ active: activeTab === 'artists' })}
+              onClick={() => setActiveTab('artists')}
+            >
               待審偶像
-              {pendingArtists.length > 0 && <Badge>{pendingArtists.length}</Badge>}
-            </TabButton>
-            <TabButton $active={activeTab === 'events'} onClick={() => setActiveTab('events')}>
+              {pendingArtists.length > 0 && <span className={badge}>{pendingArtists.length}</span>}
+            </button>
+            <button
+              className={tabButton({ active: activeTab === 'events' })}
+              onClick={() => setActiveTab('events')}
+            >
               待審生咖
-              {pendingEvents.length > 0 && <Badge>{pendingEvents.length}</Badge>}
-            </TabButton>
-            <TabButton
-              $active={activeTab === 'weekly-events'}
+              {pendingEvents.length > 0 && <span className={badge}>{pendingEvents.length}</span>}
+            </button>
+            <button
+              className={tabButton({ active: activeTab === 'weekly-events' })}
               onClick={() => setActiveTab('weekly-events')}
             >
               生咖列表
-            </TabButton>
-          </TabNav>
-        </TabContainer>
+            </button>
+          </nav>
+        </div>
 
         {/* Artists Tab */}
         {activeTab === 'artists' && (
-          <ContentCard>
-            <CardHeader>
+          <div className={contentCard}>
+            <div className={cardHeader}>
               <h2>待審核偶像</h2>
               <p>{pendingArtists.length} 位偶像等待審核</p>
-            </CardHeader>
+            </div>
             {pendingArtists.length === 0 ? (
-              <EmptyState>
+              <div className={emptyState}>
                 <UserIcon className="icon" width={48} height={48} />
                 <h3>沒有待審核偶像</h3>
                 <p>所有偶像投稿都已處理完成</p>
-              </EmptyState>
+              </div>
             ) : (
               <>
                 {/* 批次操作區域 */}
                 {selectedArtists.size > 0 && (
-                  <BatchActionsContainer>
-                    <BatchActionsLeft>
+                  <div className={batchActionsContainer}>
+                    <div className={batchActionsLeft}>
                       <span style={{ fontSize: '14px', fontWeight: '500' }}>
                         已選擇 {selectedArtists.size} 位偶像
                       </span>
-                    </BatchActionsLeft>
-                    <BatchActionsRight>
-                      <BatchButton
-                        $variant="approve"
+                    </div>
+                    <div className={batchActionsRight}>
+                      <button
+                        className={`${batchButton} ${batchButtonApprove}`}
                         onClick={() => setBatchApproving(true)}
                         disabled={batchReviewMutation.isPending}
                       >
                         <CheckCircleIcon />
                         批次通過
-                      </BatchButton>
-                      <BatchButton
-                        $variant="exists"
+                      </button>
+                      <button
+                        className={`${batchButton} ${batchButtonExists}`}
                         onClick={handleBatchExists}
                         disabled={batchReviewMutation.isPending}
                       >
                         <ExclamationTriangleIcon />
                         批次標記已存在
-                      </BatchButton>
-                      <BatchButton
-                        $variant="reject"
+                      </button>
+                      <button
+                        className={`${batchButton} ${batchButtonReject}`}
                         onClick={() =>
                           setRejectingArtist({ id: 'batch', stageName: '選中的偶像' } as Artist)
                         }
@@ -799,21 +756,23 @@ export default function AdminPage() {
                       >
                         <XCircleIcon />
                         批次拒絕
-                      </BatchButton>
-                    </BatchActionsRight>
-                  </BatchActionsContainer>
+                      </button>
+                    </div>
+                  </div>
                 )}
 
                 {/* 全選區域 */}
                 <div
                   style={{
                     padding: '12px 20px',
-                    borderBottom: '1px solid var(--color-border-light)',
+                    borderBottom: '1px solid',
+                    borderBottomColor: 'var(--color-border-light)',
                     background: 'white',
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <Checkbox
+                    <input
+                      className={checkbox}
                       type="checkbox"
                       checked={
                         selectedArtists.size === pendingArtists.length && pendingArtists.length > 0
@@ -826,7 +785,7 @@ export default function AdminPage() {
                   </div>
                 </div>
 
-                <ItemList>
+                <div className={itemList}>
                   {pendingArtists.map((artist) => (
                     <div key={artist.id} style={{ position: 'relative' }}>
                       <div
@@ -840,7 +799,8 @@ export default function AdminPage() {
                           padding: '4px',
                         }}
                       >
-                        <Checkbox
+                        <input
+                          className={checkbox}
                           type="checkbox"
                           checked={selectedArtists.has(artist.id)}
                           onChange={(e) => handleSelectArtist(artist.id, e.target.checked)}
@@ -854,106 +814,109 @@ export default function AdminPage() {
                             : undefined
                         }
                         actionButtons={
-                          <ActionButtons>
-                            <ActionButton
-                              $variant="preview"
+                          <div className={actionButtons}>
+                            <button
+                              className={`${actionButton} ${actionButtonPreview}`}
                               onClick={() => handleEditArtist(artist)}
                             >
                               <PencilSquareIcon />
                               編輯
-                            </ActionButton>
-                            <ActionButton
-                              $variant="approve"
+                            </button>
+                            <button
+                              className={`${actionButton} ${actionButtonApprove}`}
                               onClick={() => handleApproveArtist(artist)}
                               disabled={approveArtistMutation.isPending}
                             >
                               <CheckCircleIcon />
                               通過
-                            </ActionButton>
-                            <ActionButton
-                              $variant="exists"
+                            </button>
+                            <button
+                              className={`${actionButton} ${actionButtonExists}`}
                               onClick={() => handleExistsArtist(artist.id)}
                               disabled={markAsExistsMutation.isPending}
                             >
                               <ExclamationTriangleIcon />
                               已存在
-                            </ActionButton>
-                            <ActionButton
-                              $variant="reject"
+                            </button>
+                            <button
+                              className={`${actionButton} ${actionButtonReject}`}
                               onClick={() => setRejectingArtist(artist)}
                               disabled={rejectArtistMutation.isPending}
                             >
                               <XCircleIcon />
                               拒絕
-                            </ActionButton>
-                          </ActionButtons>
+                            </button>
+                          </div>
                         }
                       />
                     </div>
                   ))}
-                </ItemList>
+                </div>
               </>
             )}
-          </ContentCard>
+          </div>
         )}
 
         {/* Events Tab */}
         {activeTab === 'events' && (
-          <ContentCard>
-            <CardHeader>
+          <div className={contentCard}>
+            <div className={cardHeader}>
               <h2>待審核生咖</h2>
               <p>{pendingEvents.length} 個生咖等待審核</p>
-            </CardHeader>
+            </div>
             {pendingEvents.length === 0 ? (
-              <EmptyState>
+              <div className={emptyState}>
                 <CalendarIcon className="icon" width={48} height={48} />
                 <h3>沒有待審核生咖</h3>
                 <p>所有生咖投稿都已處理完成</p>
-              </EmptyState>
+              </div>
             ) : (
-              <ItemList>
+              <div className={itemList}>
                 {pendingEvents.map((event) => (
                   <VerticalEventCard
                     key={event.id}
                     event={event}
                     actionButtons={
-                      <ActionButtons>
-                        <ActionButton $variant="preview" onClick={() => handlePreviewEvent(event)}>
+                      <div className={actionButtons}>
+                        <button
+                          className={`${actionButton} ${actionButtonPreview}`}
+                          onClick={() => handlePreviewEvent(event)}
+                        >
                           <EyeIcon />
                           預覽
-                        </ActionButton>
-                        <ActionButton
-                          $variant="approve"
+                        </button>
+                        <button
+                          className={`${actionButton} ${actionButtonApprove}`}
                           onClick={() => handleApproveEvent(event.id)}
                           disabled={approveEventMutation.isPending}
                         >
                           <CheckCircleIcon />
                           通過
-                        </ActionButton>
-                        <ActionButton
-                          $variant="reject"
+                        </button>
+                        <button
+                          className={`${actionButton} ${actionButtonReject}`}
                           onClick={() => setRejectingEvent(event)}
                           disabled={rejectEventMutation.isPending}
                         >
                           <XCircleIcon />
                           拒絕
-                        </ActionButton>
-                      </ActionButtons>
+                        </button>
+                      </div>
                     }
                   />
                 ))}
-              </ItemList>
+              </div>
             )}
-          </ContentCard>
+          </div>
         )}
 
         {/* Weekly Events Tab */}
         {activeTab === 'weekly-events' && (
-          <ContentCard>
-            <CardHeader>
+          <div className={contentCard}>
+            <div className={cardHeader}>
               <h2>生咖列表</h2>
               <p>{weeklyEventsTitle}</p>
-            </CardHeader>
+            </div>
 
             {/* 週導航 */}
             <div
@@ -1051,21 +1014,21 @@ export default function AdminPage() {
             </div>
 
             {weeklyEvents.length === 0 ? (
-              <EmptyState>
+              <div className={emptyState}>
                 <CalendarIcon className="icon" width={48} height={48} />
                 <h3>本週沒有生咖</h3>
                 <p>當週沒有已審核通過的生日應援活動</p>
-              </EmptyState>
+              </div>
             ) : (
-              <ItemList>
+              <div className={itemList}>
                 {weeklyEvents.map((event) => (
                   <VerticalEventCard key={event.id} event={event} />
                 ))}
-              </ItemList>
+              </div>
             )}
-          </ContentCard>
+          </div>
         )}
-      </MainContainer>
+      </div>
 
       {/* 預覽活動模態框 */}
       {previewingEvent && (
@@ -1124,8 +1087,8 @@ export default function AdminPage() {
       )}
 
       {/* 編輯藝人模態框 */}
-      <EditModal $isOpen={!!editingArtist}>
-        <EditModalContent>
+      <div className={`${editModal} ${!!editingArtist ? editModalOpen : editModalClosed}`}>
+        <div className={editModalContent}>
           {editingArtist && (
             <ArtistSubmissionForm
               mode="edit"
@@ -1134,8 +1097,8 @@ export default function AdminPage() {
               onCancel={handleEditCancel}
             />
           )}
-        </EditModalContent>
-      </EditModal>
-    </PageContainer>
+        </div>
+      </div>
+    </div>
   );
 }

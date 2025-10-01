@@ -3,103 +3,76 @@
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/lib/toast';
-import styled from 'styled-components';
+import { css } from '@/styled-system/css';
 import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import NotificationManager from '@/components/notifications/PushNotificationManager';
 import { useEffect } from 'react';
+import Loading from '@/components/Loading';
 
-// Styled Components
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background: var(--color-bg-primary);
-`;
+const pageContainer = css({
+  minHeight: '100vh',
+  background: 'color.background.primary',
+});
 
-const MainContainer = styled.div`
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 100px 16px 40px;
+const mainContainer = css({
+  maxWidth: '600px',
+  margin: '0 auto',
+  padding: '100px 16px 40px',
+  '@media (min-width: 768px)': {
+    padding: '100px 24px 60px',
+  },
+});
 
-  @media (min-width: 768px) {
-    padding: 100px 24px 60px;
-  }
-`;
+const contentWrapper = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '24px',
+});
 
-const ContentWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
+const pageHeader = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '16px',
+  marginBottom: '8px',
+  '& h1': {
+    fontSize: '28px',
+    fontWeight: 700,
+    color: 'color.text.primary',
+    margin: '0',
+  },
+});
 
-const PageHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 8px;
+const backButton = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '40px',
+  height: '40px',
+  borderRadius: 'radius.md',
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: 'color.background.primary',
+    borderColor: 'color.border.medium',
+  },
+  '& svg': {
+    width: '20px',
+    height: '20px',
+    color: 'color.text.secondary',
+  },
+});
 
-  h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin: 0;
-  }
-`;
-
-const BackButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-md);
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-light);
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: var(--color-bg-primary);
-    border-color: var(--color-border-medium);
-  }
-
-  svg {
-    width: 20px;
-    height: 20px;
-    color: var(--color-text-secondary);
-  }
-`;
-
-const SettingsCard = styled.div`
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-`;
-
-const LoadingContainer = styled.div`
-  padding: 60px 20px;
-  text-align: center;
-  color: var(--color-text-secondary);
-
-  .spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid var(--color-border-light);
-    border-top: 3px solid var(--color-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 16px;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
+const settingsCard = css({
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  overflow: 'hidden',
+  boxShadow: 'shadow.sm',
+});
 
 export default function NotificationsSettingsPage() {
   const { user, loading: authLoading } = useAuth();
@@ -118,16 +91,7 @@ export default function NotificationsSettingsPage() {
   };
 
   if (authLoading) {
-    return (
-      <PageContainer>
-        <MainContainer>
-          <LoadingContainer>
-            <div className="spinner" />
-            <p>載入設定中...</p>
-          </LoadingContainer>
-        </MainContainer>
-      </PageContainer>
-    );
+    return <Loading description="載入設定中..." style={{ height: '100vh', width: '100%' }} />;
   }
 
   if (!user) {
@@ -135,21 +99,21 @@ export default function NotificationsSettingsPage() {
   }
 
   return (
-    <PageContainer>
-      <MainContainer>
-        <ContentWrapper>
-          <PageHeader>
-            <BackButton onClick={handleBack}>
+    <div className={pageContainer}>
+      <div className={mainContainer}>
+        <div className={contentWrapper}>
+          <div className={pageHeader}>
+            <button className={backButton} onClick={handleBack}>
               <ArrowLeftIcon />
-            </BackButton>
+            </button>
             <h1>推播通知</h1>
-          </PageHeader>
+          </div>
 
-          <SettingsCard>
+          <div className={settingsCard}>
             <NotificationManager />
-          </SettingsCard>
-        </ContentWrapper>
-      </MainContainer>
-    </PageContainer>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

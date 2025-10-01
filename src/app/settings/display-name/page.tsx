@@ -9,10 +9,10 @@ import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '@/lib/api';
 import { showToast } from '@/lib/toast';
-import styled from 'styled-components';
+import { css } from '@/styled-system/css';
 import { CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import Loading from '@/components/Loading';
 
-// 表單驗證 schema
 const displayNameSchema = z.object({
   displayName: z
     .string()
@@ -26,219 +26,181 @@ const displayNameSchema = z.object({
 
 type DisplayNameFormData = z.infer<typeof displayNameSchema>;
 
-// Styled Components
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background: var(--color-bg-primary);
-`;
+const pageContainer = css({
+  minHeight: '100vh',
+  background: 'color.background.primary',
+});
 
-const MainContainer = styled.div`
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 100px 16px 40px;
+const mainContainer = css({
+  maxWidth: '600px',
+  margin: '0 auto',
+  padding: '100px 16px 40px',
+  '@media (min-width: 768px)': {
+    padding: '100px 24px 60px',
+  },
+});
 
-  @media (min-width: 768px) {
-    padding: 100px 24px 60px;
-  }
-`;
+const contentWrapper = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '24px',
+});
 
-const ContentWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
+const pageHeader = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '16px',
+  marginBottom: '8px',
+  '& h1': {
+    fontSize: '28px',
+    fontWeight: 700,
+    color: 'color.text.primary',
+    margin: '0',
+  },
+});
 
-const PageHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 8px;
+const backButton = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '40px',
+  height: '40px',
+  borderRadius: 'radius.md',
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: 'color.background.tertiary',
+    borderColor: 'color.border.medium',
+  },
+  '& svg': {
+    width: '20px',
+    height: '20px',
+    color: 'color.text.primary',
+  },
+});
 
-  .back-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-md);
-    background: var(--color-bg-secondary);
-    border: 1px solid var(--color-border-light);
-    cursor: pointer;
-    transition: all 0.2s ease;
+const settingsCard = css({
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  overflow: 'hidden',
+  boxShadow: 'shadow.sm',
+});
 
-    &:hover {
-      background: var(--color-bg-tertiary);
-      border-color: var(--color-border-medium);
-    }
+const formContainer = css({
+  padding: '24px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '20px',
+});
 
-    svg {
-      width: 20px;
-      height: 20px;
-      color: var(--color-text-primary);
-    }
-  }
+const formGroup = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+});
 
-  h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin: 0;
-  }
-`;
+const label = css({
+  fontSize: '14px',
+  fontWeight: 600,
+  color: 'color.text.primary',
+});
 
-const SettingsCard = styled.div`
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-`;
+const input = css({
+  width: '100%',
+  padding: '12px 16px',
+  border: '2px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.md',
+  fontSize: '16px',
+  transition: 'all 0.2s ease',
+  background: 'white',
+  color: 'color.text.primary',
+  '&:focus': {
+    outline: 'none',
+    borderColor: 'color.primary',
+  },
+  '&:disabled': {
+    background: 'color.background.secondary',
+    cursor: 'not-allowed',
+    opacity: 0.6,
+  },
+});
 
-const FormContainer = styled.div`
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-`;
+const inputError = css({
+  borderColor: '#ef4444',
+  '&:focus': {
+    borderColor: '#ef4444',
+  },
+});
 
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
+const errorText = css({
+  fontSize: '12px',
+  color: '#ef4444',
+  marginTop: '4px',
+});
 
-const Label = styled.label`
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-`;
+const buttonGroup = css({
+  display: 'flex',
+  gap: '12px',
+  justifyContent: 'flex-end',
+  marginTop: '8px',
+});
 
-const Input = styled.input<{ $hasError?: boolean }>`
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid ${(props) => (props.$hasError ? '#ef4444' : 'var(--color-border-light)')};
-  border-radius: var(--radius-md);
-  font-size: 16px;
-  transition: all 0.2s ease;
-  background: white;
-  color: var(--color-text-primary);
+const button = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '8px',
+  padding: '12px 20px',
+  borderRadius: 'radius.md',
+  fontSize: '14px',
+  fontWeight: 600,
+  transition: 'all 0.2s ease',
+  cursor: 'pointer',
+  border: '1px solid',
+  '&:disabled': {
+    opacity: 0.5,
+    cursor: 'not-allowed',
+  },
+  '& svg': {
+    width: '16px',
+    height: '16px',
+  },
+});
 
-  &:focus {
-    outline: none;
-    border-color: ${(props) => (props.$hasError ? '#ef4444' : 'var(--color-primary)')};
-  }
+const buttonPrimary = css({
+  background: 'color.primary',
+  borderColor: 'color.primary',
+  color: 'white',
+  '&:hover:not(:disabled)': {
+    background: '#3a5d7a',
+    borderColor: '#3a5d7a',
+  },
+});
 
-  &:disabled {
-    background: var(--color-bg-secondary);
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-`;
+const buttonSecondary = css({
+  background: 'color.background.primary',
+  borderColor: 'color.border.light',
+  color: 'color.text.primary',
+  '&:hover:not(:disabled)': {
+    background: 'color.background.secondary',
+    borderColor: 'color.border.medium',
+  },
+});
 
-const ErrorText = styled.span`
-  font-size: 12px;
-  color: #ef4444;
-  margin-top: 4px;
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 8px;
-`;
-
-const Button = styled.button<{ $variant: 'primary' | 'secondary' }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 20px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  border: 1px solid;
-
-  ${(props) => {
-    if (props.$variant === 'primary') {
-      return `
-        background: var(--color-primary);
-        border-color: var(--color-primary);
-        color: white;
-        
-        &:hover:not(:disabled) {
-          background: #3a5d7a;
-          border-color: #3a5d7a;
-        }
-      `;
-    } else {
-      return `
-        background: var(--color-bg-primary);
-        border-color: var(--color-border-light);
-        color: var(--color-text-primary);
-        
-        &:hover:not(:disabled) {
-          background: var(--color-bg-secondary);
-          border-color: var(--color-border-medium);
-        }
-      `;
-    }
-  }}
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-const LoadingSpinner = styled.div`
-  width: 16px;
-  height: 16px;
-  border: 2px solid transparent;
-  border-top: 2px solid currentColor;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const LoadingContainer = styled.div`
-  padding: 60px 20px;
-  text-align: center;
-  color: var(--color-text-secondary);
-
-  .spinner {
-    width: 32px;
-    height: 32px;
-    border: 3px solid var(--color-border-light);
-    border-top: 3px solid var(--color-primary);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 16px;
-  }
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
+const loadingSpinner = css({
+  width: '16px',
+  height: '16px',
+  border: '2px solid transparent',
+  borderTop: '2px solid currentColor',
+  borderTopColor: 'currentColor',
+  borderRadius: '50%',
+  animation: 'spin 1s linear infinite',
+});
 
 export default function DisplayNamePage() {
   const { user, userData, loading: authLoading, refetchUserData } = useAuth();
@@ -311,16 +273,7 @@ export default function DisplayNamePage() {
   };
 
   if (authLoading) {
-    return (
-      <PageContainer>
-        <MainContainer>
-          <LoadingContainer>
-            <div className="spinner" />
-            <p>載入中...</p>
-          </LoadingContainer>
-        </MainContainer>
-      </PageContainer>
-    );
+    return <Loading description="載入中..." style={{ height: '100vh', width: '100%' }} />;
   }
 
   if (!user) {
@@ -328,49 +281,53 @@ export default function DisplayNamePage() {
   }
 
   return (
-    <PageContainer>
-      <MainContainer>
-        <ContentWrapper>
-          <PageHeader>
-            <button className="back-button" onClick={handleBack}>
+    <div className={pageContainer}>
+      <div className={mainContainer}>
+        <div className={contentWrapper}>
+          <div className={pageHeader}>
+            <button className={backButton} onClick={handleBack}>
               <ArrowLeftIcon />
             </button>
             <h1>修改名稱</h1>
-          </PageHeader>
+          </div>
 
-          <SettingsCard>
-            <FormContainer>
-              <FormGroup>
-                <Label htmlFor="displayName">名稱</Label>
-                <Input
+          <div className={settingsCard}>
+            <div className={formContainer}>
+              <div className={formGroup}>
+                <label className={label} htmlFor="displayName">
+                  名稱
+                </label>
+                <input
                   id="displayName"
                   type="text"
                   placeholder="請輸入名稱"
-                  $hasError={!!errors.displayName}
+                  className={`${input} ${!!errors.displayName ? inputError : ''}`}
                   disabled={updateProfileMutation.isPending}
                   {...register('displayName')}
                 />
-                {errors.displayName && <ErrorText>{errors.displayName.message}</ErrorText>}
-              </FormGroup>
+                {errors.displayName && (
+                  <span className={errorText}>{errors.displayName.message}</span>
+                )}
+              </div>
 
-              <ButtonGroup>
-                <Button
+              <div className={buttonGroup}>
+                <button
                   type="button"
-                  $variant="secondary"
+                  className={`${button} ${buttonSecondary}`}
                   onClick={handleCancel}
                   disabled={updateProfileMutation.isPending}
                 >
                   取消
-                </Button>
-                <Button
+                </button>
+                <button
                   type="button"
-                  $variant="primary"
+                  className={`${button} ${buttonPrimary}`}
                   onClick={handleSave}
                   disabled={updateProfileMutation.isPending || !hasChanges}
                 >
                   {updateProfileMutation.isPending ? (
                     <>
-                      <LoadingSpinner />
+                      <div className={loadingSpinner} />
                       更新中...
                     </>
                   ) : (
@@ -379,12 +336,12 @@ export default function DisplayNamePage() {
                       儲存變更
                     </>
                   )}
-                </Button>
-              </ButtonGroup>
-            </FormContainer>
-          </SettingsCard>
-        </ContentWrapper>
-      </MainContainer>
-    </PageContainer>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

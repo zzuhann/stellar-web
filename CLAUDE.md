@@ -2,3 +2,4 @@
 2. 在做前端修改時 如果是跟資料面相關的 先詢問後端是否可以修改，真的不行才在前端操控資料，避免前端自己控制資料
 3. 不要用any, 修正 type error
 4. 只要寫code，不用嘗試跑build 或是 type check指令
+5. 使用 panda css 時，border 若為 borderTop 或是 borderBottom ，顏色也要另外設定 borderTopColor 或是 borderBottomColor
