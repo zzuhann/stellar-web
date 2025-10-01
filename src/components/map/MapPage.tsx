@@ -17,6 +17,7 @@ import MapCenterUpdater from './components/MapCenterUpdater';
 import MarkerCluster from './components/MarkerCluster';
 import SafeMapContainer from './components/SafeMapContainer';
 import { initializeLeafletIcons } from './utils/leaflet-icons';
+import { usePageShare } from '@/hooks/usePageShare';
 
 // 初始化 Leaflet 圖標
 initializeLeafletIcons();
@@ -83,6 +84,12 @@ export default function MapPage({
   const { mapEvents, isMapLoading, artistData, isArtistLoading } = useMapPageData({
     propsSearch,
     propsArtistId,
+  });
+
+  usePageShare({
+    title: `${artistData?.stageName} 的生日應援地圖 | STELLAR 台灣生日應援地圖`,
+    text: `來 STELLAR 看看即將舉辦的 ${artistData?.stageName} 生日應援吧～！`,
+    url: window.location.href,
   });
 
   const { springs, bind } = useDrawer();

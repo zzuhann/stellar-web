@@ -25,6 +25,17 @@ export default function PWAInstallPrompt() {
   const [showOpenAppPrompt, setShowOpenAppPrompt] = useState(false);
 
   useEffect(() => {
+    // 檢查是否為mobile，只在手機顯示 PWA 提示
+    const isMobileDevice = () => {
+      const userAgent =
+        navigator.userAgent || navigator.vendor || (window as unknown as { opera?: string }).opera;
+      return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent || '');
+    };
+
+    if (!isMobileDevice()) {
+      return; // 桌機不顯示 PWA 提示
+    }
+
     // 檢查是否已經安裝 PWA
     const checkIfInstalled = () => {
       // 檢查是否在 standalone 模式運行
@@ -75,10 +86,10 @@ export default function PWAInstallPrompt() {
         }
       }
 
-      // 保存事件以便稍後觸發
+      // 儲存事件 晚點觸發
       setDeferredPrompt(e);
 
-      // 顯示自定義安裝按鈕
+      // 顯示自定義安裝按鈕 提示用戶安裝
       setShowInstallPrompt(true);
     };
 
@@ -87,7 +98,6 @@ export default function PWAInstallPrompt() {
       setIsInstalled(true);
       setShowInstallPrompt(false);
       setDeferredPrompt(null);
-      // 記錄到本地儲存
       localStorage.setItem('pwa-installed', 'true');
     };
 
@@ -176,7 +186,7 @@ export default function PWAInstallPrompt() {
           borderColor: 'color.border.light',
           textAlign: 'center',
           '@media (min-width: 768px)': {
-            maxWidth: '400px',
+            width: '35%',
             left: 'auto',
             right: '20px',
           },
@@ -283,7 +293,7 @@ export default function PWAInstallPrompt() {
         borderColor: 'color.border.light',
         textAlign: 'center',
         '@media (min-width: 768px)': {
-          maxWidth: '400px',
+          width: '35%',
           left: 'auto',
           right: '20px',
         },

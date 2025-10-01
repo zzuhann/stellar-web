@@ -9,6 +9,7 @@ import { css } from '@/styled-system/css';
 import DesktopNav from './DesktopNav';
 import BurgerButton from './BurgerButton';
 import MobileMenu from './MobileMenu';
+import ShareButton from '../ShareButton';
 
 const headerContainer = css({
   height: '70px',
@@ -54,7 +55,18 @@ const Header = () => {
         <DesktopNav />
 
         {/* Mobile Burger Menu Button */}
-        <BurgerButton onClick={() => setMobileMenuOpen(true)} />
+        <div
+          className={css({
+            display: 'none',
+            '@media (max-width: 768px)': {
+              display: 'flex',
+              gap: '12px',
+            },
+          })}
+        >
+          <ShareButton />
+          <BurgerButton onClick={() => setMobileMenuOpen(true)} />
+        </div>
       </div>
 
       {/* Mobile Menu */}

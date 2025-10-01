@@ -12,6 +12,7 @@ import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
 import Image from 'next/image';
 import ArtistModal from './ArtistModal';
 import DetailSkeleton from './DetailSkeleton';
+import { usePageShare } from '@/hooks/usePageShare';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -196,6 +197,12 @@ const EventDetail = ({ eventId }: EventDetailProps) => {
   const [showArtistModal, setShowArtistModal] = useState(false);
 
   const { data: event, error, isLoading } = useEvent(eventId);
+
+  usePageShare({
+    title: `${event?.title} | STELLAR 台灣生日應援地圖`,
+    url: window.location.href,
+  });
+
   const bannerItems = (() => {
     if (!event) return [];
 

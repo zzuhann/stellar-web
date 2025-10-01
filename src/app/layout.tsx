@@ -10,6 +10,7 @@ import Footer from '@/components/layout/Footer';
 import { Analytics } from '@vercel/analytics/next';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
+import { ShareProvider } from '@/context/ShareContext';
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
@@ -101,47 +102,49 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <LoadingProvider>
-              <Header />
-              {children}
-              <Analytics />
-              <ServiceWorkerRegistration />
-              <PWAInstallPrompt />
-              <Toaster
-                position="top-center"
-                toastOptions={{
-                  duration: 4000,
-                  style: {
-                    background: '#fff',
-                    color: '#333',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    padding: '12px 16px',
-                    maxWidth: '400px',
-                  },
-                  success: {
+              <ShareProvider>
+                <Header />
+                {children}
+                <Analytics />
+                <ServiceWorkerRegistration />
+                <PWAInstallPrompt />
+                <Toaster
+                  position="top-center"
+                  toastOptions={{
+                    duration: 4000,
                     style: {
-                      border: '1px solid #10b981',
-                      color: '#065f46',
+                      background: '#fff',
+                      color: '#333',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      padding: '12px 16px',
+                      maxWidth: '400px',
                     },
-                    iconTheme: {
-                      primary: '#10b981',
-                      secondary: '#ffffff',
+                    success: {
+                      style: {
+                        border: '1px solid #10b981',
+                        color: '#065f46',
+                      },
+                      iconTheme: {
+                        primary: '#10b981',
+                        secondary: '#ffffff',
+                      },
                     },
-                  },
-                  error: {
-                    style: {
-                      border: '1px solid #ef4444',
-                      color: '#991b1b',
+                    error: {
+                      style: {
+                        border: '1px solid #ef4444',
+                        color: '#991b1b',
+                      },
+                      iconTheme: {
+                        primary: '#ef4444',
+                        secondary: '#ffffff',
+                      },
                     },
-                    iconTheme: {
-                      primary: '#ef4444',
-                      secondary: '#ffffff',
-                    },
-                  },
-                }}
-              />
-              <Footer />
+                  }}
+                />
+                <Footer />
+              </ShareProvider>
             </LoadingProvider>
           </AuthProvider>
         </QueryProvider>
