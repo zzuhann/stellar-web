@@ -219,9 +219,9 @@ const EventDetail = ({ eventId }: EventDetailProps) => {
 
     // 詳細圖片
     if (event.detailImage && event.detailImage.length > 0) {
-      event.detailImage.forEach((image) => {
+      event.detailImage.forEach((image, index) => {
         items.push({
-          id: 'detail',
+          id: `detail-${index}`,
           imageUrl: image,
           title: event.title,
           subtitle: '應援詳情',
