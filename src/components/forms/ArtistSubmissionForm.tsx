@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UserIcon, CalendarIcon, PhotoIcon } from '@heroicons/react/24/outline';
-import styled from 'styled-components';
+import { css, cva } from '@/styled-system/css';
 import { artistSubmissionSchema, ArtistSubmissionFormData } from '@/lib/validations';
 import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
@@ -20,254 +20,229 @@ import showToast from '@/lib/toast';
 import { uploadImageToAPI } from '@/lib/r2-upload';
 import { CDN_DOMAIN } from '@/constants';
 
-// Styled Components - 與其他組件保持一致的設計風格
-const FormContainer = styled.div`
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: 32px;
+const formContainer = css({
+  width: '100%',
+  maxWidth: '800px',
+  margin: '0 auto',
+  background: 'color.background.primary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  boxShadow: 'shadow.md',
+  padding: '32px',
+  '@media (min-width: 768px)': {
+    padding: '40px',
+  },
+});
 
-  @media (min-width: 768px) {
-    padding: 40px;
-  }
-`;
+const formHeader = css({
+  textAlign: 'center',
+  marginBottom: '32px',
+  paddingBottom: '24px',
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+  '& h2': {
+    fontSize: '24px',
+    fontWeight: '700',
+    color: 'color.text.primary',
+    margin: '0 0 8px 0',
+    '@media (min-width: 768px)': {
+      fontSize: '28px',
+    },
+  },
+  '& p': {
+    fontSize: '14px',
+    color: 'color.text.secondary',
+    margin: '0',
+    '@media (min-width: 768px)': {
+      fontSize: '16px',
+    },
+  },
+});
 
-const FormHeader = styled.div`
-  text-align: center;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--color-border-light);
+const form = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '24px',
+});
 
-  h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin: 0 0 8px 0;
+const formGroup = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+});
 
-    @media (min-width: 768px) {
-      font-size: 28px;
-    }
-  }
+const label = css({
+  fontSize: '14px',
+  fontWeight: '500',
+  color: 'color.text.primary',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  '@media (min-width: 768px)': {
+    fontSize: '15px',
+  },
+  '& svg': {
+    width: '18px',
+    height: '18px',
+    color: 'color.text.secondary',
+  },
+});
 
-  p {
-    font-size: 14px;
-    color: var(--color-text-secondary);
-    margin: 0;
+const input = css({
+  width: '100%',
+  padding: '12px 16px',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  background: 'color.background.primary',
+  color: 'color.text.primary',
+  fontSize: '16px',
+  transition: 'all 0.2s ease',
+  '&::placeholder': {
+    color: 'color.text.disabled',
+  },
+  '&:focus': {
+    outline: 'none',
+    borderColor: 'color.primary',
+    boxShadow: '0 0 0 3px rgba(90, 125, 154, 0.1)',
+  },
+  '&:disabled': {
+    background: 'color.background.secondary',
+    color: 'color.text.disabled',
+    cursor: 'not-allowed',
+  },
+  '@media (min-width: 768px)': {
+    padding: '14px 18px',
+    fontSize: '15px',
+  },
+});
 
-    @media (min-width: 768px) {
-      font-size: 16px;
-    }
-  }
-`;
+const helperText = css({
+  fontSize: '12px',
+  color: 'color.text.secondary',
+  margin: '0',
+  '@media (min-width: 768px)': {
+    fontSize: '13px',
+  },
+});
 
-const Form = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
+const errorText = css({
+  fontSize: '12px',
+  color: '#ef4444',
+  margin: '4px 0 0 0',
+});
 
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
+const infoBox = css({
+  background: '#f0f9ff',
+  border: '1px solid #bae6fd',
+  borderRadius: 'radius.lg',
+  padding: '20px',
+  '& .title': {
+    fontSize: '14px',
+    fontWeight: '600',
+    color: '#0369a1',
+    margin: '0 0 12px 0',
+    '@media (min-width: 768px)': {
+      fontSize: '15px',
+    },
+  },
+  '& ul': {
+    fontSize: '13px',
+    color: '#0369a1',
+    margin: '0',
+    paddingLeft: '16px',
+    '@media (min-width: 768px)': {
+      fontSize: '14px',
+    },
+    '& li': {
+      marginBottom: '6px',
+      lineHeight: '1.5',
+    },
+  },
+});
 
-const Label = styled.label`
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+const imageSection = css({
+  '& .manual-input': {
+    marginTop: '16px',
+  },
+});
 
-  @media (min-width: 768px) {
-    font-size: 15px;
-  }
+const buttonGroup = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '12px',
+  paddingTop: '24px',
+  borderTop: '1px solid',
+  borderTopColor: 'color.border.light',
+  '@media (min-width: 480px)': {
+    flexDirection: 'row',
+    gap: '16px',
+  },
+});
 
-  svg {
-    width: 18px;
-    height: 18px;
-    color: var(--color-text-secondary);
-  }
-`;
+const button = cva({
+  base: {
+    padding: '14px 24px',
+    borderRadius: 'radius.lg',
+    fontSize: '16px',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    cursor: 'pointer',
+    border: '1px solid',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    flex: '1',
+    '@media (min-width: 768px)': {
+      padding: '16px 28px',
+      fontSize: '16px',
+    },
+    '&:disabled': {
+      cursor: 'not-allowed',
+      transform: 'none',
+      boxShadow: 'none',
+    },
+  },
+  variants: {
+    variant: {
+      primary: {
+        background: 'color.primary',
+        borderColor: 'color.primary',
+        color: 'white',
+        '&:hover:not(:disabled)': {
+          background: '#3a5d7a',
+          borderColor: '#3a5d7a',
+          transform: 'translateY(-1px)',
+          boxShadow: 'shadow.md',
+        },
+        '&:disabled': {
+          background: 'color.text.disabled',
+          borderColor: 'color.text.disabled',
+        },
+      },
+      secondary: {
+        background: 'color.background.primary',
+        borderColor: 'color.border.light',
+        color: 'color.text.primary',
+        '&:hover': {
+          background: 'color.background.secondary',
+          borderColor: 'color.border.medium',
+        },
+      },
+    },
+  },
+});
 
-const Input = styled.input`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-size: 16px;
-  transition: all 0.2s ease;
-
-  &::placeholder {
-    color: var(--color-text-disabled);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(90, 125, 154, 0.1);
-  }
-
-  &:disabled {
-    background: var(--color-bg-secondary);
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-  }
-
-  @media (min-width: 768px) {
-    padding: 14px 18px;
-    font-size: 15px;
-  }
-`;
-
-const HelperText = styled.p`
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  margin: 0;
-
-  @media (min-width: 768px) {
-    font-size: 13px;
-  }
-`;
-
-const ErrorText = styled.p`
-  font-size: 12px;
-  color: #ef4444;
-  margin: 4px 0 0 0;
-`;
-
-const InfoBox = styled.div`
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
-  border-radius: var(--radius-lg);
-  padding: 20px;
-
-  .title {
-    font-size: 14px;
-    font-weight: 600;
-    color: #0369a1;
-    margin: 0 0 12px 0;
-  }
-
-  ul {
-    font-size: 13px;
-    color: #0369a1;
-    margin: 0;
-    padding-left: 16px;
-
-    li {
-      margin-bottom: 6px;
-      line-height: 1.5;
-    }
-  }
-
-  @media (min-width: 768px) {
-    .title {
-      font-size: 15px;
-    }
-
-    ul {
-      font-size: 14px;
-    }
-  }
-`;
-
-const ImageSection = styled.div`
-  .manual-input {
-    margin-top: 16px;
-  }
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 24px;
-  border-top: 1px solid var(--color-border-light);
-
-  @media (min-width: 480px) {
-    flex-direction: row;
-    gap: 16px;
-  }
-`;
-
-const Button = styled.button<{ $variant?: 'primary' | 'secondary' }>`
-  padding: 14px 24px;
-  border-radius: var(--radius-lg);
-  font-size: 16px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  border: 1px solid;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex: 1;
-
-  ${(props) =>
-    props.$variant === 'primary'
-      ? `
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: white;
-    
-    &:hover:not(:disabled) {
-      background: #3a5d7a;
-      border-color: #3a5d7a;
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-md);
-    }
-    
-    &:disabled {
-      background: var(--color-text-disabled);
-      border-color: var(--color-text-disabled);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-  `
-      : `
-    background: var(--color-bg-primary);
-    border-color: var(--color-border-light);
-    color: var(--color-text-primary);
-    
-    &:hover {
-      background: var(--color-bg-secondary);
-      border-color: var(--color-border-medium);
-    }
-  `}
-
-  @media (min-width: 768px) {
-    padding: 16px 28px;
-    font-size: 16px;
-  }
-`;
-
-const LoadingSpinner = styled.div`
-  width: 16px;
-  height: 16px;
-  border: 2px solid transparent;
-  border-top: 2px solid white;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
+const loadingSpinner = css({
+  width: '16px',
+  height: '16px',
+  border: '2px solid transparent',
+  borderTop: '2px solid white',
+  borderRadius: '50%',
+  animation: 'spin 1s linear infinite',
+});
 
 interface ArtistSubmissionFormProps {
   mode?: 'create' | 'edit';
@@ -463,8 +438,8 @@ export default function ArtistSubmissionForm({
   }, [uploadedImageUrl, setValue]);
 
   return (
-    <FormContainer>
-      <FormHeader>
+    <div className={formContainer}>
+      <div className={formHeader}>
         <h2>{mode === 'edit' ? '編輯偶像' : '投稿偶像'}</h2>
         {mode !== 'edit' && <p>新增偶像到我們的資料庫，審核通過後其他用戶可以為他們建立生日應援</p>}
         {mode === 'edit' && (
@@ -472,54 +447,61 @@ export default function ArtistSubmissionForm({
             編輯後的資料將重新進入審核流程
           </p>
         )}
-      </FormHeader>
+      </div>
 
-      <Form>
+      <div className={form}>
         {/* 英文藝名 */}
-        <FormGroup>
-          <Label htmlFor="stageName">
+        <div className={formGroup}>
+          <label className={label} htmlFor="stageName">
             <UserIcon />
             藝名（請填寫官方正名的英文名稱）*
-          </Label>
-          <Input
+          </label>
+          <input
+            className={input}
             id="stageName"
             type="text"
             placeholder="例：S.COUPS、Riku、RIWOO"
             {...register('stageName')}
           />
-          {errors.stageName && <ErrorText>{errors.stageName.message}</ErrorText>}
-        </FormGroup>
+          {errors.stageName && <p className={errorText}>{errors.stageName.message}</p>}
+        </div>
 
         {/* 中文藝名 */}
-        <FormGroup>
-          <Label htmlFor="stageNameZh">藝名（中文）</Label>
-          <Input
+        <div className={formGroup}>
+          <label className={label} htmlFor="stageNameZh">
+            藝名（中文）
+          </label>
+          <input
+            className={input}
             id="stageNameZh"
             type="text"
             placeholder="例：泰山、李涵（沒有可不填）"
             {...register('stageNameZh')}
           />
-          {errors.stageNameZh && <ErrorText>{errors.stageNameZh.message}</ErrorText>}
-        </FormGroup>
+          {errors.stageNameZh && <p className={errorText}>{errors.stageNameZh.message}</p>}
+        </div>
 
         {/* 本名 */}
-        <FormGroup>
-          <Label htmlFor="realName">本名（中文）</Label>
-          <Input
+        <div className={formGroup}>
+          <label className={label} htmlFor="realName">
+            本名（中文）
+          </label>
+          <input
+            className={input}
             id="realName"
             type="text"
             placeholder="例：漢東旼、明宰鉉、崔勝哲"
             {...register('realName')}
           />
-          {errors.realName && <ErrorText>{errors.realName.message}</ErrorText>}
-        </FormGroup>
+          {errors.realName && <p className={errorText}>{errors.realName.message}</p>}
+        </div>
 
         {/* 生日 */}
-        <FormGroup>
-          <Label htmlFor="birthday">
+        <div className={formGroup}>
+          <label className={label} htmlFor="birthday">
             <CalendarIcon />
             生日*
-          </Label>
+          </label>
           <DatePicker
             value={watch('birthday') || ''}
             onChange={(date) =>
@@ -530,19 +512,19 @@ export default function ArtistSubmissionForm({
             error={!!errors.birthday}
             max={new Date().toISOString().split('T')[0]}
           />
-          {errors.birthday && <ErrorText>{errors.birthday.message}</ErrorText>}
-        </FormGroup>
+          {errors.birthday && <p className={errorText}>{errors.birthday.message}</p>}
+        </div>
 
         {/* 個人照片/團體照 */}
-        <ImageSection>
-          <FormGroup>
-            <Label>
+        <div className={imageSection}>
+          <div className={formGroup}>
+            <label className={label}>
               <PhotoIcon />
               偶像照片*
-            </Label>
-            <HelperText>
+            </label>
+            <p className={helperText}>
               請注意來源、是否可公開使用，避免侵權(若未來有爭議將直接下架替換其他照片)
-            </HelperText>
+            </p>
 
             <ImageUpload
               currentImageUrl={uploadedImageUrl}
@@ -596,12 +578,12 @@ export default function ArtistSubmissionForm({
               cropAspectRatio={1}
               cropOutputSize={400}
             />
-            {errors.profileImage && <ErrorText>{errors.profileImage.message}</ErrorText>}
-          </FormGroup>
-        </ImageSection>
+            {errors.profileImage && <p className={errorText}>{errors.profileImage.message}</p>}
+          </div>
+        </div>
 
         {/* 說明區塊 */}
-        <InfoBox>
+        <div className={infoBox}>
           <div className="title">投稿說明：</div>
           <ul>
             <li>投稿的偶像將經過審核</li>
@@ -610,13 +592,13 @@ export default function ArtistSubmissionForm({
             <li>資料錯誤、重複的偶像投稿審核不會通過</li>
             <li>若有多人重複投稿偶像，將以投稿時間較早者為準</li>
           </ul>
-        </InfoBox>
+        </div>
 
         {/* 提交按鈕 */}
-        <ButtonGroup>
-          <Button
+        <div className={buttonGroup}>
+          <button
             type="button"
-            $variant="primary"
+            className={button({ variant: 'primary' })}
             disabled={
               createArtistMutation.isPending || updateArtistMutation.isPending || isUploadingImage
             }
@@ -632,7 +614,7 @@ export default function ArtistSubmissionForm({
             createArtistMutation.isPending ||
             updateArtistMutation.isPending ? (
               <>
-                <LoadingSpinner />
+                <div className={loadingSpinner} />
                 {mode === 'edit' ? '更新中...' : '投稿中...'}
               </>
             ) : mode === 'edit' ? (
@@ -640,13 +622,17 @@ export default function ArtistSubmissionForm({
             ) : (
               '送出投稿'
             )}
-          </Button>
+          </button>
 
-          <Button type="button" $variant="secondary" onClick={onCancel || (() => router.push('/'))}>
+          <button
+            type="button"
+            className={button({ variant: 'secondary' })}
+            onClick={onCancel || (() => router.push('/'))}
+          >
             取消
-          </Button>
-        </ButtonGroup>
-      </Form>
+          </button>
+        </div>
+      </div>
 
       {/* 確認彈窗 - 只在編輯模式且狀態為 rejected 時顯示 */}
       <ConfirmModal
@@ -659,6 +645,6 @@ export default function ArtistSubmissionForm({
         cancelText="取消"
         isLoading={createArtistMutation.isPending || updateArtistMutation.isPending}
       />
-    </FormContainer>
+    </div>
   );
 }

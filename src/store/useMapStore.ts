@@ -60,15 +60,15 @@ export const useMapStore = create<MapState>()(
 
         // 重設地圖
         resetMap: () => {
-          set({
+          set((state) => ({
             center: TAIWAN_MAP_CENTER,
             selectedMarkerId: null,
             selectedEventId: null,
             isDrawerExpanded: false,
-            expandedHeight: 500,
+            expandedHeight: state.expandedHeight, // 保留當前的展開高度
             selectedLocationEvents: [],
             isLocationSelected: false,
-          });
+          }));
         },
 
         // 設定選中的活動

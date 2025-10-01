@@ -9,11 +9,38 @@ import { useScrollLock } from '@/hooks/useScrollLock';
 import { Artist } from '@/types';
 import ArtistCard from '../ArtistCard';
 import { useAuth } from '@/lib/auth-context';
-import ModalOverlayWithTransition from '../ui/ModalOverlayWithTransition';
 import EmptyState from '../EmptyState';
 import CTAButton from '../CTAButton';
 import Loading from '../Loading';
 import { css, cva } from '@/styled-system/css';
+
+const modalOverlay = cva({
+  base: {
+    position: 'fixed',
+    inset: 0,
+    background: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
+    display: 'flex',
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    transition: 'opacity 0.3s ease-out, visibility 0.3s ease-out',
+    '@media (min-width: 768px)': {
+      alignItems: 'center',
+    },
+  },
+  variants: {
+    isOpen: {
+      true: {
+        opacity: 1,
+        visibility: 'visible',
+      },
+      false: {
+        opacity: 0,
+        visibility: 'hidden',
+      },
+    },
+  },
+});
 
 const modalContent = cva({
   base: {
@@ -55,7 +82,7 @@ const modalContent = cva({
 const modalHeader = css({
   padding: '20px',
   borderBottom: '1px solid',
-  borderColor: 'color.border.light',
+  borderBottomColor: 'color.border.light',
   display: 'flex',
   alignItems: 'center',
   gap: '16px',
@@ -170,7 +197,7 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
   }, [isOpen]);
 
   return (
-    <ModalOverlayWithTransition isOpen={isOpen} onClick={onClose}>
+    <div className={modalOverlay({ isOpen })} onClick={onClose}>
       <div className={modalContent({ isOpen })} onClick={(e) => e.stopPropagation()}>
         <div className={modalHeader}>
           <div className={searchInputContainer}>
@@ -255,6 +282,6 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
           )}
         </div>
       </div>
-    </ModalOverlayWithTransition>
+    </div>
   );
 }

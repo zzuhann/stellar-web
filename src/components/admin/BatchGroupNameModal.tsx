@@ -2,190 +2,191 @@
 
 import { useState } from 'react';
 import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
-import styled from 'styled-components';
+import { css, cva } from '@/styled-system/css';
 import { Artist } from '@/types';
 import ModalOverlay from '../ui/ModalOverlay';
 
-const ModalContent = styled.div`
-  background: var(--color-bg-primary);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  width: 100%;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-lg);
-`;
+const modalContent = css({
+  background: 'color.background.primary',
+  borderRadius: 'radius.lg',
+  padding: '24px',
+  width: '100%',
+  maxWidth: '600px',
+  maxHeight: '80vh',
+  overflowY: 'auto',
+  boxShadow: 'shadow.lg',
+});
 
-const ModalHeader = styled.div`
-  margin-bottom: 20px;
-`;
+const modalHeader = css({
+  marginBottom: '20px',
+});
 
-const ModalTitle = styled.h3`
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 8px 0;
-`;
+const modalTitle = css({
+  fontSize: '18px',
+  fontWeight: '600',
+  color: 'color.text.primary',
+  margin: '0 0 8px 0',
+});
 
-const ModalDescription = styled.p`
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  margin: 0;
-  line-height: 1.5;
-`;
+const modalDescription = css({
+  fontSize: '14px',
+  color: 'color.text.secondary',
+  margin: '0',
+  lineHeight: 1.5,
+});
 
-const ArtistSection = styled.div`
-  margin-bottom: 24px;
-  padding: 16px;
-  background: var(--color-bg-secondary);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-light);
-`;
+const artistSection = css({
+  marginBottom: '24px',
+  padding: '16px',
+  background: 'color.background.secondary',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+});
 
-const ArtistName = styled.h4`
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 12px 0;
-`;
+const artistName = css({
+  fontSize: '16px',
+  fontWeight: '600',
+  color: 'color.text.primary',
+  margin: '0 0 12px 0',
+});
 
-const FormGroup = styled.div`
-  margin-bottom: 16px;
-`;
+const formGroup = css({
+  marginBottom: '16px',
+});
 
-const Label = styled.label`
-  display: block;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  margin-bottom: 8px;
-`;
+const label = css({
+  display: 'block',
+  fontSize: '14px',
+  fontWeight: '500',
+  color: 'color.text.primary',
+  marginBottom: '8px',
+});
 
-const Input = styled.input`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-size: 14px;
-  transition: all 0.2s ease;
+const input = css({
+  width: '100%',
+  padding: '12px 16px',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  background: 'color.background.primary',
+  color: 'color.text.primary',
+  fontSize: '14px',
+  transition: 'all 0.2s ease',
+  '&::placeholder': {
+    color: 'color.text.secondary',
+  },
+  '&:focus': {
+    outline: 'none',
+    borderColor: 'color.primary',
+    boxShadow: '0 0 0 3px rgba(90, 125, 154, 0.1)',
+  },
+});
 
-  &::placeholder {
-    color: var(--color-text-secondary);
-  }
+const buttonGroup = css({
+  display: 'flex',
+  gap: '12px',
+  justifyContent: 'flex-end',
+  marginTop: '24px',
+  paddingTop: '20px',
+  borderTop: '1px solid',
+  borderTopColor: 'color.border.light',
+});
 
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(90, 125, 154, 0.1);
-  }
-`;
+const button = cva({
+  base: {
+    padding: '10px 20px',
+    borderRadius: 'radius.lg',
+    fontSize: '14px',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    cursor: 'pointer',
+    border: '1px solid',
+  },
+  variants: {
+    variant: {
+      primary: {
+        background: 'color.primary',
+        borderColor: 'color.primary',
+        color: 'white',
+        '&:hover:not(:disabled)': {
+          background: '#3a5d7a',
+          borderColor: '#3a5d7a',
+        },
+        '&:disabled': {
+          background: 'color.text.disabled',
+          borderColor: 'color.text.disabled',
+          cursor: 'not-allowed',
+        },
+      },
+      secondary: {
+        background: 'color.background.primary',
+        borderColor: 'color.border.light',
+        color: 'color.text.primary',
+        '&:hover': {
+          background: 'color.background.secondary',
+          borderColor: 'color.border.medium',
+        },
+      },
+    },
+  },
+  defaultVariants: {
+    variant: 'secondary',
+  },
+});
 
-const ButtonGroup = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--color-border-light);
-`;
+const groupItemContainer = css({
+  display: 'flex',
+  gap: '8px',
+  alignItems: 'center',
+  marginBottom: '8px',
+});
 
-const Button = styled.button<{ $variant?: 'primary' | 'secondary' }>`
-  padding: 10px 20px;
-  border-radius: var(--radius-lg);
-  font-size: 14px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  border: 1px solid;
+const removeButton = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '32px',
+  height: '32px',
+  borderRadius: 'radius.md',
+  color: '#dc2626',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  border: '1px solid #dc2626',
+  background: 'transparent',
+  '&:hover': {
+    background: '#dc2626',
+    color: 'white',
+  },
+  '& svg': {
+    width: '16px',
+    height: '16px',
+  },
+});
 
-  ${(props) =>
-    props.$variant === 'primary'
-      ? `
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: white;
-    
-    &:hover:not(:disabled) {
-      background: #3a5d7a;
-      border-color: #3a5d7a;
-    }
-    
-    &:disabled {
-      background: var(--color-text-disabled);
-      border-color: var(--color-text-disabled);
-      cursor: not-allowed;
-    }
-  `
-      : `
-    background: var(--color-bg-primary);
-    border-color: var(--color-border-light);
-    color: var(--color-text-primary);
-    
-    &:hover {
-      background: var(--color-bg-secondary);
-      border-color: var(--color-border-medium);
-    }
-  `}
-`;
-
-const GroupItemContainer = styled.div`
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
-`;
-
-const RemoveButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-md);
-  color: #dc2626;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid #dc2626;
-  background: transparent;
-
-  &:hover {
-    background: #dc2626;
-    color: white;
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
-
-const AddButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  border: 1px solid var(--color-border-light);
-  background: var(--color-bg-secondary);
-  color: var(--color-text-primary);
-  margin-top: 8px;
-
-  &:hover {
-    background: var(--color-border-light);
-  }
-
-  svg {
-    width: 16px;
-    height: 16px;
-  }
-`;
+const addButton = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  padding: '8px 12px',
+  borderRadius: 'radius.md',
+  fontSize: '14px',
+  fontWeight: '500',
+  transition: 'all 0.2s ease',
+  cursor: 'pointer',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'color.background.secondary',
+  color: 'color.text.primary',
+  marginTop: '8px',
+  '&:hover': {
+    background: 'color.border.light',
+  },
+  '& svg': {
+    width: '16px',
+    height: '16px',
+  },
+});
 
 interface ArtistGroupNames {
   [artistId: string]: string[];
@@ -263,73 +264,87 @@ export default function BatchGroupNameModal({
 
   return (
     <ModalOverlay isOpen={isOpen}>
-      <ModalContent>
-        <ModalHeader>
-          <ModalTitle>批次設定團名</ModalTitle>
-          <ModalDescription>
+      <div className={modalContent}>
+        <div className={modalHeader}>
+          <h2 className={modalTitle}>批次設定團名</h2>
+          <p className={modalDescription}>
             為 {artists.length} 位選中的藝人設定團名，可以為每位藝人設定不同的團名。
-          </ModalDescription>
-        </ModalHeader>
+          </p>
+        </div>
 
         {artists.map((artist) => {
           const groupNames = artistGroupNames[artist.id] || [];
           return (
-            <ArtistSection key={artist.id}>
-              <ArtistName>{artist.stageNameZh || artist.stageName}</ArtistName>
-              <FormGroup>
-                <Label>團名</Label>
+            <div key={artist.id} className={artistSection}>
+              <h3 className={artistName}>{artist.stageNameZh || artist.stageName}</h3>
+              <div className={formGroup}>
+                <label className={label}>團名</label>
                 {groupNames.length === 0 && (
-                  <AddButton
+                  <button
                     type="button"
+                    className={addButton}
                     onClick={() => addGroupName(artist.id)}
                     disabled={isLoading}
                   >
                     <PlusIcon />
                     新增團名
-                  </AddButton>
+                  </button>
                 )}
                 {groupNames.map((groupName, index) => (
-                  <GroupItemContainer key={index}>
-                    <Input
+                  <div key={index} className={groupItemContainer}>
+                    <input
                       type="text"
+                      className={input}
                       placeholder="例：BOYNEXTDOOR、SEVENTEEN、&TEAM"
                       value={groupName}
                       onChange={(e) => updateGroupName(artist.id, index, e.target.value)}
                       disabled={isLoading}
                     />
-                    <RemoveButton
+                    <button
                       type="button"
+                      className={removeButton}
                       onClick={() => removeGroupName(artist.id, index)}
                       disabled={isLoading}
                     >
                       <XMarkIcon />
-                    </RemoveButton>
-                  </GroupItemContainer>
+                    </button>
+                  </div>
                 ))}
                 {groupNames.length > 0 && (
-                  <AddButton
+                  <button
                     type="button"
+                    className={addButton}
                     onClick={() => addGroupName(artist.id)}
                     disabled={isLoading}
                   >
                     <PlusIcon />
                     新增更多團名
-                  </AddButton>
+                  </button>
                 )}
-              </FormGroup>
-            </ArtistSection>
+              </div>
+            </div>
           );
         })}
 
-        <ButtonGroup>
-          <Button type="button" $variant="secondary" onClick={handleCancel} disabled={isLoading}>
+        <div className={buttonGroup}>
+          <button
+            type="button"
+            className={button({ variant: 'secondary' })}
+            onClick={handleCancel}
+            disabled={isLoading}
+          >
             取消
-          </Button>
-          <Button type="button" $variant="primary" onClick={handleSubmit} disabled={isLoading}>
+          </button>
+          <button
+            type="button"
+            className={button({ variant: 'primary' })}
+            onClick={handleSubmit}
+            disabled={isLoading}
+          >
             {isLoading ? '設定中...' : '確認批次通過'}
-          </Button>
-        </ButtonGroup>
-      </ModalContent>
+          </button>
+        </div>
+      </div>
     </ModalOverlay>
   );
 }

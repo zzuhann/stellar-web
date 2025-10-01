@@ -1,6 +1,6 @@
 'use client';
 
-import styled from 'styled-components';
+import { css } from '@/styled-system/css';
 import { CoffeeEvent } from '@/types';
 import SwiperBanner from '@/components/SwiperBanner';
 import { firebaseTimestampToDate } from '@/utils';
@@ -18,179 +18,175 @@ interface EventPreviewModalProps {
   onClose: () => void;
 }
 
-const ModalContent = styled.div`
-  background: white;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
-  max-width: 500px;
-  width: 100%;
-  max-height: 90vh;
-  overflow-y: auto;
-  position: relative;
-`;
+const modalContent = css({
+  background: 'white',
+  borderRadius: 'radius.lg',
+  boxShadow: 'shadow.lg',
+  maxWidth: '500px',
+  width: '100%',
+  maxHeight: '90vh',
+  overflowY: 'auto',
+  position: 'relative',
+});
 
-const ModalHeader = styled.div`
-  position: sticky;
-  top: 0;
-  background: white;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--color-border-light);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  z-index: 10;
-`;
+const modalHeader = css({
+  position: 'sticky',
+  top: 0,
+  background: 'white',
+  padding: '16px 20px',
+  borderBottom: '1px solid',
+  borderColor: 'color.border.light',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  zIndex: 10,
+});
 
-const ModalTitle = styled.h2`
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0;
-`;
+const modalTitle = css({
+  fontSize: '18px',
+  fontWeight: '600',
+  color: 'color.text.primary',
+  margin: '0',
+});
 
-const CloseButton = styled.button`
-  background: none;
-  border: none;
-  color: var(--color-text-primary);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: var(--radius-sm);
-  transition: all 0.2s ease;
+const closeButton = css({
+  background: 'none',
+  border: 'none',
+  color: 'color.text.primary',
+  cursor: 'pointer',
+  padding: '4px',
+  borderRadius: 'radius.sm',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: 'color.background.secondary',
+  },
+  '& svg': {
+    width: '24px',
+    height: '24px',
+  },
+});
 
-  &:hover {
-    background: var(--color-bg-secondary);
-  }
+const contentSection = css({
+  background: '#fff',
+  padding: '0 20px 16px 20px',
+  marginBottom: '24px',
+});
 
-  svg {
-    width: 24px;
-    height: 24px;
-  }
-`;
+const eventTitle = css({
+  fontSize: '20px',
+  fontWeight: '600',
+  color: 'color.text.primary',
+  margin: '0 0 16px 0',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  '@media (min-width: 768px)': {
+    fontSize: '24px',
+  },
+});
 
-const ContentSection = styled.div`
-  background: #fff;
-  padding: 0 20px 16px 20px;
-  margin-bottom: 24px;
-`;
+const artistSection = css({
+  display: 'flex',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  gap: '8px',
+  marginBottom: '16px',
+  paddingBottom: '16px',
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+});
 
-const EventTitle = styled.h2`
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
+const artistItem = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
+});
 
-  @media (min-width: 768px) {
-    font-size: 24px;
-  }
-`;
+const artistAvatar = css({
+  width: '24px',
+  height: '24px',
+  borderRadius: '50%',
+  overflow: 'hidden',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  backgroundColor: 'color.background.secondary',
+  flexShrink: 0,
+});
 
-// 藝人資訊區域
-const ArtistSection = styled.div`
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-border-light);
-`;
+const artistName = css({
+  fontSize: '14px',
+  fontWeight: '500',
+  color: 'color.text.primary',
+});
 
-const ArtistItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
+const artistSeparator = css({
+  fontSize: '14px',
+  color: 'color.text.secondary',
+  margin: '0 4px',
+});
 
-const ArtistAvatar = styled.div<{ $imageUrl?: string }>`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  overflow: hidden;
-  background-image: url(${(props) => props.$imageUrl ?? ''});
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: var(--color-bg-secondary);
-  flex-shrink: 0;
-`;
+const eventDetailsSection = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4px',
+});
 
-const ArtistName = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-`;
+const detailItem = css({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '12px',
+  padding: '4px',
+});
 
-const ArtistSeparator = styled.span`
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  margin: 0 4px;
-`;
+const detailIcon = css({
+  width: '20px',
+  height: '20px',
+  color: 'color.text.secondary',
+  flexShrink: 0,
+  marginTop: '2px',
+});
 
-// 活動詳情區域
-const EventDetailsSection = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
+const detailContent = css({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4px',
+});
 
-const DetailItem = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 4px;
-`;
+const detailValue = css({
+  fontSize: '14px',
+  color: 'color.text.secondary',
+  lineHeight: 1.5,
+});
 
-const DetailIcon = styled.div`
-  width: 20px;
-  height: 20px;
-  color: var(--color-text-secondary);
-  flex-shrink: 0;
-  margin-top: 2px;
-`;
+const descriptionSection = css({
+  marginTop: '24px',
+  paddingTop: '24px',
+  borderTop: '1px solid',
+  borderTopColor: 'color.border.light',
+});
 
-const DetailContent = styled.div`
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
+const descriptionTitle = css({
+  fontSize: '18px',
+  fontWeight: '600',
+  color: 'color.text.primary',
+  margin: '0 0 16px 0',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+});
 
-const DetailValue = styled.div`
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  line-height: 1.5;
-`;
+const descriptionContent = css({
+  fontSize: '14px',
+  color: 'color.text.secondary',
+  lineHeight: 1.6,
+  whiteSpace: 'pre-wrap',
+});
 
-// 活動說明區域
-const DescriptionSection = styled.div`
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid var(--color-border-light);
-`;
-
-const DescriptionTitle = styled.h3`
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const DescriptionContent = styled.div`
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  line-height: 1.6;
-  white-space: pre-wrap;
-`;
-
-const BottomImagesContainer = styled.div`
-  margin-top: 24px;
-`;
+const bottomImagesContainer = css({
+  marginTop: '24px',
+});
 
 export default function EventPreviewModal({ event, isOpen, onClose }: EventPreviewModalProps) {
   // 使用 scroll lock hook
@@ -248,44 +244,51 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
 
   return (
     <ModalOverlay isOpen={isOpen} zIndex={100} padding="16px" onClick={onClose}>
-      <ModalContent onClick={(e) => e.stopPropagation()}>
-        <ModalHeader>
-          <ModalTitle>預覽</ModalTitle>
-          <CloseButton onClick={onClose}>
+      <div className={modalContent} onClick={(e) => e.stopPropagation()}>
+        <div className={modalHeader}>
+          <h2 className={modalTitle}>預覽</h2>
+          <button className={closeButton} onClick={onClose}>
             <XMarkIcon />
-          </CloseButton>
-        </ModalHeader>
+          </button>
+        </div>
 
         {/* Banner 區域 */}
         {getBannerItems().length > 0 && <SwiperBanner items={getBannerItems()} />}
 
         {/* 主要內容 */}
-        <ContentSection>
-          <EventTitle>{event.title}</EventTitle>
+        <div className={contentSection}>
+          <h2 className={eventTitle}>{event.title}</h2>
 
           {/* 藝人資訊 */}
-          <ArtistSection>
+          <div className={artistSection}>
             {event.artists?.map((artist, index) => (
               <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
-                {index > 0 && <ArtistSeparator>/</ArtistSeparator>}
+                {index > 0 && <span className={artistSeparator}>/</span>}
                 <Link href={`/map/${artist.id}`}>
-                  <ArtistItem>
-                    <ArtistAvatar $imageUrl={artist.profileImage} />
-                    <ArtistName>{artist.name || 'Unknown Artist'}</ArtistName>
-                  </ArtistItem>
+                  <div className={artistItem}>
+                    <div
+                      className={artistAvatar}
+                      style={{
+                        backgroundImage: artist.profileImage
+                          ? `url(${artist.profileImage})`
+                          : undefined,
+                      }}
+                    />
+                    <span className={artistName}>{artist.name || 'Unknown Artist'}</span>
+                  </div>
                 </Link>
               </div>
             ))}
-          </ArtistSection>
+          </div>
 
           {/* 主辦資訊 */}
-          <DescriptionTitle>主辦</DescriptionTitle>
-          <EventDetailsSection>
+          <h3 className={descriptionTitle}>主辦</h3>
+          <div className={eventDetailsSection}>
             {event.socialMedia.instagram && (
-              <DetailItem>
+              <div className={detailItem}>
                 <InstagramIcon size={20} color="var(--color-text-secondary)" />
-                <DetailContent>
-                  <DetailValue>
+                <div className={detailContent}>
+                  <div className={detailValue}>
                     <a
                       href={`https://www.instagram.com/${cleanSocialMediaHandle(event.socialMedia.instagram)}`}
                       target="_blank"
@@ -294,16 +297,16 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                     >
                       @{cleanSocialMediaHandle(event.socialMedia.instagram)}
                     </a>
-                  </DetailValue>
-                </DetailContent>
-              </DetailItem>
+                  </div>
+                </div>
+              </div>
             )}
 
             {event.socialMedia.threads && (
-              <DetailItem>
+              <div className={detailItem}>
                 <ThreadsIcon size={20} color="var(--color-text-secondary)" />
-                <DetailContent>
-                  <DetailValue>
+                <div className={detailContent}>
+                  <div className={detailValue}>
                     <a
                       href={`https://www.threads.net/@${cleanSocialMediaHandle(event.socialMedia.threads)}`}
                       target="_blank"
@@ -312,16 +315,16 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                     >
                       @{cleanSocialMediaHandle(event.socialMedia.threads)}
                     </a>
-                  </DetailValue>
-                </DetailContent>
-              </DetailItem>
+                  </div>
+                </div>
+              </div>
             )}
 
             {event.socialMedia.x && (
-              <DetailItem>
+              <div className={detailItem}>
                 <XIcon size={20} color="var(--color-text-secondary)" />
-                <DetailContent>
-                  <DetailValue>
+                <div className={detailContent}>
+                  <div className={detailValue}>
                     <a
                       href={`https://x.com/${cleanSocialMediaHandle(event.socialMedia.x)}`}
                       target="_blank"
@@ -330,32 +333,32 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                     >
                       @{cleanSocialMediaHandle(event.socialMedia.x)}
                     </a>
-                  </DetailValue>
-                </DetailContent>
-              </DetailItem>
+                  </div>
+                </div>
+              </div>
             )}
-          </EventDetailsSection>
+          </div>
 
           {/* 時間地點 */}
-          <DescriptionSection>
-            <DescriptionTitle>時間/地點</DescriptionTitle>
-            <DetailItem>
-              <DetailIcon>
+          <div className={descriptionSection}>
+            <h3 className={descriptionTitle}>時間/地點</h3>
+            <div className={detailItem}>
+              <div className={detailIcon}>
                 <CalendarIcon />
-              </DetailIcon>
-              <DetailContent>
-                <DetailValue>
+              </div>
+              <div className={detailContent}>
+                <div className={detailValue}>
                   {formatEventDate(event.datetime.start, event.datetime.end)}
-                </DetailValue>
-              </DetailContent>
-            </DetailItem>
+                </div>
+              </div>
+            </div>
 
-            <DetailItem>
-              <DetailIcon>
+            <div className={detailItem}>
+              <div className={detailIcon}>
                 <MapPinIcon />
-              </DetailIcon>
-              <DetailContent>
-                <DetailValue>
+              </div>
+              <div className={detailContent}>
+                <div className={detailValue}>
                   <a
                     // 帶入 lat, lng
                     href={`https://www.google.com/maps/search/?api=1&query=${event.location.coordinates.lat},${event.location.coordinates.lng}`}
@@ -365,22 +368,22 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                   >
                     {event.location.name}({event.location.address}){' '}
                   </a>
-                </DetailValue>
-              </DetailContent>
-            </DetailItem>
-          </DescriptionSection>
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* 活動說明 */}
           {event.description && (
-            <DescriptionSection>
-              <DescriptionTitle>詳細說明</DescriptionTitle>
-              <DescriptionContent>{event.description}</DescriptionContent>
-            </DescriptionSection>
+            <div className={descriptionSection}>
+              <h3 className={descriptionTitle}>詳細說明</h3>
+              <div className={descriptionContent}>{event.description}</div>
+            </div>
           )}
-        </ContentSection>
+        </div>
 
         {/* Banner 項目圖片 - 滿版顯示 */}
-        <BottomImagesContainer>
+        <div className={bottomImagesContainer}>
           {getBannerItems().map((item, index) => (
             <div key={item.id}>
               <Image
@@ -398,8 +401,8 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
               />
             </div>
           ))}
-        </BottomImagesContainer>
-      </ModalContent>
+        </div>
+      </div>
     </ModalOverlay>
   );
 }

@@ -1,192 +1,196 @@
 import { CoffeeEvent } from '@/types';
-import styled from 'styled-components';
+import { css, cva } from '@/styled-system/css';
 import { firebaseTimestampToDate } from '@/utils';
 import { FirebaseTimestamp } from '@/types';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
-const VerticalEventCardContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  background: white;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  transition: all 0.2s ease;
-  box-shadow: var(--shadow-sm);
-  position: relative;
+const verticalEventCardContainer = css({
+  display: 'flex',
+  flexDirection: 'column',
+  background: 'white',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  overflow: 'hidden',
+  transition: 'all 0.2s ease',
+  boxShadow: 'shadow.sm',
+  position: 'relative',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: 'shadow.md',
+  },
+});
 
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-  }
-`;
+const eventImageStyle = css({
+  width: '100%',
+  aspectRatio: '3/4',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  backgroundColor: 'color.background.secondary',
+  position: 'relative',
+});
 
-const EventImage = styled.div<{ $imageUrl: string }>`
-  width: 100%;
-  aspect-ratio: 3/4;
-  background-image: url(${(props) => props.$imageUrl});
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: var(--color-bg-secondary);
-  position: relative;
-`;
+const imageOverlay = cva({
+  base: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    background:
+      'linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.1) 100%)',
+    padding: '16px',
+    color: 'white',
+    backdropFilter: 'blur(1px)',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'flex-end',
+  },
+  variants: {
+    hasActionButtons: {
+      true: {
+        bottom: '60px',
+      },
+      false: {
+        bottom: 0,
+      },
+    },
+    isApproved: {
+      true: {
+        cursor: 'pointer',
+      },
+      false: {},
+    },
+  },
+});
 
-const ImageOverlay = styled.div<{ $isApproved: boolean; $hasActionButtons: boolean }>`
-  position: absolute;
-  bottom: ${({ $hasActionButtons }) => ($hasActionButtons ? '60px' : '0')};
-  left: 0;
-  right: 0;
-  top: 0;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.3) 0%,
-    rgba(0, 0, 0, 0.2) 50%,
-    rgba(0, 0, 0, 0.1) 100%
-  );
-  padding: 16px;
-  color: white;
-  backdrop-filter: blur(1px);
-  -webkit-backdrop-filter: blur(1px);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+const buttonContainer = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  height: '60px',
+  paddingLeft: '16px',
+  paddingRight: '16px',
+});
 
-  ${({ $isApproved }) =>
-    $isApproved &&
-    `
-    cursor: pointer;
-  `}
-`;
+const eventTitle = css({
+  fontSize: '16px',
+  fontWeight: 600,
+  color: 'white',
+  margin: '0 0 8px 0',
+  lineHeight: 1.2,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  display: '-webkit-box',
+  WebkitLineClamp: 2,
+  lineClamp: 2,
+});
 
-const ButtonContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 60px;
-  padding-left: 16px;
-  padding-right: 16px;
-`;
+const eventArtistSection = css({
+  display: 'flex',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  gap: '4px',
+  fontSize: '16px',
+  color: 'rgba(255, 255, 255, 0.9)',
+  marginBottom: '8px',
+});
 
-const EventTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 600;
-  color: white;
-  margin: 0 0 8px 0;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-`;
+const eventArtistItem = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4px',
+});
 
-const EventArtistSection = styled.div`
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 4px;
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 8px;
-`;
+const eventArtistAvatar = css({
+  width: '24px',
+  height: '24px',
+  borderRadius: '50%',
+  overflow: 'hidden',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  backgroundColor: 'color.background.secondary',
+  flexShrink: 0,
+});
 
-const EventArtistItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-`;
+const eventArtistName = css({
+  fontSize: '16px',
+  fontWeight: 500,
+  color: 'rgba(255, 255, 255, 0.9)',
+});
 
-const EventArtistAvatar = styled.div<{ imageUrl?: string }>`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  overflow: hidden;
-  background-image: url(${(props) => props.imageUrl ?? ''});
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-color: var(--color-bg-secondary);
-  flex-shrink: 0;
-`;
+const eventArtistSeparator = css({
+  fontSize: '16px',
+  color: 'rgba(255, 255, 255, 0.7)',
+  margin: '0 2px',
+});
 
-const EventArtistName = styled.span`
-  font-size: 16px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.9);
-`;
+const eventDetails = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4px',
+  fontSize: '16px',
+  color: 'rgba(255, 255, 255)',
+});
 
-const EventArtistSeparator = styled.span`
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.7);
-  margin: 0 2px;
-`;
+const eventDetailItem = css({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '4px',
+});
 
-const EventDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 16px;
-  color: rgba(255, 255, 255);
-`;
-
-const EventDetailItem = styled.div`
-  display: flex;
-  align-items: flex-start;
-  gap: 4px;
-`;
-
-const DetailText = styled.span`
+const detailText = css({
   // 最多兩行
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-`;
+  display: '-webkit-box',
+  WebkitLineClamp: 2,
+  lineClamp: 2,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+});
 
-const SubmissionTime = styled.div`
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 4px;
-`;
+const styledSubmissionTime = css({
+  fontSize: '12px',
+  color: 'rgba(255, 255, 255, 0.7)',
+  marginTop: '4px',
+});
 
-const StatusBadge = styled.span<{ status: 'pending' | 'approved' | 'rejected' }>`
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 6px 8px;
-  border-radius: var(--radius-md);
-  font-size: 16px;
-  font-weight: 600;
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  z-index: 1;
-
-  ${(props) => {
-    switch (props.status) {
-      case 'approved':
-        return `
-          background: #dcfce7;
-          color: #166534;
-        `;
-      case 'rejected':
-        return `
-          background: #fee2e2;
-          color: #991b1b;
-        `;
-      case 'pending':
-      default:
-        return `
-          background: #fef3c7;
-          color: #92400e;
-        `;
-    }
-  }}
-`;
+const statusBadge = cva({
+  base: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '2px',
+    padding: '6px 8px',
+    borderRadius: 'radius.md',
+    fontSize: '16px',
+    fontWeight: 600,
+    position: 'absolute',
+    top: '6px',
+    right: '6px',
+    zIndex: 1,
+  },
+  variants: {
+    status: {
+      approved: {
+        background: '#dcfce7',
+        color: '#166534',
+      },
+      rejected: {
+        background: '#fee2e2',
+        color: '#991b1b',
+      },
+      pending: {
+        background: '#fef3c7',
+        color: '#92400e',
+      },
+    },
+  },
+  defaultVariants: {
+    status: 'pending',
+  },
+});
 
 const getStatusText = (status: 'pending' | 'approved' | 'rejected', rejectedReason?: string) => {
   switch (status) {
@@ -224,107 +228,119 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
     <>
       {event.status === 'approved' && (
         <Link href={`/event/${event.id}`}>
-          <VerticalEventCardContainer>
-            <EventImage $imageUrl={event.mainImage ?? ''} />
+          <div className={verticalEventCardContainer}>
+            <div
+              className={eventImageStyle}
+              style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}
+            />
 
             {!isIndexPage && (
-              <StatusBadge status={event.status}>
+              <span className={statusBadge({ status: event.status })}>
                 {getStatusText(event.status, event.rejectedReason)}
-              </StatusBadge>
+              </span>
             )}
 
-            <ImageOverlay $hasActionButtons={!!actionButtons} $isApproved={true}>
-              <EventTitle>{event.title}</EventTitle>
+            <div className={imageOverlay({ hasActionButtons: !!actionButtons, isApproved: true })}>
+              <h3 className={eventTitle}>{event.title}</h3>
 
               {event.artists && event.artists.length > 0 && (
-                <EventArtistSection>
+                <div className={eventArtistSection}>
                   {event.artists.map((artist, index) => (
                     <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
-                      {index > 0 && <EventArtistSeparator>/</EventArtistSeparator>}
-                      <EventArtistItem>
-                        <EventArtistAvatar imageUrl={artist.profileImage} />
-                        <EventArtistName>{artist.name || 'Unknown Artist'}</EventArtistName>
-                      </EventArtistItem>
+                      {index > 0 && <span className={eventArtistSeparator}>/</span>}
+                      <div className={eventArtistItem}>
+                        <div
+                          className={eventArtistAvatar}
+                          style={{ backgroundImage: `url(${artist.profileImage ?? ''})` }}
+                        />
+                        <span className={eventArtistName}>{artist.name || 'Unknown Artist'}</span>
+                      </div>
                     </div>
                   ))}
-                </EventArtistSection>
+                </div>
               )}
 
-              <EventDetails>
-                <EventDetailItem>
+              <div className={eventDetails}>
+                <div className={eventDetailItem}>
                   <CalendarIcon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
-                  <DetailText>{eventDateText}</DetailText>
-                </EventDetailItem>
+                  <span className={detailText}>{eventDateText}</span>
+                </div>
 
                 {event.location.name && (
-                  <EventDetailItem>
+                  <div className={eventDetailItem}>
                     <MapPinIcon
                       style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
                     />
-                    <DetailText>{event.location.name}</DetailText>
-                  </EventDetailItem>
+                    <span className={detailText}>{event.location.name}</span>
+                  </div>
                 )}
-              </EventDetails>
+              </div>
 
               {submissionTime && !isIndexPage && (
-                <SubmissionTime>投稿時間：{submissionTime}</SubmissionTime>
+                <div className={styledSubmissionTime}>投稿時間：{submissionTime}</div>
               )}
-            </ImageOverlay>
+            </div>
 
-            {actionButtons && <ButtonContainer>{actionButtons}</ButtonContainer>}
-          </VerticalEventCardContainer>
+            {actionButtons && <div className={buttonContainer}>{actionButtons}</div>}
+          </div>
         </Link>
       )}
       {event.status !== 'approved' && (
-        <VerticalEventCardContainer>
-          <EventImage $imageUrl={event.mainImage ?? ''} />
+        <div className={verticalEventCardContainer}>
+          <div
+            className={eventImageStyle}
+            style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}
+          />
 
           {!isIndexPage && (
-            <StatusBadge status={event.status}>
+            <span className={statusBadge({ status: event.status })}>
               {getStatusText(event.status, event.rejectedReason)}
-            </StatusBadge>
+            </span>
           )}
 
-          <ImageOverlay $hasActionButtons={!!actionButtons} $isApproved={false}>
-            <EventTitle>{event.title}</EventTitle>
+          <div className={imageOverlay({ hasActionButtons: !!actionButtons, isApproved: false })}>
+            <h3 className={eventTitle}>{event.title}</h3>
 
             {event.artists && event.artists.length > 0 && (
-              <EventArtistSection>
+              <div className={eventArtistSection}>
                 {event.artists.map((artist, index) => (
                   <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
-                    {index > 0 && <EventArtistSeparator>/</EventArtistSeparator>}
-                    <EventArtistItem>
-                      <EventArtistAvatar imageUrl={artist.profileImage} />
-                      <EventArtistName>{artist.name || 'Unknown Artist'}</EventArtistName>
-                    </EventArtistItem>
+                    {index > 0 && <span className={eventArtistSeparator}>/</span>}
+                    <div className={eventArtistItem}>
+                      <div
+                        className={eventArtistAvatar}
+                        style={{ backgroundImage: `url(${artist.profileImage ?? ''})` }}
+                      />
+                      <span className={eventArtistName}>{artist.name || 'Unknown Artist'}</span>
+                    </div>
                   </div>
                 ))}
-              </EventArtistSection>
+              </div>
             )}
 
-            <EventDetails>
-              <EventDetailItem>
+            <div className={eventDetails}>
+              <div className={eventDetailItem}>
                 <CalendarIcon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
-                <DetailText>{eventDateText}</DetailText>
-              </EventDetailItem>
+                <span className={detailText}>{eventDateText}</span>
+              </div>
 
               {event.location.name && (
-                <EventDetailItem>
+                <div className={eventDetailItem}>
                   <MapPinIcon
                     style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
                   />
-                  <DetailText>{event.location.name}</DetailText>
-                </EventDetailItem>
+                  <span className={detailText}>{event.location.name}</span>
+                </div>
               )}
-            </EventDetails>
+            </div>
 
             {submissionTime && !isIndexPage && (
-              <SubmissionTime>投稿時間：{submissionTime}</SubmissionTime>
+              <div className={submissionTime}>投稿時間：{submissionTime}</div>
             )}
-          </ImageOverlay>
+          </div>
 
-          {actionButtons && <ButtonContainer>{actionButtons}</ButtonContainer>}
-        </VerticalEventCardContainer>
+          {actionButtons && <div className={buttonContainer}>{actionButtons}</div>}
+        </div>
       )}
     </>
   );

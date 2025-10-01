@@ -11,7 +11,7 @@ import {
   XMarkIcon,
   PhotoIcon,
 } from '@heroicons/react/24/outline';
-import styled from 'styled-components';
+import { css, cva } from '@/styled-system/css';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
@@ -29,392 +29,420 @@ import { eventsApi } from '@/lib/api';
 import { firebaseTimestampToDate } from '@/utils';
 import emailjs from '@emailjs/browser';
 
-// Styled Components - 與其他組件保持一致的設計風格
-const FormContainer = styled.div`
-  width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: 32px;
+const formContainer = css({
+  width: '100%',
+  maxWidth: '800px',
+  margin: '0 auto',
+  background: 'color.background.primary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  boxShadow: 'shadow.md',
+  padding: '32px',
+  '@media (min-width: 768px)': {
+    padding: '40px',
+  },
+});
 
-  @media (min-width: 768px) {
-    padding: 40px;
-  }
-`;
+const formHeader = css({
+  textAlign: 'center',
+  marginBottom: '32px',
+  paddingBottom: '24px',
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+  '& h2': {
+    fontSize: '24px',
+    fontWeight: '700',
+    color: 'color.text.primary',
+    margin: '0 0 8px 0',
+    '@media (min-width: 768px)': {
+      fontSize: '28px',
+    },
+  },
+  '& p': {
+    fontSize: '14px',
+    color: 'color.text.secondary',
+    margin: '0',
+    '@media (min-width: 768px)': {
+      fontSize: '16px',
+    },
+  },
+});
 
-const FormHeader = styled.div`
-  text-align: center;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--color-border-light);
+const form = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '24px',
+});
 
-  h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: var(--color-text-primary);
-    margin: 0 0 8px 0;
+const formGroup = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+});
 
-    @media (min-width: 768px) {
-      font-size: 28px;
-    }
-  }
+const label = css({
+  fontSize: '14px',
+  fontWeight: '500',
+  color: 'color.text.primary',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  '@media (min-width: 768px)': {
+    fontSize: '15px',
+  },
+  '& svg': {
+    width: '18px',
+    height: '18px',
+    color: 'color.text.secondary',
+  },
+});
 
-  p {
-    font-size: 14px;
-    color: var(--color-text-secondary);
-    margin: 0;
+const input = css({
+  width: '100%',
+  padding: '12px 16px',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  background: 'color.background.primary',
+  color: 'color.text.primary',
+  fontSize: '16px',
+  transition: 'all 0.2s ease',
+  '&::placeholder': {
+    color: 'color.text.disabled',
+  },
+  '&:focus': {
+    outline: 'none',
+    borderColor: 'color.primary',
+    boxShadow: '0 0 0 3px rgba(90, 125, 154, 0.1)',
+  },
+  '&:disabled': {
+    background: 'color.background.secondary',
+    color: 'color.text.disabled',
+    cursor: 'not-allowed',
+  },
+  '@media (min-width: 768px)': {
+    padding: '14px 18px',
+    fontSize: '15px',
+  },
+});
 
-    @media (min-width: 768px) {
-      font-size: 16px;
-    }
-  }
-`;
+const textarea = css({
+  width: '100%',
+  padding: '12px 16px',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  background: 'color.background.primary',
+  color: 'color.text.primary',
+  fontSize: '16px',
+  transition: 'all 0.2s ease',
+  resize: 'vertical',
+  minHeight: '100px',
+  '&::placeholder': {
+    color: 'color.text.secondary',
+  },
+  '&:focus': {
+    outline: 'none',
+    borderColor: 'color.primary',
+    boxShadow: '0 0 0 3px rgba(90, 125, 154, 0.1)',
+  },
+  '&:disabled': {
+    background: 'color.background.secondary',
+    color: 'color.text.disabled',
+    cursor: 'not-allowed',
+  },
+  '@media (min-width: 768px)': {
+    padding: '14px 18px',
+    fontSize: '16px',
+  },
+});
 
-const Form = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-`;
+const helperText = css({
+  fontSize: '12px',
+  color: 'color.text.secondary',
+  margin: '0',
+  '@media (min-width: 768px)': {
+    fontSize: '13px',
+  },
+});
 
-const FormGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
+const errorText = css({
+  fontSize: '12px',
+  color: '#ef4444',
+  margin: '4px 0 0 0',
+});
 
-const Label = styled.label`
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-primary);
-  display: flex;
-  align-items: center;
-  gap: 8px;
+const characterCount = cva({
+  base: {
+    fontSize: '12px',
+    textAlign: 'right',
+    marginTop: '4px',
+  },
+  variants: {
+    isOverLimit: {
+      true: {
+        color: '#ef4444',
+      },
+      false: {
+        color: 'color.text.secondary',
+      },
+    },
+  },
+});
 
-  @media (min-width: 768px) {
-    font-size: 15px;
-  }
+const gridContainer = css({
+  display: 'grid',
+  gridTemplateColumns: '1fr',
+  gap: '16px',
+});
 
-  svg {
-    width: 18px;
-    height: 18px;
-    color: var(--color-text-secondary);
-  }
-`;
+const sectionDivider = css({
+  borderTop: '1px solid',
+  borderTopColor: 'color.border.light',
+  paddingTop: '24px',
+  marginTop: '24px',
+});
 
-const Input = styled.input`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-size: 16px;
-  transition: all 0.2s ease;
+const sectionTitle = css({
+  fontSize: '18px',
+  fontWeight: '600',
+  color: 'color.text.primary',
+  marginBottom: '8px',
+});
 
-  &::placeholder {
-    color: var(--color-text-disabled);
-  }
+const buttonGroup = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '12px',
+  paddingTop: '24px',
+  borderTop: '1px solid',
+  borderTopColor: 'color.border.light',
+  '@media (min-width: 480px)': {
+    flexDirection: 'row',
+    gap: '16px',
+  },
+});
 
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(90, 125, 154, 0.1);
-  }
+const button = cva({
+  base: {
+    padding: '14px 24px',
+    borderRadius: 'radius.lg',
+    fontSize: '16px',
+    fontWeight: '600',
+    transition: 'all 0.2s ease',
+    cursor: 'pointer',
+    border: '1px solid',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    flex: '1',
+    '@media (min-width: 768px)': {
+      padding: '16px 28px',
+      fontSize: '16px',
+    },
+    '&:disabled': {
+      cursor: 'not-allowed',
+      transform: 'none',
+      boxShadow: 'none',
+    },
+  },
+  variants: {
+    variant: {
+      primary: {
+        background: 'color.primary',
+        borderColor: 'color.primary',
+        color: 'white',
+        '&:disabled': {
+          background: 'color.text.disabled',
+          borderColor: 'color.text.disabled',
+        },
+      },
+      secondary: {
+        background: 'color.background.primary',
+        borderColor: 'color.border.light',
+        color: 'color.text.primary',
+      },
+    },
+  },
+});
 
-  &:disabled {
-    background: var(--color-bg-secondary);
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-  }
+const loadingSpinner = css({
+  width: '16px',
+  height: '16px',
+  border: '2px solid transparent',
+  borderTop: '2px solid white',
+  borderRadius: '50%',
+  animation: 'spin 1s linear infinite',
+});
 
-  @media (min-width: 768px) {
-    padding: 14px 18px;
-    font-size: 15px;
-  }
-`;
+const artistSelectionButton = css({
+  width: '100%',
+  padding: '12px 16px',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  background: 'color.background.primary',
+  color: 'color.text.primary',
+  fontSize: '14px',
+  transition: 'all 0.2s ease',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  cursor: 'pointer',
+  '&:hover': {
+    borderColor: 'color.border.medium',
+    background: 'color.background.secondary',
+  },
+  '&:focus': {
+    outline: 'none',
+    borderColor: 'color.primary',
+    boxShadow: '0 0 0 3px rgba(90, 125, 154, 0.1)',
+  },
+  '@media (min-width: 768px)': {
+    padding: '14px 18px',
+    fontSize: '15px',
+  },
+});
 
-const Textarea = styled.textarea`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-size: 16px;
-  transition: all 0.2s ease;
-  resize: vertical;
-  min-height: 100px;
+const selectedArtistInfo = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  flex: '1',
+  justifyContent: 'space-between',
+});
 
-  &::placeholder {
-    color: var(--color-text-secondary);
-  }
+const artistName = css({
+  fontWeight: '500',
+});
 
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(90, 125, 154, 0.1);
-  }
+const placeholderText = css({
+  color: 'color.text.secondary',
+});
 
-  &:disabled {
-    background: var(--color-bg-secondary);
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-  }
+const iconContainer = css({
+  width: '16px',
+  height: '16px',
+});
 
-  @media (min-width: 768px) {
-    padding: 14px 18px;
-    font-size: 16px;
-  }
-`;
+const imageContainer = css({
+  width: '48px',
+  height: '48px',
+  borderRadius: '50%',
+  overflow: 'hidden',
+  marginRight: '8px',
+  '& img': {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+});
 
-const HelperText = styled.p`
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  margin: 0;
+const stepIndicator = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: '32px',
+  gap: '16px',
+});
 
-  @media (min-width: 768px) {
-    font-size: 13px;
-  }
-`;
+const step = cva({
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '8px',
+    '& .step-number': {
+      width: '32px',
+      height: '32px',
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '14px',
+      fontWeight: '600',
+      transition: 'all 0.2s ease',
+    },
+    '& .step-title': {
+      fontSize: '14px',
+      fontWeight: '500',
+    },
+  },
+  variants: {
+    active: {
+      true: {
+        '& .step-title': {
+          color: 'color.text.primary',
+        },
+      },
+      false: {
+        '& .step-title': {
+          color: 'color.text.secondary',
+        },
+      },
+    },
+    completed: {
+      true: {
+        '& .step-title': {
+          color: 'color.text.primary',
+        },
+      },
+    },
+  },
+  compoundVariants: [
+    {
+      active: true,
+      completed: false,
+      css: {
+        '& .step-number': {
+          background: 'color.primary',
+          color: 'white',
+        },
+      },
+    },
+    {
+      active: false,
+      completed: false,
+      css: {
+        '& .step-number': {
+          background: 'color.background.secondary',
+          color: 'color.text.secondary',
+          border: '1px solid',
+          borderColor: 'color.border.light',
+        },
+      },
+    },
+    {
+      completed: true,
+      css: {
+        '& .step-number': {
+          background: 'color.primary',
+          color: 'white',
+        },
+      },
+    },
+  ],
+});
 
-const ErrorText = styled.p`
-  font-size: 12px;
-  color: #ef4444;
-  margin: 4px 0 0 0;
-`;
-
-const CharacterCount = styled.div<{ $isOverLimit: boolean }>`
-  font-size: 12px;
-  color: ${(props) => (props.$isOverLimit ? '#ef4444' : 'var(--color-text-secondary)')};
-  text-align: right;
-  margin-top: 4px;
-`;
-
-const GridContainer = styled.div`
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-`;
-
-const SectionDivider = styled.div`
-  border-top: 1px solid var(--color-border-light);
-  padding-top: 24px;
-  margin-top: 24px;
-`;
-
-const SectionTitle = styled.h3`
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-bottom: 8px;
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 24px;
-  border-top: 1px solid var(--color-border-light);
-
-  @media (min-width: 480px) {
-    flex-direction: row;
-    gap: 16px;
-  }
-`;
-
-const Button = styled.button<{ $variant?: 'primary' | 'secondary' }>`
-  padding: 14px 24px;
-  border-radius: var(--radius-lg);
-  font-size: 16px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  border: 1px solid;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  flex: 1;
-
-  ${(props) =>
-    props.$variant === 'primary'
-      ? `
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: white;
-    
-    &:disabled {
-      background: var(--color-text-disabled);
-      border-color: var(--color-text-disabled);
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-  `
-      : `
-    background: var(--color-bg-primary);
-    border-color: var(--color-border-light);
-    color: var(--color-text-primary);
-
-  `}
-
-  @media (min-width: 768px) {
-    padding: 16px 28px;
-    font-size: 16px;
-  }
-`;
-
-const LoadingSpinner = styled.div`
-  width: 16px;
-  height: 16px;
-  border: 2px solid transparent;
-  border-top: 2px solid white;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-
-  @keyframes spin {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-`;
-
-const ArtistSelectionButton = styled.button`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-size: 14px;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-
-  &:hover {
-    border-color: var(--color-border-medium);
-    background: var(--color-bg-secondary);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(90, 125, 154, 0.1);
-  }
-
-  @media (min-width: 768px) {
-    padding: 14px 18px;
-    font-size: 15px;
-  }
-`;
-
-const SelectedArtistInfo = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  justify-content: space-between;
-`;
-
-const ArtistName = styled.span`
-  font-weight: 500;
-`;
-
-const PlaceholderText = styled.span`
-  color: var(--color-text-secondary);
-`;
-
-const IconContainer = styled.div`
-  width: 16px;
-  height: 16px;
-`;
-
-const ImageContainer = styled.div`
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  overflow: hidden;
-  margin-right: 8px;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-`;
-
-// 步驟指示器樣式
-const StepIndicator = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 32px;
-  gap: 16px;
-`;
-
-const Step = styled.div<{ $active: boolean; $completed: boolean }>`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-
-  .step-number {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-
-    ${(props) => {
-      if (props.$completed) {
-        return `
-          background: var(--color-primary);
-          color: white;
-        `;
-      } else if (props.$active) {
-        return `
-          background: var(--color-primary);
-          color: white;
-        `;
-      } else {
-        return `
-          background: var(--color-bg-secondary);
-          color: var(--color-text-secondary);
-          border: 1px solid var(--color-border-light);
-        `;
-      }
-    }}
-  }
-
-  .step-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: ${(props) =>
-      props.$active || props.$completed
-        ? 'var(--color-text-primary)'
-        : 'var(--color-text-secondary)'};
-  }
-`;
-
-const StepConnector = styled.div<{ $completed: boolean }>`
-  width: 40px;
-  height: 2px;
-  background: ${(props) =>
-    props.$completed ? 'var(--color-primary)' : 'var(--color-border-light)'};
-  transition: all 0.2s ease;
-`;
+const stepConnector = cva({
+  base: {
+    width: '40px',
+    height: '2px',
+    transition: 'all 0.2s ease',
+  },
+  variants: {
+    completed: {
+      true: {
+        background: 'color.primary',
+      },
+      false: {
+        background: 'color.border.light',
+      },
+    },
+  },
+});
 
 interface EventSubmissionFormProps {
   mode?: 'create' | 'edit';
@@ -844,8 +872,8 @@ export default function EventSubmissionForm({
   };
 
   return (
-    <FormContainer>
-      <FormHeader>
+    <div className={formContainer}>
+      <div className={formHeader}>
         <h2>{mode === 'edit' ? '編輯' : '投稿'}</h2>
         {mode !== 'edit' && <p>審核通過之後其他用戶可以在地圖/列表上看到此生日應援!</p>}
         {mode === 'edit' && (
@@ -853,42 +881,42 @@ export default function EventSubmissionForm({
             無法修改藝人資訊
           </p>
         )}
-      </FormHeader>
+      </div>
 
       {/* 步驟指示器 - 只在創建模式顯示 */}
       {mode === 'create' && (
-        <StepIndicator>
-          <Step $active={currentStep === 1} $completed={currentStep > 1}>
+        <div className={stepIndicator}>
+          <div className={step({ active: currentStep === 1, completed: currentStep > 1 })}>
             <div className="step-number">1</div>
             <div className="step-title">選擇偶像</div>
-          </Step>
-          <StepConnector $completed={currentStep > 1} />
-          <Step $active={currentStep === 2} $completed={false}>
+          </div>
+          <div className={stepConnector({ completed: currentStep > 1 })} />
+          <div className={step({ active: currentStep === 2, completed: false })}>
             <div className="step-number">2</div>
             <div className="step-title">應援資訊</div>
-          </Step>
-        </StepIndicator>
+          </div>
+        </div>
       )}
 
-      <Form>
+      <form className={form}>
         {/* 第一步：選擇藝人 */}
         {(currentStep === 1 || mode === 'edit') && (
-          <FormGroup>
-            <Label htmlFor="artistName">
+          <div className={formGroup}>
+            <label className={label} htmlFor="artistName">
               <UserIcon />
               應援偶像*
-            </Label>
-            <HelperText>
+            </label>
+            <p className={helperText}>
               {mode === 'edit' ? '編輯模式下無法修改偶像資訊' : '若為聯合應援，可選擇多個偶像'}
-            </HelperText>
+            </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {/* 已選擇的藝人按鈕 */}
               {selectedArtists.map((artist) => (
-                <ArtistSelectionButton
+                <button
+                  className={artistSelectionButton}
                   key={artist.id}
                   type="button"
                   onClick={mode === 'edit' ? undefined : openArtistSelectionModal}
-                  className={errors.artistIds ? 'error' : ''}
                   style={{
                     opacity: mode === 'edit' ? 0.7 : 1,
                     cursor: mode === 'edit' ? 'not-allowed' : 'pointer',
@@ -896,67 +924,69 @@ export default function EventSubmissionForm({
                       mode === 'edit' ? 'var(--color-bg-secondary)' : 'var(--color-bg-primary)',
                   }}
                 >
-                  <SelectedArtistInfo>
+                  <div className={selectedArtistInfo}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <ImageContainer>
+                      <div className={imageContainer}>
                         <img src={artist.profileImage} alt={artist.stageName} />
-                      </ImageContainer>
+                      </div>
                       <div>
-                        <ArtistName>
+                        <span className={artistName}>
                           {artist.stageName.toUpperCase()} {artist.realName}
-                        </ArtistName>
+                        </span>
                       </div>
                     </div>
                     {mode === 'create' && (
-                      <IconContainer>
+                      <div className={iconContainer}>
                         <XMarkIcon
                           onClick={(e) => {
                             e.stopPropagation();
                             removeArtist(artist.id);
                           }}
                         />
-                      </IconContainer>
+                      </div>
                     )}
-                  </SelectedArtistInfo>
-                </ArtistSelectionButton>
+                  </div>
+                </button>
               ))}
 
               {/* 新增藝人的按鈕 - 只在創建模式顯示 */}
               {mode === 'create' && (
-                <ArtistSelectionButton
+                <button
+                  className={artistSelectionButton}
                   type="button"
                   onClick={openArtistSelectionModal}
-                  className={errors.artistIds ? 'error' : ''}
                 >
-                  <PlaceholderText>請選擇偶像</PlaceholderText>
-                  <IconContainer>
+                  <span className={placeholderText}>請選擇偶像</span>
+                  <div className={iconContainer}>
                     <ChevronDownIcon />
-                  </IconContainer>
-                </ArtistSelectionButton>
+                  </div>
+                </button>
               )}
             </div>
             <input type="hidden" {...register('artistIds')} />
-            {errors.artistIds && <ErrorText>{errors.artistIds.message}</ErrorText>}
-          </FormGroup>
+            {errors.artistIds && <p className={errorText}>{errors.artistIds.message}</p>}
+          </div>
         )}
 
         {/* 第二步：其他活動資訊 */}
         {(currentStep === 2 || mode === 'edit') && (
           <>
             {/* 活動標題 */}
-            <FormGroup>
-              <Label htmlFor="title">主題名稱*</Label>
-              <Input id="title" type="text" {...register('title')} />
-              {errors.title && <ErrorText>{errors.title.message}</ErrorText>}
-            </FormGroup>
+            <div className={formGroup}>
+              <label className={label} htmlFor="title">
+                主題名稱*
+              </label>
+              <input className={input} id="title" type="text" {...register('title')} />
+              {errors.title && <p className={errorText}>{errors.title.message}</p>}
+            </div>
 
             {/* 主視覺圖片 */}
-            <FormGroup>
-              <Label>
+            <div className={formGroup}>
+              <label className={label}>
                 <PhotoIcon />
                 主視覺圖片*
-              </Label>
-              <HelperText>主要宣傳圖片(推薦上傳比例 3:4)</HelperText>
+              </label>
+              <p className={helperText}>主要宣傳圖片(推薦上傳比例 3:4)</p>
               <ImageUpload
                 currentImageUrl={mainImageUrl}
                 onUploadComplete={(imageUrl) => {
@@ -982,16 +1012,16 @@ export default function EventSubmissionForm({
                 enableCrop={false}
               />
               <input type="hidden" {...register('mainImage')} />
-              {errors.mainImage && <ErrorText>{errors.mainImage.message}</ErrorText>}
-            </FormGroup>
+              {errors.mainImage && <p className={errorText}>{errors.mainImage.message}</p>}
+            </div>
 
             {/* 活動時間 */}
-            <GridContainer>
-              <FormGroup>
-                <Label htmlFor="startDate">
+            <div className={gridContainer}>
+              <div className={formGroup}>
+                <label className={label} htmlFor="startDate">
                   <CalendarIcon />
                   開始日期*
-                </Label>
+                </label>
                 <DatePicker
                   value={watch('startDate') || ''}
                   onChange={(date) => {
@@ -1013,14 +1043,14 @@ export default function EventSubmissionForm({
                   min={new Date().toISOString().split('T')[0]}
                 />
                 <input type="hidden" {...register('startDate')} />
-                {errors.startDate && <ErrorText>{errors.startDate.message}</ErrorText>}
-              </FormGroup>
+                {errors.startDate && <p className={errorText}>{errors.startDate.message}</p>}
+              </div>
 
-              <FormGroup>
-                <Label htmlFor="endDate">
+              <div className={formGroup}>
+                <label className={label} htmlFor="endDate">
                   <CalendarIcon />
                   結束日期*
-                </Label>
+                </label>
                 <DatePicker
                   value={watch('endDate') || ''}
                   onChange={(date) =>
@@ -1036,52 +1066,61 @@ export default function EventSubmissionForm({
                   error={!!errors.endDate}
                 />
                 {!watch('startDate') && (
-                  <HelperText style={{ color: '#f59e0b' }}>請先選擇開始日期</HelperText>
+                  <p className={helperText} style={{ color: '#f59e0b' }}>
+                    請先選擇開始日期
+                  </p>
                 )}
                 <input type="hidden" {...register('endDate')} />
-                {errors.endDate && <ErrorText>{errors.endDate.message}</ErrorText>}
-              </FormGroup>
-            </GridContainer>
+                {errors.endDate && <p className={errorText}>{errors.endDate.message}</p>}
+              </div>
+            </div>
 
             {/* 活動地址 */}
-            <FormGroup>
-              <Label>
+            <div className={formGroup}>
+              <label className={label}>
                 <MapPinIcon />
                 地點*
-              </Label>
-              <HelperText>搜尋店家名稱或地址（出現選項之後，選擇正確的店家即可！）</HelperText>
+              </label>
+              <p className={helperText}>搜尋店家名稱或地址（出現選項之後，選擇正確的店家即可！）</p>
               <PlaceAutocomplete
                 onPlaceSelect={handlePlaceSelect}
                 defaultValue={existingEvent?.location.name}
               />
               <input type="hidden" {...register('addressName')} />
-              {errors.addressName && <ErrorText>{errors.addressName.message}</ErrorText>}
-            </FormGroup>
+              {errors.addressName && <p className={errorText}>{errors.addressName.message}</p>}
+            </div>
 
             {/* 活動描述 */}
-            <FormGroup>
-              <Label htmlFor="description">詳細說明</Label>
-              <Textarea
+            <div className={formGroup}>
+              <label className={label} htmlFor="description">
+                詳細說明
+              </label>
+              <textarea
+                className={textarea}
                 id="description"
                 rows={10}
                 placeholder="描述應援內容與資訊，例如：時間/領取應援/注意事項等等"
                 {...register('description')}
               />
-              <CharacterCount $isOverLimit={(watch('description')?.length || 0) > 1500}>
+              <div
+                className={characterCount({
+                  isOverLimit: (watch('description')?.length || 0) > 1500,
+                })}
+              >
                 {watch('description')?.length || 0} / 1500
-              </CharacterCount>
-              {errors.description && <ErrorText>{errors.description.message}</ErrorText>}
-            </FormGroup>
+              </div>
+              {errors.description && <p className={errorText}>{errors.description.message}</p>}
+            </div>
 
             {/* 詳細說明圖片 */}
-            <FormGroup>
-              <Label>
+            <div className={formGroup}>
+              <label className={label}>
                 <PhotoIcon />
                 詳細說明圖片
-              </Label>
-              <HelperText>
+              </label>
+              <p className={helperText}>
                 應援的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳 5 張
-              </HelperText>
+              </p>
               <MultiImageUpload
                 currentImages={detailImageUrls}
                 onImagesChange={(imageUrls) => {
@@ -1099,107 +1138,126 @@ export default function EventSubmissionForm({
                 compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
               />
               <input type="hidden" {...register('detailImage')} />
-              {errors.detailImage && <ErrorText>{errors.detailImage.message}</ErrorText>}
-            </FormGroup>
+              {errors.detailImage && <p className={errorText}>{errors.detailImage.message}</p>}
+            </div>
 
             {/* 聯絡資訊 */}
-            <SectionDivider>
-              <SectionTitle>社群媒體</SectionTitle>
-              <HelperText>
+            <div className={sectionDivider}>
+              <h3 className={sectionTitle}>社群媒體</h3>
+              <p className={helperText}>
                 請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗（若聯合主辦，請寫主要公布資訊的帳號）
-              </HelperText>
+              </p>
 
-              <GridContainer style={{ marginTop: '8px' }}>
+              <div className={gridContainer} style={{ marginTop: '8px' }}>
                 {errors.instagram && errors.instagram.type === 'custom' && (
-                  <ErrorText style={{ marginTop: '8px' }}>{errors.instagram.message}</ErrorText>
+                  <p className={errorText} style={{ marginTop: '8px' }}>
+                    {errors.instagram.message}
+                  </p>
                 )}
-                <FormGroup>
-                  <Label htmlFor="instagram">Instagram</Label>
-                  <Input
+                <div className={formGroup}>
+                  <label className={label} htmlFor="instagram">
+                    Instagram
+                  </label>
+                  <input
+                    className={input}
                     id="instagram"
                     type="text"
                     placeholder="填寫 id 例如: boynextdoor_official"
                     {...register('instagram')}
                   />
-                </FormGroup>
-                <FormGroup>
-                  <Label htmlFor="x">X</Label>
-                  <Input
+                </div>
+                <div className={formGroup}>
+                  <label className={label} htmlFor="x">
+                    X
+                  </label>
+                  <input
+                    className={input}
                     id="x"
                     type="text"
                     placeholder="填寫 id 例如: BOYNEXTDOOR_KOZ"
                     {...register('x')}
                   />
-                </FormGroup>
-                <FormGroup>
-                  <Label htmlFor="threads">Threads</Label>
-                  <Input
+                </div>
+                <div className={formGroup}>
+                  <label className={label} htmlFor="threads">
+                    Threads
+                  </label>
+                  <input
+                    className={input}
                     id="threads"
                     type="text"
                     placeholder="填寫 id 例如: _muri.ri"
                     {...register('threads')}
                   />
-                </FormGroup>
-              </GridContainer>
-            </SectionDivider>
+                </div>
+              </div>
+            </div>
           </>
         )}
 
         {/* 步驟導航按鈕 */}
-        <ButtonGroup>
+        <div className={buttonGroup}>
           {mode === 'create' && currentStep === 1 ? (
             // 第一步：下一步按鈕
             <>
-              <Button type="button" $variant="primary" onClick={handleNextStep}>
-                下一步
-              </Button>
-              <Button
+              <button
+                className={button({ variant: 'primary' })}
                 type="button"
-                $variant="secondary"
+                onClick={handleNextStep}
+              >
+                下一步
+              </button>
+              <button
+                className={button({ variant: 'secondary' })}
+                type="button"
                 onClick={onCancel || (() => router.push('/'))}
               >
                 取消
-              </Button>
+              </button>
             </>
           ) : mode === 'create' && currentStep === 2 ? (
             // 第二步：上一步 + 提交按鈕
             <>
-              <Button type="button" $variant="secondary" onClick={handlePrevStep}>
-                上一步
-              </Button>
-              <Button
+              <button
+                className={button({ variant: 'secondary' })}
                 type="button"
-                $variant="primary"
+                onClick={handlePrevStep}
+              >
+                上一步
+              </button>
+              <button
+                className={button({ variant: 'primary' })}
+                type="button"
                 disabled={createEventMutation.isPending}
                 onClick={handleSubmit(onSubmit)}
               >
                 {createEventMutation.isPending ? (
                   <>
-                    <LoadingSpinner />
+                    <div className={loadingSpinner} />
                     投稿中...
                   </>
                 ) : (
                   '送出投稿'
                 )}
-              </Button>
+              </button>
             </>
           ) : (
             // 編輯模式：原有的按鈕
             <>
-              <Button
+              <button
+                className={button({ variant: 'primary' })}
                 type="button"
-                $variant="primary"
                 disabled={updateEventMutation.isPending || resubmitEventMutation.isPending}
                 onClick={handleSubmit(onSubmit)}
               >
                 {updateEventMutation.isPending ? (
                   <>
-                    <LoadingSpinner />
+                    <div className={loadingSpinner} />
                     更新中...
                   </>
                 ) : resubmitEventMutation.isPending ? (
                   <>
-                    <LoadingSpinner />
+                    <div className={loadingSpinner} />
                     重新送出審核中...
                   </>
                 ) : existingEvent?.status === 'rejected' ? (
@@ -1207,18 +1265,18 @@ export default function EventSubmissionForm({
                 ) : (
                   '更新'
                 )}
-              </Button>
-              <Button
+              </button>
+              <button
+                className={button({ variant: 'secondary' })}
                 type="button"
-                $variant="secondary"
                 onClick={onCancel || (() => router.push('/'))}
               >
                 取消
-              </Button>
+              </button>
             </>
           )}
-        </ButtonGroup>
-      </Form>
+        </div>
+      </form>
 
       {/* 藝人選擇 Modal - 只在創建模式顯示 */}
       {mode === 'create' && (
@@ -1241,6 +1299,6 @@ export default function EventSubmissionForm({
         cancelText="取消"
         isLoading={updateEventMutation.isPending || resubmitEventMutation.isPending}
       />
-    </FormContainer>
+    </div>
   );
 }

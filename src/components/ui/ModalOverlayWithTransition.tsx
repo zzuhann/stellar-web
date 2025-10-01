@@ -12,7 +12,7 @@ const modalOverlay = cva({
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 50,
-    padding: 16,
+    padding: '16px',
     transition: 'opacity 0.3s ease, visibility 0.3s ease-out',
   },
   variants: {

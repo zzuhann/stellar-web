@@ -1,100 +1,96 @@
 import { Artist } from '@/types';
 import { shouldShowBirthdayHat } from '@/utils/birthdayHelpers';
-import styled from 'styled-components';
+import { css } from '@/styled-system/css';
+import Image from 'next/image';
 
-const ArtistCardContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 20px;
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: var(--shadow-sm);
-`;
+const artistCardContainer = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '16px',
+  padding: '20px',
+  background: 'color.background.primary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  boxShadow: 'shadow.sm',
+});
 
-const AvatarContainer = styled.div`
-  position: relative;
-  width: 64px;
-  height: 64px;
-`;
+const avatarContainer = css({
+  position: 'relative',
+  width: '64px',
+  height: '64px',
+});
 
-const ArtistAvatar = styled.div<{ $avatarUrl: string }>`
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background-image: url(${(props) => props.$avatarUrl});
-  background-size: cover;
-  background-position: center;
-`;
+const artistAvatar = css({
+  width: '64px',
+  height: '64px',
+  borderRadius: '50%',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+});
 
-const BirthdayHat = styled.img`
-  position: absolute;
-  top: -8px;
-  right: -4px;
-  width: 24px;
-  height: 24px;
-  transform: rotate(15deg);
-  z-index: 2;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
-`;
+const birthdayHat = css({
+  position: 'absolute',
+  top: '-8px',
+  right: '-4px',
+  width: '24px',
+  height: '24px',
+  transform: 'rotate(15deg)',
+  zIndex: 2,
+  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
+});
 
-const ArtistInfo = styled.div`
-  flex: 1;
-  min-width: 0;
-`;
+const artistInfo = css({
+  flex: 1,
+  minWidth: 0,
+});
 
-const ArtistName = styled.h3`
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin: 0 0 4px 0;
+const artistName = css({
+  fontSize: '16px',
+  fontWeight: '600',
+  color: 'color.text.primary',
+  margin: '0 0 4px 0',
+  '@media (min-width: 768px)': {
+    fontSize: '20px',
+  },
+});
 
-  @media (min-width: 768px) {
-    font-size: 20px;
-  }
-`;
+const artistBirthday = css({
+  fontSize: '14px',
+  color: 'color.text.secondary',
+  marginBottom: '8px',
+  '& .birthday-label': {
+    color: 'color.text.secondary',
+  },
+  '& .birthday-date': {
+    fontWeight: '500',
+  },
+  '& .today-indicator': {
+    color: 'color.accent',
+    fontWeight: '600',
+    marginLeft: '8px',
+  },
+});
 
-const ArtistBirthday = styled.div`
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  margin-bottom: 8px;
-
-  .birthday-label {
-    color: var(--color-text-secondary);
-  }
-
-  .birthday-date {
-    font-weight: 500;
-  }
-
-  .today-indicator {
-    color: var(--color-accent);
-    font-weight: 600;
-    margin-left: 8px;
-  }
-`;
-
-const EventStatus = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  color: var(--color-primary);
-  font-weight: 500;
-
-  .icon {
-    font-size: 12px;
-  }
-`;
+const eventStatus = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '4px',
+  fontSize: '14px',
+  color: 'color.primary',
+  fontWeight: '500',
+  '& .icon': {
+    fontSize: '12px',
+  },
+});
 
 const getBirthdayText = (birthday: string): { text: string; isToday: boolean } => {
   if (!birthday) return { text: '', isToday: false };
 
   const date = new Date(birthday);
-  return { text: `${date.getMonth() + 1}月${date.getDate()}日`, isToday: false };
+  return { text: `${date.getMonth() + 1} 月 ${date.getDate()} 日`, isToday: false };
 };
 
 interface ArtistCardProps {
@@ -107,30 +103,37 @@ const ArtistCard = ({ artist, handleArtistClick }: ArtistCardProps) => {
   const isBirthday = shouldShowBirthdayHat(artist.birthday ?? '');
 
   return (
-    <ArtistCardContainer key={artist.id} onClick={() => handleArtistClick(artist)}>
-      <AvatarContainer>
-        <ArtistAvatar $avatarUrl={artist.profileImage ?? ''} />
-        {isBirthday && <BirthdayHat src="/party-hat.png" alt="生日帽" />}
-      </AvatarContainer>
+    <div className={artistCardContainer} key={artist.id} onClick={() => handleArtistClick(artist)}>
+      <div className={avatarContainer}>
+        <div
+          className={artistAvatar}
+          style={{
+            backgroundImage: artist.profileImage ? `url(${artist.profileImage})` : undefined,
+          }}
+        />
+        {isBirthday && (
+          <Image className={birthdayHat} src="/party-hat.png" alt="生日帽" width={24} height={24} />
+        )}
+      </div>
 
-      <ArtistInfo>
-        <ArtistName>
+      <div className={artistInfo}>
+        <h3 className={artistName}>
           {artist.stageName.toUpperCase()} {artist.realName}
-        </ArtistName>
-        <ArtistBirthday>
-          <span className="birthday-label">🎂: </span>
+        </h3>
+        <div className={artistBirthday}>
+          <span className="birthday-label">🎂：</span>
           <span className="birthday-date">{birthdayText}</span>
-        </ArtistBirthday>
-        <EventStatus>
+        </div>
+        <div className={eventStatus}>
           <span className="icon">📍</span>
           <span>
             {artist.coffeeEventCount !== undefined && artist.coffeeEventCount > 0
               ? `${artist.coffeeEventCount} 個生日應援`
               : '目前無任何生日應援'}
           </span>
-        </EventStatus>
-      </ArtistInfo>
-    </ArtistCardContainer>
+        </div>
+      </div>
+    </div>
   );
 };
 
