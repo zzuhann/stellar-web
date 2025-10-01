@@ -41,10 +41,6 @@ const closeButton = css({
     background: 'color.background.secondary',
     color: 'color.text.primary',
   },
-  '& svg': {
-    width: '20px',
-    height: '20px',
-  },
 });
 
 const modalBody = css({
@@ -138,7 +134,7 @@ export default function ConfirmModal({
             {title}
           </h3>
           <button className={closeButton} onClick={onCancel}>
-            <XMarkIcon />
+            <XMarkIcon width={20} height={20} />
           </button>
         </div>
         <div className={modalBody}>
