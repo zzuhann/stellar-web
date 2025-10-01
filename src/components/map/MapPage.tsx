@@ -11,7 +11,6 @@ import Drawer from './components/Drawer';
 import { TileLayer, Marker } from 'react-leaflet';
 import { LatLngTuple } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import styled from 'styled-components';
 import { createUserLocationIcon } from './utils/userLocationIcon';
 import MapEventHandler from './components/MapEventHandler';
 import MapCenterUpdater from './components/MapCenterUpdater';
@@ -21,17 +20,6 @@ import { initializeLeafletIcons } from './utils/leaflet-icons';
 
 // 初始化 Leaflet 圖標
 initializeLeafletIcons();
-
-// Styled Components
-const MapWrapper = styled.div`
-  width: 100%;
-  height: 100%;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  position: relative;
-  z-index: 0;
-`;
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -64,6 +52,16 @@ const mapInner = css({
   overflow: 'hidden',
 });
 
+const mapWrapper = css({
+  width: '100%',
+  height: '100%',
+  borderRadius: 'radius.lg',
+  overflow: 'hidden',
+  boxShadow: 'shadow.md',
+  position: 'relative',
+  zIndex: 0,
+});
+
 const loadingContainer = css({
   height: '100vh',
 });
@@ -73,7 +71,7 @@ interface MapPageProps {
   search?: string;
 }
 
-export default function MapPageStyled({
+export default function MapPage({
   artistId: propsArtistId,
   search: propsSearch,
 }: MapPageProps = {}) {
@@ -104,7 +102,7 @@ export default function MapPageStyled({
         <div className={mapSection}>
           <div className={mapContainer}>
             <div className={mapInner}>
-              <MapWrapper>
+              <div className={mapWrapper}>
                 <SafeMapContainer
                   center={position}
                   zoom={center.zoom}
@@ -131,7 +129,7 @@ export default function MapPageStyled({
                   {/* Marker 聚合群組 */}
                   <MarkerCluster mapEvents={mapEvents} artistData={artistData ?? null} />
                 </SafeMapContainer>
-              </MapWrapper>
+              </div>
             </div>
 
             {locationError && <LocationError locationError={locationError} />}
