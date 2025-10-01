@@ -441,11 +441,6 @@ function EventSubmissionForm({
       <div className={formHeader}>
         <h2>{mode === 'edit' ? '編輯' : '投稿'}</h2>
         {mode !== 'edit' && <p>審核通過之後其他使用者可以在地圖/列表上看到此生日應援!</p>}
-        {mode === 'edit' && (
-          <p style={{ fontSize: '14px', color: '#ef4444', margin: '8px 0 0 0' }}>
-            無法修改偶像資訊
-          </p>
-        )}
       </div>
 
       {mode === 'create' && <StepIndicator currentStep={currentStep} />}
