@@ -23,6 +23,22 @@ export const formatDateForAPI = (date: Date): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
-export const formatDateForISOString = (date: Date): string => {
-  return date.toISOString();
+/** 獲取當月的開始和結束日期 */
+export const getCurrentMonthRange = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0-11
+
+  const startDate = new Date(year, month, 1);
+  const endDate = new Date(year, month + 1, 0); // 下個月的第0天 = 這個月的最後一天
+
+  const formatDate = (date: Date) => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+
+  return {
+    startDate: formatDate(startDate),
+    endDate: formatDate(endDate),
+    today: formatDate(now),
+  };
 };

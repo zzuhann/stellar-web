@@ -1,6 +1,6 @@
 import { CoffeeEvent } from '@/types';
 import VerticalEventCard from '../../EventCard/VerticalEventCard';
-import EmptyState from './EmptyState';
+import EmptyState from '../../EmptyState';
 import { css } from '@/styled-system/css';
 import Loading from '../../Loading';
 

@@ -2,7 +2,7 @@ import { Artist } from '@/types';
 import ArtistCard from '../../ArtistCard';
 import SearchSection from './SearchSection';
 import { css } from '@/styled-system/css';
-import EmptyState from './EmptyState';
+import EmptyState from '../../EmptyState';
 import Loading from '../../Loading';
 
 const artistListContainer = css({

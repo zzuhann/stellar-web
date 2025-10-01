@@ -10,7 +10,7 @@ import { Artist } from '@/types';
 import ArtistCard from '../ArtistCard';
 import { useAuth } from '@/lib/auth-context';
 import ModalOverlayWithTransition from '../ui/ModalOverlayWithTransition';
-import EmptyState from '../HomePage/components/EmptyState';
+import EmptyState from '../EmptyState';
 import CTAButton from '../CTAButton';
 import Loading from '../Loading';
 import { css, cva } from '@/styled-system/css';

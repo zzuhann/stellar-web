@@ -21,3 +21,28 @@ export const useArtistSearch = (query: string) => {
     gcTime: 1000 * 60 * 15, // 15 分鐘保留
   });
 };
+
+export const useMonthlyBirthdayArtists = ({
+  startDate,
+  endDate,
+  today,
+  enabled,
+}: {
+  startDate: string;
+  endDate: string;
+  today: string;
+  enabled: boolean;
+}) => {
+  return useQuery({
+    queryKey: ['monthly-birthday-artists', startDate, endDate],
+    queryFn: () =>
+      artistsApi.getAll({
+        status: 'approved',
+        birthdayStartDate: today,
+        birthdayEndDate: endDate,
+      }),
+    staleTime: 1000 * 60 * 5, // 5 分鐘快取
+    gcTime: 1000 * 60 * 15, // 15 分鐘保留
+    enabled,
+  });
+};
