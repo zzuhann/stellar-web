@@ -83,15 +83,7 @@ function MySubmissions() {
     setDeleteConfirmModal({ isOpen: false, event: null });
   };
 
-  if (authLoading || userSubmissionsLoading) {
-    return (
-      <div className={pageContainer}>
-        <div className={mainContainer}>
-          <Loading description="載入投稿資料中..." height="100vh" />
-        </div>
-      </div>
-    );
-  }
+  const isLoading = authLoading || userSubmissionsLoading;
 
   if (!user) {
     return null;
@@ -103,9 +95,13 @@ function MySubmissions() {
         <div className={contentWrapper}>
           <TabNav activeTab={activeTab} handleTabChange={handleTabChange} />
 
-          {activeTab === 'artist' && <ArtistSubmissions artists={userSubmissions?.artists ?? []} />}
+          {isLoading && <Loading description="載入中..." />}
 
-          {activeTab === 'event' && userSubmissions && (
+          {!isLoading && activeTab === 'artist' && (
+            <ArtistSubmissions artists={userSubmissions?.artists ?? []} />
+          )}
+
+          {!isLoading && activeTab === 'event' && userSubmissions && (
             <EventSubmissions
               events={userSubmissions.events}
               deleteEventMutation={deleteEventMutation}
