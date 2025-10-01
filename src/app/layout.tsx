@@ -9,6 +9,7 @@ import Header from '@/components/header';
 import Footer from '@/components/layout/Footer';
 import { Analytics } from '@vercel/analytics/next';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
+import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
@@ -104,6 +105,7 @@ export default function RootLayout({
               {children}
               <Analytics />
               <ServiceWorkerRegistration />
+              <PWAInstallPrompt />
               <Toaster
                 position="top-center"
                 toastOptions={{
