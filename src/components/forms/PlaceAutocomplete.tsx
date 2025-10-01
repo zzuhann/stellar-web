@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Combobox } from '@headlessui/react';
 import { ChevronUpDownIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/20/solid';
 import { useQuery } from '@tanstack/react-query';
-import styled from 'styled-components';
+import { css, cva } from '@/styled-system/css';
 import api from '@/lib/api';
 import { useDebounce } from '@/hooks/useDebounce';
 import showToast from '@/lib/toast';
@@ -28,181 +28,193 @@ interface PlacePrediction {
   };
 }
 
-// Styled Components - 與 EventSubmissionForm 保持一致的設計風格
-const Container = styled.div`
-  width: 100%;
-`;
+const container = css({
+  width: '100%',
+});
 
-const ComboboxContainer = styled.div`
-  position: relative;
-`;
+const comboboxContainer = css({
+  position: 'relative',
+});
 
-const ComboboxInput = styled(Combobox.Input)<{ $isDisabled: boolean; $isError: boolean }>`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-primary);
-  color: var(--color-text-primary);
-  font-size: 16px;
-  transition: all 0.2s ease;
-  padding-right: 40px;
+const comboboxInput = cva({
+  base: {
+    width: '100%',
+    padding: '12px 16px',
+    border: '1px solid',
+    borderColor: 'color.border.light',
+    borderRadius: 'radius.lg',
+    background: 'color.background.primary',
+    color: 'color.text.primary',
+    fontSize: '16px',
+    transition: 'all 0.2s ease',
+    paddingRight: '40px',
+    '&::placeholder': {
+      color: 'color.text.secondary',
+    },
+    '&:focus': {
+      outline: 'none',
+      borderColor: 'color.primary',
+      boxShadow: '0 0 0 3px rgba(90, 125, 154, 0.1)',
+    },
+    '&:disabled': {
+      background: 'color.background.secondary',
+      color: 'color.text.disabled',
+      cursor: 'not-allowed',
+    },
+    '@media (min-width: 768px)': {
+      padding: '14px 18px',
+      fontSize: '15px',
+      paddingRight: '44px',
+    },
+  },
+  variants: {
+    isDisabled: {
+      true: {
+        background: 'color.background.secondary',
+        color: 'color.text.disabled',
+        cursor: 'not-allowed',
+      },
+    },
+    isError: {
+      true: {
+        borderColor: '#ef4444',
+        background: '#fef2f2',
+        color: '#991b1b',
+        '&:focus': {
+          borderColor: '#ef4444',
+          boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.1)',
+        },
+      },
+    },
+  },
+});
 
-  &::placeholder {
-    color: var(--color-text-secondary);
-  }
+const comboboxButton = css({
+  position: 'absolute',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  right: '0',
+  display: 'flex',
+  alignItems: 'center',
+  paddingRight: '12px',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  color: 'color.text.secondary',
+  '&:hover': {
+    color: 'color.text.primary',
+  },
+  '@media (min-width: 768px)': {
+    paddingRight: '14px',
+  },
+});
 
-  &:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(90, 125, 154, 0.1);
-  }
+const comboboxOptions = css({
+  position: 'absolute',
+  zIndex: 10,
+  marginTop: '4px',
+  maxHeight: '240px',
+  width: '100%',
+  overflowY: 'auto',
+  borderRadius: 'radius.lg',
+  background: 'color.background.primary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  boxShadow: 'shadow.md',
+  padding: '8px 0',
+});
 
-  &:disabled {
-    background: var(--color-bg-secondary);
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-  }
+const loadingOption = css({
+  position: 'relative',
+  cursor: 'default',
+  userSelect: 'none',
+  padding: '12px 16px',
+  color: 'color.text.secondary',
+  fontSize: '14px',
+  textAlign: 'center',
+  '@media (min-width: 768px)': {
+    padding: '14px 18px',
+    fontSize: '15px',
+  },
+});
 
-  ${(props) =>
-    props.$isDisabled &&
-    `
-    background: var(--color-bg-secondary);
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-  `}
+const comboboxOption = css({
+  position: 'relative',
+  cursor: 'default',
+  userSelect: 'none',
+  padding: '12px 16px',
+  transition: 'all 0.2s ease',
+  color: 'color.text.primary',
+  '&:hover': {
+    background: 'color.background.secondary',
+  },
+  '&[data-headlessui-state="active"]': {
+    background: 'color.primary',
+    color: 'white',
+  },
+});
 
-  ${(props) =>
-    props.$isError &&
-    `
-    border-color: #ef4444;
-    background: #fef2f2;
-    color: #991b1b;
-    
-    &:focus {
-      border-color: #ef4444;
-      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
-    }
-  `}
+const optionContent = cva({
+  base: {
+    display: 'block',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  variants: {
+    isSelected: {
+      true: {
+        fontWeight: '600',
+      },
+      false: {
+        fontWeight: '400',
+      },
+    },
+  },
+});
 
-  @media (min-width: 768px) {
-    padding: 14px 18px;
-    font-size: 15px;
-    padding-right: 44px;
-  }
-`;
+const optionMainText = css({
+  fontWeight: '500',
+  marginBottom: '2px',
+});
 
-const ComboboxButton = styled(Combobox.Button)`
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  right: 0;
-  display: flex;
-  align-items: center;
-  padding-right: 12px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--color-text-secondary);
+const optionSecondaryText = css({
+  fontSize: '13px',
+  color: 'color.text.secondary',
+});
 
-  &:hover {
-    color: var(--color-text-primary);
-  }
+const checkIconContainer = cva({
+  base: {
+    position: 'absolute',
+    insetY: 0,
+    left: 0,
+    display: 'flex',
+    alignItems: 'center',
+    paddingLeft: '16px',
+    '@media (min-width: 768px)': {
+      paddingLeft: '18px',
+    },
+  },
+  variants: {
+    isActive: {
+      true: {
+        color: 'white',
+      },
+      false: {
+        color: 'color.primary',
+      },
+    },
+  },
+});
 
-  @media (min-width: 768px) {
-    padding-right: 14px;
-  }
-`;
-
-const ComboboxOptions = styled(Combobox.Options)`
-  position: absolute;
-  z-index: 10;
-  margin-top: 4px;
-  max-height: 240px;
-  width: 100%;
-  overflow-y: auto;
-  border-radius: var(--radius-lg);
-  background: var(--color-bg-primary);
-  border: 1px solid var(--color-border-light);
-  box-shadow: var(--shadow-md);
-  padding: 8px 0;
-`;
-
-const LoadingOption = styled.div`
-  position: relative;
-  cursor-default;
-  select-none;
-  padding: 12px 16px;
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  text-align: center;
-
-  @media (min-width: 768px) {
-    padding: 14px 18px;
-    font-size: 15px;
-  }
-`;
-
-const ComboboxOption = styled(Combobox.Option)`
-  position: relative;
-  cursor-default;
-  select-none;
-  padding: 12px 16px;
-  transition: all 0.2s ease;
-  color: var(--color-text-primary);
-  
-  &:hover {
-    background: var(--color-bg-secondary);
-  }
-
-  &[data-headlessui-state="active"] {
-    background: var(--color-primary);
-    color: white;
-  }
-
-`;
-
-const OptionContent = styled.div<{ $isSelected: boolean }>`
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: ${(props) => (props.$isSelected ? '600' : '400')};
-`;
-
-const OptionMainText = styled.div`
-  font-weight: 500;
-  margin-bottom: 2px;
-`;
-
-const OptionSecondaryText = styled.div<{ $isActive: boolean }>`
-  font-size: 13px;
-  color: var(--color-text-secondary);
-`;
-
-const CheckIconContainer = styled.span<{ $isActive: boolean }>`
-  position: absolute;
-  inset-y: 0;
-  left: 0;
-  display: flex;
-  align-items: center;
-  padding-left: 16px;
-  color: ${(props) => (props.$isActive ? 'white' : 'var(--color-primary)')};
-
-  @media (min-width: 768px) {
-    padding-left: 18px;
-  }
-`;
-
-const ErrorMessage = styled.p`
-  margin: 8px 0 0 0;
-  font-size: 12px;
-  color: #ef4444;
-
-  @media (min-width: 768px) {
-    font-size: 13px;
-  }
-`;
+const errorMessage = css({
+  margin: '8px 0 0 0',
+  fontSize: '12px',
+  color: '#ef4444',
+  '@media (min-width: 768px)': {
+    fontSize: '13px',
+  },
+});
 
 export default function PlaceAutocomplete({
   onPlaceSelect,
@@ -266,12 +278,11 @@ export default function PlaceAutocomplete({
   };
 
   return (
-    <Container>
+    <div className={container}>
       <Combobox value={selectedPlace} onChange={handlePlaceSelect}>
-        <ComboboxContainer>
-          <ComboboxInput
-            $isError={isError}
-            $isDisabled={false}
+        <div className={comboboxContainer}>
+          <Combobox.Input
+            className={comboboxInput({ isError, isDisabled: false })}
             displayValue={(prediction: PlacePrediction | null) =>
               prediction
                 ? prediction.structured_formatting?.main_text || prediction.description
@@ -283,7 +294,7 @@ export default function PlaceAutocomplete({
               setSelectedPlace(null);
             }}
           />
-          <ComboboxButton>
+          <Combobox.Button className={comboboxButton}>
             {isError ? (
               <ExclamationTriangleIcon
                 style={{ width: '20px', height: '20px', color: '#f87171' }}
@@ -292,44 +303,48 @@ export default function PlaceAutocomplete({
             ) : (
               <ChevronUpDownIcon style={{ width: '20px', height: '20px' }} aria-hidden="true" />
             )}
-          </ComboboxButton>
+          </Combobox.Button>
 
           {(predictions.length > 0 || isLoading) && (
-            <ComboboxOptions>
-              {isLoading && <LoadingOption>搜尋中...</LoadingOption>}
+            <Combobox.Options className={comboboxOptions}>
+              {isLoading && <div className={loadingOption}>搜尋中...</div>}
               {predictions.map((prediction: PlacePrediction) => (
-                <ComboboxOption key={prediction.place_id} value={prediction}>
+                <Combobox.Option
+                  key={prediction.place_id}
+                  value={prediction}
+                  className={comboboxOption}
+                >
                   {({ selected, active }) => (
                     <>
-                      <OptionContent $isSelected={selected}>
+                      <div className={optionContent({ isSelected: selected })}>
                         {prediction.structured_formatting ? (
                           <>
-                            <OptionMainText>
+                            <div className={optionMainText}>
                               {prediction.structured_formatting.main_text}
-                            </OptionMainText>
-                            <OptionSecondaryText $isActive={active}>
+                            </div>
+                            <div className={optionSecondaryText}>
                               {prediction.structured_formatting.secondary_text}
-                            </OptionSecondaryText>
+                            </div>
                           </>
                         ) : (
                           <span>{prediction.description}</span>
                         )}
-                      </OptionContent>
+                      </div>
                       {selected && (
-                        <CheckIconContainer $isActive={active}>
+                        <span className={checkIconContainer({ isActive: active })}>
                           <CheckIcon style={{ width: '20px', height: '20px' }} aria-hidden="true" />
-                        </CheckIconContainer>
+                        </span>
                       )}
                     </>
                   )}
-                </ComboboxOption>
+                </Combobox.Option>
               ))}
-            </ComboboxOptions>
+            </Combobox.Options>
           )}
-        </ComboboxContainer>
+        </div>
       </Combobox>
 
-      {isError && <ErrorMessage>搜尋服務暫時無法使用，請稍後再試</ErrorMessage>}
-    </Container>
+      {isError && <p className={errorMessage}>搜尋服務暫時無法使用，請稍後再試</p>}
+    </div>
   );
 }

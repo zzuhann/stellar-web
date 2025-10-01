@@ -6,7 +6,7 @@ import { css } from '@/styled-system/css';
 const footerContainer = css({
   background: 'color.background.secondary',
   borderTop: '1px solid',
-  borderColor: 'color.border.light',
+  borderTopColor: 'color.border.light',
   padding: '12px 20px',
   marginTop: 'auto',
 });

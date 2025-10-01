@@ -71,7 +71,7 @@ export interface ArtistSearchParams {
   birthdayStartDate?: string; // YYYY-MM-DD
   birthdayEndDate?: string; // YYYY-MM-DD
   search?: string;
-  sortBy?: 'stageName' | 'coffeeEventCount' | 'createdAt';
+  sortBy?: 'stageName' | 'coffeeEventCount' | 'createdAt' | 'birthday';
   sortOrder?: 'asc' | 'desc';
 }
 
