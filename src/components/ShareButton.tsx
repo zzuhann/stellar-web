@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { css } from '../../styled-system/css';
 import { ShareIcon } from '@/lib/svg';
@@ -10,47 +11,54 @@ export default function ShareButton() {
   const { share } = useWebShare();
   const { shareData } = useShare();
   const pathname = usePathname();
+  const [shouldShow, setShouldShow] = useState(false);
 
-  // 檢查是否在 PWA 模式下運行
-  const isPWAMode = () => {
-    // 檢查是否在 standalone 模式運行
-    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-      return true;
-    }
+  useEffect(() => {
+    // 檢查是否在 PWA 模式下運行
+    const isPWAMode = () => {
+      if (typeof window === 'undefined') return false;
 
-    // 檢查是否在 fullscreen 模式運行
-    if (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) {
-      return true;
-    }
+      // 檢查是否在 standalone 模式運行
+      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+        return true;
+      }
 
-    // 檢查是否為 iOS Safari 的 standalone 模式
-    if ((window.navigator as unknown as { standalone?: boolean }).standalone === true) {
-      return true;
-    }
+      // 檢查是否在 fullscreen 模式運行
+      if (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) {
+        return true;
+      }
 
-    return false;
-  };
+      // 檢查是否為 iOS Safari 的 standalone 模式
+      if ((window.navigator as unknown as { standalone?: boolean }).standalone === true) {
+        return true;
+      }
 
-  // 檢查是否在允許顯示分享按鈕的頁面
-  const shouldShowShareButton = () => {
-    // 必須在 PWA 模式下
-    if (!isPWAMode()) {
       return false;
-    }
+    };
 
-    // 匹配 /map/{artistId} 和 /event/{eventId} 路由
-    const mapPattern = /^\/map\/[^\/]+$/;
-    const eventPattern = /^\/event\/[^\/]+$/;
+    // 檢查是否在允許顯示分享按鈕的頁面
+    const shouldShowShareButton = () => {
+      // 必須在 PWA 模式下
+      if (!isPWAMode()) {
+        return false;
+      }
 
-    return mapPattern.test(pathname) || eventPattern.test(pathname);
-  };
+      // 匹配 /map/{artistId} 和 /event/{eventId} 路由
+      const mapPattern = /^\/map\/[^\/]+$/;
+      const eventPattern = /^\/event\/[^\/]+$/;
+
+      return mapPattern.test(pathname) || eventPattern.test(pathname);
+    };
+
+    setShouldShow(shouldShowShareButton());
+  }, [pathname]);
 
   const handleShare = () => {
     share(shareData);
   };
 
   // 如果不在指定頁面，不渲染按鈕
-  if (!shouldShowShareButton()) {
+  if (!shouldShow) {
     return null;
   }
 

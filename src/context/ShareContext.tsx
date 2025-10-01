@@ -17,14 +17,18 @@ interface ShareContextType {
 
 const ShareContext = createContext<ShareContextType | undefined>(undefined);
 
-const defaultShareData: ShareData = {
+const getDefaultShareData = (): ShareData => ({
   title: 'STELLAR 台灣生日應援地圖',
   text: '', // 可以為空字串或省略
   url: typeof window !== 'undefined' ? window.location.href : '',
-};
+});
 
 export function ShareProvider({ children }: { children: ReactNode }) {
-  const [shareData, setShareDataState] = useState<ShareData>(defaultShareData);
+  const [shareData, setShareDataState] = useState<ShareData>(() => ({
+    title: 'STELLAR 台灣生日應援地圖',
+    text: '',
+    url: '', // 初始值為空，會在 useEffect 中更新
+  }));
   const pathname = usePathname();
 
   const setShareData = useCallback((data: ShareData) => {
@@ -37,14 +41,14 @@ export function ShareProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const resetShareData = useCallback(() => {
-    setShareDataState({
-      ...defaultShareData,
-      url: typeof window !== 'undefined' ? window.location.href : '',
-    });
+    setShareDataState(getDefaultShareData());
   }, []);
 
+  // 在客戶端初始化時設定正確的 URL
   useEffect(() => {
-    resetShareData();
+    if (typeof window !== 'undefined') {
+      resetShareData();
+    }
   }, [pathname, resetShareData]);
 
   return (
