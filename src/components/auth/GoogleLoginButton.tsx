@@ -81,7 +81,10 @@ const GoogleLoginButton = ({ onSuccess }: GoogleLoginButtonProps) => {
       disabled={isGoogleLoading}
     >
       {isGoogleLoading ? (
-        <Loading description="登入中..." />
+        <Loading
+          description="登入中..."
+          style={{ width: '100%', border: 'none', background: 'transparent' }}
+        />
       ) : (
         <>
           <svg viewBox="0 0 24 24" width="20" height="20">

@@ -10,7 +10,7 @@ import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import ImageUpload from '@/components/images/ImageUpload';
-import DatePicker from '@/components/ui/DatePicker';
+import DatePicker from '@/components/DatePicker';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { Artist } from '@/types';

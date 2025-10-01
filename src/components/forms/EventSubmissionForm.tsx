@@ -19,7 +19,7 @@ import PlaceAutocomplete from './PlaceAutocomplete';
 import ArtistSelectionModal from './ArtistSelectionModal';
 import ImageUpload from '@/components/images/ImageUpload';
 import MultiImageUpload from '@/components/images/MultiImageUpload';
-import DatePicker from '@/components/ui/DatePicker';
+import DatePicker from '@/components/DatePicker';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { CreateEventRequest, UpdateEventRequest, Artist, CoffeeEvent } from '@/types';
@@ -999,6 +999,11 @@ export default function EventSubmissionForm({
                     // 如果結束日期早於新的開始日期，自動設為開始日期
                     const endDate = watch('endDate');
                     if (endDate && new Date(endDate) < new Date(date)) {
+                      setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
+                    }
+
+                    // 如果還沒有結束日期，自動設為開始日期
+                    if (!endDate) {
                       setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
                     }
                   }}

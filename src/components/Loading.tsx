@@ -37,11 +37,12 @@ const text = css({
 type LoadingProps = {
   description?: string;
   height?: string;
+  style?: React.CSSProperties;
 };
 
-const Loading = ({ description, height = '100%' }: LoadingProps) => {
+const Loading = ({ description, height = '100%', style }: LoadingProps) => {
   return (
-    <div className={loadingContainer} style={{ height }}>
+    <div className={loadingContainer} style={{ height, ...style }}>
       <div className={spinner} />
       {description && <p className={text}>{description}</p>}
     </div>
