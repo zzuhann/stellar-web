@@ -75,7 +75,7 @@ const previewImage = cva({
     borderRadius: 'radius.lg',
     objectFit: 'contain',
     backgroundColor: 'color.background.secondary',
-    aspectRatio: 'auto',
+    aspectRatio: '3/4',
     maxWidth: '100%',
     margin: '0',
   },
@@ -444,8 +444,8 @@ export default function ImageUpload({
               className={previewImage({ isCropped: enableCrop && hasCroppedImage })}
               src={previewUrl}
               alt="預覽"
-              width={0}
-              height={0}
+              width={200}
+              height={200}
             />
             <div className={actionButtons}>
               {/* 重新裁切按鈕（如果啟用裁切功能） */}
