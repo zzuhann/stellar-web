@@ -4,11 +4,10 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { css } from '@/styled-system/css';
-import EventSubmissionForm from '@/components/forms/EventSubmissionForm';
-import { useQuery } from '@tanstack/react-query';
-import { eventsApi } from '@/lib/api';
+import EventSubmissionForm from '@/components/submitEvent/EventSubmissionForm';
 import showToast from '@/lib/toast';
 import Loading from '@/components/Loading';
+import useEventDetail from './hooks/useEventDetail';
 
 const mainContent = css({
   maxWidth: '1200px',
@@ -26,12 +25,8 @@ export default function SubmitEventClient() {
   const editEventId = searchParams.get('edit');
   const isEditMode = !!editEventId;
 
-  // 如果是編輯模式，獲取活動資料
-  const { data: existingEvent, isLoading: loadingEvent } = useQuery({
-    queryKey: ['event', editEventId],
-    queryFn: () => eventsApi.getById(editEventId ?? ''),
-    enabled: !!editEventId,
-  });
+  // 編輯模式下取得活動資料
+  const { data: existingEvent, isLoading: loadingEvent } = useEventDetail(editEventId ?? '');
 
   useEffect(() => {
     if (!loading && !user) {

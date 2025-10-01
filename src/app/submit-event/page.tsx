@@ -1,9 +1,12 @@
 import { Suspense } from 'react';
 import dynamicImport from 'next/dynamic';
 
-const SubmitEventClient = dynamicImport(() => import('./SubmitEventClient'), {
-  ssr: false,
-});
+const SubmitEventClient = dynamicImport(
+  () => import('../../components/submitEvent/SubmitEventClient'),
+  {
+    ssr: false,
+  }
+);
 
 function SubmitEventFallback() {
   return (
