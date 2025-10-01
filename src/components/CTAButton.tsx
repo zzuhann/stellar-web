@@ -18,11 +18,12 @@ const ctaButton = css({
 type CTAButtonProps = {
   children: React.ReactNode;
   onClick: () => void;
+  style?: React.CSSProperties;
 };
 
-export default function CTAButton({ children, onClick }: CTAButtonProps) {
+export default function CTAButton({ children, onClick, style }: CTAButtonProps) {
   return (
-    <button className={ctaButton} onClick={onClick}>
+    <button className={ctaButton} onClick={onClick} style={style}>
       {children}
     </button>
   );
