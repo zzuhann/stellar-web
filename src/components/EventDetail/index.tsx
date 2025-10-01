@@ -199,7 +199,7 @@ const EventDetail = ({ eventId }: EventDetailProps) => {
   const { data: event, error, isLoading } = useEvent(eventId);
 
   usePageShare({
-    title: `${event?.title} | STELLAR 台灣生日應援地圖`,
+    text: `${event?.title} | STELLAR 台灣生日應援地圖`,
     url: window.location.href,
   });
 

@@ -87,8 +87,7 @@ export default function MapPage({
   });
 
   usePageShare({
-    title: `${artistData?.stageName} 的生日應援地圖 | STELLAR 台灣生日應援地圖`,
-    text: `來 STELLAR 看看即將舉辦的 ${artistData?.stageName} 生日應援吧～！`,
+    text: `${artistData?.stageName} 的生日應援地圖 | STELLAR 台灣生日應援地圖`,
     url: window.location.href,
   });
 

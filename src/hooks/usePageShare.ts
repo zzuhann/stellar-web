@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useShare } from '@/context/ShareContext';
 
 interface PageShareData {
-  title?: string;
   text?: string;
   url?: string;
 }
@@ -22,5 +21,5 @@ export function usePageShare(shareData: PageShareData) {
     return () => {
       resetShareData();
     };
-  }, [shareData.title, shareData.text, shareData.url, setShareData, resetShareData]);
+  }, [shareData.text, shareData.url, setShareData, resetShareData]);
 }
