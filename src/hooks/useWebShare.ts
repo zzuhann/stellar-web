@@ -32,8 +32,16 @@ export function useWebShare(): UseWebShareReturn {
         } else {
           // Fallback: 複製到剪貼簿
           await navigator.clipboard.writeText(defaultData.url || '');
+          showToast.success('連結已複製到剪貼簿');
         }
-      } catch {
+      } catch (error) {
+        // 檢查是否為用戶取消分享
+        if ((error as Error).name === 'AbortError') {
+          // 用戶取消分享，不顯示錯誤訊息
+          return;
+        }
+
+        // 其他錯誤才顯示失敗訊息
         showToast.error('分享失敗');
       }
     },
