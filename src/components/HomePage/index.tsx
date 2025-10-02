@@ -15,6 +15,7 @@ import useBirthdayArtists from './hook/useBirthdayArtists';
 import { css } from '@/styled-system/css';
 import CTAButton from '@/components/CTAButton';
 import { useAuth } from '@/lib/auth-context';
+import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
 
 const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearchModal'), {
   ssr: false,
@@ -67,6 +68,7 @@ function HomePageContent() {
     <div className={pageContainer}>
       <div className={mainContainer}>
         <div className={contentWrapper}>
+          <IOSInstallBanner />
           <CTAButton
             onClick={() => {
               if (!user) {
