@@ -262,7 +262,9 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
 
               <div className={eventDetails}>
                 <div className={eventDetailItem}>
-                  <CalendarIcon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
+                  <CalendarIcon
+                    style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
+                  />
                   <span className={detailText}>{eventDateText}</span>
                 </div>
 
