@@ -231,7 +231,7 @@ const EventInfoSection = ({
           詳細說明圖片
         </label>
         <p className={helperText}>
-          應援的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳 5 張
+          除了主視覺圖片以外的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳 5 張
         </p>
         <MultiImageUpload
           currentImages={detailImageUrls}
