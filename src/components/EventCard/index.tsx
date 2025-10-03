@@ -84,7 +84,7 @@ const EventCard = ({ event }: EventCardProps) => {
           <div className={title}>{event.title}</div>
           <div className={descriptionContainer}>
             <CalendarIcon
-              style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
+              style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '2px' }}
             />
             <div className={description}>
               {formatDateRange(event.datetime.start, event.datetime.end)}
@@ -92,7 +92,7 @@ const EventCard = ({ event }: EventCardProps) => {
           </div>
           <div className={descriptionContainer}>
             <MapPinIcon
-              style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
+              style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '2px' }}
             />
             <div className={description}>
               {event.location.name} ({event.location.address})
