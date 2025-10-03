@@ -35,7 +35,7 @@ const modalHeader = css({
   background: 'white',
   padding: '16px 20px',
   borderBottom: '1px solid',
-  borderColor: 'color.border.light',
+  borderBottomColor: 'color.border.light',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
