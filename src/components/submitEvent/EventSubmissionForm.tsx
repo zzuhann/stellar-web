@@ -11,7 +11,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { CreateEventRequest, UpdateEventRequest, Artist, CoffeeEvent } from '@/types';
 import showToast from '@/lib/toast';
-import { firebaseTimestampToDate } from '@/utils';
+import { firebaseTimestampToDate, dateToLocalDateString } from '@/utils';
 import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
 import EventInfoSection from './EventInfoSection';
@@ -135,10 +135,8 @@ function EventSubmissionForm({
           title: existingEvent.title,
           description: existingEvent.description,
           addressName: existingEvent.location.name,
-          startDate: firebaseTimestampToDate(existingEvent.datetime.start)
-            .toISOString()
-            .split('T')[0],
-          endDate: firebaseTimestampToDate(existingEvent.datetime.end).toISOString().split('T')[0],
+          startDate: dateToLocalDateString(firebaseTimestampToDate(existingEvent.datetime.start)),
+          endDate: dateToLocalDateString(firebaseTimestampToDate(existingEvent.datetime.end)),
           instagram: existingEvent.socialMedia.instagram || '',
           x: existingEvent.socialMedia.x || '',
           threads: existingEvent.socialMedia.threads || '',

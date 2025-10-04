@@ -8,6 +8,7 @@ import MultiImageUpload from '../images/MultiImageUpload';
 import { FieldErrors, UseFormRegister, UseFormWatch } from 'react-hook-form';
 import { EventSubmissionFormData } from '@/lib/validations';
 import { useAuthToken } from '@/hooks/useAuthToken';
+import { dateToLocalDateString } from '@/utils';
 
 const textarea = css({
   width: '100%',
@@ -158,7 +159,7 @@ const EventInfoSection = ({
             placeholder="選擇開始日期"
             disabled={isPending}
             error={!!errors.startDate}
-            min={new Date().toISOString().split('T')[0]}
+            min={dateToLocalDateString(new Date())}
           />
           <input type="hidden" {...register('startDate')} />
           {errors.startDate && <p className={errorText}>{errors.startDate.message}</p>}
