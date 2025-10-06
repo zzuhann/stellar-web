@@ -227,8 +227,8 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
   return (
     <>
       {event.status === 'approved' && (
-        <Link href={`/event/${event.id}`}>
-          <div className={verticalEventCardContainer}>
+        <div className={verticalEventCardContainer}>
+          <Link href={`/event/${event.id}`}>
             <div
               className={eventImageStyle}
               style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}
@@ -282,10 +282,10 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
                 <div className={styledSubmissionTime}>投稿時間：{submissionTime}</div>
               )}
             </div>
+          </Link>
 
-            {actionButtons && <div className={buttonContainer}>{actionButtons}</div>}
-          </div>
-        </Link>
+          {actionButtons && <div className={buttonContainer}>{actionButtons}</div>}
+        </div>
       )}
       {event.status !== 'approved' && (
         <div className={verticalEventCardContainer}>
