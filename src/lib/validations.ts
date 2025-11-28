@@ -23,7 +23,7 @@ export const eventSubmissionSchema = z
     x: z.string().optional().or(z.literal('')),
     threads: z.string().optional().or(z.literal('')),
     mainImage: z.string().min(1, '請上傳主視覺圖片'),
-    detailImage: z.array(z.string()).max(5, '詳細說明圖片最多上傳5張').optional(),
+    detailImage: z.array(z.string()).max(10, '詳細說明圖片最多上傳10張').optional(),
   })
   .refine(
     (data) => {
