@@ -224,27 +224,6 @@ export default function PWAInstallPrompt() {
           })}
         >
           <button
-            onClick={handleOpenApp}
-            className={css({
-              backgroundColor: 'color.primary',
-              color: 'white',
-              border: 'none',
-              borderRadius: 'radius.lg',
-              padding: '12px 24px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              width: '100%',
-              '&:hover': {
-                opacity: 0.9,
-              },
-            })}
-          >
-            開啟 App
-          </button>
-
-          <button
             onClick={handleDismissOpenApp}
             className={css({
               backgroundColor: 'transparent',
@@ -263,6 +242,26 @@ export default function PWAInstallPrompt() {
             })}
           >
             稍後
+          </button>
+          <button
+            onClick={handleOpenApp}
+            className={css({
+              backgroundColor: 'color.primary',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'radius.lg',
+              padding: '12px 24px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              width: '100%',
+              '&:hover': {
+                opacity: 0.9,
+              },
+            })}
+          >
+            開啟 App
           </button>
         </div>
       </div>
@@ -331,27 +330,6 @@ export default function PWAInstallPrompt() {
         })}
       >
         <button
-          onClick={handleInstallClick}
-          className={css({
-            backgroundColor: 'color.primary',
-            color: 'white',
-            border: 'none',
-            borderRadius: 'radius.lg',
-            padding: '12px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease',
-            width: '100%',
-            '&:hover': {
-              opacity: 0.9,
-            },
-          })}
-        >
-          安裝
-        </button>
-
-        <button
           onClick={handleDismiss}
           className={css({
             backgroundColor: 'transparent',
@@ -370,6 +348,26 @@ export default function PWAInstallPrompt() {
           })}
         >
           稍後
+        </button>
+        <button
+          onClick={handleInstallClick}
+          className={css({
+            backgroundColor: 'color.primary',
+            color: 'white',
+            border: 'none',
+            borderRadius: 'radius.lg',
+            padding: '12px 24px',
+            fontSize: '16px',
+            fontWeight: '600',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            width: '100%',
+            '&:hover': {
+              opacity: 0.9,
+            },
+          })}
+        >
+          安裝
         </button>
       </div>
     </div>

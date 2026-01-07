@@ -594,8 +594,15 @@ export default function ArtistSubmissionForm({
           </ul>
         </div>
 
-        {/* 提交按鈕 */}
+        {/* 送出按鈕 */}
         <div className={buttonGroup}>
+          <button
+            type="button"
+            className={button({ variant: 'secondary' })}
+            onClick={onCancel || (() => router.push('/'))}
+          >
+            取消
+          </button>
           <button
             type="button"
             className={button({ variant: 'primary' })}
@@ -622,14 +629,6 @@ export default function ArtistSubmissionForm({
             ) : (
               '送出投稿'
             )}
-          </button>
-
-          <button
-            type="button"
-            className={button({ variant: 'secondary' })}
-            onClick={onCancel || (() => router.push('/'))}
-          >
-            取消
           </button>
         </div>
       </div>

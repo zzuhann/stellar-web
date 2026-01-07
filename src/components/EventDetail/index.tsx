@@ -423,7 +423,6 @@ const EventDetail = ({ eventId }: EventDetailProps) => {
         )}
       </div>
 
-      {/* 藝人選擇模態框 */}
       {showArtistModal && event && (
         <ArtistModal
           event={event}

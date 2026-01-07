@@ -103,9 +103,6 @@ const ActionButtons = ({
       {mode === 'create' && currentStep === 1 ? (
         // 第一步：下一步按鈕
         <>
-          <button className={button({ variant: 'primary' })} type="button" onClick={handleNextStep}>
-            下一步
-          </button>
           <button
             className={button({ variant: 'secondary' })}
             type="button"
@@ -113,9 +110,12 @@ const ActionButtons = ({
           >
             取消
           </button>
+          <button className={button({ variant: 'primary' })} type="button" onClick={handleNextStep}>
+            下一步
+          </button>
         </>
       ) : mode === 'create' && currentStep === 2 ? (
-        // 第二步：上一步 + 提交按鈕
+        // 第二步：上一步 + 送出按鈕
         <>
           <button
             className={button({ variant: 'secondary' })}
@@ -144,6 +144,13 @@ const ActionButtons = ({
         // 編輯模式：原有的按鈕
         <>
           <button
+            className={button({ variant: 'secondary' })}
+            type="button"
+            onClick={onCancel || (() => router.push('/'))}
+          >
+            取消
+          </button>
+          <button
             className={button({ variant: 'primary' })}
             type="button"
             disabled={updateEventPending || resubmitEventPending}
@@ -164,13 +171,6 @@ const ActionButtons = ({
             ) : (
               '更新'
             )}
-          </button>
-          <button
-            className={button({ variant: 'secondary' })}
-            type="button"
-            onClick={onCancel || (() => router.push('/'))}
-          >
-            取消
           </button>
         </>
       )}

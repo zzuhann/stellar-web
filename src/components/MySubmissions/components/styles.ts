@@ -30,8 +30,6 @@ export const actionButton = cva({
     borderColor: '#fecaca',
     color: '#991b1b',
     '&:hover:not(:disabled)': {
-      background: '#fee2e2',
-      borderColor: '#fca5a5',
       transform: 'translateY(-1px)',
       boxShadow: 'var(--shadow-sm)',
     },
