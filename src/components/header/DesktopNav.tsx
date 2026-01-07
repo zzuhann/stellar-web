@@ -3,7 +3,7 @@ import { css } from '@/styled-system/css';
 import { UserIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const desktopNav = css({
   display: 'flex',
@@ -93,6 +93,23 @@ const DesktopNav = () => {
   const router = useRouter();
   const { user, userData, signOut, toggleAuthModal } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userSectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userSectionRef.current && !userSectionRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    };
+
+    if (userMenuOpen) {
+      document.addEventListener('click', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [userMenuOpen]);
 
   return (
     <div className={desktopNav}>
@@ -107,7 +124,7 @@ const DesktopNav = () => {
           <Link className={styledLink} href="/submit-event">
             舉辦生日應援
           </Link>
-          <div className={userSection}>
+          <div className={userSection} ref={userSectionRef}>
             <button className={userButton} onClick={() => setUserMenuOpen(!userMenuOpen)}>
               <UserIcon width={16} height={16} />
               <div className={description}>{userData?.displayName || 'member'}</div>
