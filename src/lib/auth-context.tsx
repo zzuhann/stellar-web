@@ -63,7 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setAuthModalOpen(!authModalOpen);
 
-    // 當關閉模態框時清除重定向 URL
     if (authModalOpen) {
       setRedirectUrl(undefined);
     }

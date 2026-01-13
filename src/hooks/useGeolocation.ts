@@ -63,7 +63,7 @@ export function useGeolocation(options: GeolocationOptions = {}) {
         });
       },
       (error) => {
-        let errorMessage = '無法獲取您的位置';
+        let errorMessage = '無法取得您的位置';
 
         switch (error.code) {
           case error.PERMISSION_DENIED:
@@ -114,7 +114,7 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     }
   }, [state.isSupported]);
 
-  // 自動嘗試獲取位置（僅在組件首次載入時）
+  // 自動嘗試取得位置（僅在組件首次載入時）
   useEffect(() => {
     if (state.isSupported && !state.latitude && !state.error && !state.isLoading) {
       checkPermission();

@@ -1,5 +1,3 @@
-// 基本型別定義
-
 // Firebase Timestamp 型別
 export interface FirebaseTimestamp {
   _seconds: number;
@@ -70,62 +68,6 @@ export interface User {
 // 用戶資料更新請求格式
 export interface UpdateUserRequest {
   displayName?: string;
-}
-
-// 通知系統類型
-export type NotificationType =
-  | 'artist_approved'
-  | 'artist_rejected'
-  | 'event_approved'
-  | 'event_rejected'
-  | 'artist_exists';
-
-export interface UserNotification {
-  id: string;
-  userId: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  isRead: boolean;
-  data?: {
-    artistId?: string;
-    eventId?: string;
-    rejectedReason?: string;
-  };
-  createdAt: FirebaseTimestamp | string;
-}
-
-// 通知查詢參數
-export interface NotificationSearchParams {
-  isRead?: boolean;
-  type?: NotificationType;
-  page?: number;
-  limit?: number;
-}
-
-// 通知回應格式
-export interface NotificationsResponse {
-  notifications: UserNotification[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
-  summary: {
-    unreadCount: number;
-    totalCount: number;
-  };
-}
-
-// 未讀通知數量回應
-export interface UnreadCountResponse {
-  unreadCount: number;
-}
-
-// 批量標記已讀請求
-export interface BulkReadRequest {
-  notificationIds: string[];
 }
 
 // API 回應型別
@@ -258,18 +200,6 @@ export interface ArtistReviewRequest {
   adminUpdate?: {
     groupNames?: string[]; // 審核通過時可設定團名陣列
   };
-}
-
-// 藝人審核通過請求格式
-export interface ArtistApproveRequest {
-  adminUpdate?: {
-    groupNames?: string[]; // 選填，管理員可設定團名陣列
-  };
-}
-
-export interface EventReviewRequest {
-  status: 'approved' | 'rejected';
-  reason?: string; // 拒絕時使用
 }
 
 // 拒絕請求格式

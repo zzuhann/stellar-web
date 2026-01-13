@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { artistsApi } from '@/lib/api';
 import { Artist } from '@/types';
 
-// 獲取單一藝人資料的 Hook
+// 取得單一藝人資料的 Hook
 export const useArtist = (id: string) => {
   return useQuery<Artist, Error>({
     queryKey: ['artist', id],

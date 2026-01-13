@@ -1,6 +1,3 @@
-/* eslint-disable no-console */
-// API 呼叫工具函數
-
 import axios, { AxiosResponse, AxiosError } from 'axios';
 import { auth } from './firebase';
 import {
@@ -15,13 +12,8 @@ import {
   UpdateEventRequest,
   UpdateArtistRequest,
   ArtistReviewRequest,
-  EventReviewRequest,
   RejectRequest,
   UpdateUserRequest,
-  UserNotification,
-  NotificationSearchParams,
-  NotificationsResponse,
-  UnreadCountResponse,
   FavoriteFilterParams,
   FavoritesResponse,
   UserFavorite,
@@ -46,9 +38,7 @@ api.interceptors.request.use(
         const token = await user.getIdToken();
         config.headers.Authorization = `Bearer ${token}`;
       }
-    } catch (error) {
-      console.error('Error getting auth token:', error);
-    }
+    } catch {}
     return config;
   },
   (error) => {
@@ -62,7 +52,6 @@ api.interceptors.response.use(
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       // Token 過期或無效，可以在這裡處理登出邏輯
-      console.error('Authentication error');
     }
     return Promise.reject(error);
   }
@@ -158,7 +147,7 @@ export const artistsApi = {
     await api.put(`/artists/${id}/reject`, rejectData);
   },
 
-  // 獲取單一藝人詳細資料
+  // 取得單一藝人詳細資料
   getById: async (id: string): Promise<Artist> => {
     const response = await api.get(`/artists/${id}`);
     const artist = response.data;
@@ -222,7 +211,7 @@ export interface UserSubmissionsResponse {
 
 // 活動相關 API
 export const eventsApi = {
-  // 獲取活動列表（支援新的查詢參數）
+  // 取得活動列表（支援新的查詢參數）
   getAll: async (params?: EventSearchParams): Promise<EventsResponse> => {
     const queryParams: Record<string, string> = { checkFavorite: 'true' };
 
@@ -242,7 +231,7 @@ export const eventsApi = {
     return response.data as EventsResponse;
   },
 
-  // 獲取地圖資料
+  // 取得地圖資料
   getMapData: async (params?: {
     status?: 'active' | 'upcoming' | 'all';
     bounds?: string;
@@ -276,7 +265,7 @@ export const eventsApi = {
     return response.data as CoffeeEvent[];
   },
 
-  // 獲取單一活動詳情
+  // 取得單一活動詳情
   getById: async (id: string): Promise<CoffeeEvent | null> => {
     try {
       const response = await api.get(`/events/${id}`, { params: { checkFavorite: 'true' } });
@@ -289,7 +278,7 @@ export const eventsApi = {
     }
   },
 
-  // 獲取用戶投稿
+  // 取得用戶投稿
   getMySubmissions: async (): Promise<UserSubmissionsResponse> => {
     const response = await api.get('/events/me');
     return response.data as UserSubmissionsResponse;
@@ -320,16 +309,10 @@ export const eventsApi = {
 
   // 管理員專用 API
   admin: {
-    // 獲取待審核活動
+    // 取得待審核活動 TODO: 換用這隻
     getPending: async (): Promise<CoffeeEvent[]> => {
       const response = await api.get('/events/admin/pending');
       return response.data as CoffeeEvent[];
-    },
-
-    // 審核活動 - 更新為支援 reason
-    review: async (id: string, reviewData: EventReviewRequest): Promise<CoffeeEvent> => {
-      const response = await api.patch(`/events/${id}/review`, reviewData);
-      return response.data as CoffeeEvent;
     },
 
     // 快速通過
@@ -348,51 +331,10 @@ export const eventsApi = {
 
 // 用戶相關 API
 export const usersApi = {
-  // 獲取用戶資料
-  getProfile: async (): Promise<User> => {
-    const response = await api.get('/users/profile');
-    return response.data as User;
-  },
-
   // 更新用戶資料
   updateProfile: async (updateData: UpdateUserRequest): Promise<User> => {
     const response = await api.put('/users/profile', updateData);
     return response.data as User;
-  },
-
-  // 獲取通知列表
-  getNotifications: async (params?: NotificationSearchParams): Promise<NotificationsResponse> => {
-    const queryParams: Record<string, string> = {};
-
-    if (params?.isRead !== undefined) queryParams.isRead = params.isRead.toString();
-    if (params?.type) queryParams.type = params.type;
-    if (params?.page) queryParams.page = params.page.toString();
-    if (params?.limit) queryParams.limit = params.limit.toString();
-
-    const response = await api.get('/users/notifications', { params: queryParams });
-    return response.data as NotificationsResponse;
-  },
-
-  // 獲取未讀通知數量
-  getUnreadCount: async (): Promise<UnreadCountResponse> => {
-    const response = await api.get('/users/notifications/unread-count');
-    return response.data as UnreadCountResponse;
-  },
-
-  // 標記單一通知為已讀
-  markNotificationAsRead: async (notificationId: string): Promise<UserNotification> => {
-    const response = await api.patch(`/users/notifications/${notificationId}/read`);
-    return response.data as UserNotification;
-  },
-
-  // 批量標記通知為已讀
-  markNotificationsAsRead: async (notificationIds: string[]): Promise<void> => {
-    await api.patch('/users/notifications/read', { notificationIds });
-  },
-
-  // 刪除通知
-  deleteNotification: async (notificationId: string): Promise<void> => {
-    await api.delete(`/users/notifications/${notificationId}`);
   },
 
   // 收藏相關
@@ -432,53 +374,9 @@ export const usersApi = {
   },
 };
 
-// 推播通知相關 API
-export const notificationsApi = {
-  // 獲取 VAPID 公鑰
-  getVapidKey: async (): Promise<{ publicKey: string }> => {
-    const response = await api.get('/notifications/vapid-key');
-    return response.data;
-  },
-
-  // 訂閱推播通知
-  subscribe: async (subscriptionData: {
-    userId: string;
-    subscription: PushSubscriptionJSON;
-    platform: string;
-  }): Promise<{ success: boolean; message: string }> => {
-    const response = await api.post('/notifications/subscribe', subscriptionData);
-    return response.data;
-  },
-
-  // 取消訂閱推播通知
-  unsubscribe: async (userId: string): Promise<{ success: boolean; message: string }> => {
-    const response = await api.delete(`/notifications/unsubscribe/${userId}`);
-    return response.data;
-  },
-
-  // 發送審核通過通知 (Admin 使用)
-  sendApprovalNotification: async (notificationData: {
-    userId: string;
-    type: 'artist' | 'event';
-    submissionId: string;
-    title?: string;
-    message?: string;
-  }): Promise<{ success: boolean; message: string; sentAt: string }> => {
-    const response = await api.post('/notifications/send-approval', notificationData);
-    return response.data;
-  },
-};
-
 // 統一錯誤處理函數
 export function handleApiError(error: unknown): string {
-  console.error('API Error:', error);
-
   if (axios.isAxiosError(error)) {
-    // 記錄詳細錯誤資訊
-    console.error('Response status:', error.response?.status);
-    console.error('Response data:', error.response?.data);
-    console.error('Request config:', error.config);
-
     if (error.response?.data?.message) {
       return error.response.data.message;
     }
@@ -492,67 +390,13 @@ export function handleApiError(error: unknown): string {
       return '權限不足';
     }
     if (error.response?.status === 400) {
-      return '請求格式錯誤';
+      return '格式錯誤';
     }
     if (error.message) {
       return error.message;
     }
   }
   return '發生未知錯誤';
-}
-
-// 處理表單錯誤 - 解析後端的結構化錯誤格式
-export interface FormFieldError {
-  field: string;
-  message: string;
-  code?: string;
-}
-
-export function handleFormError(error: unknown): FormFieldError[] {
-  if (axios.isAxiosError(error) && error.response?.data) {
-    const responseData = error.response.data;
-
-    // 如果是單一錯誤
-    if (responseData.error && responseData.field) {
-      return [
-        {
-          field: responseData.field,
-          message: responseData.error,
-          code: responseData.code,
-        },
-      ];
-    }
-
-    // 如果是多個錯誤的陣列
-    if (Array.isArray(responseData)) {
-      return responseData.map((err: any) => ({
-        field: err.field || '',
-        message: err.error || err.message || '未知錯誤',
-        code: err.code,
-      }));
-    }
-
-    // 如果是錯誤物件陣列
-    if (responseData.errors && Array.isArray(responseData.errors)) {
-      return responseData.errors.map((err: any) => ({
-        field: err.field || '',
-        message: err.error || err.message || '未知錯誤',
-        code: err.code,
-      }));
-    }
-  }
-
-  return [];
-}
-
-// 檢查網路連線
-export async function checkApiConnection(): Promise<boolean> {
-  try {
-    await api.get('/health');
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 export default api;

@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { eventsApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
-// 獲取單一事件
+// 取得單一事件
 export const useEvent = (id: string) => {
   const { loading: authLoading } = useAuth();
 

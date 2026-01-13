@@ -23,7 +23,7 @@ export const formatDateForAPI = (date: Date): string => {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 };
 
-/** 獲取當月的開始和結束日期 */
+/** 取得當月的開始和結束日期 */
 export const getCurrentMonthRange = () => {
   const now = new Date();
   const year = now.getFullYear();

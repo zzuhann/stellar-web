@@ -44,7 +44,7 @@ export default function SubmitArtistClient() {
   const editId = searchParams.get('edit');
   const isEditMode = Boolean(editId);
 
-  // 獲取要編輯的藝人資料
+  // 取得要編輯的藝人資料
   const {
     data: existingArtist,
     isLoading: artistLoading,
