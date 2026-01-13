@@ -7,12 +7,16 @@ import { useEvent } from '@/hooks/useEvent';
 import { css } from '@/styled-system/css';
 import { cleanSocialMediaHandle } from '@/utils/socialMedia';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
+import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import SwiperBanner from '../SwiperBanner';
 import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
 import Image from 'next/image';
 import ArtistModal from './ArtistModal';
 import DetailSkeleton from './DetailSkeleton';
 import { usePageShare } from '@/hooks/usePageShare';
+import { useAuth } from '@/lib/auth-context';
+import { useFavoriteToggle } from '@/hooks/useFavorite';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -156,6 +160,70 @@ const descriptionContent = css({
   whiteSpace: 'pre-wrap',
 });
 
+// 收藏 button
+const favoriteButton = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '8px',
+  padding: '8px 12px',
+  borderRadius: 'var(--radius-lg)',
+  fontSize: '14px',
+  fontWeight: '600',
+  transition: 'all 0.2s ease',
+  cursor: 'pointer',
+  border: '1px solid',
+  borderColor: 'color.text.secondary',
+  color: 'color.text.secondary',
+  marginBottom: '16px',
+  background: 'transparent',
+
+  '&:disabled': {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  },
+
+  '&:hover': {
+    background: 'color.background.secondary',
+  },
+
+  '&:active': {
+    transform: 'translateY(0)',
+  },
+});
+
+const favoriteButtonActive = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '8px',
+  padding: '8px 12px',
+  borderRadius: 'var(--radius-lg)',
+  fontSize: '14px',
+  fontWeight: '600',
+  transition: 'all 0.2s ease',
+  cursor: 'pointer',
+  border: '1px solid',
+  borderColor: '#ff6362',
+  color: 'white',
+  background: '#ff6362',
+  marginBottom: '16px',
+
+  '&:disabled': {
+    opacity: 0.6,
+    cursor: 'not-allowed',
+  },
+
+  '&:hover': {
+    background: '#e65958',
+    borderColor: '#e65958',
+  },
+
+  '&:active': {
+    transform: 'translateY(0)',
+  },
+});
+
 const ctaButton = css({
   padding: '10px 40px',
   borderRadius: 'var(--radius-lg)',
@@ -195,8 +263,25 @@ type EventDetailProps = {
 const EventDetail = ({ eventId }: EventDetailProps) => {
   const router = useRouter();
   const [showArtistModal, setShowArtistModal] = useState(false);
+  const { user, toggleAuthModal } = useAuth();
+  const favoriteToggle = useFavoriteToggle();
 
   const { data: event, error, isLoading } = useEvent(eventId);
+
+  const isFavorited = event?.isFavorited ?? false;
+
+  const handleFavoriteClick = () => {
+    if (!user) {
+      toggleAuthModal();
+      return;
+    }
+    if (!event) return;
+
+    favoriteToggle.mutate({
+      eventId: event.id,
+      isFavorited,
+    });
+  };
 
   usePageShare({
     text: `${event?.title} | STELLAR 台灣生日應援地圖`,
@@ -274,6 +359,18 @@ const EventDetail = ({ eventId }: EventDetailProps) => {
 
             {/* 主要內容 */}
             <div className={contentSection}>
+              <button
+                className={isFavorited ? favoriteButtonActive : favoriteButton}
+                onClick={handleFavoriteClick}
+                disabled={favoriteToggle.isPending}
+              >
+                {isFavorited ? (
+                  <HeartSolid width={20} height={20} color="white" />
+                ) : (
+                  <HeartOutline width={20} height={20} color="var(--color-text-secondary)" />
+                )}
+                {isFavorited ? '已收藏' : '收藏'}
+              </button>
               <h2 className={eventTitle}>{event.title}</h2>
 
               {/* 藝人資訊 */}

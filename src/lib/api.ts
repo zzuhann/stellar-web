@@ -22,6 +22,10 @@ import {
   NotificationSearchParams,
   NotificationsResponse,
   UnreadCountResponse,
+  FavoriteFilterParams,
+  FavoritesResponse,
+  UserFavorite,
+  FavoriteCheckResponse,
 } from '@/types';
 
 // 建立 Axios 實例
@@ -220,7 +224,7 @@ export interface UserSubmissionsResponse {
 export const eventsApi = {
   // 獲取活動列表（支援新的查詢參數）
   getAll: async (params?: EventSearchParams): Promise<EventsResponse> => {
-    const queryParams: Record<string, string> = {};
+    const queryParams: Record<string, string> = { checkFavorite: 'true' };
 
     if (params?.search) queryParams.search = params.search;
     if (params?.artistId) queryParams.artistId = params.artistId;
@@ -275,7 +279,7 @@ export const eventsApi = {
   // 獲取單一活動詳情
   getById: async (id: string): Promise<CoffeeEvent | null> => {
     try {
-      const response = await api.get(`/events/${id}`);
+      const response = await api.get(`/events/${id}`, { params: { checkFavorite: 'true' } });
       return response.data as CoffeeEvent;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
@@ -389,6 +393,42 @@ export const usersApi = {
   // 刪除通知
   deleteNotification: async (notificationId: string): Promise<void> => {
     await api.delete(`/users/notifications/${notificationId}`);
+  },
+
+  // 收藏相關
+  favorites: {
+    // 取得收藏列表
+    getAll: async (params?: FavoriteFilterParams): Promise<FavoritesResponse> => {
+      const searchParams = new URLSearchParams();
+
+      if (params?.sort) searchParams.set('sort', params.sort);
+      if (params?.sortOrder) searchParams.set('sortOrder', params.sortOrder);
+      if (params?.status) searchParams.set('status', params.status);
+      if (params?.artistIds?.length) searchParams.set('artistIds', params.artistIds.join(','));
+      if (params?.page) searchParams.set('page', String(params.page));
+      if (params?.limit) searchParams.set('limit', String(params.limit));
+
+      const queryString = searchParams.toString();
+      const response = await api.get(`/users/favorites${queryString ? `?${queryString}` : ''}`);
+      return response.data as FavoritesResponse;
+    },
+
+    // 新增收藏
+    add: async (eventId: string): Promise<UserFavorite> => {
+      const response = await api.post('/users/favorites', { eventId });
+      return response.data as UserFavorite;
+    },
+
+    // 取消收藏
+    remove: async (eventId: string): Promise<void> => {
+      await api.delete(`/users/favorites/${eventId}`);
+    },
+
+    // 檢查是否已收藏
+    check: async (eventId: string): Promise<FavoriteCheckResponse> => {
+      const response = await api.get(`/users/favorites/${eventId}/check`);
+      return response.data as FavoriteCheckResponse;
+    },
   },
 };
 

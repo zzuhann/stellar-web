@@ -55,6 +55,7 @@ export interface CoffeeEvent {
   createdBy: string;
   createdAt: FirebaseTimestamp;
   updatedAt: FirebaseTimestamp;
+  isFavorited?: boolean; // 收藏狀態（登入時才有）
 }
 
 export interface User {
@@ -186,6 +187,7 @@ export interface EventSearchParams {
   sortOrder?: 'asc' | 'desc'; // 排序方向
   startTimeFrom?: string; // 開始時間範圍（從）
   startTimeTo?: string; // 開始時間範圍（到）
+  checkFavorite?: boolean; // 是否檢查收藏狀態（登入時才有效）
 }
 
 // 地圖相關型別
@@ -298,4 +300,41 @@ export interface UpdateEventRequest {
   };
   mainImage?: string;
   detailImage?: string[];
+}
+
+// 用戶收藏
+export interface UserFavorite {
+  id: string;
+  userId: string;
+  eventId: string;
+  createdAt: FirebaseTimestamp;
+}
+
+// 收藏篩選參數
+export interface FavoriteFilterParams {
+  sort?: 'favoritedAt' | 'startTime';
+  sortOrder?: 'asc' | 'desc';
+  status?: 'notEnded' | 'active' | 'upcoming' | 'ended' | 'all'; // 預設 notEnded
+  artistIds?: string[]; // 篩選包含特定藝人的活動
+  page?: number;
+  limit?: number;
+}
+
+// 收藏列表回應格式
+export interface FavoritesResponse {
+  favorites: Array<{
+    favorite: UserFavorite;
+    event: CoffeeEvent;
+  }>;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// 檢查收藏狀態回應
+export interface FavoriteCheckResponse {
+  isFavorited: boolean;
 }
