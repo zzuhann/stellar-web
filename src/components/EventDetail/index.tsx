@@ -363,13 +363,21 @@ const EventDetail = ({ eventId }: EventDetailProps) => {
                 className={isFavorited ? favoriteButtonActive : favoriteButton}
                 onClick={handleFavoriteClick}
                 disabled={favoriteToggle.isPending}
+                aria-label={isFavorited ? `取消收藏「${event.title}」` : `收藏「${event.title}」`}
+                aria-pressed={isFavorited}
+                aria-busy={favoriteToggle.isPending}
               >
                 {isFavorited ? (
-                  <HeartSolid width={20} height={20} color="white" />
+                  <HeartSolid width={20} height={20} color="white" aria-hidden="true" />
                 ) : (
-                  <HeartOutline width={20} height={20} color="var(--color-text-secondary)" />
+                  <HeartOutline
+                    width={20}
+                    height={20}
+                    color="var(--color-text-secondary)"
+                    aria-hidden="true"
+                  />
                 )}
-                {isFavorited ? '已收藏' : '收藏'}
+                <span aria-hidden="true">{isFavorited ? '已收藏' : '收藏'}</span>
               </button>
               <h2 className={eventTitle}>{event.title}</h2>
 
