@@ -1,3 +1,5 @@
+'use client';
+
 import { Suspense } from 'react';
 import dynamicImport from 'next/dynamic';
 

@@ -1,3 +1,5 @@
+'use client';
+
 import dynamicImport from 'next/dynamic';
 import { redirect } from 'next/navigation';
 

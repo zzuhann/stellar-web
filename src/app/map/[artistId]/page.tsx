@@ -1,11 +1,7 @@
-import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { artistsApi } from '@/lib/api';
-
-const MapPage = dynamic(() => import('@/components/map/MapPage'), {
-  ssr: false,
-});
+import MapClientWrapper from './MapClientWrapper';
 
 interface MapWithArtistPageProps {
   params: {
@@ -61,5 +57,5 @@ export default function MapWithArtistPage({ params, searchParams }: MapWithArtis
     notFound();
   }
 
-  return <MapPage artistId={artistId} search={searchParams?.search} />;
+  return <MapClientWrapper artistId={artistId} search={searchParams?.search} />;
 }
