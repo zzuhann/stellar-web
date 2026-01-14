@@ -25,13 +25,6 @@ export const useSortBy = () => {
   });
 };
 
-export const useArtistIds = () => {
-  return useQueryState('artistIds', {
-    defaultValue: '',
-    parse: (value) => value || '',
-  });
-};
-
 export const usePage = () => {
   return useQueryState('page', {
     defaultValue: 1,

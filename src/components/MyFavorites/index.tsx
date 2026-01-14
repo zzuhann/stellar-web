@@ -9,9 +9,8 @@ import { css } from '@/styled-system/css';
 import FilterBar from './components/FilterBar';
 import FavoritesList from './components/FavoritesList';
 import { useFavorites } from './hooks/useFavorites';
-import { Artist } from '@/types';
 import { QueryStateProvider, useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
-import { useSortBy, useArtistIds, usePage, useShowOnlyActive, SortByOption } from './queryState';
+import { useSortBy, usePage, useShowOnlyActive, SortByOption } from './queryState';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -41,18 +40,7 @@ function MyFavoritesContent() {
 
   const [showOnlyActive, setShowOnlyActive] = useShowOnlyActive();
   const [sortBy, setSortBy] = useSortBy();
-  const [artistIdsString, setArtistIdsString] = useArtistIds();
   const [page, setPage] = usePage();
-
-  // 轉換字串為陣列
-  const artistIds = useMemo(() => {
-    if (!artistIdsString) return [];
-    return artistIdsString.split(',').filter(Boolean);
-  }, [artistIdsString]);
-
-  const setArtistIds = (ids: string[]) => {
-    setArtistIdsString(ids.length > 0 ? ids.join(',') : '');
-  };
 
   // 把 sortBy 拆解為 sort 和 sortOrder
   const { sort, sortOrder } = useMemo((): {
@@ -72,37 +60,11 @@ function MyFavoritesContent() {
       status: showOnlyActive ? 'notEnded' : 'all',
       sort,
       sortOrder,
-      artistIds: artistIds.length > 0 ? artistIds : undefined,
       page,
       limit: 50,
     },
     !!user
   );
-
-  // 從收藏列表中抓出所有藝人
-  const availableArtists = useMemo(() => {
-    if (!data?.favorites) return [];
-
-    const artistsMap = new Map<string, Artist>();
-
-    data.favorites.forEach(({ event }) => {
-      event.artists.forEach((artist) => {
-        if (!artistsMap.has(artist.id)) {
-          artistsMap.set(artist.id, {
-            id: artist.id,
-            stageName: artist.name,
-            profileImage: artist.profileImage,
-            status: 'approved',
-            createdBy: '',
-            createdAt: '',
-            updatedAt: '',
-          } as Artist);
-        }
-      });
-    });
-
-    return Array.from(artistsMap.values()).sort((a, b) => a.stageName.localeCompare(b.stageName));
-  }, [data?.favorites]);
 
   const handleShowOnlyActiveChange = (show: boolean) => {
     mergeUpdates(() => {
@@ -114,13 +76,6 @@ function MyFavoritesContent() {
   const handleSortByChange = (newSortBy: SortByOption) => {
     mergeUpdates(() => {
       setSortBy(newSortBy);
-      setPage(1);
-    });
-  };
-
-  const handleArtistIdsChange = (newArtistIds: string[]) => {
-    mergeUpdates(() => {
-      setArtistIds(newArtistIds);
       setPage(1);
     });
   };
@@ -152,9 +107,6 @@ function MyFavoritesContent() {
             onShowOnlyActiveChange={handleShowOnlyActiveChange}
             sortBy={sortBy}
             onSortByChange={handleSortByChange}
-            selectedArtistIds={artistIds}
-            onArtistIdsChange={handleArtistIdsChange}
-            availableArtists={availableArtists}
           />
 
           {isLoadingState && <Loading description="載入中..." />}
