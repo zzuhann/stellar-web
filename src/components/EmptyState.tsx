@@ -7,8 +7,8 @@ const emptyStateContainer = css({
 });
 
 const emptyStateIcon = css({
-  fontSize: '48px',
-  marginBottom: '16px',
+  fontSize: '32px',
+  marginBottom: '8px',
 });
 
 const emptyStateTitle = css({
