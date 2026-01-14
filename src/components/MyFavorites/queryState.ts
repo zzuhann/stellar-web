@@ -1,28 +1,26 @@
 import { useQueryState } from '@/hooks/useQueryState';
 
-export const useStatus = () => {
-  return useQueryState('status', {
-    defaultValue: 'notEnded' as 'notEnded' | 'all',
-    parse: (value) => {
-      return value === 'notEnded' || value === 'all' ? value : 'notEnded';
-    },
+export type SortByOption = 'favorited-desc' | 'favorited-asc' | 'startTime-asc' | 'startTime-desc';
+
+export const useShowOnlyActive = () => {
+  return useQueryState('showOnlyActive', {
+    defaultValue: false,
   });
 };
 
-export const useSort = () => {
-  return useQueryState('sort', {
-    defaultValue: 'favoritedAt' as 'favoritedAt' | 'startTime',
-    parse: (value) => {
-      return value === 'favoritedAt' || value === 'startTime' ? value : 'favoritedAt';
-    },
-  });
-};
-
-export const useSortOrder = () => {
-  return useQueryState('sortOrder', {
-    defaultValue: 'desc' as 'asc' | 'desc',
-    parse: (value) => {
-      return value === 'asc' || value === 'desc' ? value : 'desc';
+export const useSortBy = () => {
+  return useQueryState('sortBy', {
+    defaultValue: 'favorited-desc' as SortByOption,
+    parse: (value): SortByOption => {
+      const validOptions: SortByOption[] = [
+        'favorited-desc',
+        'favorited-asc',
+        'startTime-asc',
+        'startTime-desc',
+      ];
+      return validOptions.includes(value as SortByOption)
+        ? (value as SortByOption)
+        : 'favorited-desc';
     },
   });
 };

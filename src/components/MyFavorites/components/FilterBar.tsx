@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { css } from '@/styled-system/css';
 import { Artist } from '@/types';
+import { SortByOption } from '../queryState';
 
 const filterBarContainer = css({
   display: 'flex',
@@ -112,25 +113,31 @@ const checkbox = css({
   cursor: 'pointer',
 });
 
+const checkboxLabel = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  fontSize: '14px',
+  color: 'color.text.primary',
+  cursor: 'pointer',
+  userSelect: 'none',
+});
+
 type FilterBarProps = {
-  status: 'notEnded' | 'all';
-  onStatusChange: (status: 'notEnded' | 'all') => void;
-  sort: 'favoritedAt' | 'startTime';
-  onSortChange: (sort: 'favoritedAt' | 'startTime') => void;
-  sortOrder: 'asc' | 'desc';
-  onSortOrderChange: (sortOrder: 'asc' | 'desc') => void;
+  showOnlyActive: boolean;
+  onShowOnlyActiveChange: (show: boolean) => void;
+  sortBy: SortByOption;
+  onSortByChange: (sortBy: SortByOption) => void;
   selectedArtistIds: string[];
   onArtistIdsChange: (artistIds: string[]) => void;
   availableArtists: Artist[];
 };
 
 const FilterBar = ({
-  status,
-  onStatusChange,
-  sort,
-  onSortChange,
-  sortOrder,
-  onSortOrderChange,
+  showOnlyActive,
+  onShowOnlyActiveChange,
+  sortBy,
+  onSortByChange,
   selectedArtistIds,
   onArtistIdsChange,
   availableArtists,
@@ -155,17 +162,15 @@ const FilterBar = ({
   return (
     <div className={filterBarContainer}>
       <div className={filterRow}>
-        <div className={filterLabel}>活動狀態</div>
-        <div className={filterControl}>
-          <select
-            className={selectInput}
-            value={status}
-            onChange={(e) => onStatusChange(e.target.value as 'notEnded' | 'all')}
-          >
-            <option value="notEnded">未結束</option>
-            <option value="all">全部</option>
-          </select>
-        </div>
+        <label className={checkboxLabel}>
+          <input
+            type="checkbox"
+            className={checkbox}
+            checked={showOnlyActive}
+            onChange={(e) => onShowOnlyActiveChange(e.target.checked)}
+          />
+          <span>只顯示未結束的應援</span>
+        </label>
       </div>
 
       {availableArtists.length > 0 && (
@@ -187,19 +192,13 @@ const FilterBar = ({
         <div className={filterControl}>
           <select
             className={selectInput}
-            value={sort}
-            onChange={(e) => onSortChange(e.target.value as 'favoritedAt' | 'startTime')}
+            value={sortBy}
+            onChange={(e) => onSortByChange(e.target.value as SortByOption)}
           >
-            <option value="favoritedAt">收藏時間</option>
-            <option value="startTime">活動開始時間</option>
-          </select>
-          <select
-            className={selectInput}
-            value={sortOrder}
-            onChange={(e) => onSortOrderChange(e.target.value as 'asc' | 'desc')}
-          >
-            <option value="desc">倒序</option>
-            <option value="asc">正序</option>
+            <option value="favorited-desc">收藏時間：由新到舊</option>
+            <option value="favorited-asc">收藏時間：由舊到新</option>
+            <option value="startTime-asc">活動時間：由早到晚</option>
+            <option value="startTime-desc">活動時間：由晚到早</option>
           </select>
         </div>
       </div>

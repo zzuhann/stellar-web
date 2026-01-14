@@ -11,7 +11,7 @@ import FavoritesList from './components/FavoritesList';
 import { useFavorites } from './hooks/useFavorites';
 import { Artist } from '@/types';
 import { QueryStateProvider, useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
-import { useSort, useArtistIds, usePage, useSortOrder, useStatus } from './queryState';
+import { useSortBy, useArtistIds, usePage, useShowOnlyActive, SortByOption } from './queryState';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -39,9 +39,8 @@ function MyFavoritesContent() {
 
   const { mergeUpdates } = useQueryStateContextMergeUpdates();
 
-  const [status, setStatus] = useStatus();
-  const [sort, setSort] = useSort();
-  const [sortOrder, setSortOrder] = useSortOrder();
+  const [showOnlyActive, setShowOnlyActive] = useShowOnlyActive();
+  const [sortBy, setSortBy] = useSortBy();
   const [artistIdsString, setArtistIdsString] = useArtistIds();
   const [page, setPage] = usePage();
 
@@ -55,10 +54,22 @@ function MyFavoritesContent() {
     setArtistIdsString(ids.length > 0 ? ids.join(',') : '');
   };
 
+  // 把 sortBy 拆解為 sort 和 sortOrder
+  const { sort, sortOrder } = useMemo((): {
+    sort: 'favoritedAt' | 'startTime';
+    sortOrder: 'asc' | 'desc';
+  } => {
+    const [field, order] = sortBy.split('-') as ['favorited' | 'startTime', 'asc' | 'desc'];
+    return {
+      sort: field === 'favorited' ? 'favoritedAt' : 'startTime',
+      sortOrder: order,
+    };
+  }, [sortBy]);
+
   // 取得收藏列表
   const { data, isLoading, error } = useFavorites(
     {
-      status,
+      status: showOnlyActive ? 'notEnded' : 'all',
       sort,
       sortOrder,
       artistIds: artistIds.length > 0 ? artistIds : undefined,
@@ -93,23 +104,16 @@ function MyFavoritesContent() {
     return Array.from(artistsMap.values()).sort((a, b) => a.stageName.localeCompare(b.stageName));
   }, [data?.favorites]);
 
-  const handleStatusChange = (newStatus: 'notEnded' | 'all') => {
+  const handleShowOnlyActiveChange = (show: boolean) => {
     mergeUpdates(() => {
-      setStatus(newStatus);
+      setShowOnlyActive(show);
       setPage(1);
     });
   };
 
-  const handleSortChange = (newSort: 'favoritedAt' | 'startTime') => {
+  const handleSortByChange = (newSortBy: SortByOption) => {
     mergeUpdates(() => {
-      setSort(newSort);
-      setPage(1);
-    });
-  };
-
-  const handleSortOrderChange = (newSortOrder: 'asc' | 'desc') => {
-    mergeUpdates(() => {
-      setSortOrder(newSortOrder);
+      setSortBy(newSortBy);
       setPage(1);
     });
   };
@@ -144,12 +148,10 @@ function MyFavoritesContent() {
       <div className={mainContainer}>
         <div className={contentWrapper}>
           <FilterBar
-            status={status}
-            onStatusChange={handleStatusChange}
-            sort={sort}
-            onSortChange={handleSortChange}
-            sortOrder={sortOrder}
-            onSortOrderChange={handleSortOrderChange}
+            showOnlyActive={showOnlyActive}
+            onShowOnlyActiveChange={handleShowOnlyActiveChange}
+            sortBy={sortBy}
+            onSortByChange={handleSortByChange}
             selectedArtistIds={artistIds}
             onArtistIdsChange={handleArtistIdsChange}
             availableArtists={availableArtists}

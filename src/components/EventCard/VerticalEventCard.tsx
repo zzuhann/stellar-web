@@ -211,7 +211,7 @@ interface VerticalEventCardProps {
 
 const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => {
   const pathname = usePathname();
-  const isIndexPage = pathname === '/';
+  const isShowSubmissionInfo = pathname !== '/' && pathname !== '/my-favorite';
   const submissionTime = event.createdAt
     ? firebaseTimestampToDate(event.createdAt as FirebaseTimestamp).toLocaleDateString('zh-TW')
     : '';
@@ -234,7 +234,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
               style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}
             />
 
-            {!isIndexPage && (
+            {isShowSubmissionInfo && (
               <span className={statusBadge({ status: event.status })}>
                 {getStatusText(event.status, event.rejectedReason)}
               </span>
@@ -278,7 +278,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
                 )}
               </div>
 
-              {submissionTime && !isIndexPage && (
+              {submissionTime && isShowSubmissionInfo && (
                 <div className={styledSubmissionTime}>投稿時間：{submissionTime}</div>
               )}
             </div>
@@ -294,7 +294,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
             style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}
           />
 
-          {!isIndexPage && (
+          {isShowSubmissionInfo && (
             <span className={statusBadge({ status: event.status })}>
               {getStatusText(event.status, event.rejectedReason)}
             </span>
@@ -336,7 +336,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
               )}
             </div>
 
-            {submissionTime && !isIndexPage && (
+            {submissionTime && isShowSubmissionInfo && (
               <div className={submissionTime}>投稿時間：{submissionTime}</div>
             )}
           </div>
