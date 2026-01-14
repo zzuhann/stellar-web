@@ -120,18 +120,15 @@ export default function MapPage({
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                     url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
                   />
-
+                  123
                   {/* 地圖事件監聽器 */}
                   <MapEventHandler />
-
                   {/* 地圖中心點更新器 */}
                   <MapCenterUpdater />
-
                   {/* 用戶位置標記 */}
                   {latitude && longitude && userLocationIcon && (
                     <Marker position={[latitude, longitude]} icon={userLocationIcon} />
                   )}
-
                   {/* Marker 聚合群組 */}
                   <MarkerCluster mapEvents={mapEvents} artistData={artistData ?? null} />
                 </SafeMapContainer>
