@@ -1,3 +1,5 @@
+import { GoogleAnalytics } from '@next/third-parties/google';
+
 import type { Metadata } from 'next';
 import { Noto_Sans_TC } from 'next/font/google'; // 改用 CSS 引入
 import './globals.css';
@@ -149,6 +151,7 @@ export default function RootLayout({
           </AuthProvider>
         </QueryProvider>
       </body>
+      <GoogleAnalytics gaId="G-4HGC08K6JK" />
     </html>
   );
 }
