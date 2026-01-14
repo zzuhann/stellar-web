@@ -1,6 +1,6 @@
 import { defineConfig } from '@pandacss/dev';
 import { borderRadius, colors, shadows } from './src/styles/theme';
-import { shimmer, spin } from './src/styles/keyframes';
+import { shimmer, spin, slideDown } from './src/styles/keyframes';
 
 export default defineConfig({
   // Whether to use css reset
@@ -18,6 +18,7 @@ export default defineConfig({
       keyframes: {
         spin,
         shimmer,
+        slideDown,
       },
       tokens: {
         colors: { ...colors },
