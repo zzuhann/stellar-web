@@ -256,17 +256,13 @@ const bottomImagesContainer = css({
   marginTop: '24px',
 });
 
-type EventDetailProps = {
-  eventId: string;
-};
-
-const EventDetail = ({ eventId }: EventDetailProps) => {
+const EventDetail = ({ eventId }: { eventId: string }) => {
   const router = useRouter();
   const [showArtistModal, setShowArtistModal] = useState(false);
   const { user, toggleAuthModal } = useAuth();
   const favoriteToggle = useFavoriteToggle();
 
-  const { data: event, error, isLoading } = useEvent(eventId);
+  const { data: event, error, isLoading } = useEvent(eventId ?? '');
 
   const isFavorited = event?.isFavorited ?? false;
 
@@ -285,7 +281,7 @@ const EventDetail = ({ eventId }: EventDetailProps) => {
 
   usePageShare({
     text: `${event?.title} | STELLAR 台灣生日應援地圖`,
-    url: window.location.href,
+    url: typeof window !== 'undefined' ? window.location.href : '',
   });
 
   const bannerItems = (() => {

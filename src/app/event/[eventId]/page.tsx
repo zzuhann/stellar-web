@@ -3,37 +3,30 @@ import { eventsApi } from '@/lib/api';
 import EventDetail from '@/components/EventDetail';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     eventId: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { eventId } = await params;
   try {
-    const event = await eventsApi.getById(params.eventId);
-
-    if (!event) {
-      return {
-        title: '生日應援不存在',
-        description: '',
-      };
-    }
-
-    const title = event.title;
-
+    const event = await eventsApi.getById(eventId);
+    const title = event?.title;
+    const description = event?.description;
     return {
       title,
-      description: event.description || '',
+      description,
       openGraph: {
         title,
-        description: event.description || '',
-        images: event.mainImage ? [event.mainImage] : [],
+        description,
+        images: event?.mainImage ? [event.mainImage] : [],
       },
       twitter: {
         card: 'summary_large_image',
         title,
-        description: event.description || '',
-        images: event.mainImage ? [event.mainImage] : [],
+        description,
+        images: event?.mainImage ? [event.mainImage] : [],
       },
     };
   } catch {
@@ -44,6 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default function EventDetailPage({ params }: PageProps) {
-  return <EventDetail eventId={params.eventId} />;
+export default async function EventDetailPage({ params }: PageProps) {
+  const { eventId } = await params;
+  return <EventDetail eventId={eventId} />;
 }
