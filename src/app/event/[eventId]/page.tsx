@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { eventsApi } from '@/lib/api';
 import EventDetail from '@/components/EventDetail';
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
 
 interface PageProps {
   params: Promise<{
@@ -39,5 +40,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function EventDetailPage({ params }: PageProps) {
   const { eventId } = await params;
-  return <EventDetail eventId={eventId} />;
+
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery({
+    queryKey: ['event', eventId],
+    queryFn: () => eventsApi.getById(eventId),
+  });
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <EventDetail eventId={eventId} />
+    </HydrationBoundary>
+  );
 }
