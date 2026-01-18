@@ -4,17 +4,18 @@ import { artistsApi } from '@/lib/api';
 import MapClientWrapper from './MapClientWrapper';
 
 interface MapWithArtistPageProps {
-  params: {
+  params: Promise<{
     artistId: string;
-  };
-  searchParams?: {
+  }>;
+  searchParams: Promise<{
     search?: string;
-  };
+  }>;
 }
 
 export async function generateMetadata({ params }: MapWithArtistPageProps): Promise<Metadata> {
   try {
-    const artist = await artistsApi.getById(params.artistId);
+    const { artistId } = await params;
+    const artist = await artistsApi.getById(artistId);
 
     if (!artist) {
       return {
@@ -49,13 +50,14 @@ export async function generateMetadata({ params }: MapWithArtistPageProps): Prom
   }
 }
 
-export default function MapWithArtistPage({ params, searchParams }: MapWithArtistPageProps) {
-  const { artistId } = params;
+export default async function MapWithArtistPage({ params, searchParams }: MapWithArtistPageProps) {
+  const { artistId } = await params;
+  const { search } = await searchParams;
 
   // Validate artistId format if needed
   if (!artistId || artistId.trim() === '') {
     notFound();
   }
 
-  return <MapClientWrapper artistId={artistId} search={searchParams?.search} />;
+  return <MapClientWrapper artistId={artistId} search={search} />;
 }

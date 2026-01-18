@@ -1,8 +1,8 @@
 // Firebase 配置與初始化
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
-import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 // Firebase 配置
 const firebaseConfig = {
@@ -29,7 +29,7 @@ export const db = getFirestore(app);
 //   if (!auth.emulatorConfig) {
 //     connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
 //   }
-//   
+//
 //   // Firestore Emulator
 //   try {
 //     connectFirestoreEmulator(db, 'localhost', 8080);

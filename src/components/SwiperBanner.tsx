@@ -133,7 +133,7 @@ interface SwiperBannerProps {
 
 export default function SwiperBanner({ items = [] }: SwiperBannerProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
-  const swiperRef = useRef<SwiperType>();
+  const swiperRef = useRef<SwiperType | null>(null);
 
   if (items.length === 0) {
     return null;

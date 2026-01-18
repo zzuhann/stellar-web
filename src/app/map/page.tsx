@@ -1,24 +1,19 @@
-'use client';
-
-import dynamicImport from 'next/dynamic';
 import { redirect } from 'next/navigation';
-
-const MapPage = dynamicImport(() => import('@/components/map/MapPage'), {
-  ssr: false,
-});
+import MapClientWrapper from './[artistId]/MapClientWrapper';
 
 interface MapPageRouteProps {
-  searchParams?: {
+  searchParams: Promise<{
     artistId?: string;
     search?: string;
-  };
+  }>;
 }
 
-export default function MapPageRoute({ searchParams }: MapPageRouteProps) {
+export default async function MapPageRoute({ searchParams }: MapPageRouteProps) {
+  const { artistId } = await searchParams;
   // 如果沒有 artistId 參數，重導向到首頁
-  if (!searchParams?.artistId) {
+  if (!artistId) {
     redirect('/');
   }
 
-  return <MapPage artistId={searchParams.artistId} search={searchParams.search} />;
+  return <MapClientWrapper artistId={artistId} />;
 }

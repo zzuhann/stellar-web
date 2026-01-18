@@ -4,10 +4,8 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/lib/toast';
 import { css } from '@/styled-system/css';
-import { UserIcon, BellIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { UserIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useEffect } from 'react';
-import { useFeatureFlag } from '@/hooks/useFeatureFlag';
-import { FEATURE_FLAGS } from '@/constants';
 import Loading from '@/components/Loading';
 
 interface SettingItem {
@@ -162,9 +160,6 @@ function SettingItem({ item }: { item: SettingItem }) {
 export default function SettingsPage() {
   const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
-  const { isEnabled: isNotificationsEnabled, loading: isNotificationsLoading } = useFeatureFlag(
-    FEATURE_FLAGS.NOTIFICATIONS
-  );
 
   // 權限檢查
   useEffect(() => {
@@ -195,18 +190,6 @@ export default function SettingsPage() {
     },
   ];
 
-  // 應用程式設定項目
-  const appItems: SettingItem[] = [
-    {
-      id: 'notifications',
-      title: '推播通知',
-      icon: BellIcon,
-      onClick: () => {
-        router.push('/settings/notifications');
-      },
-    },
-  ];
-
   return (
     <div className={pageContainer}>
       <div className={mainContainer}>
@@ -220,14 +203,6 @@ export default function SettingsPage() {
             {accountItems.map((item) => (
               <SettingItem key={item.id} item={item} />
             ))}
-            {!isNotificationsLoading && isNotificationsEnabled && (
-              <>
-                <div className={sectionTitle}>通知</div>
-                {appItems.map((item) => (
-                  <SettingItem key={item.id} item={item} />
-                ))}
-              </>
-            )}
           </div>
         </div>
       </div>
