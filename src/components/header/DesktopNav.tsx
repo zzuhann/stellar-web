@@ -124,6 +124,9 @@ const DesktopNav = () => {
           <Link className={styledLink} href="/submit-event">
             舉辦生日應援
           </Link>
+          <Link className={styledLink} href="/my-favorite">
+            我的收藏
+          </Link>
           <div className={userSection} ref={userSectionRef}>
             <button className={userButton} onClick={() => setUserMenuOpen(!userMenuOpen)}>
               <UserIcon width={16} height={16} />

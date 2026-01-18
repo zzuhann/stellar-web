@@ -1,7 +1,7 @@
 import { useAuth } from '@/lib/auth-context';
 import { css, cva } from '@/styled-system/css';
 import { XMarkIcon } from '@heroicons/react/24/outline';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const mobileMenu = cva({
   base: {
@@ -127,7 +127,6 @@ type MobileMenuProps = {
 };
 
 const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
-  const router = useRouter();
   const { user, userData, signOut, toggleAuthModal } = useAuth();
 
   return (
@@ -146,44 +145,23 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
             <>
               <div className={description}>{userData?.displayName || 'member'}</div>
 
-              <button
-                className={mobileMenuButton}
-                onClick={() => {
-                  router.push('/my-submissions');
-                  closeMobileMenu();
-                }}
-              >
+              <Link href="/my-submissions" className={mobileMenuButton} onClick={closeMobileMenu}>
                 我的投稿
-              </button>
+              </Link>
               {userData?.role === 'admin' && (
-                <button
-                  className={mobileMenuButton}
-                  onClick={() => {
-                    router.push('/admin');
-                    closeMobileMenu();
-                  }}
-                >
+                <Link href="/admin" className={mobileMenuButton} onClick={closeMobileMenu}>
                   管理員審核
-                </button>
+                </Link>
               )}
-              <button
-                className={mobileMenuButton}
-                onClick={() => {
-                  router.push('/submit-event');
-                  closeMobileMenu();
-                }}
-              >
+              <Link href="/submit-event" className={mobileMenuButton} onClick={closeMobileMenu}>
                 舉辦生日應援
-              </button>
-              <button
-                className={mobileMenuButton}
-                onClick={() => {
-                  router.push('/settings');
-                  closeMobileMenu();
-                }}
-              >
+              </Link>
+              <Link href="/my-favorite" className={mobileMenuButton} onClick={closeMobileMenu}>
+                我的收藏
+              </Link>
+              <Link href="/settings" className={mobileMenuButton} onClick={closeMobileMenu}>
                 設定
-              </button>
+              </Link>
               <button
                 className={mobileMenuButton}
                 onClick={() => {
@@ -206,15 +184,9 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
                 登入 / 註冊
               </button>
 
-              <button
-                className={mobileMenuButton}
-                onClick={() => {
-                  toggleAuthModal('/submit-event');
-                  closeMobileMenu();
-                }}
-              >
+              <Link href="/submit-event" className={mobileMenuButton} onClick={closeMobileMenu}>
                 舉辦生日應援
-              </button>
+              </Link>
             </>
           )}
         </div>
