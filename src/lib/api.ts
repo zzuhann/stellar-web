@@ -1,10 +1,9 @@
-import axios, { AxiosResponse, AxiosError } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { auth } from './firebase';
 import {
   Artist,
   CoffeeEvent,
   User,
-  ApiResponse,
   EventSearchParams,
   EventsResponse,
   MapDataResponse,
@@ -48,7 +47,7 @@ api.interceptors.request.use(
 
 // 回應攔截器 - 統一錯誤處理
 api.interceptors.response.use(
-  (response: AxiosResponse) => response,
+  (response) => response, // 不標註型別，保留泛型推斷
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       // Token 過期或無效，可以在這裡處理登出邏輯
@@ -113,43 +112,43 @@ export const artistsApi = {
       Artist,
       'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status' | 'coffeeEventCount'
     >
-  ): Promise<Artist> => {
-    const response = await api.post<ApiResponse<Artist>>('/artists', artist);
-    return response.data.data || ({} as Artist);
+  ) => {
+    const response = await api.post<Artist>('/artists', artist);
+    return response.data;
   },
 
   // 編輯藝人
-  update: async (id: string, updateData: UpdateArtistRequest): Promise<Artist> => {
-    const response = await api.put(`/artists/${id}`, updateData);
+  update: async (id: string, updateData: UpdateArtistRequest) => {
+    const response = await api.put<Artist>(`/artists/${id}`, updateData);
     return response.data;
   },
 
   // 重新送審藝人
-  resubmit: async (id: string): Promise<Artist> => {
-    const response = await api.patch(`/artists/${id}/resubmit`);
+  resubmit: async (id: string) => {
+    const response = await api.patch<Artist>(`/artists/${id}/resubmit`);
     return response.data;
   },
 
   // 審核藝人（管理員）- 更新為支援 reason
-  review: async (id: string, reviewData: ArtistReviewRequest): Promise<Artist> => {
-    const response = await api.patch(`/artists/${id}/review`, reviewData);
+  review: async (id: string, reviewData: ArtistReviewRequest) => {
+    const response = await api.patch<Artist>(`/artists/${id}/review`, reviewData);
     return response.data;
   },
 
   // 審核藝人（管理員）- 支援設定團名
-  approve: async (id: string, groupNames?: string[]): Promise<void> => {
+  approve: async (id: string, groupNames?: string[]) => {
     const body = groupNames && groupNames.length > 0 ? { adminUpdate: { groupNames } } : {};
-    await api.put(`/artists/${id}/approve`, body);
+    await api.put<void>(`/artists/${id}/approve`, body);
   },
 
   // 拒絕藝人（管理員）- 更新為支援 reason
-  reject: async (id: string, rejectData?: RejectRequest): Promise<void> => {
-    await api.put(`/artists/${id}/reject`, rejectData);
+  reject: async (id: string, rejectData?: RejectRequest) => {
+    await api.put<void>(`/artists/${id}/reject`, rejectData);
   },
 
   // 取得單一藝人詳細資料
-  getById: async (id: string): Promise<Artist> => {
-    const response = await api.get(`/artists/${id}`);
+  getById: async (id: string) => {
+    const response = await api.get<Artist>(`/artists/${id}`);
     const artist = response.data;
 
     // 轉換後端格式到前端格式
@@ -164,19 +163,25 @@ export const artistsApi = {
       status: artist.status,
       rejectedReason: artist.rejectedReason, // 新增拒絕原因
       createdBy: artist.createdBy,
-      createdAt: artist.createdAt?._seconds
-        ? new Date(artist.createdAt._seconds * 1000).toISOString()
-        : new Date().toISOString(),
-      updatedAt: artist.updatedAt?._seconds
-        ? new Date(artist.updatedAt._seconds * 1000).toISOString()
-        : new Date().toISOString(),
+      createdAt:
+        typeof artist.createdAt === 'object' &&
+        ' _seconds' in artist.createdAt &&
+        artist.createdAt?._seconds
+          ? new Date(artist.createdAt._seconds * 1000).toISOString()
+          : new Date().toISOString(),
+      updatedAt:
+        typeof artist.updatedAt === 'object' &&
+        ' _seconds' in artist.updatedAt &&
+        artist.updatedAt?._seconds
+          ? new Date(artist.updatedAt._seconds * 1000).toISOString()
+          : new Date().toISOString(),
       coffeeEventCount: artist.coffeeEventCount,
     };
   },
 
   // 軟刪除藝人（管理員）
-  delete: async (id: string): Promise<void> => {
-    await api.delete(`/artists/${id}`);
+  delete: async (id: string) => {
+    await api.delete<void>(`/artists/${id}`);
   },
 
   // 批次審核藝人（管理員）
@@ -187,8 +192,8 @@ export const artistsApi = {
       groupNames?: string[];
       reason?: string;
     }>
-  ): Promise<Artist[]> => {
-    const response = await api.post('/artists/batch-review', {
+  ) => {
+    const response = await api.post<Artist[]>('/artists/batch-review', {
       updates,
     });
     return response.data;
@@ -212,7 +217,7 @@ export interface UserSubmissionsResponse {
 // 活動相關 API
 export const eventsApi = {
   // 取得活動列表（支援新的查詢參數）
-  getAll: async (params?: EventSearchParams): Promise<EventsResponse> => {
+  getAll: async (params?: EventSearchParams) => {
     const queryParams: Record<string, string> = { checkFavorite: 'true' };
 
     if (params?.search) queryParams.search = params.search;
@@ -227,8 +232,8 @@ export const eventsApi = {
     if (params?.startTimeFrom) queryParams.startTimeFrom = params.startTimeFrom;
     if (params?.startTimeTo) queryParams.startTimeTo = params.startTimeTo;
 
-    const response = await api.get('/events', { params: queryParams });
-    return response.data as EventsResponse;
+    const response = await api.get<EventsResponse>('/events', { params: queryParams });
+    return response.data;
   },
 
   // 取得地圖資料
@@ -240,7 +245,7 @@ export const eventsApi = {
     search?: string;
     artistId?: string;
     region?: string;
-  }): Promise<MapDataResponse> => {
+  }) => {
     const queryParams: Record<string, string> = {};
 
     if (params?.status) queryParams.status = params.status;
@@ -251,25 +256,23 @@ export const eventsApi = {
     if (params?.artistId) queryParams.artistId = params.artistId;
     if (params?.region) queryParams.region = params.region;
 
-    const response = await api.get('/events/map-data', { params: queryParams });
-    return response.data as MapDataResponse;
+    const response = await api.get<MapDataResponse>('/events/map-data', { params: queryParams });
+    return response.data;
   },
 
   // 搜尋活動
-  search: async (params: {
-    query?: string;
-    artistName?: string;
-    location?: string;
-  }): Promise<CoffeeEvent[]> => {
-    const response = await api.get('/events/search', { params });
-    return response.data as CoffeeEvent[];
+  search: async (params: { query?: string; artistName?: string; location?: string }) => {
+    const response = await api.get<CoffeeEvent[]>('/events/search', { params });
+    return response.data;
   },
 
   // 取得單一活動詳情
-  getById: async (id: string): Promise<CoffeeEvent | null> => {
+  getById: async (id: string) => {
     try {
-      const response = await api.get(`/events/${id}`, { params: { checkFavorite: 'true' } });
-      return response.data as CoffeeEvent;
+      const response = await api.get<CoffeeEvent | null>(`/events/${id}`, {
+        params: { checkFavorite: 'true' },
+      });
+      return response.data;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 404) {
         return null;
@@ -279,52 +282,52 @@ export const eventsApi = {
   },
 
   // 取得用戶投稿
-  getMySubmissions: async (): Promise<UserSubmissionsResponse> => {
-    const response = await api.get('/events/me');
-    return response.data as UserSubmissionsResponse;
+  getMySubmissions: async () => {
+    const response = await api.get<UserSubmissionsResponse>('/events/me');
+    return response.data;
   },
 
   // 建立活動
-  create: async (eventData: CreateEventRequest): Promise<CoffeeEvent> => {
-    const response = await api.post('/events', eventData);
-    return response.data as CoffeeEvent;
+  create: async (eventData: CreateEventRequest) => {
+    const response = await api.post<CoffeeEvent>('/events', eventData);
+    return response.data;
   },
 
   // 編輯活動
-  update: async (id: string, updateData: UpdateEventRequest): Promise<CoffeeEvent> => {
-    const response = await api.put(`/events/${id}`, updateData);
-    return response.data as CoffeeEvent;
+  update: async (id: string, updateData: UpdateEventRequest) => {
+    const response = await api.put<CoffeeEvent>(`/events/${id}`, updateData);
+    return response.data;
   },
 
   // 刪除活動
-  delete: async (id: string): Promise<void> => {
-    await api.delete(`/events/${id}`);
+  delete: async (id: string) => {
+    await api.delete<void>(`/events/${id}`);
   },
 
   // 重新送審活動
-  resubmit: async (id: string): Promise<CoffeeEvent> => {
-    const response = await api.patch(`/events/${id}/resubmit`);
+  resubmit: async (id: string) => {
+    const response = await api.patch<CoffeeEvent>(`/events/${id}/resubmit`);
     return response.data;
   },
 
   // 管理員專用 API
   admin: {
     // 取得待審核活動 TODO: 換用這隻
-    getPending: async (): Promise<CoffeeEvent[]> => {
-      const response = await api.get('/events/admin/pending');
-      return response.data as CoffeeEvent[];
+    getPending: async () => {
+      const response = await api.get<CoffeeEvent[]>('/events/admin/pending');
+      return response.data;
     },
 
     // 快速通過
-    approve: async (id: string): Promise<CoffeeEvent> => {
-      const response = await api.put(`/events/${id}/approve`);
-      return response.data as CoffeeEvent;
+    approve: async (id: string) => {
+      const response = await api.put<CoffeeEvent>(`/events/${id}/approve`);
+      return response.data;
     },
 
     // 快速拒絕 - 更新為支援 reason
-    reject: async (id: string, rejectData?: RejectRequest): Promise<CoffeeEvent> => {
-      const response = await api.put(`/events/${id}/reject`, rejectData);
-      return response.data as CoffeeEvent;
+    reject: async (id: string, rejectData?: RejectRequest) => {
+      const response = await api.put<CoffeeEvent>(`/events/${id}/reject`, rejectData);
+      return response.data;
     },
   },
 };
@@ -332,15 +335,15 @@ export const eventsApi = {
 // 用戶相關 API
 export const usersApi = {
   // 更新用戶資料
-  updateProfile: async (updateData: UpdateUserRequest): Promise<User> => {
-    const response = await api.put('/users/profile', updateData);
-    return response.data as User;
+  updateProfile: async (updateData: UpdateUserRequest) => {
+    const response = await api.put<User>('/users/profile', updateData);
+    return response.data;
   },
 
   // 收藏相關
   favorites: {
     // 取得收藏列表
-    getAll: async (params?: FavoriteFilterParams): Promise<FavoritesResponse> => {
+    getAll: async (params?: FavoriteFilterParams) => {
       const searchParams = new URLSearchParams();
 
       if (params?.sort) searchParams.set('sort', params.sort);
@@ -351,25 +354,27 @@ export const usersApi = {
       if (params?.limit) searchParams.set('limit', String(params.limit));
 
       const queryString = searchParams.toString();
-      const response = await api.get(`/users/favorites${queryString ? `?${queryString}` : ''}`);
-      return response.data as FavoritesResponse;
+      const response = await api.get<FavoritesResponse>(
+        `/users/favorites${queryString ? `?${queryString}` : ''}`
+      );
+      return response.data;
     },
 
     // 新增收藏
-    add: async (eventId: string): Promise<UserFavorite> => {
-      const response = await api.post('/users/favorites', { eventId });
-      return response.data as UserFavorite;
+    add: async (eventId: string) => {
+      const response = await api.post<UserFavorite>('/users/favorites', { eventId });
+      return response.data;
     },
 
     // 取消收藏
-    remove: async (eventId: string): Promise<void> => {
-      await api.delete(`/users/favorites/${eventId}`);
+    remove: async (eventId: string) => {
+      await api.delete<void>(`/users/favorites/${eventId}`);
     },
 
     // 檢查是否已收藏
-    check: async (eventId: string): Promise<FavoriteCheckResponse> => {
-      const response = await api.get(`/users/favorites/${eventId}/check`);
-      return response.data as FavoriteCheckResponse;
+    check: async (eventId: string) => {
+      const response = await api.get<FavoriteCheckResponse>(`/users/favorites/${eventId}/check`);
+      return response.data;
     },
   },
 };
