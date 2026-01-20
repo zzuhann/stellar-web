@@ -67,7 +67,7 @@ function HomePageContent() {
   return (
     <main className={pageContainer}>
       <div className={mainContainer}>
-        <section className={contentWrapper} aria-label="生日應援週曆">
+        <section className={contentWrapper} aria-label="每週壽星與生日應援">
           <IOSInstallBanner />
           <CTAButton
             onClick={() => {
