@@ -65,9 +65,9 @@ function HomePageContent() {
   };
 
   return (
-    <div className={pageContainer}>
+    <main className={pageContainer}>
       <div className={mainContainer}>
-        <div className={contentWrapper}>
+        <section className={contentWrapper} aria-label="生日應援週曆">
           <IOSInstallBanner />
           <CTAButton
             onClick={() => {
@@ -77,10 +77,10 @@ function HomePageContent() {
                 router.push('/submit-event');
               }
             }}
+            ariaLabel="前往投稿生日應援"
           >
-            生日應援主辦 ✨
-            <br />
-            前往投稿生日應援 ➡️
+            <span>生日應援主辦 ✨</span>
+            <span>前往投稿生日應援 ➡️</span>
           </CTAButton>
 
           <WeekNavigation
@@ -94,20 +94,26 @@ function HomePageContent() {
           />
 
           {activeTab === 'birthday' && (
-            <BirthdayTab
-              artists={weekBirthdayArtists}
-              loading={isArtistsLoading}
-              onSearchClick={() => setSearchModalOpen(true)}
-              onArtistClick={handleArtistClick}
-            />
+            <div role="tabpanel" id="birthday-panel" aria-labelledby="birthday-tab">
+              <BirthdayTab
+                artists={weekBirthdayArtists}
+                loading={isArtistsLoading}
+                onSearchClick={() => setSearchModalOpen(true)}
+                onArtistClick={handleArtistClick}
+              />
+            </div>
           )}
 
-          {activeTab === 'events' && <EventsTab events={weeklyEvents} loading={isEventsLoading} />}
-        </div>
+          {activeTab === 'events' && (
+            <div role="tabpanel" id="events-panel" aria-labelledby="events-tab">
+              <EventsTab events={weeklyEvents} loading={isEventsLoading} />
+            </div>
+          )}
+        </section>
       </div>
 
       <ArtistSearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
-    </div>
+    </main>
   );
 }
 

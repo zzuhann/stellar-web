@@ -94,12 +94,15 @@ export default function WeekNavigation({
         <button
           className={weekNavigationButton({ disabled: !canGoToPrevious })}
           onClick={() => onPreviousWeek(activeTab)}
+          disabled={!canGoToPrevious}
+          aria-label="前往上一週"
+          aria-disabled={!canGoToPrevious}
         >
-          <ChevronLeftIcon width={20} height={20} />
+          <ChevronLeftIcon width={20} height={20} aria-hidden="true" />
         </button>
 
         <div className={weekInfoContainer}>
-          <div className={weekInfoTitle}>
+          <h2 className={weekInfoTitle}>
             {activeTab === 'birthday'
               ? isCurrentWeek
                 ? '本週壽星'
@@ -107,14 +110,18 @@ export default function WeekNavigation({
               : isCurrentWeek
                 ? '本週生日應援'
                 : '當週生日應援'}
-          </div>
-          <div className={weekInfoDateRange}>
+          </h2>
+          <p className={weekInfoDateRange}>
             {formatDate(currentWeekStart)} - {formatDate(currentWeekEnd)}
-          </div>
+          </p>
         </div>
 
-        <button className={weekNavigationButton({ disabled: false })} onClick={onNextWeek}>
-          <ChevronRightIcon width={20} height={20} />
+        <button
+          className={weekNavigationButton({ disabled: false })}
+          onClick={onNextWeek}
+          aria-label="前往下一週"
+        >
+          <ChevronRightIcon width={20} height={20} aria-hidden="true" />
         </button>
       </div>
     </div>

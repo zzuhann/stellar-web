@@ -1,6 +1,9 @@
 import { css } from '@/styled-system/css';
 
 const ctaButton = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2px',
   padding: '12px 24px',
   borderRadius: 'radius.lg',
   fontSize: '14px',
@@ -19,11 +22,12 @@ type CTAButtonProps = {
   children: React.ReactNode;
   onClick: () => void;
   style?: React.CSSProperties;
+  ariaLabel?: string;
 };
 
-export default function CTAButton({ children, onClick, style }: CTAButtonProps) {
+export default function CTAButton({ children, onClick, style, ariaLabel }: CTAButtonProps) {
   return (
-    <button className={ctaButton} onClick={onClick} style={style}>
+    <button className={ctaButton} onClick={onClick} style={style} aria-label={ariaLabel}>
       {children}
     </button>
   );

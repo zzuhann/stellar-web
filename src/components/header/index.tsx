@@ -29,6 +29,18 @@ const headerContainer = css({
   boxSizing: 'border-box',
 });
 
+const srOnly = css({
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  padding: '0',
+  margin: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: '0',
+});
+
 const Header = () => {
   const { authModalOpen, toggleAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -37,7 +49,8 @@ const Header = () => {
 
   return (
     <>
-      <div className={headerContainer}>
+      <header className={headerContainer}>
+        <h1 className={srOnly}>STELLAR | 台灣生日應援地圖平台</h1>
         <Link href="/">
           <Image
             src="/icon-with-text.png"
@@ -67,7 +80,7 @@ const Header = () => {
           <ShareButton />
           <BurgerButton onClick={() => setMobileMenuOpen(true)} />
         </div>
-      </div>
+      </header>
 
       {/* Mobile Menu */}
       <MobileMenu isOpen={mobileMenuOpen} closeMobileMenu={closeMobileMenu} />
