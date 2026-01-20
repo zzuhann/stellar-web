@@ -11,82 +11,82 @@ A comprehensive Progressive Web App (PWA) for discovering and managing K-Pop bir
 - **User Management**: Google authentication with personal submission tracking
 - **Admin Dashboard**: Event moderation and batch management tools
 - **PWA Support**: Full offline capabilities with install prompts for mobile devices
-- **Real-time Updates**: Live event data with optimistic UI updates
 
 ## Tech Stack
 
 ### Frontend Framework
 
-- **Next.js 14.2.5** - React framework with App Router
-- **React 18.3.1** - UI library
-- **TypeScript 5** - Type safety and developer experience
+Next.js(app router), React, TypeScript
 
 ### Styling & UI
 
-- **Panda CSS 1.4.0** - Zero-runtime CSS-in-JS with utility-first approach
-- **Headless UI 2.2.6** - Unstyled, accessible UI components
-- **Heroicons 2.2.0** - Beautiful hand-crafted SVG icons
+Panda CSS, React Hot Toast, React Spring, Swiper
 
 ### State Management & Data Fetching
 
-- **TanStack Query 5.83.0** - Powerful data synchronization for React
-- **Zustand 5.0.6** - Lightweight state management
-- **React Hook Form 7.61.1** - Performant forms with easy validation
-- **Zod 4.0.13** - TypeScript-first schema validation
+TanStack Query, Zustand, React Hook Form, Zod
 
 ### Maps & Location
 
-- **React Leaflet 4.2.1** - React components for Leaflet maps
-- **Leaflet 1.9.4** - Open-source JavaScript library for mobile-friendly maps
-- **React Leaflet Cluster 2.1.0** - Marker clustering for better UX
+React Leaflet
 
 ### Authentication & Backend Integration
 
-- **Firebase 12.0.0** - Authentication and real-time database
-- **Axios 1.11.0** - HTTP client for API requests
+Firebase, Axios
 
 ### Development Tools
 
-- **ESLint 9.32.0** - Code linting with custom rules
-- **Prettier 3.6.2** - Code formatting
-- **Husky 9.1.7** - Git hooks for code quality
-- **Lint-staged 16.1.2** - Pre-commit linting
+ESLint, Prettier, Husky, Lint-staged
 
 ### Performance & Analytics
 
-- **Vercel Analytics 1.5.0** - Performance monitoring
-- **React Hot Toast 2.5.2** - Elegant toast notifications
-- **React Spring 10.0.1** - Spring-physics based animations
+GA Analytics, Vercel Analytics
 
-## 📁 Project Structure
+## 開發指南
 
+### 環境需求
+
+- Node.js 20 或以上版本
+- npm 或其他套件管理工具
+
+### 安裝與執行
+
+1. **安裝依賴**
+
+```bash
+npm install
 ```
-stellar-web/
-├── src/
-│   ├── app/                    # Next.js App Router pages
-│   │   ├── admin/             # Admin dashboard
-│   │   ├── event/[eventId]/   # Event detail pages
-│   │   ├── map/               # Map interface
-│   │   ├── my-submissions/    # User submission management
-│   │   ├── settings/          # User settings
-│   │   └── submit-*/          # Event/artist submission forms
-│   ├── components/            # Reusable UI components
-│   │   ├── HomePage/          # Home page with tabs and navigation
-│   │   ├── auth/              # Authentication components
-│   │   ├── forms/             # Form components and validation
-│   │   ├── map/               # Map-related components
-│   │   ├── pwa/               # PWA installation prompts
-│   │   └── ui/                # Generic UI components
-│   ├── hooks/                 # Custom React hooks
-│   ├── lib/                   # Utility libraries and configurations
-│   ├── store/                 # Zustand state stores
-│   ├── styles/                # Panda CSS theme and global styles
-│   ├── types/                 # TypeScript type definitions
-│   └── utils/                 # Helper functions
-├── styled-system/             # Generated Panda CSS files
-├── public/                    # Static assets and PWA files
-└── scripts/                   # Build and deployment scripts
+
+2. **啟動開發伺服器**
+
+```bash
+npm run dev
 ```
+
+3. **開啟瀏覽器訪問** `http://localhost:3000`
+
+- 須配合 server 專案一起啟動(目前專案是 `baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api',` )
+- 如果只想看前端專案，可以把 NEXT_PUBLIC_API_BASE_URL 改為 `https://stellar.zeabur.app/api`
+
+### 其他常用指令
+
+```bash
+# 建置正式版本
+npm run build
+
+# 啟動正式版本
+npm start
+
+# 執行程式碼檢查並自動修正
+npm run lint
+
+# TypeScript 型別檢查
+npm run type-check
+```
+
+### 環境變數設定
+
+相關環境變數設定，請找 zzuhann。
 
 ## Key Features & Implementation
 
@@ -144,16 +144,8 @@ stellar-web/
 
 - **Offline Support**: Service worker caches critical resources
 - **Install Prompts**: Custom install banners for iOS and Android
-- **Push Notifications**: Real-time event updates (when enabled)
 - **App-like Experience**: Full-screen mode and native feel
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- **Leaflet** for the excellent mapping library
-- **Panda CSS** for the innovative styling approach
-- **TanStack Query** for robust data management
-- **Firebase** for authentication and backend services
