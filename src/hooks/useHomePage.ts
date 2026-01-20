@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { artistsApi, eventsApi } from '@/lib/api';
+import queryKey from './queryKey';
 
 export const useBirthdayArtistsQuery = (
   startDate: string,
@@ -7,7 +8,7 @@ export const useBirthdayArtistsQuery = (
   options?: { enabled?: boolean }
 ) => {
   return useQuery({
-    queryKey: ['birthday-artists', startDate, endDate],
+    queryKey: queryKey.birthdayArtists(startDate, endDate),
     queryFn: () =>
       artistsApi.getAll({
         status: 'approved',
@@ -28,7 +29,7 @@ export const useWeeklyEventsQuery = (
   options?: { enabled?: boolean }
 ) => {
   return useQuery({
-    queryKey: ['weekly-events', startDate, endDate],
+    queryKey: queryKey.weeklyEvents(startDate, endDate),
     queryFn: () =>
       eventsApi.getAll({
         status: 'approved',
