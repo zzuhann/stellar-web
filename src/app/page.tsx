@@ -1,34 +1,8 @@
-import { Suspense } from 'react';
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
 import HomePage from '@/components/HomePage';
 import { artistsApi, eventsApi } from '@/lib/api';
 import { getWeekStart, getWeekEnd, formatDateForAPI } from '@/utils/weekHelpers';
 import queryKey from '@/hooks/queryKey';
-
-function HomePageFallback() {
-  return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'var(--color-bg-primary)',
-      }}
-    >
-      <div
-        style={{
-          width: '48px',
-          height: '48px',
-          border: '3px solid #e5e7eb',
-          borderTop: '3px solid #4f46e5',
-          borderRadius: '50%',
-          animation: 'spin 1s linear infinite',
-        }}
-      />
-    </div>
-  );
-}
 
 export default async function Home() {
   const queryClient = new QueryClient();
@@ -77,9 +51,7 @@ export default async function Home() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <Suspense fallback={<HomePageFallback />}>
-        <HomePage />
-      </Suspense>
+      <HomePage />
     </HydrationBoundary>
   );
 }
