@@ -3,6 +3,8 @@ import HomePage from '@/components/HomePage';
 import { artistsApi, eventsApi } from '@/lib/api';
 import { getWeekStart, getWeekEnd, formatDateForAPI } from '@/utils/weekHelpers';
 import queryKey from '@/hooks/queryKey';
+import { Suspense } from 'react';
+import Loading from '@/components/Loading';
 
 export default async function Home() {
   const queryClient = new QueryClient();
@@ -51,7 +53,9 @@ export default async function Home() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <HomePage />
+      <Suspense fallback={<Loading style={{ height: '100dvh' }} />}>
+        <HomePage />
+      </Suspense>
     </HydrationBoundary>
   );
 }

@@ -1,5 +1,5 @@
 // Service Worker for STELLAR PWA
-const VERSION = '20260118T15073';
+const VERSION = '20260120T18094';
 const CACHE_NAME = `stellar-cache-v${VERSION}`;
 const STATIC_CACHE_URLS = [
   '/',
