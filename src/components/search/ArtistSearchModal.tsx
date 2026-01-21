@@ -6,13 +6,13 @@ import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useArtistSearch } from '@/hooks/useArtistSearch';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { Artist } from '@/types';
 import ArtistCard from '../ArtistCard';
 import { useAuth } from '@/lib/auth-context';
 import EmptyState from '../EmptyState';
 import CTAButton from '../CTAButton';
 import Loading from '../Loading';
 import { css, cva } from '@/styled-system/css';
+import Link from 'next/link';
 
 const modalOverlay = cva({
   base: {
@@ -164,6 +164,7 @@ const artistList = css({
   flexDirection: 'column',
   gap: '8px',
   marginTop: '16px',
+  marginBottom: '16px',
 });
 
 interface ArtistSearchModalProps {
@@ -184,11 +185,6 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
   const hasResults = searchResults.length > 0;
 
   useScrollLock(isOpen);
-
-  const handleArtistClick = (artist: Artist) => {
-    onClose();
-    router.push(`/map/${artist.id}`);
-  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -229,11 +225,9 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
               <div className={artistList}>
                 {searchResults.map((artist) => {
                   return (
-                    <ArtistCard
-                      key={artist.id}
-                      artist={artist}
-                      handleArtistClick={handleArtistClick}
-                    />
+                    <Link href={`/map/${artist.id}`} key={artist.id} onClick={onClose}>
+                      <ArtistCard artist={artist} />
+                    </Link>
                   );
                 })}
               </div>
@@ -244,12 +238,6 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
                   } else {
                     router.push('/submit-artist');
                   }
-                }}
-                style={{
-                  position: 'relative',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  marginTop: '16px',
                 }}
               >
                 找不到偶像?
@@ -265,7 +253,6 @@ export default function ArtistSearchModal({ isOpen, onClose }: ArtistSearchModal
                 description="試試其他關鍵字、檢查拼寫是否正確"
               />
               <CTAButton
-                style={{ position: 'relative', left: '50%', transform: 'translateX(-50%)' }}
                 onClick={() => {
                   if (!user) {
                     toggleAuthModal('/submit-artist');

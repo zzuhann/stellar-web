@@ -12,7 +12,6 @@ const artistCardContainer = css({
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
-  cursor: 'pointer',
   transition: 'all 0.2s ease',
   boxShadow: 'shadow.sm',
 });
@@ -24,11 +23,9 @@ const avatarContainer = css({
 });
 
 const artistAvatar = css({
-  width: '64px',
-  height: '64px',
   borderRadius: '50%',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
+  overflow: 'hidden',
+  objectFit: 'cover',
 });
 
 const birthdayHat = css({
@@ -86,6 +83,18 @@ const eventStatus = css({
   },
 });
 
+const srOnly = css({
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  padding: 0,
+  margin: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+});
+
 const getBirthdayText = (birthday: string): { text: string; isToday: boolean } => {
   if (!birthday) return { text: '', isToday: false };
 
@@ -95,24 +104,30 @@ const getBirthdayText = (birthday: string): { text: string; isToday: boolean } =
 
 interface ArtistCardProps {
   artist: Artist;
-  handleArtistClick: (artist: Artist) => void;
 }
 
-const ArtistCard = ({ artist, handleArtistClick }: ArtistCardProps) => {
+const ArtistCard = ({ artist }: ArtistCardProps) => {
   const { text: birthdayText } = getBirthdayText(artist.birthday ?? '');
   const isBirthday = shouldShowBirthdayHat(artist.birthday ?? '');
 
   return (
-    <div className={artistCardContainer} key={artist.id} onClick={() => handleArtistClick(artist)}>
+    <div className={artistCardContainer}>
       <div className={avatarContainer}>
-        <div
+        <Image
+          src={artist.profileImage ?? '/default_profile.png'}
+          alt={artist.stageName}
+          width={64}
+          height={64}
           className={artistAvatar}
-          style={{
-            backgroundImage: artist.profileImage ? `url(${artist.profileImage})` : undefined,
-          }}
         />
         {isBirthday && (
-          <Image className={birthdayHat} src="/party-hat.png" alt="生日帽" width={24} height={24} />
+          <Image
+            className={birthdayHat}
+            src="/party-hat.png"
+            alt="今日壽星"
+            width={24}
+            height={24}
+          />
         )}
       </div>
 
@@ -121,11 +136,14 @@ const ArtistCard = ({ artist, handleArtistClick }: ArtistCardProps) => {
           {artist.stageName.toUpperCase()} {artist.realName}
         </h3>
         <div className={artistBirthday}>
-          <span className="birthday-label">🎂：</span>
+          <span className={srOnly}>生日</span>
+          <span aria-hidden="true">🎂：</span>
           <span className="birthday-date">{birthdayText}</span>
         </div>
         <div className={eventStatus}>
-          <span className="icon">📍</span>
+          <span className="icon" aria-label="目前生日應援數量">
+            📍
+          </span>
           <span>
             {artist.coffeeEventCount !== undefined && artist.coffeeEventCount > 0
               ? `${artist.coffeeEventCount} 個生日應援`

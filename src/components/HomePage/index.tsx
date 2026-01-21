@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { Artist } from '@/types';
 import { QueryStateProvider } from '@/hooks/useQueryStateContext';
 import WeekNavigation from '@/components/HomePage/components/WeekNavigation';
 import BirthdayTab from '@/components/HomePage/components/BirthdayTab';
@@ -60,10 +59,6 @@ function HomePageContent() {
   const { weekBirthdayArtists, isLoading: isArtistsLoading } = useBirthdayArtists();
   const { weeklyEvents, isLoading: isEventsLoading } = useWeeklyEvents();
 
-  const handleArtistClick = (artist: Artist) => {
-    router.push(`/map/${artist.id}`);
-  };
-
   return (
     <main className={pageContainer}>
       <div className={mainContainer}>
@@ -99,7 +94,6 @@ function HomePageContent() {
                 artists={weekBirthdayArtists}
                 loading={isArtistsLoading}
                 onSearchClick={() => setSearchModalOpen(true)}
-                onArtistClick={handleArtistClick}
               />
             </div>
           )}

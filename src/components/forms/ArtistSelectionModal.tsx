@@ -184,6 +184,19 @@ const closeButton = css({
   },
 });
 
+const artistCardButton = css({
+  background: 'none',
+  border: 'none',
+  padding: 0,
+  margin: 0,
+  font: 'inherit',
+  color: 'inherit',
+  textAlign: 'left',
+  display: 'block',
+  width: '100%',
+  cursor: 'pointer',
+});
+
 interface ArtistSelectionModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -273,11 +286,15 @@ export default function ArtistSelectionModal({
             ) : hasSearchResults ? (
               <div className={artistList}>
                 {filteredSearchResults.map((artist) => (
-                  <ArtistCard
+                  <button
+                    className={artistCardButton}
                     key={artist.id}
-                    artist={artist}
-                    handleArtistClick={handleArtistSelect}
-                  />
+                    onClick={() => handleArtistSelect(artist)}
+                    type="button"
+                    aria-label={`選擇 ${artist.stageName} 作為要應援的偶像`}
+                  >
+                    <ArtistCard artist={artist} />
+                  </button>
                 ))}
                 <EmptyState
                   title="找不到偶像嗎？"
@@ -325,11 +342,15 @@ export default function ArtistSelectionModal({
                 style={{ paddingBottom: '20px' }}
               />
               {filteredMonthlyArtists.map((artist) => (
-                <ArtistCard
+                <button
+                  className={artistCardButton}
                   key={artist.id}
-                  artist={artist}
-                  handleArtistClick={handleArtistSelect}
-                />
+                  onClick={() => handleArtistSelect(artist)}
+                  type="button"
+                  aria-label={`選擇 ${artist.stageName} 作為要應援的偶像`}
+                >
+                  <ArtistCard artist={artist} />
+                </button>
               ))}
             </div>
           ) : (

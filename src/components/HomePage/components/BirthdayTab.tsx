@@ -4,26 +4,22 @@ import SearchSection from './SearchSection';
 import { css } from '@/styled-system/css';
 import EmptyState from '../../EmptyState';
 import Loading from '../../Loading';
+import Link from 'next/link';
 
 const artistListContainer = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '16px',
+  marginTop: '16px',
 });
 
 interface BirthdayTabProps {
   artists: Artist[];
   loading: boolean;
   onSearchClick: () => void;
-  onArtistClick: (artist: Artist) => void;
 }
 
-export default function BirthdayTab({
-  artists,
-  loading,
-  onSearchClick,
-  onArtistClick,
-}: BirthdayTabProps) {
+export default function BirthdayTab({ artists, loading, onSearchClick }: BirthdayTabProps) {
   return (
     <>
       <SearchSection onSearchClick={onSearchClick} />
@@ -34,7 +30,11 @@ export default function BirthdayTab({
         <div className={artistListContainer}>
           {artists.map((artist) => {
             if (!artist.birthday) return null;
-            return <ArtistCard key={artist.id} artist={artist} handleArtistClick={onArtistClick} />;
+            return (
+              <Link href={`/map/${artist.id}`} key={artist.id}>
+                <ArtistCard artist={artist} />
+              </Link>
+            );
           })}
         </div>
       ) : (
