@@ -26,6 +26,7 @@ const mainContainer = css({
 const errorContainer = css({
   textAlign: 'center',
   padding: '40px 20px',
+  marginTop: '16px',
 });
 
 const errorTitle = css({
