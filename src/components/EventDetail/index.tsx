@@ -93,6 +93,7 @@ const descriptionSection = css({
   paddingTop: '24px',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
+  wordBreak: 'break-word',
 });
 
 const descriptionTitle = css({
