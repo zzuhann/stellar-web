@@ -5,11 +5,14 @@ import GoogleLoginButton from './GoogleLoginButton';
 import AnonymousLoginButton from './AnonymousLoginButton';
 import LoginHint from './LoginHint';
 import { useAnonymousLoginEnabled } from '@/hooks/useAnonymousLoginEnabled';
+import { useIsInAppBrowser } from '@/hooks/useIsInAppBrowser';
 
 const formContainer = css({
   width: '100%',
   maxWidth: '400px',
   margin: '0 auto',
+  maxHeight: '60dvh',
+  overflowY: 'auto',
 });
 
 const buttonGroup = css({
@@ -24,13 +27,31 @@ interface SignInFormProps {
 
 export default function SignInForm({ onSuccess }: SignInFormProps) {
   const { isEnabled: isAnonymousLoginEnabled } = useAnonymousLoginEnabled();
+  const { isInAppBrowser, loading } = useIsInAppBrowser();
+
+  const shouldShowIABMode = isInAppBrowser && isAnonymousLoginEnabled;
+
+  if (loading) {
+    return <div className={formContainer}>載入中...</div>;
+  }
+
+  // In-app browser：顯示訪客登入區塊
+  if (shouldShowIABMode) {
+    return (
+      <div className={formContainer}>
+        <LoginHint />
+        <AnonymousLoginButton onSuccess={onSuccess} />
+      </div>
+    );
+  }
+
+  // 一般瀏覽器：只顯示 Google 登入
   return (
     <div className={formContainer}>
       <LoginHint />
 
       <div className={buttonGroup}>
         <GoogleLoginButton onSuccess={onSuccess} />
-        {isAnonymousLoginEnabled && <AnonymousLoginButton onSuccess={onSuccess} />}
       </div>
     </div>
   );
