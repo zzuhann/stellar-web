@@ -1,4 +1,10 @@
-import { User, AuthError, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import {
+  User,
+  AuthError,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInAnonymously as firebaseSignInAnonymously,
+} from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import { User as AppUser } from '@/types';
@@ -23,6 +29,24 @@ export async function signInWithGoogle() {
   }
 }
 
+// 匿名登入
+export async function signInAnonymously() {
+  try {
+    const result = await firebaseSignInAnonymously(auth);
+
+    // 在 Firestore 中建立或更新使用者資料
+    await createUserDocument(result.user);
+
+    return { user: result.user, error: null };
+  } catch (error) {
+    const authError = error as AuthError;
+    return {
+      user: null,
+      error: FIREBASE_ERROR_MESSAGES[authError.code] || '匿名登入失敗',
+    };
+  }
+}
+
 // 建立使用者文件
 async function createUserDocument(user: User): Promise<void> {
   const userDocRef = doc(db, 'users', user.uid);
@@ -36,7 +60,7 @@ async function createUserDocument(user: User): Promise<void> {
   // 建立使用者資料
   const userData: Omit<AppUser, 'id'> = {
     email: user.email || '',
-    displayName: user.displayName || '',
+    displayName: user.displayName || (user.isAnonymous ? '訪客用戶' : ''),
     photoURL: user.photoURL || '',
     role: 'user', // 預設角色
     createdAt: new Date().toISOString(),

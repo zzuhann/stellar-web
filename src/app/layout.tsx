@@ -13,6 +13,7 @@ import { Analytics } from '@vercel/analytics/next';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import { ShareProvider } from '@/context/ShareContext';
+import AnonymousTestBanner from '@/components/debug/AnonymousTestBanner';
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
@@ -105,6 +106,7 @@ export default function RootLayout({
           <AuthProvider>
             <LoadingProvider>
               <ShareProvider>
+                <AnonymousTestBanner />
                 <Header />
                 {children}
                 <Analytics />

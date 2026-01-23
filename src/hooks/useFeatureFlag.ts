@@ -9,6 +9,7 @@ interface FeatureFlagConfig {
 // 預設配置 - 可以從環境變數或遠端 API 載入
 const DEFAULT_FEATURE_FLAGS: FeatureFlagConfig = {
   NOTIFICATIONS: 'admin',
+  ANONYMOUS_LOGIN: 'all',
 };
 
 export function useFeatureFlag(flagName: FeatureFlagName) {
@@ -38,7 +39,6 @@ export function useFeatureFlag(flagName: FeatureFlagName) {
         }
       }
 
-      // 回退到預設配置
       return DEFAULT_FEATURE_FLAGS;
     } catch {
       return DEFAULT_FEATURE_FLAGS;
