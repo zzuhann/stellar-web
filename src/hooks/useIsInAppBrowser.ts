@@ -13,13 +13,13 @@ export function useIsInAppBrowser() {
     const inAppBrowserPatterns = [
       /FBAN|FBAV/i, // Facebook App
       /Instagram/i, // Instagram
+      /Barcelona/i, // Threads
       /Line/i, // LINE
       /Twitter/i, // Twitter/X
       /Snapchat/i, // Snapchat
       /Pinterest/i, // Pinterest
       /WhatsApp/i, // WhatsApp
       /KAKAOTALK/i, // KakaoTalk
-      // Threads 通常會包含 Instagram 或 FBAN
     ];
 
     const isIAB = inAppBrowserPatterns.some((pattern) => pattern.test(userAgent));
