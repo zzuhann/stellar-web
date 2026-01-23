@@ -13,8 +13,6 @@ import { Analytics } from '@vercel/analytics/next';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import { ShareProvider } from '@/context/ShareContext';
-import AnonymousTestBanner from '@/components/debug/AnonymousTestBanner';
-import { Suspense } from 'react';
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
@@ -107,10 +105,7 @@ export default function RootLayout({
           <AuthProvider>
             <LoadingProvider>
               <ShareProvider>
-                <Suspense fallback={<div style={{ height: '70px' }} />}>
-                  <AnonymousTestBanner />
-                  <Header />
-                </Suspense>
+                <Header />
                 {children}
                 <Analytics />
                 <ServiceWorkerRegistration />

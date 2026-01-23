@@ -4,7 +4,6 @@ import { css } from '@/styled-system/css';
 import GoogleLoginButton from './GoogleLoginButton';
 import AnonymousLoginButton from './AnonymousLoginButton';
 import LoginHint from './LoginHint';
-import { useAnonymousLoginEnabled } from '@/hooks/useAnonymousLoginEnabled';
 import { useIsInAppBrowser } from '@/hooks/useIsInAppBrowser';
 
 const formContainer = css({
@@ -26,17 +25,14 @@ interface SignInFormProps {
 }
 
 export default function SignInForm({ onSuccess }: SignInFormProps) {
-  const { isEnabled: isAnonymousLoginEnabled } = useAnonymousLoginEnabled();
   const { isInAppBrowser, loading } = useIsInAppBrowser();
-
-  const shouldShowIABMode = isInAppBrowser && isAnonymousLoginEnabled;
 
   if (loading) {
     return <div className={formContainer}>載入中...</div>;
   }
 
   // In-app browser：顯示訪客登入區塊
-  if (shouldShowIABMode) {
+  if (isInAppBrowser) {
     return (
       <div className={formContainer}>
         <LoginHint />
