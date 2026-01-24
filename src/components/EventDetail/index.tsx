@@ -1,4 +1,3 @@
-import { formatEventDate } from './utils';
 import { css } from '@/styled-system/css';
 import { cleanSocialMediaHandle } from '@/utils/socialMedia';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
@@ -10,6 +9,7 @@ import ArtistSection from './ArtistSection';
 import BackToMapButton from './BackToMapButton';
 import ShareHandler from './ShareHandler';
 import { CoffeeEvent } from '@/types';
+import { formatEventDate } from '@/utils';
 
 const pageContainer = css({
   minHeight: '100vh',

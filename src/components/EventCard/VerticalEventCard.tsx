@@ -1,6 +1,6 @@
 import { CoffeeEvent } from '@/types';
 import { css, cva } from '@/styled-system/css';
-import { firebaseTimestampToDate } from '@/utils';
+import { firebaseTimestampToDate, formatEventDate } from '@/utils';
 import { FirebaseTimestamp } from '@/types';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { usePathname } from 'next/navigation';
@@ -217,12 +217,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
     : '';
 
   // 如果同一天就只顯示一天
-  const eventDateText =
-    firebaseTimestampToDate(event.datetime.start).toLocaleDateString('zh-TW') +
-    (firebaseTimestampToDate(event.datetime.start).toLocaleDateString('zh-TW') !==
-    firebaseTimestampToDate(event.datetime.end).toLocaleDateString('zh-TW')
-      ? ' - ' + firebaseTimestampToDate(event.datetime.end).toLocaleDateString('zh-TW')
-      : '');
+  const eventDateText = formatEventDate(event.datetime.start, event.datetime.end);
 
   return (
     <>
