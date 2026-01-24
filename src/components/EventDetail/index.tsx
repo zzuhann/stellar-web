@@ -1,5 +1,5 @@
 import { css } from '@/styled-system/css';
-import { cleanSocialMediaHandle } from '@/utils/socialMedia';
+import { parseSocialMediaHandles } from '@/utils/socialMedia';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import SwiperBanner from '../SwiperBanner';
 import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
@@ -181,14 +181,21 @@ const EventDetail = ({ event }: EventDetailProps) => {
                 <InstagramIcon size={20} color="var(--color-text-secondary)" />
                 <div className={detailContent}>
                   <div className={detailValue}>
-                    <a
-                      href={`https://www.instagram.com/${cleanSocialMediaHandle(event.socialMedia.instagram)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: '#3a64c7' }}
-                    >
-                      @{cleanSocialMediaHandle(event.socialMedia.instagram)}
-                    </a>
+                    {parseSocialMediaHandles(event.socialMedia.instagram).map(
+                      (handle, idx, arr) => (
+                        <span key={handle}>
+                          <a
+                            href={`https://www.instagram.com/${handle}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: '#3a64c7' }}
+                          >
+                            @{handle}
+                          </a>
+                          {idx < arr.length - 1 && '、'}
+                        </span>
+                      )
+                    )}
                   </div>
                 </div>
               </div>
@@ -199,14 +206,19 @@ const EventDetail = ({ event }: EventDetailProps) => {
                 <ThreadsIcon size={20} color="var(--color-text-secondary)" />
                 <div className={detailContent}>
                   <div className={detailValue}>
-                    <a
-                      href={`https://www.threads.net/@${cleanSocialMediaHandle(event.socialMedia.threads)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: '#3a64c7' }}
-                    >
-                      @{cleanSocialMediaHandle(event.socialMedia.threads)}
-                    </a>
+                    {parseSocialMediaHandles(event.socialMedia.threads).map((handle, idx, arr) => (
+                      <span key={handle}>
+                        <a
+                          href={`https://www.threads.net/@${handle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#3a64c7' }}
+                        >
+                          @{handle}
+                        </a>
+                        {idx < arr.length - 1 && '、'}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -217,14 +229,19 @@ const EventDetail = ({ event }: EventDetailProps) => {
                 <XIcon size={20} color="var(--color-text-secondary)" />
                 <div className={detailContent}>
                   <div className={detailValue}>
-                    <a
-                      href={`https://x.com/${cleanSocialMediaHandle(event.socialMedia.x)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: '#3a64c7' }}
-                    >
-                      @{cleanSocialMediaHandle(event.socialMedia.x)}
-                    </a>
+                    {parseSocialMediaHandles(event.socialMedia.x).map((handle, idx, arr) => (
+                      <span key={handle}>
+                        <a
+                          href={`https://x.com/${handle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#3a64c7' }}
+                        >
+                          @{handle}
+                        </a>
+                        {idx < arr.length - 1 && '、'}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>

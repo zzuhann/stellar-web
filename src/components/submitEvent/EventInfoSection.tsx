@@ -251,8 +251,9 @@ const EventInfoSection = ({
       {/* 聯絡資訊 */}
       <div className={sectionDivider}>
         <h3 className={sectionTitle}>社群媒體</h3>
+        <p className={helperText}>請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗</p>
         <p className={helperText}>
-          請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗（若聯合主辦，請寫主要公布資訊的帳號）
+          若為聯合主辦，可以用半形逗號分隔 id，例如: stellar_tw, stellar_jp
         </p>
 
         <div className={gridContainer} style={{ marginTop: '8px' }}>

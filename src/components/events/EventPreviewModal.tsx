@@ -7,7 +7,7 @@ import { firebaseTimestampToDate } from '@/utils';
 import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import { cleanSocialMediaHandle } from '@/utils/socialMedia';
+import { parseSocialMediaHandles } from '@/utils/socialMedia';
 import Image from 'next/image';
 import Link from 'next/link';
 import ModalOverlay from '../ui/ModalOverlay';
@@ -290,14 +290,21 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                 <InstagramIcon size={20} color="var(--color-text-secondary)" />
                 <div className={detailContent}>
                   <div className={detailValue}>
-                    <a
-                      href={`https://www.instagram.com/${cleanSocialMediaHandle(event.socialMedia.instagram)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: '#3a64c7' }}
-                    >
-                      @{cleanSocialMediaHandle(event.socialMedia.instagram)}
-                    </a>
+                    {parseSocialMediaHandles(event.socialMedia.instagram).map(
+                      (handle, idx, arr) => (
+                        <span key={handle}>
+                          <a
+                            href={`https://www.instagram.com/${handle}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: '#3a64c7' }}
+                          >
+                            @{handle}
+                          </a>
+                          {idx < arr.length - 1 && '、'}
+                        </span>
+                      )
+                    )}
                   </div>
                 </div>
               </div>
@@ -308,14 +315,19 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                 <ThreadsIcon size={20} color="var(--color-text-secondary)" />
                 <div className={detailContent}>
                   <div className={detailValue}>
-                    <a
-                      href={`https://www.threads.net/@${cleanSocialMediaHandle(event.socialMedia.threads)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: '#3a64c7' }}
-                    >
-                      @{cleanSocialMediaHandle(event.socialMedia.threads)}
-                    </a>
+                    {parseSocialMediaHandles(event.socialMedia.threads).map((handle, idx, arr) => (
+                      <span key={handle}>
+                        <a
+                          href={`https://www.threads.net/@${handle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#3a64c7' }}
+                        >
+                          @{handle}
+                        </a>
+                        {idx < arr.length - 1 && '、'}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -326,14 +338,19 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                 <XIcon size={20} color="var(--color-text-secondary)" />
                 <div className={detailContent}>
                   <div className={detailValue}>
-                    <a
-                      href={`https://x.com/${cleanSocialMediaHandle(event.socialMedia.x)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: '#3a64c7' }}
-                    >
-                      @{cleanSocialMediaHandle(event.socialMedia.x)}
-                    </a>
+                    {parseSocialMediaHandles(event.socialMedia.x).map((handle, idx, arr) => (
+                      <span key={handle}>
+                        <a
+                          href={`https://x.com/${handle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: '#3a64c7' }}
+                        >
+                          @{handle}
+                        </a>
+                        {idx < arr.length - 1 && '、'}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
