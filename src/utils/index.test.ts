@@ -31,7 +31,7 @@ describe('formatEventDate', () => {
   });
 
   it('跨年活動：2025/12/24 - 2026/1/5', () => {
-    const startDate = { _seconds: 1766505600, _nanoseconds: 0 }; // 2025/12/25
+    const startDate = { _seconds: 1766505600, _nanoseconds: 0 }; // 2025/12/24
     const endDate = { _seconds: 1767628799, _nanoseconds: 0 }; // 2026/1/5
     const result = formatEventDate(startDate, endDate);
     expect(result).toBe('2025/12/24 - 2026/1/5');
