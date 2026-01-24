@@ -20,7 +20,13 @@ export const dateToLocalDateString = (date: Date): string => {
 export const formatDateRange = (startDate: Date | string, endDate: Date | string): string => {
   const formatSingleDate = (date: Date | string): string => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('zh-TW');
+    const formatter = new Intl.DateTimeFormat('zh-TW', {
+      timeZone: 'Asia/Taipei',
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+    });
+    return formatter.format(dateObj);
   };
 
   const startDateStr = formatSingleDate(startDate);
@@ -32,9 +38,15 @@ export const formatEventDate = (startDate: FirebaseTimestamp, endDate: FirebaseT
   const start = firebaseTimestampToDate(startDate);
   const end = firebaseTimestampToDate(endDate);
 
-  const startStr = start.toLocaleDateString('zh-TW');
+  const formatter = new Intl.DateTimeFormat('zh-TW', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  });
 
-  const endStr = end.toLocaleDateString('zh-TW');
+  const startStr = formatter.format(start);
+  const endStr = formatter.format(end);
 
   // 如果同一天就只顯示一天
   return startStr === endStr ? startStr : `${startStr} - ${endStr}`;
