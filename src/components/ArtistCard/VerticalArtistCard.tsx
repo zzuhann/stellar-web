@@ -36,6 +36,7 @@ const imageOverlay = cva({
     left: 0,
     right: 0,
     top: 0,
+    bottom: 0,
     background:
       'linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.1) 100%)',
     padding: '16px',
@@ -47,14 +48,6 @@ const imageOverlay = cva({
     gap: '4px',
   },
   variants: {
-    hasActionButtons: {
-      true: {
-        bottom: '60px',
-      },
-      false: {
-        bottom: '0',
-      },
-    },
     isExists: {
       true: {
         cursor: 'pointer',
@@ -70,7 +63,7 @@ const buttonContainer = css({
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
-  height: '60px',
+  minHeight: '60px',
 });
 
 const artistName = css({
@@ -181,32 +174,31 @@ const VerticalArtistCard = ({
         style={{
           backgroundImage: artist.profileImage ? `url(${artist.profileImage})` : undefined,
         }}
-      />
-
-      {artist.status && (
-        <span className={statusBadge({ status: artist.status })}>
-          {getStatusText(artist.status, artist.rejectedReason)}
-        </span>
-      )}
-
-      <div
-        className={imageOverlay({
-          hasActionButtons: !!actionButtons,
-          isExists: artist.status === 'exists' || artist.status === 'approved',
-        })}
-        onClick={() => {
-          if (artist.status === 'approved' || artist.status === 'exists') {
-            onClick?.(artist);
-          }
-        }}
       >
-        <h3 className={artistName}>
-          {artist.stageName.toUpperCase()} {artist.realName}
-        </h3>
+        {artist.status && (
+          <span className={statusBadge({ status: artist.status })}>
+            {getStatusText(artist.status, artist.rejectedReason)}
+          </span>
+        )}
 
-        {birthdayText && <div className={artistBirthday}>🎂 {birthdayText}</div>}
+        <div
+          className={imageOverlay({
+            isExists: artist.status === 'exists' || artist.status === 'approved',
+          })}
+          onClick={() => {
+            if (artist.status === 'approved' || artist.status === 'exists') {
+              onClick?.(artist);
+            }
+          }}
+        >
+          <h3 className={artistName}>
+            {artist.stageName.toUpperCase()} {artist.realName}
+          </h3>
 
-        {submissionTime && <div className={styledSubmissionTime}>投稿時間：{submissionTime}</div>}
+          {birthdayText && <div className={artistBirthday}>🎂 {birthdayText}</div>}
+
+          {submissionTime && <div className={styledSubmissionTime}>投稿時間：{submissionTime}</div>}
+        </div>
       </div>
 
       {actionButtons && <div className={buttonContainer}>{actionButtons}</div>}
