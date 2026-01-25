@@ -329,6 +329,20 @@ export const eventsApi = {
       const response = await api.put<CoffeeEvent>(`/events/${id}/reject`, rejectData);
       return response.data;
     },
+
+    // 批次審核活動（管理員）
+    batchReview: async (
+      updates: Array<{
+        eventId: string;
+        status: 'approved' | 'rejected';
+        reason?: string;
+      }>
+    ) => {
+      const response = await api.post<CoffeeEvent[]>('/events/batch-review', {
+        updates,
+      });
+      return response.data;
+    },
   },
 };
 

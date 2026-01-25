@@ -365,6 +365,7 @@ export default function AdminPage() {
   const [approvingArtist, setApprovingArtist] = useState<Artist | null>(null);
   const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
   const [selectedArtists, setSelectedArtists] = useState<Set<string>>(new Set());
+  const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
   const [batchApproving, setBatchApproving] = useState(false);
   const queryClient = useQueryClient();
 
@@ -477,6 +478,25 @@ export default function AdminPage() {
     },
   });
 
+  // 批次審核活動 mutation
+  const batchReviewEventsMutation = useMutation({
+    mutationFn: (
+      updates: Array<{
+        eventId: string;
+        status: 'approved' | 'rejected';
+        reason?: string;
+      }>
+    ) => eventsApi.admin.batchReview(updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-pending-events'] });
+      setSelectedEvents(new Set());
+      showToast.success('批次審核成功');
+    },
+    onError: () => {
+      showToast.error('批次審核失敗');
+    },
+  });
+
   const handleApproveArtist = (artist: Artist) => {
     setApprovingArtist(artist);
   };
@@ -576,14 +596,63 @@ export default function AdminPage() {
   };
 
   const handleRejectEvent = (eventId: string, reason: string) => {
-    rejectEventMutation.mutate(
-      { id: eventId, reason },
-      {
-        onSuccess: () => {
-          setRejectingEvent(null);
-        },
-      }
-    );
+    if (eventId === 'batch') {
+      // 批次拒絕
+      handleBatchRejectEvents(reason);
+      setRejectingEvent(null);
+    } else {
+      // 單一拒絕
+      rejectEventMutation.mutate(
+        { id: eventId, reason },
+        {
+          onSuccess: () => {
+            setRejectingEvent(null);
+          },
+        }
+      );
+    }
+  };
+
+  // 批次審核活動處理函數
+  const handleBatchApproveEvents = () => {
+    if (selectedEvents.size === 0) return;
+
+    const updates = Array.from(selectedEvents).map((eventId) => ({
+      eventId,
+      status: 'approved' as const,
+    }));
+
+    batchReviewEventsMutation.mutate(updates);
+  };
+
+  const handleBatchRejectEvents = (reason: string) => {
+    if (selectedEvents.size === 0) return;
+
+    const updates = Array.from(selectedEvents).map((eventId) => ({
+      eventId,
+      status: 'rejected' as const,
+      reason,
+    }));
+
+    batchReviewEventsMutation.mutate(updates);
+  };
+
+  const handleSelectEvent = (eventId: string, selected: boolean) => {
+    const newSelected = new Set(selectedEvents);
+    if (selected) {
+      newSelected.add(eventId);
+    } else {
+      newSelected.delete(eventId);
+    }
+    setSelectedEvents(newSelected);
+  };
+
+  const handleSelectAllEvents = (selected: boolean) => {
+    if (selected) {
+      setSelectedEvents(new Set(pendingEvents.map((event) => event.id)));
+    } else {
+      setSelectedEvents(new Set());
+    }
   };
 
   const handlePreviewEvent = (event: CoffeeEvent) => {
@@ -629,14 +698,20 @@ export default function AdminPage() {
           <nav className={tabNav}>
             <button
               className={tabButton({ active: activeTab === 'artists' })}
-              onClick={() => setActiveTab('artists')}
+              onClick={() => {
+                setActiveTab('artists');
+                setSelectedEvents(new Set());
+              }}
             >
               待審偶像
               {pendingArtists.length > 0 && <span className={badge}>{pendingArtists.length}</span>}
             </button>
             <button
               className={tabButton({ active: activeTab === 'events' })}
-              onClick={() => setActiveTab('events')}
+              onClick={() => {
+                setActiveTab('events');
+                setSelectedArtists(new Set());
+              }}
             >
               待審生咖
               {pendingEvents.length > 0 && <span className={badge}>{pendingEvents.length}</span>}
@@ -808,41 +883,117 @@ export default function AdminPage() {
                 <p>所有生咖投稿都已處理完成</p>
               </div>
             ) : (
-              <div className={itemList}>
-                {pendingEvents.map((event) => (
-                  <VerticalEventCard
-                    key={event.id}
-                    event={event}
-                    actionButtons={
-                      <div className={actionButtons}>
-                        <button
-                          className={`${actionButton} ${actionButtonPreview}`}
-                          onClick={() => handlePreviewEvent(event)}
-                        >
-                          <EyeIcon />
-                          預覽
-                        </button>
-                        <button
-                          className={`${actionButton} ${actionButtonApprove}`}
-                          onClick={() => handleApproveEvent(event.id)}
-                          disabled={approveEventMutation.isPending}
-                        >
-                          <CheckCircleIcon />
-                          通過
-                        </button>
-                        <button
-                          className={`${actionButton} ${actionButtonReject}`}
-                          onClick={() => setRejectingEvent(event)}
-                          disabled={rejectEventMutation.isPending}
-                        >
-                          <XCircleIcon />
-                          拒絕
-                        </button>
+              <>
+                {/* 批次操作區域 */}
+                {selectedEvents.size > 0 && (
+                  <div className={batchActionsContainer}>
+                    <div className={batchActionsLeft}>
+                      <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                        已選擇 {selectedEvents.size} 個生咖
+                      </span>
+                    </div>
+                    <div className={batchActionsRight}>
+                      <button
+                        className={`${batchButton} ${batchButtonApprove}`}
+                        onClick={handleBatchApproveEvents}
+                        disabled={batchReviewEventsMutation.isPending}
+                      >
+                        <CheckCircleIcon />
+                        批次通過
+                      </button>
+                      <button
+                        className={`${batchButton} ${batchButtonReject}`}
+                        onClick={() =>
+                          setRejectingEvent({ id: 'batch', title: '選中的生咖' } as CoffeeEvent)
+                        }
+                        disabled={batchReviewEventsMutation.isPending}
+                      >
+                        <XCircleIcon />
+                        批次拒絕
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* 全選區域 */}
+                <div
+                  style={{
+                    padding: '12px 20px',
+                    borderBottom: '1px solid',
+                    borderBottomColor: 'var(--color-border-light)',
+                    background: 'white',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <input
+                      className={checkbox}
+                      type="checkbox"
+                      checked={
+                        selectedEvents.size === pendingEvents.length && pendingEvents.length > 0
+                      }
+                      onChange={(e) => handleSelectAllEvents(e.target.checked)}
+                    />
+                    <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                      全選 ({selectedEvents.size}/{pendingEvents.length})
+                    </span>
+                  </div>
+                </div>
+
+                <div className={itemList}>
+                  {pendingEvents.map((event) => (
+                    <div key={event.id} style={{ position: 'relative' }}>
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '12px',
+                          left: '12px',
+                          zIndex: 10,
+                          background: 'white',
+                          borderRadius: '4px',
+                          padding: '4px',
+                        }}
+                      >
+                        <input
+                          className={checkbox}
+                          type="checkbox"
+                          checked={selectedEvents.has(event.id)}
+                          onChange={(e) => handleSelectEvent(event.id, e.target.checked)}
+                        />
                       </div>
-                    }
-                  />
-                ))}
-              </div>
+                      <VerticalEventCard
+                        event={event}
+                        actionButtons={
+                          <div className={actionButtons}>
+                            <button
+                              className={`${actionButton} ${actionButtonPreview}`}
+                              onClick={() => handlePreviewEvent(event)}
+                            >
+                              <EyeIcon />
+                              預覽
+                            </button>
+                            <button
+                              className={`${actionButton} ${actionButtonApprove}`}
+                              onClick={() => handleApproveEvent(event.id)}
+                              disabled={approveEventMutation.isPending}
+                            >
+                              <CheckCircleIcon />
+                              通過
+                            </button>
+                            <button
+                              className={`${actionButton} ${actionButtonReject}`}
+                              onClick={() => setRejectingEvent(event)}
+                              disabled={rejectEventMutation.isPending}
+                            >
+                              <XCircleIcon />
+                              拒絕
+                            </button>
+                          </div>
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         )}
