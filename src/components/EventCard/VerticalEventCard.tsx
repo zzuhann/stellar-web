@@ -39,6 +39,7 @@ const imageOverlay = cva({
     left: 0,
     right: 0,
     top: 0,
+    bottom: 0,
     background:
       'linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.1) 100%)',
     padding: '16px',
@@ -49,14 +50,6 @@ const imageOverlay = cva({
     justifyContent: 'flex-end',
   },
   variants: {
-    hasActionButtons: {
-      true: {
-        bottom: '60px',
-      },
-      false: {
-        bottom: 0,
-      },
-    },
     isApproved: {
       true: {
         cursor: 'pointer',
@@ -70,9 +63,8 @@ const buttonContainer = css({
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
-  height: '60px',
-  paddingLeft: '16px',
-  paddingRight: '16px',
+  minHeight: '60px',
+  padding: '8px 16px',
 });
 
 const eventTitle = css({
@@ -227,15 +219,77 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
             <div
               className={eventImageStyle}
               style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}
-            />
+            >
+              {isShowSubmissionInfo && (
+                <span className={statusBadge({ status: event.status })}>
+                  {getStatusText(event.status, event.rejectedReason)}
+                </span>
+              )}
 
+              <div className={imageOverlay({ isApproved: true })}>
+                <h3 className={eventTitle}>{event.title}</h3>
+
+                {event.artists && event.artists.length > 0 && (
+                  <div className={eventArtistSection}>
+                    {event.artists.map((artist, index) => (
+                      <div
+                        key={artist.id || index}
+                        style={{ display: 'flex', alignItems: 'center' }}
+                      >
+                        {index > 0 && <span className={eventArtistSeparator}>/</span>}
+                        <div className={eventArtistItem}>
+                          <div
+                            className={eventArtistAvatar}
+                            style={{ backgroundImage: `url(${artist.profileImage ?? ''})` }}
+                          />
+                          <span className={eventArtistName}>{artist.name || 'Unknown Artist'}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <div className={eventDetails}>
+                  <div className={eventDetailItem}>
+                    <CalendarIcon
+                      style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
+                    />
+                    <span className={detailText}>{eventDateText}</span>
+                  </div>
+
+                  {event.location.name && (
+                    <div className={eventDetailItem}>
+                      <MapPinIcon
+                        style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
+                      />
+                      <span className={detailText}>{event.location.name}</span>
+                    </div>
+                  )}
+                </div>
+
+                {submissionTime && isShowSubmissionInfo && (
+                  <div className={styledSubmissionTime}>投稿時間：{submissionTime}</div>
+                )}
+              </div>
+            </div>
+          </Link>
+
+          {actionButtons && <div className={buttonContainer}>{actionButtons}</div>}
+        </div>
+      )}
+      {event.status !== 'approved' && (
+        <div className={verticalEventCardContainer}>
+          <div
+            className={eventImageStyle}
+            style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}
+          >
             {isShowSubmissionInfo && (
               <span className={statusBadge({ status: event.status })}>
                 {getStatusText(event.status, event.rejectedReason)}
               </span>
             )}
 
-            <div className={imageOverlay({ hasActionButtons: !!actionButtons, isApproved: true })}>
+            <div className={imageOverlay({ isApproved: false })}>
               <h3 className={eventTitle}>{event.title}</h3>
 
               {event.artists && event.artists.length > 0 && (
@@ -257,9 +311,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
 
               <div className={eventDetails}>
                 <div className={eventDetailItem}>
-                  <CalendarIcon
-                    style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
-                  />
+                  <CalendarIcon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
                   <span className={detailText}>{eventDateText}</span>
                 </div>
 
@@ -277,63 +329,6 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
                 <div className={styledSubmissionTime}>投稿時間：{submissionTime}</div>
               )}
             </div>
-          </Link>
-
-          {actionButtons && <div className={buttonContainer}>{actionButtons}</div>}
-        </div>
-      )}
-      {event.status !== 'approved' && (
-        <div className={verticalEventCardContainer}>
-          <div
-            className={eventImageStyle}
-            style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}
-          />
-
-          {isShowSubmissionInfo && (
-            <span className={statusBadge({ status: event.status })}>
-              {getStatusText(event.status, event.rejectedReason)}
-            </span>
-          )}
-
-          <div className={imageOverlay({ hasActionButtons: !!actionButtons, isApproved: false })}>
-            <h3 className={eventTitle}>{event.title}</h3>
-
-            {event.artists && event.artists.length > 0 && (
-              <div className={eventArtistSection}>
-                {event.artists.map((artist, index) => (
-                  <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
-                    {index > 0 && <span className={eventArtistSeparator}>/</span>}
-                    <div className={eventArtistItem}>
-                      <div
-                        className={eventArtistAvatar}
-                        style={{ backgroundImage: `url(${artist.profileImage ?? ''})` }}
-                      />
-                      <span className={eventArtistName}>{artist.name || 'Unknown Artist'}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <div className={eventDetails}>
-              <div className={eventDetailItem}>
-                <CalendarIcon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
-                <span className={detailText}>{eventDateText}</span>
-              </div>
-
-              {event.location.name && (
-                <div className={eventDetailItem}>
-                  <MapPinIcon
-                    style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
-                  />
-                  <span className={detailText}>{event.location.name}</span>
-                </div>
-              )}
-            </div>
-
-            {submissionTime && isShowSubmissionInfo && (
-              <div className={submissionTime}>投稿時間：{submissionTime}</div>
-            )}
           </div>
 
           {actionButtons && <div className={buttonContainer}>{actionButtons}</div>}

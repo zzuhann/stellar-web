@@ -67,7 +67,7 @@ const form = css({
 });
 
 interface EventSubmissionFormProps {
-  mode?: 'create' | 'edit';
+  mode?: 'create' | 'edit' | 'copy';
   existingEvent?: CoffeeEvent;
   onSuccess?: (event: CoffeeEvent) => void;
   onCancel?: () => void;
@@ -79,8 +79,8 @@ function EventSubmissionForm({
   onSuccess,
   onCancel,
 }: EventSubmissionFormProps) {
-  // 步驟：edit mode直接跳到第二步，create mode 從第一步開始
-  const [currentStep, setCurrentStep] = useState(mode === 'edit' ? 2 : 1);
+  // 步驟：edit/copy mode直接跳到第二步，create mode 從第一步開始
+  const [currentStep, setCurrentStep] = useState(mode === 'edit' || mode === 'copy' ? 2 : 1);
   const [locationCoordinates, setLocationCoordinates] = useState<{
     lat: number;
     lng: number;
@@ -251,7 +251,7 @@ function EventSubmissionForm({
   // 是否有任何 changes
   const checkForChanges = () => {
     if (mode !== 'edit' || !existingEvent) {
-      return true; // 非編輯模式一律允許送出
+      return true; // 非編輯模式（create/copy）一律允許送出
     }
 
     // 檢查表單欄位改變
@@ -335,7 +335,7 @@ function EventSubmissionForm({
   }, [detailImageUrls, mainImageUrl, selectedArtists, setValue]);
 
   const submitEventData = async (data: EventSubmissionFormData) => {
-    if (mode === 'create') {
+    if (mode === 'create' || mode === 'copy') {
       const eventData: CreateEventRequest = {
         title: data.title,
         artistIds: selectedArtists.map((artist) => artist.id),
@@ -437,17 +437,17 @@ function EventSubmissionForm({
   return (
     <div className={formContainer}>
       <div className={formHeader}>
-        <h2>{mode === 'edit' ? '編輯' : '投稿'}</h2>
+        <h2>{mode === 'edit' ? '編輯' : mode === 'copy' ? '複製投稿' : '投稿'}</h2>
         {mode !== 'edit' && <p>審核通過之後其他使用者可以在地圖/列表上看到此生日應援!</p>}
       </div>
 
-      {mode === 'create' && <StepIndicator currentStep={currentStep} />}
+      {mode === 'create' && currentStep === 1 && <StepIndicator currentStep={currentStep} />}
 
       <form className={form}>
         {/* 第一步：選擇藝人 */}
-        {(currentStep === 1 || mode === 'edit') && (
+        {(currentStep === 1 || mode === 'edit' || mode === 'copy') && (
           <ChooseArtistSection
-            mode={mode}
+            mode={mode === 'copy' ? 'edit' : mode}
             selectedArtists={selectedArtists}
             openArtistSelectionModal={openArtistSelectionModal}
             removeArtist={removeArtist}
@@ -457,7 +457,7 @@ function EventSubmissionForm({
         )}
 
         {/* 第二步：其他活動資訊 */}
-        {(currentStep === 2 || mode === 'edit') && (
+        {(currentStep === 2 || mode === 'edit' || mode === 'copy') && (
           <EventInfoSection
             register={register}
             errors={errors}
@@ -497,7 +497,7 @@ function EventSubmissionForm({
       </form>
 
       {/* 藝人選擇 Modal - 只在 create mode 顯示 */}
-      {mode === 'create' && (
+      {mode === 'create' && currentStep === 1 && (
         <ArtistSelectionModal
           isOpen={artistSelectionModalOpen}
           onClose={() => setArtistSelectionModalOpen(false)}

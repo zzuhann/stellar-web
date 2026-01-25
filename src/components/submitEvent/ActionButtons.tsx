@@ -70,7 +70,7 @@ const loadingSpinner = css({
 });
 
 type ActionButtonsProps = {
-  mode: 'create' | 'edit';
+  mode: 'create' | 'edit' | 'copy';
   currentStep: number;
   handleNextStep: () => void;
   handlePrevStep: () => void;
@@ -123,6 +123,32 @@ const ActionButtons = ({
             onClick={handlePrevStep}
           >
             上一步
+          </button>
+          <button
+            className={button({ variant: 'primary' })}
+            type="button"
+            disabled={createEventPending}
+            onClick={handleSubmit(onSubmit)}
+          >
+            {createEventPending ? (
+              <>
+                <div className={loadingSpinner} />
+                投稿中...
+              </>
+            ) : (
+              '送出投稿'
+            )}
+          </button>
+        </>
+      ) : mode === 'copy' ? (
+        // 複製模式：取消 + 送出投稿
+        <>
+          <button
+            className={button({ variant: 'secondary' })}
+            type="button"
+            onClick={onCancel || (() => router.push('/'))}
+          >
+            取消
           </button>
           <button
             className={button({ variant: 'primary' })}

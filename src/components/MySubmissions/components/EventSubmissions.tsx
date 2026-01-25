@@ -1,12 +1,12 @@
 import { CoffeeEvent } from '@/types';
 import CardHeader from './CardHeader';
-import { actionButton, actionButtons, contentCard } from './styles';
+import { actionButton, actionButtons, actionButtonsContainer, contentCard } from './styles';
 import EmptyState from './EmptyState';
 import { css } from '@/styled-system/css';
 import { useRouter } from 'next/navigation';
 import VerticalEventCard from '@/components/EventCard/VerticalEventCard';
 import { UseMutationResult } from '@tanstack/react-query';
-import { EyeIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, PencilIcon, TrashIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import { useMemo } from 'react';
 
 const ctaButton = css({
@@ -79,6 +79,11 @@ const EventSubmissions = ({
     router.push(`/submit-event?edit=${event.id}`);
   };
 
+  const handleCopyEvent = (e: React.MouseEvent, event: CoffeeEvent) => {
+    e.stopPropagation();
+    router.push(`/submit-event?copy=${event.id}`);
+  };
+
   return (
     <div className={contentCard}>
       <CardHeader
@@ -106,32 +111,44 @@ const EventSubmissions = ({
               key={event.id}
               event={event}
               actionButtons={
-                <div className={actionButtons}>
-                  <button
-                    className={actionButton({ variant: 'edit' })}
-                    onClick={(e) => handlePreviewEvent(e, event)}
-                    title="預覽"
-                  >
-                    <EyeIcon width={12} height={12} />
-                    預覽
-                  </button>
-                  <button
-                    className={actionButton({ variant: 'edit' })}
-                    onClick={(e) => handleEditEvent(e, event)}
-                    title="編輯"
-                  >
-                    <PencilIcon width={12} height={12} />
-                    編輯
-                  </button>
-                  <button
-                    className={actionButton()}
-                    onClick={(e) => handleDeleteEvent(e, event)}
-                    disabled={deleteEventMutation.isPending}
-                    title="刪除"
-                  >
-                    <TrashIcon width={12} height={12} />
-                    {deleteEventMutation.isPending ? '刪除中...' : '刪除'}
-                  </button>
+                <div className={actionButtonsContainer}>
+                  <div className={actionButtons}>
+                    <button
+                      className={actionButton({ variant: 'edit' })}
+                      onClick={(e) => handlePreviewEvent(e, event)}
+                      title="預覽"
+                    >
+                      <EyeIcon width={12} height={12} />
+                      預覽
+                    </button>
+                    <button
+                      className={actionButton({ variant: 'edit' })}
+                      onClick={(e) => handleEditEvent(e, event)}
+                      title="編輯"
+                    >
+                      <PencilIcon width={12} height={12} />
+                      編輯
+                    </button>
+                  </div>
+                  <div className={actionButtons}>
+                    <button
+                      className={actionButton({ variant: 'edit' })}
+                      onClick={(e) => handleCopyEvent(e, event)}
+                      title="複製"
+                    >
+                      <DocumentDuplicateIcon width={12} height={12} />
+                      複製
+                    </button>
+                    <button
+                      className={actionButton()}
+                      onClick={(e) => handleDeleteEvent(e, event)}
+                      disabled={deleteEventMutation.isPending}
+                      title="刪除"
+                    >
+                      <TrashIcon width={12} height={12} />
+                      {deleteEventMutation.isPending ? '刪除中...' : '刪除'}
+                    </button>
+                  </div>
                 </div>
               }
             />

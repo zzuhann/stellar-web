@@ -8,10 +8,15 @@ export const contentCard = css({
   overflow: 'hidden',
 });
 
+export const actionButtonsContainer = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+});
+
 export const actionButtons = css({
   display: 'flex',
   gap: '6px',
-  marginTop: '8px',
 });
 
 export const actionButton = cva({
