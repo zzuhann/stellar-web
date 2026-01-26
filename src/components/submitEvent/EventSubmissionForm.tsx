@@ -66,6 +66,15 @@ const form = css({
   gap: '24px',
 });
 
+const warningText = css({
+  fontSize: '14px',
+  color: '#ef4444 !important',
+  margin: '0',
+  '@media (min-width: 768px)': {
+    fontSize: '16px',
+  },
+});
+
 interface EventSubmissionFormProps {
   mode?: 'create' | 'edit' | 'copy';
   existingEvent?: CoffeeEvent;
@@ -439,6 +448,9 @@ function EventSubmissionForm({
       <div className={formHeader}>
         <h2>{mode === 'edit' ? '編輯' : mode === 'copy' ? '複製投稿' : '投稿'}</h2>
         {mode !== 'edit' && <p>審核通過之後其他使用者可以在地圖/列表上看到此生日應援!</p>}
+        <p className={warningText}>
+          注意：文案、圖片內容若使用中文呈現，<b>需 100% 為繁體字</b>。若非繁體字，審核將不會通過。
+        </p>
       </div>
 
       {mode === 'create' && currentStep === 1 && <StepIndicator currentStep={currentStep} />}

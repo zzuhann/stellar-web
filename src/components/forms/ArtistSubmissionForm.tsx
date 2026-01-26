@@ -168,6 +168,14 @@ const imageSection = css({
   },
 });
 
+const warningText = css({
+  color: '#ef4444 !important',
+});
+
+const bulletPoint = css({
+  listStyleType: 'disc',
+});
+
 const buttonGroup = css({
   display: 'flex',
   flexDirection: 'column',
@@ -585,10 +593,13 @@ export default function ArtistSubmissionForm({
         {/* 說明區塊 */}
         <div className={infoBox}>
           <div className="title">投稿說明：</div>
-          <ul>
+          <ul className={bulletPoint}>
             <li>投稿的偶像將經過審核</li>
             <li>審核通過後，所有用戶都可以選擇這位偶像來建立生日應援</li>
             <li>請確保偶像資訊的正確性以及照片來源是否可公開使用</li>
+            <li className={warningText}>
+              偶像名字若包含中文，<b>需 100% 為繁體字</b>。若非繁體字，審核將不會通過
+            </li>
             <li>資料錯誤、重複的偶像投稿審核不會通過</li>
             <li>若有多人重複投稿偶像，將以投稿時間較早者為準</li>
           </ul>
