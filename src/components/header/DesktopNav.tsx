@@ -115,14 +115,14 @@ const DesktopNav = () => {
     <div className={desktopNav}>
       {user ? (
         <div className={rightSection}>
-          <Link className={styledLink} href="/my-submissions">
-            我的投稿
-          </Link>
           <Link className={styledLink} href="/admin">
             管理員審核
           </Link>
           <Link className={styledLink} href="/submit-event">
             舉辦生日應援
+          </Link>
+          <Link className={styledLink} href="/my-submissions">
+            我的投稿
           </Link>
           <Link className={styledLink} href="/my-favorite">
             我的收藏

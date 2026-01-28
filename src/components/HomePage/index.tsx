@@ -74,8 +74,7 @@ function HomePageContent() {
             }}
             ariaLabel="前往投稿生日應援"
           >
-            <span>生日應援主辦 ✨</span>
-            <span>前往投稿生日應援 ➡️</span>
+            <span>點擊投稿生日應援 ➡️</span>
           </CTAButton>
 
           <WeekNavigation

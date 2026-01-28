@@ -145,9 +145,6 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
             <>
               <div className={description}>{userData?.displayName || 'member'}</div>
 
-              <Link href="/my-submissions" className={mobileMenuButton} onClick={closeMobileMenu}>
-                我的投稿
-              </Link>
               {userData?.role === 'admin' && (
                 <Link href="/admin" className={mobileMenuButton} onClick={closeMobileMenu}>
                   管理員審核
@@ -155,6 +152,9 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
               )}
               <Link href="/submit-event" className={mobileMenuButton} onClick={closeMobileMenu}>
                 舉辦生日應援
+              </Link>
+              <Link href="/my-submissions" className={mobileMenuButton} onClick={closeMobileMenu}>
+                我的投稿
               </Link>
               <Link href="/my-favorite" className={mobileMenuButton} onClick={closeMobileMenu}>
                 我的收藏
