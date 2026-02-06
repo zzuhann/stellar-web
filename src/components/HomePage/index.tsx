@@ -73,8 +73,8 @@ function HomePageContent() {
   const { weeklyEvents, isLoading: isEventsLoading } = useWeeklyEvents();
   const { data: events, isLoading: isLatestEventsLoading } = useEventFilters({
     status: 'approved',
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
+    sortBy: 'startTime',
+    sortOrder: 'asc',
     limit: 20,
     page: 1,
     // 從今天開始
@@ -105,7 +105,7 @@ function HomePageContent() {
           </CTAButton>
 
           <section className={latestEventsContainer} aria-label="最新生日應援">
-            <h2 className={heading}>✩ 最近新增的生日應援</h2>
+            <h2 className={heading}>✩ 即將到來的生日應援</h2>
             <EventCardCarousel events={uniqueEvents ?? []} isLoading={isLatestEventsLoading} />
           </section>
 
