@@ -15,6 +15,8 @@ import { css } from '@/styled-system/css';
 import CTAButton from '@/components/CTAButton';
 import { useAuth } from '@/lib/auth-context';
 import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
+import { useEventFilters } from '@/hooks/useEventFilters';
+import EventCardCarousel from '../EventCardCarousel';
 
 const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearchModal'), {
   ssr: false,
@@ -48,6 +50,7 @@ export const contentWrapper = css({
 
 function HomePageContent() {
   const router = useRouter();
+  const [today] = useState(new Date().toISOString());
   const { user, toggleAuthModal } = useAuth();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
@@ -58,6 +61,15 @@ function HomePageContent() {
 
   const { weekBirthdayArtists, isLoading: isArtistsLoading } = useBirthdayArtists();
   const { weeklyEvents, isLoading: isEventsLoading } = useWeeklyEvents();
+  const { data: events } = useEventFilters({
+    status: 'approved',
+    sortBy: 'startTime',
+    sortOrder: 'asc',
+    limit: 20,
+    page: 1,
+    // 從今天開始
+    startTimeFrom: today,
+  });
 
   return (
     <main className={pageContainer}>
@@ -76,6 +88,8 @@ function HomePageContent() {
           >
             <span>點擊投稿生日應援 ➡️</span>
           </CTAButton>
+
+          <EventCardCarousel events={events ?? []} />
 
           <WeekNavigation
             currentWeekStart={currentWeekStart}

@@ -1,14 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
-import { CoffeeEvent } from '@/types';
+import { eventsApi } from '@/lib/api';
+import { CoffeeEvent, EventSearchParams } from '@/types';
 
 interface FilterOptions {
-  search: string;
-  artistId: string;
-  status: 'all' | 'active' | 'upcoming' | 'ended';
-  region: string;
+  search?: string;
+  artistId?: string;
+  status?: 'all' | 'pending' | 'approved' | 'rejected';
+  region?: string;
   page?: number;
   limit?: number;
+  sortBy?: 'title' | 'startTime' | 'createdAt';
+  sortOrder?: 'asc' | 'desc';
+  startTimeFrom?: string;
+  startTimeTo?: string;
 }
 
 export interface EventsResponse {
@@ -30,21 +34,24 @@ export interface EventsResponse {
 export function useEventFilters(filters: FilterOptions) {
   return useQuery({
     queryKey: ['events', filters],
-    queryFn: async (): Promise<EventsResponse> => {
-      const params = new URLSearchParams();
+    queryFn: async (): Promise<CoffeeEvent[]> => {
+      const params: EventSearchParams = {};
 
       // 只添加有值的參數
-      if (filters.search.trim()) params.append('search', filters.search.trim());
-      if (filters.artistId) params.append('artistId', filters.artistId);
-      if (filters.status !== 'all') params.append('status', filters.status);
-      if (filters.region) params.append('region', filters.region);
-      if (filters.page) params.append('page', filters.page.toString());
-      if (filters.limit) params.append('limit', filters.limit.toString());
+      if (filters.search && filters.search.trim()) params.search = filters.search.trim();
+      if (filters.artistId) params.artistId = filters.artistId;
+      if (filters.status) params.status = filters.status;
+      if (filters.region) params.region = filters.region;
+      if (filters.page) params.page = filters.page;
+      if (filters.limit) params.limit = filters.limit;
+      if (filters.sortBy) params.sortBy = filters.sortBy;
+      if (filters.sortOrder) params.sortOrder = filters.sortOrder;
+      if (filters.startTimeFrom) params.startTimeFrom = filters.startTimeFrom;
+      if (filters.startTimeTo) params.startTimeTo = filters.startTimeTo;
 
-      const response = await api.get(`/events?${params.toString()}`);
-      return response.data;
+      const response = await eventsApi.getAll(params);
+      return response.events;
     },
-    staleTime: 1000 * 60 * 2, // 2 分鐘快取
-    enabled: true,
+    staleTime: 1000 * 60 * 5, // 5 分鐘快取
   });
 }
