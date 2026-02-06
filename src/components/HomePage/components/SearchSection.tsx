@@ -11,6 +11,7 @@ const container = css({
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
   padding: '8px 16px',
+  marginTop: '8px',
 });
 
 const searchInput = css({
