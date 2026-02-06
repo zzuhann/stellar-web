@@ -10,6 +10,7 @@ import VerticalEventCard from '@/components/EventCardCarousel/VerticalEventCard'
 
 import 'swiper/css';
 import 'swiper/css/pagination';
+import Skeleton from '../ui/Skeleton';
 
 const carouselContainer = css({
   position: 'relative',
@@ -49,12 +50,13 @@ const slideContent = css({
 
 interface EventCardCarouselProps {
   events: CoffeeEvent[];
+  isLoading: boolean;
 }
 
-export default function EventCardCarousel({ events }: EventCardCarouselProps) {
+export default function EventCardCarousel({ events, isLoading }: EventCardCarouselProps) {
   const swiperRef = useRef<SwiperType | null>(null);
 
-  if (events.length === 0) {
+  if (events.length === 0 && !isLoading) {
     return null;
   }
 
@@ -92,13 +94,20 @@ export default function EventCardCarousel({ events }: EventCardCarouselProps) {
           swiperRef.current = swiper;
         }}
       >
-        {events.map((event) => (
-          <SwiperSlide key={event.id}>
-            <div className={slideContent}>
-              <VerticalEventCard event={event} />
-            </div>
+        {isLoading && (
+          <SwiperSlide>
+            <Skeleton width="100%" height="300px" borderRadius="8px" />
           </SwiperSlide>
-        ))}
+        )}
+
+        {!isLoading &&
+          events.map((event) => (
+            <SwiperSlide key={event.id}>
+              <div className={slideContent}>
+                <VerticalEventCard event={event} />
+              </div>
+            </SwiperSlide>
+          ))}
       </Swiper>
     </div>
   );

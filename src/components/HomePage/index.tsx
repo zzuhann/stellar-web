@@ -71,7 +71,7 @@ function HomePageContent() {
 
   const { weekBirthdayArtists, isLoading: isArtistsLoading } = useBirthdayArtists();
   const { weeklyEvents, isLoading: isEventsLoading } = useWeeklyEvents();
-  const { data: events } = useEventFilters({
+  const { data: events, isLoading: isLatestEventsLoading } = useEventFilters({
     status: 'approved',
     sortBy: 'createdAt',
     sortOrder: 'desc',
@@ -106,7 +106,7 @@ function HomePageContent() {
 
           <section className={latestEventsContainer} aria-label="最新生日應援">
             <h2 className={heading}>✩ 最近新增的生日應援</h2>
-            <EventCardCarousel events={uniqueEvents ?? []} />
+            <EventCardCarousel events={uniqueEvents ?? []} isLoading={isLatestEventsLoading} />
           </section>
 
           <section aria-label="每週壽星與生日應援">
