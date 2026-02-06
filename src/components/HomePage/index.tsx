@@ -15,8 +15,8 @@ import { css } from '@/styled-system/css';
 import CTAButton from '@/components/CTAButton';
 import { useAuth } from '@/lib/auth-context';
 import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
-import { useEventFilters } from '@/hooks/useEventFilters';
 import EventCardCarousel from '../EventCardCarousel';
+import { useEventFilters } from '@/hooks/useEventFilters';
 
 const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearchModal'), {
   ssr: false,
@@ -48,6 +48,16 @@ export const contentWrapper = css({
   gap: '16px',
 });
 
+const heading = css({
+  fontSize: '16px',
+  fontWeight: 'bold',
+  color: 'color.text.primary',
+});
+
+const latestEventsContainer = css({
+  marginTop: '20px',
+});
+
 function HomePageContent() {
   const router = useRouter();
   const [today] = useState(new Date().toISOString());
@@ -63,18 +73,23 @@ function HomePageContent() {
   const { weeklyEvents, isLoading: isEventsLoading } = useWeeklyEvents();
   const { data: events } = useEventFilters({
     status: 'approved',
-    sortBy: 'startTime',
-    sortOrder: 'asc',
+    sortBy: 'createdAt',
+    sortOrder: 'desc',
     limit: 20,
     page: 1,
     // 從今天開始
     startTimeFrom: today,
   });
 
+  // 同一個標題只顯示一次
+  const uniqueEvents = events?.filter(
+    (event, index, self) => index === self.findIndex((t) => t.title === event.title)
+  );
+
   return (
     <main className={pageContainer}>
       <div className={mainContainer}>
-        <section className={contentWrapper} aria-label="每週壽星與生日應援">
+        <section className={contentWrapper} aria-label="首頁">
           <IOSInstallBanner />
           <CTAButton
             onClick={() => {
@@ -89,33 +104,38 @@ function HomePageContent() {
             <span>點擊投稿生日應援 ➡️</span>
           </CTAButton>
 
-          <EventCardCarousel events={events ?? []} />
+          <section className={latestEventsContainer} aria-label="最新生日應援">
+            <h2 className={heading}>✩ 最近新增的生日應援</h2>
+            <EventCardCarousel events={uniqueEvents ?? []} />
+          </section>
 
-          <WeekNavigation
-            currentWeekStart={currentWeekStart}
-            currentWeekEnd={currentWeekEnd}
-            isCurrentWeek={isCurrentWeek}
-            activeTab={activeTab}
-            onPreviousWeek={goToPreviousWeek}
-            onNextWeek={goToNextWeek}
-            onTabChange={handleTabChange}
-          />
+          <section aria-label="每週壽星與生日應援">
+            <WeekNavigation
+              currentWeekStart={currentWeekStart}
+              currentWeekEnd={currentWeekEnd}
+              isCurrentWeek={isCurrentWeek}
+              activeTab={activeTab}
+              onPreviousWeek={goToPreviousWeek}
+              onNextWeek={goToNextWeek}
+              onTabChange={handleTabChange}
+            />
 
-          {activeTab === 'birthday' && (
-            <div role="tabpanel" id="birthday-panel" aria-labelledby="birthday-tab">
-              <BirthdayTab
-                artists={weekBirthdayArtists}
-                loading={isArtistsLoading}
-                onSearchClick={() => setSearchModalOpen(true)}
-              />
-            </div>
-          )}
+            {activeTab === 'birthday' && (
+              <div role="tabpanel" id="birthday-panel" aria-labelledby="birthday-tab">
+                <BirthdayTab
+                  artists={weekBirthdayArtists}
+                  loading={isArtistsLoading}
+                  onSearchClick={() => setSearchModalOpen(true)}
+                />
+              </div>
+            )}
 
-          {activeTab === 'events' && (
-            <div role="tabpanel" id="events-panel" aria-labelledby="events-tab">
-              <EventsTab events={weeklyEvents} loading={isEventsLoading} />
-            </div>
-          )}
+            {activeTab === 'events' && (
+              <div role="tabpanel" id="events-panel" aria-labelledby="events-tab">
+                <EventsTab events={weeklyEvents} loading={isEventsLoading} />
+              </div>
+            )}
+          </section>
         </section>
       </div>
 

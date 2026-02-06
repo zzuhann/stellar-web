@@ -6,7 +6,7 @@ import type { Swiper as SwiperType } from 'swiper';
 import { Pagination } from 'swiper/modules';
 import { css } from '@/styled-system/css';
 import { CoffeeEvent } from '@/types';
-import VerticalEventCard from '@/components/EventCard/VerticalEventCard';
+import VerticalEventCard from '@/components/EventCardCarousel/VerticalEventCard';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -68,22 +68,23 @@ export default function EventCardCarousel({ events }: EventCardCarouselProps) {
           dynamicBullets: true,
           dynamicMainBullets: 3,
         }}
-        spaceBetween={16}
-        slidesPerView={1.2}
+        spaceBetween={6}
+        slidesPerView={1.3}
         centeredSlides={true}
         breakpoints={{
           480: {
-            slidesPerView: 1.5,
-            spaceBetween: 20,
+            slidesPerView: 2,
+            spaceBetween: 8,
+            centeredSlides: false,
           },
           640: {
             slidesPerView: 2,
-            spaceBetween: 24,
+            spaceBetween: 10,
             centeredSlides: false,
           },
           1024: {
-            slidesPerView: 3,
-            spaceBetween: 24,
+            slidesPerView: 2,
+            spaceBetween: 15,
             centeredSlides: false,
           },
         }}
