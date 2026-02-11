@@ -56,6 +56,7 @@ export const useFavoriteToggle = () => {
     onSettled: (_data, _error, { eventId }) => {
       // 重新 fetch 確保資料正確
       queryClient.invalidateQueries({ queryKey: ['favorite', eventId] });
+      queryClient.invalidateQueries({ queryKey: ['favorites'] });
     },
   });
 };
