@@ -84,7 +84,12 @@ export default function FavoriteButton({ eventId, eventTitle }: FavoriteButtonPr
 
   const handleFavoriteClick = () => {
     if (!user) {
-      toggleAuthModal();
+      toggleAuthModal(undefined, () => {
+        favoriteToggle.mutate({
+          eventId,
+          isFavorited,
+        });
+      });
       return;
     }
 

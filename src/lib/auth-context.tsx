@@ -12,8 +12,8 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   authModalOpen: boolean;
-  toggleAuthModal: (redirectTo?: string) => void;
-  redirectUrl?: string;
+  toggleAuthModal: (redirectTo?: string, onAuthSuccess?: () => void) => void;
+  redirectUrl: string | null;
   refetchUserData: () => Promise<void>;
   fetchUserDataByUid: (uid: string) => Promise<void>;
 }
@@ -25,7 +25,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userData, setUserData] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [redirectUrl, setRedirectUrl] = useState<string>();
+  const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null); // 登入成功後要執行的動作
 
   const refetchUserData = useCallback(async () => {
     if (user) {
@@ -47,6 +48,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // 取得使用者詳細資料
         const appUserData = await getUserData(firebaseUser.uid);
         setUserData(appUserData);
+
+        if (pendingAction) {
+          pendingAction();
+          setPendingAction(null);
+        }
       } else {
         setUserData(null);
       }
@@ -55,16 +61,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return unsubscribe;
-  }, []);
+  }, [pendingAction]);
 
-  const toggleAuthModal = (redirectTo?: string) => {
+  const toggleAuthModal = (redirectTo?: string, onAuthSuccess?: () => void) => {
     if (redirectTo) {
       setRedirectUrl(redirectTo);
+    }
+    if (onAuthSuccess) {
+      setPendingAction(() => onAuthSuccess);
     }
     setAuthModalOpen(!authModalOpen);
 
     if (authModalOpen) {
-      setRedirectUrl(undefined);
+      setRedirectUrl(null);
+      setPendingAction(null);
     }
   };
 
