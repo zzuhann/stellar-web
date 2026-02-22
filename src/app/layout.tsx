@@ -13,6 +13,7 @@ import { Analytics } from '@vercel/analytics/next';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import { ShareProvider } from '@/context/ShareContext';
+import ClarityInit from '@/components/ClarityInit';
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
@@ -108,6 +109,7 @@ export default function RootLayout({
                 <Header />
                 {children}
                 <Analytics />
+                <ClarityInit />
                 <ServiceWorkerRegistration />
                 <PWAInstallPrompt />
                 <Toaster
