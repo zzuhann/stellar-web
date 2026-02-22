@@ -41,7 +41,6 @@ const imageOverlay = cva({
       'linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.1) 100%)',
     padding: '16px',
     color: 'white',
-    backdropFilter: 'blur(1px)',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'flex-end',
