@@ -1,5 +1,6 @@
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import ModalOverlay from './ModalOverlay';
 import { css, cva } from '@/styled-system/css';
 
@@ -122,19 +123,30 @@ export default function ConfirmModal({
 }: ConfirmModalProps) {
   // 使用 scroll lock hook
   useScrollLock(isOpen);
+  // 使用 focus trap hook
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
 
   if (!isOpen) return null;
 
   return (
     <ModalOverlay isOpen={isOpen} zIndex={50} padding="16px">
-      <div className={modalContent}>
+      <div
+        ref={focusTrapRef}
+        className={modalContent}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+      >
         <div className={modalHeader}>
-          <h3 className={modalTitle}>
-            <ExclamationTriangleIcon style={{ width: '20px', height: '20px', color: '#eab308' }} />
+          <h3 id="confirm-modal-title" className={modalTitle}>
+            <ExclamationTriangleIcon
+              style={{ width: '20px', height: '20px', color: '#eab308' }}
+              aria-hidden="true"
+            />
             {title}
           </h3>
-          <button className={closeButton} onClick={onCancel}>
-            <XMarkIcon width={20} height={20} />
+          <button className={closeButton} onClick={onCancel} aria-label="關閉對話框">
+            <XMarkIcon aria-hidden="true" width={20} height={20} />
           </button>
         </div>
         <div className={modalBody}>

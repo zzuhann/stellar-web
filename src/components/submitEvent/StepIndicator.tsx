@@ -110,17 +110,36 @@ type StepIndicatorProps = {
 
 const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
   return (
-    <div className={stepIndicator}>
-      <div className={step({ active: currentStep === 1, completed: currentStep > 1 })}>
-        <div className="step-number">1</div>
-        <div className="step-title">選擇偶像</div>
-      </div>
-      <div className={stepConnector({ completed: currentStep > 1 })} />
-      <div className={step({ active: currentStep === 2, completed: false })}>
-        <div className="step-number">2</div>
-        <div className="step-title">應援資訊</div>
-      </div>
-    </div>
+    <nav aria-label="投稿步驟">
+      <ol className={stepIndicator} role="list">
+        <li
+          className={step({ active: currentStep === 1, completed: currentStep > 1 })}
+          aria-current={currentStep === 1 ? 'step' : undefined}
+        >
+          <div className="step-number" aria-hidden="true">
+            1
+          </div>
+          <div className="step-title">
+            <span className="sr-only">步驟 1：</span>
+            選擇偶像
+            {currentStep > 1 && <span className="sr-only">（已完成）</span>}
+          </div>
+        </li>
+        <li className={stepConnector({ completed: currentStep > 1 })} aria-hidden="true" />
+        <li
+          className={step({ active: currentStep === 2, completed: false })}
+          aria-current={currentStep === 2 ? 'step' : undefined}
+        >
+          <div className="step-number" aria-hidden="true">
+            2
+          </div>
+          <div className="step-title">
+            <span className="sr-only">步驟 2：</span>
+            應援資訊
+          </div>
+        </li>
+      </ol>
+    </nav>
   );
 };
 

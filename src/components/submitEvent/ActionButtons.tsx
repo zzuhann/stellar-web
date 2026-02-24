@@ -132,7 +132,9 @@ const ActionButtons = ({
           >
             {createEventPending ? (
               <>
-                <div className={loadingSpinner} />
+                <div className={loadingSpinner} role="status" aria-live="polite">
+                  <span className="sr-only">載入中</span>
+                </div>
                 投稿中...
               </>
             ) : (
@@ -158,7 +160,9 @@ const ActionButtons = ({
           >
             {createEventPending ? (
               <>
-                <div className={loadingSpinner} />
+                <div className={loadingSpinner} role="status" aria-live="polite">
+                  <span className="sr-only">載入中</span>
+                </div>
                 投稿中...
               </>
             ) : (
@@ -184,12 +188,16 @@ const ActionButtons = ({
           >
             {updateEventPending ? (
               <>
-                <div className={loadingSpinner} />
+                <div className={loadingSpinner} role="status" aria-live="polite">
+                  <span className="sr-only">載入中</span>
+                </div>
                 更新中...
               </>
             ) : resubmitEventPending ? (
               <>
-                <div className={loadingSpinner} />
+                <div className={loadingSpinner} role="status" aria-live="polite">
+                  <span className="sr-only">載入中</span>
+                </div>
                 重新送出審核中...
               </>
             ) : existingEventStatus === 'rejected' ? (

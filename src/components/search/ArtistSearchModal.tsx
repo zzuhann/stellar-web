@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useArtistSearch } from '@/hooks/useArtistSearch';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import ArtistCard from '../ArtistCard';
 import { useAuth } from '@/lib/auth-context';
 import EmptyState from '../EmptyState';
@@ -167,9 +168,6 @@ const artistList = css({
   marginBottom: '16px',
 });
 
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
 interface ArtistSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -189,79 +187,46 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
   const hasResults = searchResults.length > 0;
 
   useScrollLock(isOpen);
-  const modalContentRef = useRef<HTMLDivElement>(null);
+
+  // Focus trap with custom return focus element
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen, {
+    returnFocusTo: triggerRef,
+    disableAutoFocus: true, // We'll manually focus the search input
+  });
+
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const handleClose = useCallback(() => {
-    onClose();
-    requestAnimationFrame(() => {
-      triggerRef?.current?.focus();
-    });
-  }, [onClose, triggerRef]);
-
+  // Reset input when modal closes
   useEffect(() => {
     if (!isOpen) {
       setInputValue('');
     }
   }, [isOpen]);
 
-  // 開啟時 focus 到搜尋框
+  // Focus search input when modal opens
   useEffect(() => {
     if (isOpen) {
       searchInputRef.current?.focus();
     }
   }, [isOpen]);
 
-  // Focus trap：Tab 時焦點不離開 modal
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
-
-      const container = modalContentRef.current;
-      if (!container) return;
-
-      const focusable = Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-      if (focusable.length === 0) return;
-
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
-
   return (
     <div
       className={modalOverlay({ isOpen })}
-      onClick={handleClose}
+      onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label="搜尋偶像"
       aria-hidden={!isOpen}
     >
       <div
-        ref={modalContentRef}
+        ref={focusTrapRef}
         className={modalContent({ isOpen })}
         onClick={(e) => e.stopPropagation()}
       >
         <div className={modalHeader}>
           <div className={searchInputContainer}>
-            <MagnifyingGlassIcon />
+            <MagnifyingGlassIcon aria-hidden="true" />
             <input
               ref={searchInputRef}
               className={searchInput}
@@ -273,7 +238,7 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
               aria-label="搜尋偶像"
             />
           </div>
-          <button className={closeButton} onClick={handleClose} aria-label="關閉搜尋">
+          <button className={closeButton} onClick={onClose} aria-label="關閉搜尋">
             <XMarkIcon aria-hidden="true" width={20} height={20} />
           </button>
         </div>
@@ -294,7 +259,7 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
                     <Link
                       href={`/map/${artist.id}`}
                       key={artist.id}
-                      onClick={handleClose}
+                      onClick={onClose}
                       aria-label={`前往 ${artist.stageName} 的生日應援地圖頁面`}
                     >
                       <ArtistCard artist={artist} />

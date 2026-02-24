@@ -424,9 +424,25 @@ export default function ImageUpload({
     }
   };
 
+  // 鍵盤操作支援
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
+  };
+
   return (
     <div className={uploadContainer}>
-      <div className={uploadArea({ hasError: !!error, disabled })} onClick={handleClick}>
+      <div
+        className={uploadArea({ hasError: !!error, disabled })}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-label={previewUrl ? '點擊更換圖片' : placeholder}
+        aria-disabled={disabled}
+      >
         <input
           ref={fileInputRef}
           type="file"
@@ -443,7 +459,7 @@ export default function ImageUpload({
             <Image
               className={previewImage({ isCropped: enableCrop && hasCroppedImage })}
               src={previewUrl}
-              alt="預覽"
+              alt="已上傳的主視覺圖片預覽"
               width={200}
               height={200}
             />

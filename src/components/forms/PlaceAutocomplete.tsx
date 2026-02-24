@@ -282,6 +282,7 @@ export default function PlaceAutocomplete({
       <Combobox value={selectedPlace} onChange={handlePlaceSelect}>
         <div className={comboboxContainer}>
           <Combobox.Input
+            aria-label="搜尋地點"
             className={comboboxInput({ isError, isDisabled: false })}
             displayValue={(prediction: PlacePrediction | null) =>
               prediction

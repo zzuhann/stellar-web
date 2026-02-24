@@ -6,6 +6,7 @@ import { css, cva } from '@/styled-system/css';
 import { useArtistSearch, useMonthlyBirthdayArtists } from '@/hooks/useArtistSearch';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { Artist } from '@/types';
 import ArtistCard from '../ArtistCard';
 import { useRouter } from 'next/navigation';
@@ -243,6 +244,7 @@ export default function ArtistSelectionModal({
   const currentMonth = new Date().toLocaleDateString('zh-TW', { month: 'long' });
 
   useScrollLock(isOpen);
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
 
   const handleArtistSelect = (artist: Artist) => {
     onArtistSelect(artist);
@@ -257,11 +259,19 @@ export default function ArtistSelectionModal({
 
   return (
     <div className={modalOverlay({ isOpen })} onClick={onClose}>
-      <div className={modalContent({ isOpen })} onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={focusTrapRef}
+        className={modalContent({ isOpen })}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="選擇偶像"
+      >
         <div className={modalHeader}>
           <div className={searchInputContainer}>
-            <UserIcon />
+            <UserIcon aria-hidden="true" />
             <input
+              aria-label="搜尋偶像的藝名、本名或團名"
               className={searchInput}
               type="text"
               placeholder="藝名(英文)/本名(中文)/團名"
@@ -270,8 +280,8 @@ export default function ArtistSelectionModal({
               autoFocus
             />
           </div>
-          <button className={closeButton} onClick={onClose}>
-            <XMarkIcon />
+          <button className={closeButton} onClick={onClose} aria-label="關閉選擇偶像">
+            <XMarkIcon aria-hidden="true" />
           </button>
         </div>
 

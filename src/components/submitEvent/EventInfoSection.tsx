@@ -1,4 +1,9 @@
-import { CalendarIcon, MapPinIcon, PhotoIcon } from '@heroicons/react/24/outline';
+import {
+  CalendarIcon,
+  ExclamationTriangleIcon,
+  MapPinIcon,
+  PhotoIcon,
+} from '@heroicons/react/24/outline';
 import { errorText, formGroup, helperText, input, label } from './styles';
 import ImageUpload from '../images/ImageUpload';
 import { css, cva } from '@/styled-system/css';
@@ -119,19 +124,40 @@ const EventInfoSection = ({
       {/* 活動標題 */}
       <div className={formGroup}>
         <label className={label} htmlFor="title">
-          主題名稱*
+          <div>
+            主題名稱<span aria-hidden="true">*</span>
+            <span className="sr-only">（必填）</span>
+          </div>
         </label>
-        <input className={input} id="title" type="text" {...register('title')} />
-        {errors.title && <p className={errorText}>{errors.title.message}</p>}
+        <input
+          className={input}
+          id="title"
+          type="text"
+          {...register('title')}
+          required
+          aria-required="true"
+          aria-invalid={!!errors.title}
+          aria-describedby={errors.title ? 'title-error' : undefined}
+        />
+        {errors.title && (
+          <p id="title-error" className={errorText} role="alert">
+            {errors.title.message}
+          </p>
+        )}
       </div>
 
       {/* 主視覺圖片 */}
-      <div className={formGroup}>
-        <label className={label}>
-          <PhotoIcon />
-          主視覺圖片*
+      <div className={formGroup} role="group" aria-labelledby="mainImage-label">
+        <label id="mainImage-label" className={label}>
+          <PhotoIcon aria-hidden="true" />
+          <div>
+            主視覺圖片<span aria-hidden="true">*</span>
+            <span className="sr-only">（必填）</span>
+          </div>
         </label>
-        <p className={helperText}>主要宣傳圖片(推薦上傳比例 3:4)</p>
+        <p id="mainImage-hint" className={helperText}>
+          主要宣傳圖片(推薦上傳比例 3:4)
+        </p>
         <ImageUpload
           currentImageUrl={mainImageUrl}
           onUploadComplete={onUploadComplete}
@@ -142,16 +168,23 @@ const EventInfoSection = ({
           authToken={token || undefined}
           enableCrop={false}
         />
-        <input type="hidden" {...register('mainImage')} />
-        {errors.mainImage && <p className={errorText}>{errors.mainImage.message}</p>}
+        <input type="hidden" {...register('mainImage')} aria-hidden="true" />
+        {errors.mainImage && (
+          <p id="mainImage-error" className={errorText} role="alert">
+            {errors.mainImage.message}
+          </p>
+        )}
       </div>
 
       {/* 活動時間 */}
       <div className={gridContainer}>
         <div className={formGroup}>
           <label className={label} htmlFor="startDate">
-            <CalendarIcon />
-            開始日期*
+            <CalendarIcon aria-hidden="true" />
+            <div>
+              開始日期<span aria-hidden="true">*</span>
+              <span className="sr-only">（必填）</span>
+            </div>
           </label>
           <DatePicker
             value={watch('startDate') || ''}
@@ -161,14 +194,21 @@ const EventInfoSection = ({
             error={!!errors.startDate}
             min={dateToLocalDateString(new Date())}
           />
-          <input type="hidden" {...register('startDate')} />
-          {errors.startDate && <p className={errorText}>{errors.startDate.message}</p>}
+          <input type="hidden" {...register('startDate')} aria-hidden="true" />
+          {errors.startDate && (
+            <p id="startDate-error" className={errorText} role="alert">
+              {errors.startDate.message}
+            </p>
+          )}
         </div>
 
         <div className={formGroup}>
           <label className={label} htmlFor="endDate">
-            <CalendarIcon />
-            結束日期*
+            <CalendarIcon aria-hidden="true" />
+            <div>
+              結束日期<span aria-hidden="true">*</span>
+              <span className="sr-only">（必填）</span>
+            </div>
           </label>
           <DatePicker
             value={watch('endDate') || ''}
@@ -179,28 +219,46 @@ const EventInfoSection = ({
             error={!!errors.endDate}
           />
           {!watch('startDate') && (
-            <p className={helperText} style={{ color: '#f59e0b' }}>
+            <p
+              className={helperText}
+              style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}
+              role="alert"
+            >
+              <ExclamationTriangleIcon style={{ width: '14px', height: '14px', flexShrink: 0 }} />
               請先選擇開始日期
             </p>
           )}
-          <input type="hidden" {...register('endDate')} />
-          {errors.endDate && <p className={errorText}>{errors.endDate.message}</p>}
+          <input type="hidden" {...register('endDate')} aria-hidden="true" />
+          {errors.endDate && (
+            <p id="endDate-error" className={errorText} role="alert">
+              {errors.endDate.message}
+            </p>
+          )}
         </div>
       </div>
 
       {/* 活動地址 */}
-      <div className={formGroup}>
-        <label className={label}>
-          <MapPinIcon />
-          地點*
+      <div className={formGroup} role="group" aria-labelledby="addressName-label">
+        <label id="addressName-label" className={label}>
+          <MapPinIcon aria-hidden="true" />
+          <div>
+            地點<span aria-hidden="true">*</span>
+            <span className="sr-only">（必填）</span>
+          </div>
         </label>
-        <p className={helperText}>搜尋店家名稱或地址（出現選項之後，選擇正確的店家即可！）</p>
+        <p id="addressName-hint" className={helperText}>
+          搜尋店家名稱或地址（出現選項之後，選擇正確的店家即可！）
+        </p>
         <PlaceAutocomplete
           onPlaceSelect={handlePlaceSelect}
           defaultValue={existingEventLocationName}
         />
-        <input type="hidden" {...register('addressName')} />
-        {errors.addressName && <p className={errorText}>{errors.addressName.message}</p>}
+        <input type="hidden" {...register('addressName')} aria-hidden="true" />
+        {errors.addressName && (
+          <p id="addressName-error" className={errorText} role="alert">
+            {errors.addressName.message}
+          </p>
+        )}
       </div>
 
       {/* 活動描述 */}
@@ -214,24 +272,37 @@ const EventInfoSection = ({
           rows={10}
           placeholder="描述應援內容與資訊，例如：時間/領取應援/注意事項等等"
           {...register('description')}
+          aria-describedby="description-count"
+          aria-invalid={!!errors.description}
         />
         <div
+          id="description-count"
           className={characterCount({
             isOverLimit: (watch('description')?.length || 0) > 1500,
           })}
+          aria-live="polite"
+          aria-atomic="true"
         >
+          <span className="sr-only">目前字數：</span>
           {watch('description')?.length || 0} / 1500
+          {(watch('description')?.length || 0) > 1500 && (
+            <span className="sr-only">，已超過字數限制</span>
+          )}
         </div>
-        {errors.description && <p className={errorText}>{errors.description.message}</p>}
+        {errors.description && (
+          <p id="description-error" className={errorText} role="alert">
+            {errors.description.message}
+          </p>
+        )}
       </div>
 
       {/* 詳細說明圖片 */}
-      <div className={formGroup}>
-        <label className={label}>
-          <PhotoIcon />
+      <div className={formGroup} role="group" aria-labelledby="detailImage-label">
+        <label id="detailImage-label" className={label}>
+          <PhotoIcon aria-hidden="true" />
           詳細說明圖片
         </label>
-        <p className={helperText}>
+        <p id="detailImage-hint" className={helperText}>
           除了主視覺圖片以外的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳 10 張
         </p>
         <MultiImageUpload
@@ -244,21 +315,34 @@ const EventInfoSection = ({
           authToken={token || undefined}
           compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
         />
-        <input type="hidden" {...register('detailImage')} />
-        {errors.detailImage && <p className={errorText}>{errors.detailImage.message}</p>}
+        <input type="hidden" {...register('detailImage')} aria-hidden="true" />
+        {errors.detailImage && (
+          <p id="detailImage-error" className={errorText} role="alert">
+            {errors.detailImage.message}
+          </p>
+        )}
       </div>
 
       {/* 聯絡資訊 */}
-      <div className={sectionDivider}>
-        <h3 className={sectionTitle}>社群媒體</h3>
-        <p className={helperText}>請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗</p>
+      <div className={sectionDivider} role="group" aria-labelledby="social-media-title">
+        <h3 id="social-media-title" className={sectionTitle}>
+          社群媒體
+        </h3>
+        <p id="social-media-hint" className={helperText}>
+          請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗
+        </p>
         <p className={helperText}>
           若為聯合主辦，可以用半形逗號分隔 id，例如: stellar_tw, stellar_jp
         </p>
 
         <div className={gridContainer} style={{ marginTop: '8px' }}>
           {errors.instagram && errors.instagram.type === 'custom' && (
-            <p className={errorText} style={{ marginTop: '8px' }}>
+            <p
+              id="social-media-error"
+              className={errorText}
+              style={{ marginTop: '8px' }}
+              role="alert"
+            >
               {errors.instagram.message}
             </p>
           )}
@@ -272,6 +356,7 @@ const EventInfoSection = ({
               type="text"
               placeholder="填寫 id 例如: boynextdoor_official"
               {...register('instagram')}
+              aria-describedby="social-media-hint"
             />
           </div>
           <div className={formGroup}>
@@ -284,6 +369,7 @@ const EventInfoSection = ({
               type="text"
               placeholder="填寫 id 例如: BOYNEXTDOOR_KOZ"
               {...register('x')}
+              aria-describedby="social-media-hint"
             />
           </div>
           <div className={formGroup}>
@@ -296,6 +382,7 @@ const EventInfoSection = ({
               type="text"
               placeholder="填寫 id 例如: _muri.ri"
               {...register('threads')}
+              aria-describedby="social-media-hint"
             />
           </div>
         </div>

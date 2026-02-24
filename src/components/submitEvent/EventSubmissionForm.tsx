@@ -53,7 +53,7 @@ const formHeader = css({
   '& p': {
     fontSize: '14px',
     color: 'color.text.secondary',
-    margin: '0',
+    margin: 'unset',
     '@media (min-width: 768px)': {
       fontSize: '16px',
     },
@@ -69,7 +69,8 @@ const form = css({
 const warningText = css({
   fontSize: '14px',
   color: '#ef4444 !important',
-  margin: '0',
+  margin: 'unset',
+  marginTop: '8px !important',
   '@media (min-width: 768px)': {
     fontSize: '16px',
   },
@@ -448,14 +449,14 @@ function EventSubmissionForm({
       <div className={formHeader}>
         <h2>{mode === 'edit' ? '編輯' : mode === 'copy' ? '複製投稿' : '投稿'}</h2>
         {mode !== 'edit' && <p>審核通過之後其他使用者可以在地圖/列表上看到此生日應援!</p>}
-        <p className={warningText}>
+        <p className={warningText} role="alert">
           注意：文案、圖片內容若使用中文呈現，<b>需 100% 為正體字</b>。若非正體字，審核將不會通過。
         </p>
       </div>
 
       {mode === 'create' && currentStep === 1 && <StepIndicator currentStep={currentStep} />}
 
-      <form className={form}>
+      <form className={form} aria-label="生日應援投稿表單">
         {/* 第一步：選擇藝人 */}
         {(currentStep === 1 || mode === 'edit' || mode === 'copy') && (
           <ChooseArtistSection

@@ -178,7 +178,11 @@ export default function DatePicker({
       <Popover>
         {({ open: _open, close }) => (
           <>
-            <Popover.Button className={dateInput({ error, disabled })} type="button">
+            <Popover.Button
+              className={dateInput({ error, disabled })}
+              type="button"
+              aria-label="選擇日期"
+            >
               <div>
                 {value ? (
                   <span className={dateDisplay}>{formatDisplayDate(value)}</span>
