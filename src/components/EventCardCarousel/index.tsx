@@ -61,7 +61,12 @@ export default function EventCardCarousel({ events, isLoading }: EventCardCarous
   }
 
   return (
-    <div className={carouselContainer}>
+    <div
+      className={carouselContainer}
+      role="region"
+      aria-label="即將到來的生日應援輪播"
+      aria-busy={isLoading}
+    >
       <Swiper
         className={swiperStyles}
         modules={[Pagination]}
@@ -95,7 +100,7 @@ export default function EventCardCarousel({ events, isLoading }: EventCardCarous
         }}
       >
         {isLoading && (
-          <SwiperSlide>
+          <SwiperSlide aria-label="生日應援載入中" aria-live="polite">
             <Skeleton width="100%" height="300px" borderRadius="8px" />
           </SwiperSlide>
         )}

@@ -251,6 +251,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
                 <div className={eventDetails}>
                   <div className={eventDetailItem}>
                     <CalendarIcon
+                      aria-hidden="true"
                       style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
                     />
                     <span className={detailText}>{eventDateText}</span>
@@ -259,6 +260,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
                   {event.location.name && (
                     <div className={eventDetailItem}>
                       <MapPinIcon
+                        aria-hidden="true"
                         style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
                       />
                       <span className={detailText}>{event.location.name}</span>
@@ -310,13 +312,17 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
 
               <div className={eventDetails}>
                 <div className={eventDetailItem}>
-                  <CalendarIcon style={{ width: '16px', height: '16px', flexShrink: 0 }} />
+                  <CalendarIcon
+                    aria-hidden="true"
+                    style={{ width: '16px', height: '16px', flexShrink: 0 }}
+                  />
                   <span className={detailText}>{eventDateText}</span>
                 </div>
 
                 {event.location.name && (
                   <div className={eventDetailItem}>
                     <MapPinIcon
+                      aria-hidden="true"
                       style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
                     />
                     <span className={detailText}>{event.location.name}</span>

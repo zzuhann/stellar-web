@@ -17,12 +17,18 @@ interface BirthdayTabProps {
   artists: Artist[];
   loading: boolean;
   onSearchClick: () => void;
+  searchTriggerRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
-export default function BirthdayTab({ artists, loading, onSearchClick }: BirthdayTabProps) {
+export default function BirthdayTab({
+  artists,
+  loading,
+  onSearchClick,
+  searchTriggerRef,
+}: BirthdayTabProps) {
   return (
     <>
-      <SearchSection onSearchClick={onSearchClick} />
+      <SearchSection ref={searchTriggerRef} onSearchClick={onSearchClick} />
 
       {loading ? (
         <Loading description="載入當週壽星中..." />
@@ -31,7 +37,11 @@ export default function BirthdayTab({ artists, loading, onSearchClick }: Birthda
           {artists.map((artist) => {
             if (!artist.birthday) return null;
             return (
-              <Link href={`/map/${artist.id}`} key={artist.id}>
+              <Link
+                href={`/map/${artist.id}`}
+                key={artist.id}
+                aria-label={`前往 ${artist.stageName} 的生日應援地圖頁面`}
+              >
                 <ArtistCard artist={artist} />
               </Link>
             );

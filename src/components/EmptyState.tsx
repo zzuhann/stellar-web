@@ -35,7 +35,11 @@ type EmptyStateProps = {
 const EmptyState = ({ icon, title, description, cta, style }: EmptyStateProps) => {
   return (
     <div className={emptyStateContainer} style={style}>
-      {icon && <div className={emptyStateIcon}>{icon}</div>}
+      {icon && (
+        <div className={emptyStateIcon} aria-hidden="true">
+          {icon}
+        </div>
+      )}
       {title && <h3 className={emptyStateTitle}>{title}</h3>}
       {description &&
         (typeof description === 'string' ? (

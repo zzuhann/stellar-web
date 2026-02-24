@@ -22,13 +22,21 @@ const burgerButton = css({
 
 type BurgerButtonProps = {
   onClick: () => void;
+  ariaExpanded?: boolean;
+  ariaLabel?: string;
 };
 
-const BurgerButton = ({ onClick }: BurgerButtonProps) => {
+const BurgerButton = ({ onClick, ariaExpanded, ariaLabel = '開啟選單' }: BurgerButtonProps) => {
   return (
-    <div className={burgerButton} onClick={onClick}>
-      <Bars3Icon width={24} height={24} />
-    </div>
+    <button
+      type="button"
+      className={burgerButton}
+      onClick={onClick}
+      aria-expanded={ariaExpanded}
+      aria-label={ariaLabel}
+    >
+      <Bars3Icon width={24} height={24} aria-hidden />
+    </button>
   );
 };
 

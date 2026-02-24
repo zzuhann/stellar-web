@@ -84,6 +84,7 @@ const EventCard = ({ event }: EventCardProps) => {
           <div className={title}>{event.title}</div>
           <div className={descriptionContainer}>
             <CalendarIcon
+              aria-hidden="true"
               style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '2px' }}
             />
             <div className={description}>
@@ -92,6 +93,7 @@ const EventCard = ({ event }: EventCardProps) => {
           </div>
           <div className={descriptionContainer}>
             <MapPinIcon
+              aria-hidden="true"
               style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '2px' }}
             />
             <div className={description}>

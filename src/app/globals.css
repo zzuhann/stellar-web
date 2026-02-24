@@ -42,6 +42,26 @@
   --radius-xl: 12px;
 }
 
+/* Skip link: 視覺隱藏，focus 時顯示 */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 9999;
+  padding: 12px 24px;
+  background: var(--color-primary);
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: left 0.2s;
+}
+
+.skip-link:focus {
+  left: 16px;
+  top: 16px;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

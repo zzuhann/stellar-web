@@ -42,8 +42,13 @@ type LoadingProps = {
 
 const Loading = ({ description, height = '100%', style }: LoadingProps) => {
   return (
-    <div className={loadingContainer} style={{ height, ...style }}>
-      <div className={spinner} />
+    <div
+      className={loadingContainer}
+      style={{ height, ...style }}
+      aria-label="載入中"
+      aria-live="polite"
+    >
+      <div className={spinner} aria-hidden="true" />
       {description && <p className={text}>{description}</p>}
     </div>
   );

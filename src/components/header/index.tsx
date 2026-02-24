@@ -78,7 +78,11 @@ const Header = () => {
           })}
         >
           <ShareButton />
-          <BurgerButton onClick={() => setMobileMenuOpen(true)} />
+          <BurgerButton
+            onClick={() => setMobileMenuOpen(true)}
+            ariaExpanded={mobileMenuOpen}
+            ariaLabel={mobileMenuOpen ? '關閉選單' : '開啟選單'}
+          />
         </div>
       </header>
 

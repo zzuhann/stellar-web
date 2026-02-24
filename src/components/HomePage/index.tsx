@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { QueryStateProvider } from '@/hooks/useQueryStateContext';
@@ -63,6 +63,7 @@ function HomePageContent() {
   const [today] = useState(new Date().toISOString());
   const { user, toggleAuthModal } = useAuth();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const searchTriggerRef = useRef<HTMLButtonElement>(null);
 
   const { currentWeekStart, goToPreviousWeek, goToNextWeek, isCurrentWeek, currentWeekEnd } =
     useWeekNavigation();
@@ -87,7 +88,7 @@ function HomePageContent() {
   );
 
   return (
-    <main className={pageContainer}>
+    <main className={pageContainer} id="main-content">
       <div className={mainContainer}>
         <section className={contentWrapper} aria-label="首頁">
           <IOSInstallBanner />
@@ -126,6 +127,7 @@ function HomePageContent() {
                   artists={weekBirthdayArtists}
                   loading={isArtistsLoading}
                   onSearchClick={() => setSearchModalOpen(true)}
+                  searchTriggerRef={searchTriggerRef}
                 />
               </div>
             )}
@@ -139,7 +141,11 @@ function HomePageContent() {
         </section>
       </div>
 
-      <ArtistSearchModal isOpen={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+      <ArtistSearchModal
+        isOpen={searchModalOpen}
+        onClose={() => setSearchModalOpen(false)}
+        triggerRef={searchTriggerRef}
+      />
     </main>
   );
 }

@@ -45,6 +45,18 @@ const imageOverlay = cva({
     flexDirection: 'column',
     justifyContent: 'flex-end',
     gap: '4px',
+    // button reset：移除預設樣式，視覺與 div 一致
+    appearance: 'none',
+    border: 'none',
+    margin: 0,
+    font: 'inherit',
+    textAlign: 'left',
+    width: '100%',
+
+    '&:disabled': {
+      cursor: 'default',
+      opacity: 1,
+    },
   },
   variants: {
     isExists: {
@@ -175,15 +187,21 @@ const VerticalArtistCard = ({
         }}
       >
         {artist.status && (
-          <span className={statusBadge({ status: artist.status })}>
+          <span
+            className={statusBadge({ status: artist.status })}
+            aria-label={`${artist.stageName} 的審核狀態`}
+          >
             {getStatusText(artist.status, artist.rejectedReason)}
           </span>
         )}
 
-        <div
+        <button
+          type="button"
           className={imageOverlay({
             isExists: artist.status === 'exists' || artist.status === 'approved',
           })}
+          aria-label={`前往 ${artist.stageName} 的生日應援地圖頁面`}
+          disabled={artist.status !== 'approved' && artist.status !== 'exists'}
           onClick={() => {
             if (artist.status === 'approved' || artist.status === 'exists') {
               onClick?.(artist);
@@ -194,10 +212,14 @@ const VerticalArtistCard = ({
             {artist.stageName.toUpperCase()} {artist.realName}
           </h3>
 
-          {birthdayText && <div className={artistBirthday}>🎂 {birthdayText}</div>}
+          {birthdayText && (
+            <div className={artistBirthday}>
+              <span aria-label="生日">🎂</span> {birthdayText}
+            </div>
+          )}
 
           {submissionTime && <div className={styledSubmissionTime}>投稿時間：{submissionTime}</div>}
-        </div>
+        </button>
       </div>
 
       {actionButtons && <div className={buttonContainer}>{actionButtons}</div>}

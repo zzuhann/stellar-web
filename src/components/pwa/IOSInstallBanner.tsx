@@ -99,7 +99,7 @@ export default function IOSInstallBanner() {
             在 Safari 中點擊分享按鈕
             {
               <span className={css({ display: 'inline-block', marginRight: '4px' })}>
-                <ShareIcon width={16} height={16} />
+                <ShareIcon aria-hidden="true" width={16} height={16} />
               </span>
             }
           </div>

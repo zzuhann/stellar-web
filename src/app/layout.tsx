@@ -81,8 +81,8 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
 };
 
 export default function RootLayout({
@@ -101,6 +101,9 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png?v=2" />
       </head>
       <body className={`antialiased ${notoSansTC.variable}`}>
+        <a href="#main-content" className="skip-link">
+          跳至主內容
+        </a>
         <QueryProvider>
           <AuthProvider>
             <LoadingProvider>
