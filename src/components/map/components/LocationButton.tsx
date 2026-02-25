@@ -69,8 +69,11 @@ const LocationButton = () => {
       })}
       onClick={handleLocateMe}
       disabled={locationLoading}
+      type="button"
+      aria-label="定位到我的位置"
+      aria-disabled={locationLoading}
     >
-      {locationLoading ? <Loading /> : <MapPinIcon width={20} height={20} />}
+      {locationLoading ? <Loading /> : <MapPinIcon width={20} height={20} aria-hidden="true" />}
     </button>
   );
 };

@@ -3,7 +3,7 @@ import { css } from '@/styled-system/css';
 const errorAlert = css({
   position: 'absolute',
   top: '16px',
-  left: '16px',
+  right: '16px',
   zIndex: '10',
   padding: '12px',
   maxWidth: '336px',
@@ -42,9 +42,11 @@ type LocationErrorProps = {
 
 const LocationError = ({ locationError }: LocationErrorProps) => {
   return (
-    <div className={errorAlert}>
+    <div className={errorAlert} role="alert">
       <div className={errorContent}>
-        <div className={errorIcon}>⚠️</div>
+        <div className={errorIcon} aria-hidden="true">
+          ⚠️
+        </div>
         <div>
           <div className={errorTitle}>無法取得位置</div>
           <div className={errorMessage}>{locationError}</div>

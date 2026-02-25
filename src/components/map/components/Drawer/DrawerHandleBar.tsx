@@ -87,8 +87,12 @@ const DrawerHandleBar = ({ bind, artistData, mapEvents }: DrawerHandleBarProps) 
       className={drawerHandle}
       onMouseDown={bind.handleMouseDown}
       onTouchStart={bind.handleTouchStart}
+      role="slider"
+      aria-label="拖曳調整高度"
+      aria-orientation="vertical"
+      tabIndex={0}
     >
-      <div className={handleBar} />
+      <div className={handleBar} aria-hidden="true" />
       <div className={handleBarTextContainer}>
         <p className={handleBarText}>
           {selectedEventId ? (
@@ -104,8 +108,13 @@ const DrawerHandleBar = ({ bind, artistData, mapEvents }: DrawerHandleBarProps) 
         </p>
       </div>
       {(selectedEventId || isLocationSelected) && (
-        <button className={closeButton} onClick={handleCloseButtonClick}>
-          <XMarkIcon width={20} height={20} color="color.text.primary" />
+        <button
+          className={closeButton}
+          onClick={handleCloseButtonClick}
+          type="button"
+          aria-label="關閉查看中的生日應援"
+        >
+          <XMarkIcon width={20} height={20} color="color.text.primary" aria-hidden="true" />
         </button>
       )}
     </div>
