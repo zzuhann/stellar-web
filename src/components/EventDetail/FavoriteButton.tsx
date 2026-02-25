@@ -100,11 +100,11 @@ export default function FavoriteButton({ eventId, eventTitle }: FavoriteButtonPr
       isFavorited,
     });
 
-    sendGAEvent('click_favorite_button', {
+    sendGAEvent('event', 'click_favorite_button', {
       environment: isPWAMode() ? 'pwa' : 'web',
       event_page: '/event/[id]',
       user_id: user?.uid ?? '',
-      is_favorited: isFavorited,
+      is_favorited: !isFavorited,
     });
   };
 
