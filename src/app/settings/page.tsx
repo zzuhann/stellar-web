@@ -78,6 +78,12 @@ const settingItemContainer = css({
   transition: 'background-color 0.2s ease',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
+  // reset button styles
+  background: 'transparent',
+  border: 'none',
+  margin: 0,
+  textAlign: 'left',
+  width: '100%',
   '&:last-child': {
     borderBottom: 'none',
   },
@@ -133,11 +139,10 @@ const chevronContainer = css({
   },
 });
 
-// 設定項目元件
 function SettingItem({ item }: { item: SettingItem }) {
   return (
-    <div className={settingItemContainer} onClick={item.onClick}>
-      <div className={iconContainer}>
+    <button className={settingItemContainer} onClick={item.onClick} type="button">
+      <div className={iconContainer} aria-hidden="true">
         <item.icon />
       </div>
       <div className={itemContent}>
@@ -150,10 +155,10 @@ function SettingItem({ item }: { item: SettingItem }) {
         )}
         {item.subtitle && !item.value && <div className={itemValue}>{item.subtitle}</div>}
       </div>
-      <div className={chevronContainer}>
+      <div className={chevronContainer} aria-hidden="true">
         <ChevronRightIcon />
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -199,7 +204,7 @@ export default function SettingsPage() {
           </div>
 
           <div className={settingsSection}>
-            <div className={sectionTitle}>帳戶資料</div>
+            <h2 className={sectionTitle}>帳戶資料</h2>
             {accountItems.map((item) => (
               <SettingItem key={item.id} item={item} />
             ))}

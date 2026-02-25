@@ -269,7 +269,7 @@ export default function DisplayNamePage() {
   };
 
   const handleBack = () => {
-    router.push('/settings');
+    router.back();
   };
 
   if (authLoading) {
@@ -285,8 +285,13 @@ export default function DisplayNamePage() {
       <div className={mainContainer}>
         <div className={contentWrapper}>
           <div className={pageHeader}>
-            <button className={backButton} onClick={handleBack}>
-              <ArrowLeftIcon />
+            <button
+              className={backButton}
+              onClick={handleBack}
+              type="button"
+              aria-label="返回設定頁面"
+            >
+              <ArrowLeftIcon aria-hidden="true" />
             </button>
             <h1>修改名稱</h1>
           </div>
@@ -301,12 +306,16 @@ export default function DisplayNamePage() {
                   id="displayName"
                   type="text"
                   placeholder="請輸入名稱"
-                  className={`${input} ${!!errors.displayName ? inputError : ''}`}
+                  className={`${input} ${errors.displayName ? inputError : ''}`}
                   disabled={updateProfileMutation.isPending}
+                  aria-invalid={!!errors.displayName}
+                  aria-describedby={errors.displayName ? 'displayName-error' : undefined}
                   {...register('displayName')}
                 />
                 {errors.displayName && (
-                  <span className={errorText}>{errors.displayName.message}</span>
+                  <span id="displayName-error" className={errorText} role="alert">
+                    {errors.displayName.message}
+                  </span>
                 )}
               </div>
 
@@ -327,12 +336,12 @@ export default function DisplayNamePage() {
                 >
                   {updateProfileMutation.isPending ? (
                     <>
-                      <div className={loadingSpinner} />
+                      <div className={loadingSpinner} role="status" aria-live="polite" />
                       更新中...
                     </>
                   ) : (
                     <>
-                      <CheckIcon />
+                      <CheckIcon aria-hidden="true" />
                       儲存變更
                     </>
                   )}
