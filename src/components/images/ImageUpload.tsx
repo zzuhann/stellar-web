@@ -474,9 +474,9 @@ export default function ImageUpload({
                     setShowCropper(true);
                   }}
                   disabled={disabled}
-                  title="重新裁切"
+                  aria-label="重新裁切"
                 >
-                  <ScissorsIcon style={{ width: '16px', height: '16px' }} />
+                  <ScissorsIcon style={{ width: '16px', height: '16px' }} aria-hidden="true" />
                 </button>
               )}
               <button
@@ -487,9 +487,9 @@ export default function ImageUpload({
                   handleRemove();
                 }}
                 disabled={disabled}
-                title="移除圖片"
+                aria-label="移除圖片"
               >
-                <XMarkIcon style={{ width: '16px', height: '16px' }} />
+                <XMarkIcon style={{ width: '16px', height: '16px' }} aria-hidden="true" />
               </button>
             </div>
             <div className={imageHint}>
@@ -499,7 +499,12 @@ export default function ImageUpload({
         ) : (
           <div className={uploadContent}>
             <div className={uploadIcon}>
-              <PhotoIcon width={48} height={48} color="var(--color-text-secondary)" />
+              <PhotoIcon
+                width={48}
+                height={48}
+                color="var(--color-text-secondary)"
+                aria-hidden="true"
+              />
             </div>
             <p className={uploadTitle}>{placeholder}</p>
             <p className={uploadSubtitle}>
@@ -507,7 +512,12 @@ export default function ImageUpload({
               MB
             </p>
             <div className={uploadArrow}>
-              <ArrowUpTrayIcon width={20} height={20} color="var(--color-primary)" />
+              <ArrowUpTrayIcon
+                width={20}
+                height={20}
+                color="var(--color-primary)"
+                aria-hidden="true"
+              />
             </div>
           </div>
         )}

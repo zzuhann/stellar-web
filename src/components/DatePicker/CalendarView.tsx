@@ -148,20 +148,31 @@ const CalendarView = ({
         ))}
       </div>
 
-      <div className={daysGrid}>
+      <div className={daysGrid} role="grid" aria-label="日曆">
         {days.map((day, index) => {
           const isCurrentMonth = day.getMonth() === currentDate.getMonth();
+          const dayDisabled = isDisabled({ date: day, min, max });
+          const daySelected = isSelected(day, value);
+          const fullDateLabel = day.toLocaleDateString('zh-TW', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          });
           return (
             <button
               key={index}
               type="button"
               className={dayButton({
-                isSelected: isSelected(day, value),
+                isSelected: daySelected,
                 isToday: isToday(day),
                 isOtherMonth: !isCurrentMonth,
-                isDisabled: isDisabled({ date: day, min, max }),
+                isDisabled: dayDisabled,
               })}
               onClick={() => handleDateSelect(day, handleClose)}
+              disabled={dayDisabled}
+              aria-label={fullDateLabel}
+              aria-selected={daySelected}
+              aria-disabled={dayDisabled}
             >
               {day.getDate()}
             </button>

@@ -451,18 +451,21 @@ export default function ArtistSubmissionForm({
         <h2>{mode === 'edit' ? '編輯偶像' : '投稿偶像'}</h2>
         {mode !== 'edit' && <p>新增偶像到我們的資料庫，審核通過後其他用戶可以為他們建立生日應援</p>}
         {mode === 'edit' && (
-          <p style={{ fontSize: '14px', color: '#ef4444', margin: '8px 0 0 0' }}>
+          <p style={{ fontSize: '14px', color: '#ef4444', margin: '8px 0 0 0' }} role="alert">
             編輯後的資料將重新進入審核流程
           </p>
         )}
       </div>
 
-      <div className={form}>
+      <form className={form} aria-label="偶像投稿表單">
         {/* 英文藝名 */}
         <div className={formGroup}>
           <label className={label} htmlFor="stageName">
-            <UserIcon />
-            藝名（請填寫官方正名的英文名稱）*
+            <UserIcon aria-hidden="true" />
+            <div>
+              藝名（請填寫官方正名的英文名稱）<span aria-hidden="true">*</span>
+            </div>
+            <span className="sr-only">（必填）</span>
           </label>
           <input
             className={input}
@@ -470,8 +473,16 @@ export default function ArtistSubmissionForm({
             type="text"
             placeholder="例：S.COUPS、Riku、RIWOO"
             {...register('stageName')}
+            required
+            aria-required="true"
+            aria-invalid={!!errors.stageName}
+            aria-describedby={errors.stageName ? 'stageName-error' : undefined}
           />
-          {errors.stageName && <p className={errorText}>{errors.stageName.message}</p>}
+          {errors.stageName && (
+            <p id="stageName-error" className={errorText} role="alert">
+              {errors.stageName.message}
+            </p>
+          )}
         </div>
 
         {/* 中文藝名 */}
@@ -485,8 +496,14 @@ export default function ArtistSubmissionForm({
             type="text"
             placeholder="例：泰山、李涵（沒有可不填）"
             {...register('stageNameZh')}
+            aria-invalid={!!errors.stageNameZh}
+            aria-describedby={errors.stageNameZh ? 'stageNameZh-error' : undefined}
           />
-          {errors.stageNameZh && <p className={errorText}>{errors.stageNameZh.message}</p>}
+          {errors.stageNameZh && (
+            <p id="stageNameZh-error" className={errorText} role="alert">
+              {errors.stageNameZh.message}
+            </p>
+          )}
         </div>
 
         {/* 本名 */}
@@ -500,15 +517,24 @@ export default function ArtistSubmissionForm({
             type="text"
             placeholder="例：漢東旼、明宰鉉、崔勝哲"
             {...register('realName')}
+            aria-invalid={!!errors.realName}
+            aria-describedby={errors.realName ? 'realName-error' : undefined}
           />
-          {errors.realName && <p className={errorText}>{errors.realName.message}</p>}
+          {errors.realName && (
+            <p id="realName-error" className={errorText} role="alert">
+              {errors.realName.message}
+            </p>
+          )}
         </div>
 
         {/* 生日 */}
         <div className={formGroup}>
           <label className={label} htmlFor="birthday">
-            <CalendarIcon />
-            生日*
+            <CalendarIcon aria-hidden="true" />
+            <div>
+              生日<span aria-hidden="true">*</span>
+              <span className="sr-only">（必填）</span>
+            </div>
           </label>
           <DatePicker
             value={watch('birthday') || ''}
@@ -520,17 +546,30 @@ export default function ArtistSubmissionForm({
             error={!!errors.birthday}
             max={new Date().toISOString().split('T')[0]}
           />
-          {errors.birthday && <p className={errorText}>{errors.birthday.message}</p>}
+          <input type="hidden" {...register('birthday')} aria-hidden="true" />
+          {errors.birthday && (
+            <p id="birthday-error" className={errorText} role="alert">
+              {errors.birthday.message}
+            </p>
+          )}
         </div>
 
         {/* 個人照片/團體照 */}
-        <div className={imageSection}>
+        <div
+          className={imageSection}
+          role="group"
+          aria-labelledby="profileImage-label"
+          aria-describedby="profileImage-hint"
+        >
           <div className={formGroup}>
-            <label className={label}>
-              <PhotoIcon />
-              偶像照片*
+            <label id="profileImage-label" className={label}>
+              <PhotoIcon aria-hidden="true" />
+              <div>
+                偶像照片<span aria-hidden="true">*</span>
+                <span className="sr-only">（必填）</span>
+              </div>
             </label>
-            <p className={helperText}>
+            <p id="profileImage-hint" className={helperText}>
               請注意來源、是否可公開使用，避免侵權(若未來有爭議將直接下架替換其他照片)
             </p>
 
@@ -586,7 +625,12 @@ export default function ArtistSubmissionForm({
               cropAspectRatio={1}
               cropOutputSize={400}
             />
-            {errors.profileImage && <p className={errorText}>{errors.profileImage.message}</p>}
+            <input type="hidden" {...register('profileImage')} aria-hidden="true" />
+            {errors.profileImage && (
+              <p id="profileImage-error" className={errorText} role="alert">
+                {errors.profileImage.message}
+              </p>
+            )}
           </div>
         </div>
 
@@ -597,7 +641,7 @@ export default function ArtistSubmissionForm({
             <li>投稿的偶像將經過審核</li>
             <li>審核通過後，所有用戶都可以選擇這位偶像來建立生日應援</li>
             <li>請確保偶像資訊的正確性以及照片來源是否可公開使用</li>
-            <li className={warningText}>
+            <li className={warningText} role="alert">
               偶像名字若包含中文，<b>需 100% 為正體字</b>。若非正體字，審核將不會通過
             </li>
             <li>資料錯誤、重複的偶像投稿審核不會通過</li>
@@ -632,7 +676,9 @@ export default function ArtistSubmissionForm({
             createArtistMutation.isPending ||
             updateArtistMutation.isPending ? (
               <>
-                <div className={loadingSpinner} />
+                <div className={loadingSpinner} role="status" aria-live="polite">
+                  <span className="sr-only">載入中</span>
+                </div>
                 {mode === 'edit' ? '更新中...' : '投稿中...'}
               </>
             ) : mode === 'edit' ? (
@@ -642,7 +688,7 @@ export default function ArtistSubmissionForm({
             )}
           </button>
         </div>
-      </div>
+      </form>
 
       {/* 確認彈窗 - 只在編輯模式且狀態為 rejected 時顯示 */}
       <ConfirmModal

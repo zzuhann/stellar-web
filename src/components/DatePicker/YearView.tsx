@@ -74,17 +74,21 @@ const YearView = ({
         handleHeaderTextClick={handleYearMonthClick}
       />
 
-      <div className={yearMonthGrid}>
+      <div className={yearMonthGrid} role="listbox" aria-label="選擇年份">
         {Array.from({ length: 12 }, (_, i) => {
           const year = currentDate.getFullYear() - 6 + i;
+          const isCurrentYear = year === new Date().getFullYear();
           return (
             <button
               key={year}
               type="button"
+              role="option"
               className={yearMonthButton({
-                isSelected: year === new Date().getFullYear(),
+                isSelected: isCurrentYear,
               })}
               onClick={() => selectYear(year)}
+              aria-selected={isCurrentYear}
+              aria-label={`${year}年`}
             >
               {year}
             </button>

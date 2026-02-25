@@ -69,19 +69,26 @@ const NavigationHeader = ({
         className={navigationButton}
         onClick={goToPrevious}
         disabled={isPreviousDisabled}
+        aria-label="上一個"
       >
-        <ChevronLeftIcon width={16} height={16} />
+        <ChevronLeftIcon width={16} height={16} aria-hidden="true" />
       </button>
-      <h3 className={monthYearDisplay} onClick={handleHeaderTextClick}>
+      <button
+        type="button"
+        aria-label={`${headerText}，點擊可切換年月檢視`}
+        className={monthYearDisplay}
+        onClick={handleHeaderTextClick}
+      >
         {headerText}
-      </h3>
+      </button>
       <button
         type="button"
         className={navigationButton}
         onClick={goToNext}
         disabled={isNextDisabled}
+        aria-label="下一個"
       >
-        <ChevronRightIcon width={16} height={16} />
+        <ChevronRightIcon width={16} height={16} aria-hidden="true" />
       </button>
     </div>
   );

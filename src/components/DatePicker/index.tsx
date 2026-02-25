@@ -190,7 +190,12 @@ export default function DatePicker({
                   <span className={placeholderText}>{placeholder}</span>
                 )}
               </div>
-              <CalendarIcon width={18} height={18} color="var(--color-text-secondary)" />
+              <CalendarIcon
+                width={18}
+                height={18}
+                color="var(--color-text-secondary)"
+                aria-hidden="true"
+              />
             </Popover.Button>
 
             <Popover.Panel className={popoverPanel}>

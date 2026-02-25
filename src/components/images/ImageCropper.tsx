@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import ModalOverlay from './ModalOverlay';
 import { css, cva } from '@/styled-system/css';
 import Image from 'next/image';
@@ -512,6 +513,9 @@ export default function ImageCropper({
   // 使用 useScrollLock hook 防止背景滾動
   useScrollLock(true);
 
+  // 使用 focus trap hook
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(true);
+
   // 防止選擇事件
   useEffect(() => {
     const preventDefault = (e: Event) => {
@@ -685,9 +689,17 @@ export default function ImageCropper({
 
   return (
     <ModalOverlay>
-      <div className={modalContainer}>
+      <div
+        ref={focusTrapRef}
+        className={modalContainer}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="image-cropper-title"
+      >
         <div className={modalHeader}>
-          <h3 className={modalTitle}>裁切圖片</h3>
+          <h3 id="image-cropper-title" className={modalTitle}>
+            裁切圖片
+          </h3>
         </div>
 
         {/* 裁切區域 */}
@@ -814,16 +826,21 @@ export default function ImageCropper({
         {/* 操作按鈕 */}
         <div className={actionBar}>
           <div className={buttonGroup}>
-            <button className={styledButton({ variant: 'secondary' })} onClick={onCancel}>
-              <XMarkIcon style={{ width: '16px', height: '16px' }} />
+            <button
+              className={styledButton({ variant: 'secondary' })}
+              onClick={onCancel}
+              aria-label="取消裁切"
+            >
+              <XMarkIcon style={{ width: '16px', height: '16px' }} aria-hidden="true" />
               <span>取消</span>
             </button>
             <button
               className={styledButton({ variant: 'primary' })}
               onClick={handleCrop}
               disabled={!imageLoaded}
+              aria-label="確認裁切"
             >
-              <CheckIcon style={{ width: '16px', height: '16px' }} />
+              <CheckIcon style={{ width: '16px', height: '16px' }} aria-hidden="true" />
               <span>確認裁切</span>
             </button>
           </div>

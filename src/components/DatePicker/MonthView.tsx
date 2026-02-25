@@ -73,19 +73,25 @@ const MonthView = ({
         handleHeaderTextClick={handleYearMonthClick}
       />
 
-      <div className={yearMonthGrid}>
-        {MONTHS.map((month, index) => (
-          <button
-            key={index}
-            type="button"
-            className={yearMonthButton({
-              isSelected: index === new Date().getMonth(),
-            })}
-            onClick={() => selectMonth(index)}
-          >
-            {month}
-          </button>
-        ))}
+      <div className={yearMonthGrid} role="listbox" aria-label="選擇月份">
+        {MONTHS.map((month, index) => {
+          const isCurrentMonth = index === new Date().getMonth();
+          return (
+            <button
+              key={index}
+              type="button"
+              role="option"
+              className={yearMonthButton({
+                isSelected: isCurrentMonth,
+              })}
+              onClick={() => selectMonth(index)}
+              aria-selected={isCurrentMonth}
+              aria-label={month}
+            >
+              {month}
+            </button>
+          );
+        })}
       </div>
     </>
   );
