@@ -6,6 +6,8 @@ import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { css } from '@/styled-system/css';
 import useFavoriteStatus from '@/hooks/useFavoriteStatus';
+import { sendGAEvent } from '@next/third-parties/google';
+import { isPWAMode } from '@/utils/pwa';
 
 const favoriteButton = css({
   display: 'flex',
@@ -96,6 +98,13 @@ export default function FavoriteButton({ eventId, eventTitle }: FavoriteButtonPr
     favoriteToggle.mutate({
       eventId,
       isFavorited,
+    });
+
+    sendGAEvent('click_favorite_button', {
+      environment: isPWAMode() ? 'pwa' : 'web',
+      event_page: '/event/[id]',
+      user_id: user?.uid ?? '',
+      is_favorited: isFavorited,
     });
   };
 

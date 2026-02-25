@@ -6,6 +6,7 @@ import { css } from '../../styled-system/css';
 import { ShareIcon } from '@/lib/svg';
 import { useWebShare } from '@/hooks/useWebShare';
 import { useShare } from '@/context/ShareContext';
+import { isPWAMode } from '@/utils/pwa';
 
 export default function ShareButton() {
   const { share } = useWebShare();
@@ -14,28 +15,6 @@ export default function ShareButton() {
   const [shouldShow, setShouldShow] = useState(false);
 
   useEffect(() => {
-    // 檢查是否在 PWA 模式下運行
-    const isPWAMode = () => {
-      if (typeof window === 'undefined') return false;
-
-      // 檢查是否在 standalone 模式運行
-      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-        return true;
-      }
-
-      // 檢查是否在 fullscreen 模式運行
-      if (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) {
-        return true;
-      }
-
-      // 檢查是否為 iOS Safari 的 standalone 模式
-      if ((window.navigator as unknown as { standalone?: boolean }).standalone === true) {
-        return true;
-      }
-
-      return false;
-    };
-
     // 檢查是否在允許顯示分享按鈕的頁面
     const shouldShowShareButton = () => {
       // 必須在 PWA 模式下

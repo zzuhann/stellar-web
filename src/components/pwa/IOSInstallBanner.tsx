@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { css } from '../../../styled-system/css';
 import { ShareIcon } from '@/lib/svg';
+import { isPWAMode } from '@/utils/pwa';
 
 export default function IOSInstallBanner() {
   const [showBanner, setShowBanner] = useState(false);
@@ -15,11 +16,7 @@ export default function IOSInstallBanner() {
       if (!isIOS) return false;
 
       // 檢查是否已經在 PWA 模式
-      const isPWAMode =
-        (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
-        (window.navigator as unknown as { standalone?: boolean }).standalone === true;
-
-      if (isPWAMode) return false;
+      if (isPWAMode()) return false;
 
       // 檢查是否已經拒絕過 banner
       const dismissed = localStorage.getItem('ios-install-banner-dismissed');
