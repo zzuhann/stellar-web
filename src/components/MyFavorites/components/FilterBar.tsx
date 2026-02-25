@@ -156,6 +156,43 @@ const FilterBar = ({
     };
   }, [isDropdownOpen]);
 
+  // 鍵盤操作
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (!isDropdownOpen) {
+      if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        setIsDropdownOpen(true);
+      }
+      return;
+    }
+
+    const currentIndex = sortOptions.findIndex((opt) => opt.value === sortBy);
+
+    switch (event.key) {
+      case 'Escape':
+        event.preventDefault();
+        setIsDropdownOpen(false);
+        break;
+      case 'ArrowDown':
+        event.preventDefault();
+        if (currentIndex < sortOptions.length - 1) {
+          onSortByChange(sortOptions[currentIndex + 1].value);
+        }
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        if (currentIndex > 0) {
+          onSortByChange(sortOptions[currentIndex - 1].value);
+        }
+        break;
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        setIsDropdownOpen(false);
+        break;
+    }
+  };
+
   return (
     <div className={filterBarContainer}>
       <div className={filterRow}>
@@ -176,6 +213,7 @@ const FilterBar = ({
             type="button"
             className={dropdownButton}
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            onKeyDown={handleKeyDown}
             aria-label="選擇排序方式"
             aria-expanded={isDropdownOpen}
             aria-haspopup="listbox"
@@ -189,16 +227,18 @@ const FilterBar = ({
               {sortOptions.map((option) => {
                 const isSelected = option.value === sortBy;
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={option.value}
                     className={`${dropdownOption} ${isSelected ? dropdownOptionSelected : ''}`}
                     onClick={() => handleOptionSelect(option.value)}
                     role="option"
                     aria-selected={isSelected}
+                    aria-label={option.label}
                   >
                     <span>{option.label}</span>
-                    {isSelected && <span>✓</span>}
-                  </div>
+                    {isSelected && <span> ✓</span>}
+                  </button>
                 );
               })}
             </div>

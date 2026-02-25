@@ -93,7 +93,7 @@ const FavoritesList = ({ data, currentPage, onPageChange }: FavoritesListProps) 
           title="還沒有收藏任何生日應援"
           description="快去收藏你喜歡的生日應援吧 ✨"
           cta={
-            <button className={ctaButton} onClick={() => router.push('/')}>
+            <button type="button" className={ctaButton} onClick={() => router.push('/')}>
               前往首頁
             </button>
           }
@@ -113,27 +113,31 @@ const FavoritesList = ({ data, currentPage, onPageChange }: FavoritesListProps) 
       </div>
 
       {pagination.totalPages > 1 && (
-        <div className={paginationContainer}>
+        <nav aria-label="切換分頁" className={paginationContainer}>
           <button
+            type="button"
             className={paginationButton}
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage <= 1}
+            aria-label="前往上一頁"
           >
             上一頁
           </button>
 
-          <span className={pageInfo}>
+          <span className={pageInfo} aria-live="polite" aria-atomic="true">
             第 {currentPage} / {pagination.totalPages} 頁
           </span>
 
           <button
+            type="button"
             className={paginationButton}
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage >= pagination.totalPages}
+            aria-label="前往下一頁"
           >
             下一頁
           </button>
-        </div>
+        </nav>
       )}
     </div>
   );
