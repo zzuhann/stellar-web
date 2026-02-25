@@ -1,6 +1,8 @@
 import { useAuth } from '@/lib/auth-context';
 import { css, cva } from '@/styled-system/css';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useScrollLock } from '@/hooks/useScrollLock';
 import Link from 'next/link';
 
 const mobileMenu = cva({
@@ -129,14 +131,39 @@ type MobileMenuProps = {
 const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
   const { user, userData, signOut, toggleAuthModal } = useAuth();
 
+  // 使用 focus trap 和 scroll lock
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
+  useScrollLock(isOpen);
+
   return (
     <>
-      <div className={mobileMenuOverlay({ isOpen })} onClick={closeMobileMenu} />
-      <div className={mobileMenu({ isOpen })}>
+      <div
+        className={mobileMenuOverlay({ isOpen })}
+        onClick={closeMobileMenu}
+        aria-label="點擊關閉選單"
+        role="button"
+        tabIndex={isOpen ? 0 : -1}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            closeMobileMenu();
+          }
+        }}
+      />
+      <nav
+        ref={focusTrapRef}
+        className={mobileMenu({ isOpen })}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mobile-menu-title"
+        aria-hidden={!isOpen}
+      >
         <div className={mobileMenuHeader}>
-          <h3 className={mobileMenuTitle}>選單</h3>
-          <button className={closeButton} onClick={closeMobileMenu}>
-            <XMarkIcon width={24} height={24} />
+          <h3 id="mobile-menu-title" className={mobileMenuTitle}>
+            選單
+          </h3>
+          <button className={closeButton} onClick={closeMobileMenu} aria-label="關閉選單">
+            <XMarkIcon width={24} height={24} aria-hidden="true" />
           </button>
         </div>
 
@@ -190,7 +217,7 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
             </>
           )}
         </div>
-      </div>
+      </nav>
     </>
   );
 };

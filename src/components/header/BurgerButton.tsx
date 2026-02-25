@@ -35,7 +35,7 @@ const BurgerButton = ({ onClick, ariaExpanded, ariaLabel = '開啟選單' }: Bur
       aria-expanded={ariaExpanded}
       aria-label={ariaLabel}
     >
-      <Bars3Icon width={24} height={24} aria-hidden />
+      <Bars3Icon width={24} height={24} aria-hidden="true" />
     </button>
   );
 };

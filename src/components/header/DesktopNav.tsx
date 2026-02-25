@@ -112,7 +112,7 @@ const DesktopNav = () => {
   }, [userMenuOpen]);
 
   return (
-    <div className={desktopNav}>
+    <nav className={desktopNav} aria-label="功能選單">
       {user ? (
         <div className={rightSection}>
           <Link className={styledLink} href="/admin">
@@ -128,19 +128,26 @@ const DesktopNav = () => {
             我的收藏
           </Link>
           <div className={userSection} ref={userSectionRef}>
-            <button className={userButton} onClick={() => setUserMenuOpen(!userMenuOpen)}>
-              <UserIcon width={16} height={16} />
-              <div className={description}>{userData?.displayName || 'member'}</div>
+            <button
+              className={userButton}
+              onClick={() => setUserMenuOpen(!userMenuOpen)}
+              aria-haspopup="menu"
+              aria-expanded={userMenuOpen}
+            >
+              <UserIcon width={16} height={16} aria-hidden="true" />
+              <span className={description}>{userData?.displayName || 'member'}</span>
             </button>
 
             {userMenuOpen && (
-              <div className={userMenu}>
+              <div className={userMenu} role="menu" aria-label="使用者相關選單">
                 <button
                   className={userMenuItem}
                   onClick={() => {
                     router.push('/settings');
                     setUserMenuOpen(false);
                   }}
+                  type="button"
+                  role="menuitem"
                 >
                   設定
                 </button>
@@ -150,6 +157,8 @@ const DesktopNav = () => {
                     signOut();
                     setUserMenuOpen(false);
                   }}
+                  type="button"
+                  role="menuitem"
                 >
                   登出
                 </button>
@@ -162,7 +171,7 @@ const DesktopNav = () => {
           登入 / 註冊
         </button>
       )}
-    </div>
+    </nav>
   );
 };
 
