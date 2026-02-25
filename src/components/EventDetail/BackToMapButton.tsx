@@ -67,7 +67,7 @@ export default function BackToMapButton({ event }: BackToMapButtonProps) {
 
   return (
     <>
-      <button className={ctaButton} onClick={handleBackToMap}>
+      <button className={ctaButton} onClick={handleBackToMap} type="button">
         回地圖頁
         <br />
         看其他生日應援

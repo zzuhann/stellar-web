@@ -178,7 +178,10 @@ const EventDetail = ({ event }: EventDetailProps) => {
           <div className={eventDetailsSection}>
             {event.socialMedia.instagram && (
               <div className={detailItem}>
-                <InstagramIcon size={20} color="var(--color-text-secondary)" />
+                <div>
+                  <InstagramIcon size={20} color="var(--color-text-secondary)" aria-hidden="true" />
+                  <span className="sr-only">Instagram</span>
+                </div>
                 <div className={detailContent}>
                   <div className={detailValue}>
                     {parseSocialMediaHandles(event.socialMedia.instagram).map(
@@ -191,6 +194,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
                             style={{ color: '#3a64c7' }}
                           >
                             @{handle}
+                            <span className="sr-only">（在新視窗開啟）</span>
                           </a>
                           {idx < arr.length - 1 && '、'}
                         </span>
@@ -203,7 +207,10 @@ const EventDetail = ({ event }: EventDetailProps) => {
 
             {event.socialMedia.threads && (
               <div className={detailItem}>
-                <ThreadsIcon size={20} color="var(--color-text-secondary)" />
+                <div>
+                  <ThreadsIcon size={20} color="var(--color-text-secondary)" aria-hidden="true" />
+                  <span className="sr-only">Threads</span>
+                </div>
                 <div className={detailContent}>
                   <div className={detailValue}>
                     {parseSocialMediaHandles(event.socialMedia.threads).map((handle, idx, arr) => (
@@ -215,6 +222,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
                           style={{ color: '#3a64c7' }}
                         >
                           @{handle}
+                          <span className="sr-only">（在新視窗開啟）</span>
                         </a>
                         {idx < arr.length - 1 && '、'}
                       </span>
@@ -226,7 +234,10 @@ const EventDetail = ({ event }: EventDetailProps) => {
 
             {event.socialMedia.x && (
               <div className={detailItem}>
-                <XIcon size={20} color="var(--color-text-secondary)" />
+                <div>
+                  <XIcon size={20} color="var(--color-text-secondary)" aria-hidden="true" />
+                  <span className="sr-only">X</span>
+                </div>
                 <div className={detailContent}>
                   <div className={detailValue}>
                     {parseSocialMediaHandles(event.socialMedia.x).map((handle, idx, arr) => (
@@ -238,6 +249,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
                           style={{ color: '#3a64c7' }}
                         >
                           @{handle}
+                          <span className="sr-only">（在新視窗開啟）</span>
                         </a>
                         {idx < arr.length - 1 && '、'}
                       </span>
@@ -253,7 +265,13 @@ const EventDetail = ({ event }: EventDetailProps) => {
             <h3 className={descriptionTitle}>時間/地點</h3>
             <div className={detailItem}>
               <div className={detailIcon}>
-                <CalendarIcon width={20} height={20} color="var(--color-text-secondary)" />
+                <CalendarIcon
+                  width={20}
+                  height={20}
+                  color="var(--color-text-secondary)"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">活動時間</span>
               </div>
               <div className={detailContent}>
                 <div className={detailValue}>
@@ -264,7 +282,13 @@ const EventDetail = ({ event }: EventDetailProps) => {
 
             <div className={detailItem}>
               <div className={detailIcon}>
-                <MapPinIcon width={20} height={20} color="var(--color-text-secondary)" />
+                <MapPinIcon
+                  width={20}
+                  height={20}
+                  color="var(--color-text-secondary)"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">活動地點</span>
               </div>
               <div className={detailContent}>
                 <div className={detailValue}>
@@ -274,7 +298,8 @@ const EventDetail = ({ event }: EventDetailProps) => {
                     rel="noopener noreferrer"
                     style={{ color: '#3a64c7' }}
                   >
-                    {event.location.name}({event.location.address}){' '}
+                    {event.location.name}({event.location.address})
+                    <span className="sr-only">（在新視窗開啟 Google 地圖）</span>
                   </a>
                 </div>
               </div>

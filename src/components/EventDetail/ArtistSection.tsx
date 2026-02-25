@@ -1,7 +1,7 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { css } from '@/styled-system/css';
+import Link from 'next/link';
 
 const artistSection = css({
   display: 'flex',
@@ -56,8 +56,6 @@ interface ArtistSectionProps {
 }
 
 export default function ArtistSection({ artists }: ArtistSectionProps) {
-  const router = useRouter();
-
   if (!artists || artists.length === 0) {
     return null;
   }
@@ -67,13 +65,13 @@ export default function ArtistSection({ artists }: ArtistSectionProps) {
       {artists.map((artist, index) => (
         <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
           {index > 0 && <span className={artistSeparator}>/</span>}
-          <div className={artistItem} onClick={() => router.push(`/map/${artist.id}`)}>
+          <Link href={`/map/${artist.id}`} className={artistItem}>
             <div
               className={artistAvatar}
               style={{ backgroundImage: `url(${artist.profileImage})` }}
             />
             <span className={artistName}>{artist.name || ''}</span>
-          </div>
+          </Link>
         </div>
       ))}
     </div>

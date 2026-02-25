@@ -1,5 +1,7 @@
 import { css } from '@/styled-system/css';
 import { CoffeeEvent } from '@/types';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
+import { useScrollLock } from '@/hooks/useScrollLock';
 
 const modalOverlay = css({
   position: 'fixed',
@@ -99,26 +101,55 @@ type ArtistModalProps = {
 };
 
 const ArtistModal = ({ event, handleArtistSelect, handleCloseModal }: ArtistModalProps) => {
+  // 使用 focus trap 和 scroll lock
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(true);
+  useScrollLock(true);
+
   return (
-    <div className={modalOverlay} onClick={handleCloseModal}>
-      <div className={modalContent} onClick={(e) => e.stopPropagation()}>
-        <h3 className={modalTitle}>選擇要查看的偶像</h3>
+    <div
+      className={modalOverlay}
+      onClick={handleCloseModal}
+      aria-label="點擊關閉"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleCloseModal();
+        }
+      }}
+    >
+      <div
+        ref={focusTrapRef}
+        className={modalContent}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="artist-modal-title"
+      >
+        <h3 id="artist-modal-title" className={modalTitle}>
+          選擇要查看的偶像
+        </h3>
         {event.artists?.map((artist) => (
           <button
             key={artist.id}
+            type="button"
             onClick={() => handleArtistSelect(artist.id)}
             className={artistOption}
+            aria-label={`選擇 ${artist.name || 'Unknown Artist'}`}
           >
             <div
               className={artistAvatar}
               style={{
                 backgroundImage: `url(${artist.profileImage})`,
               }}
+              role="img"
+              aria-label={`${artist.name || 'Unknown Artist'} 的頭貼`}
             />
             <span className={artistName}>{artist.name || 'Unknown Artist'}</span>
           </button>
         ))}
-        <button onClick={handleCloseModal} className={cancelButton}>
+        <button onClick={handleCloseModal} className={cancelButton} type="button">
           取消
         </button>
       </div>
