@@ -1,6 +1,5 @@
 @layer reset, base, tokens, recipes, utilities;
 @import '../styles/marker-cluster.css';
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
 :root {
   /* 品牌色彩系統 */
@@ -79,7 +78,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family:
-    'Noto Sans TC',
+    var(--font-noto-sans-tc),
     -apple-system,
     BlinkMacSystemFont,
     'Segoe UI',

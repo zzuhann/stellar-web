@@ -1,7 +1,7 @@
 import { GoogleAnalytics } from '@next/third-parties/google';
 
 import type { Metadata } from 'next';
-import { Noto_Sans_TC } from 'next/font/google'; // 改用 CSS 引入
+import { Noto_Sans_TC } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
 import { QueryProvider } from '@/lib/query-client';
@@ -17,7 +17,7 @@ import ClarityInit from '@/components/ClarityInit';
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-noto-sans-tc',
   display: 'swap',
 });
