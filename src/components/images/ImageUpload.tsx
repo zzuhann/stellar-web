@@ -36,11 +36,11 @@ const uploadArea = cva({
     hasError: {
       true: {
         borderColor: 'color.status.color !important',
-        background: 'rgba(220, 53, 69, 0.05) !important',
+        background: 'alpha.error.5 !important',
 
         '&:hover': {
           borderColor: 'color.status.color !important',
-          background: 'rgba(220, 53, 69, 0.05) !important',
+          background: 'alpha.error.5 !important',
         },
       },
     },
@@ -140,7 +140,7 @@ const imageHint = css({
   position: 'absolute',
   bottom: '8px',
   left: '8px',
-  background: 'rgba(0, 0, 0, 0.6)',
+  background: 'alpha.black.60',
   color: 'white',
   fontSize: '12px',
   padding: '4px 8px',

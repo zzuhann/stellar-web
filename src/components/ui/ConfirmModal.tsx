@@ -7,7 +7,8 @@ import { css, cva } from '@/styled-system/css';
 const modalContent = css({
   background: 'white',
   borderRadius: 'radius.lg',
-  boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+  boxShadow:
+    '0 20px 25px -5px var(--colors-alpha-black-10), 0 10px 10px -5px var(--colors-alpha-black-5)',
   maxWidth: '400px',
   width: '100%',
   overflow: 'hidden',

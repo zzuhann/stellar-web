@@ -36,7 +36,7 @@ const birthdayHat = css({
   height: '24px',
   transform: 'rotate(15deg)',
   zIndex: 2,
-  filter: 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2))',
+  filter: 'drop-shadow(0 2px 4px var(--colors-alpha-black-20))',
 });
 
 const artistInfo = css({

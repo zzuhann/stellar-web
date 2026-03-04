@@ -87,7 +87,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
             left: 0,
             width: '100%',
             height: '100%',
-            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            backgroundColor: 'var(--colors-alpha-white-50)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

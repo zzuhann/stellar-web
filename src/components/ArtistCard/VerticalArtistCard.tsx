@@ -38,7 +38,7 @@ const imageOverlay = cva({
     top: 0,
     bottom: 0,
     background:
-      'linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.2) 50%, rgba(0, 0, 0, 0.1) 100%)',
+      'linear-gradient(to top, var(--colors-alpha-black-30) 0%, var(--colors-alpha-black-20) 50%, var(--colors-alpha-black-10) 100%)',
     padding: '16px',
     color: 'white',
     display: 'flex',
@@ -86,7 +86,7 @@ const artistName = css({
 
 const artistBirthday = css({
   fontSize: '14px',
-  color: 'rgba(255, 255, 255, 0.8)',
+  color: 'alpha.white.80',
   display: 'flex',
   alignItems: 'center',
   gap: '4px',
@@ -94,7 +94,7 @@ const artistBirthday = css({
 
 const styledSubmissionTime = css({
   fontSize: '12px',
-  color: 'rgba(255, 255, 255, 0.7)',
+  color: 'alpha.white.70',
 });
 
 const statusBadge = cva({

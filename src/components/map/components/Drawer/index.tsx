@@ -12,7 +12,7 @@ const drawerContainer = css({
   right: '0',
   background: 'color.background.primary',
   borderRadius: '16px 16px 0 0',
-  boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.15)',
+  boxShadow: '0 -4px 20px var(--colors-alpha-black-15)',
   zIndex: '100',
 });
 

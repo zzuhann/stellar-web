@@ -45,8 +45,8 @@ const bannerContainer = css({
   },
 
   '& .swiper-pagination-bullet': {
-    backgroundColor: 'rgba(255, 255, 255, 0.3) !important',
-    border: '1px solid rgba(255, 255, 255, 0.5) !important',
+    backgroundColor: 'var(--colors-alpha-white-30) !important',
+    border: '1px solid var(--colors-alpha-white-50) !important',
     opacity: '1 !important',
     width: '8px !important',
     height: '8px !important',
@@ -78,7 +78,7 @@ const pageIndicator = css({
   position: 'absolute',
   top: '16px',
   right: '16px',
-  background: 'rgba(0, 0, 0, 0.3)',
+  background: 'alpha.black.30',
   color: 'white',
   padding: '4px 12px',
   borderRadius: '12px',
@@ -91,7 +91,7 @@ const navigationButton = css({
   position: 'absolute',
   top: '50%',
   transform: 'translateY(-50%)',
-  background: 'rgba(0, 0, 0, 0.3)',
+  background: 'alpha.black.30',
   border: 'none',
   color: 'white',
   width: '40px',
@@ -105,7 +105,7 @@ const navigationButton = css({
   zIndex: '10',
 
   '&:hover': {
-    background: 'rgba(0, 0, 0, 0.5)',
+    background: 'alpha.black.50',
   },
 
   '&:disabled': {

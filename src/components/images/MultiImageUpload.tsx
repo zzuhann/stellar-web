@@ -47,7 +47,7 @@ const imagePreview = css({
 const actionButtonsContainer = css({
   position: 'absolute',
   inset: '0',
-  background: 'rgba(0, 0, 0, 0.3)',
+  background: 'alpha.black.30',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -79,15 +79,15 @@ const actionButton = cva({
   variants: {
     variant: {
       move: {
-        background: 'rgba(0, 0, 0, 0.7)',
+        background: 'alpha.black.70',
         '&:hover:not(:disabled)': {
-          background: 'rgba(0, 0, 0, 0.9)',
+          background: 'alpha.black.90',
         },
       },
       remove: {
-        background: 'rgba(220, 53, 69, 0.9)',
+        background: 'alpha.error.90',
         '&:hover:not(:disabled)': {
-          background: 'rgba(220, 53, 69, 1)',
+          background: 'red.600',
         },
       },
     },
@@ -98,7 +98,7 @@ const orderIndicator = css({
   position: 'absolute',
   top: '4px',
   left: '4px',
-  background: 'rgba(0, 0, 0, 0.5)',
+  background: 'alpha.black.50',
   color: 'white',
   borderRadius: 'radius.circle',
   width: '20px',
@@ -113,7 +113,7 @@ const orderIndicator = css({
 const loadingOverlay = css({
   position: 'absolute',
   inset: '0',
-  background: 'rgba(255, 255, 255, 0.8)',
+  background: 'alpha.white.80',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

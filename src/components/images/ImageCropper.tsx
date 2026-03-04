@@ -70,7 +70,7 @@ const cropImage = css({
 
 const cropOverlay = css({
   position: 'absolute',
-  background: 'rgba(0, 0, 0, 0.4)',
+  background: 'alpha.black.40',
 });
 
 const cropFrame = cva({
@@ -78,7 +78,7 @@ const cropFrame = cva({
     position: 'absolute',
     border: '2px solid',
     borderColor: 'color.primary',
-    boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.3)',
+    boxShadow: '0 0 0 1px var(--colors-alpha-black-30)',
     borderRadius: 'radius.circle',
   },
   variants: {

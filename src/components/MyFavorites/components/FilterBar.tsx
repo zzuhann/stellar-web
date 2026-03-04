@@ -45,7 +45,7 @@ const dropdownButton = css({
   '&:focus': {
     outline: 'none',
     borderColor: 'color.primary',
-    boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
+    boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
   },
 });
 
@@ -67,7 +67,8 @@ const dropdownMenu = css({
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.md',
-  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+  boxShadow:
+    '0 4px 6px -1px var(--colors-alpha-black-10), 0 2px 4px -1px var(--colors-alpha-black-5)',
   zIndex: 10,
   overflow: 'hidden',
   transformOrigin: 'top',
