@@ -1,3 +1,10 @@
+---
+description: 專案通用規範（語言、SOLD、測試與文件）
+alwaysApply: true
+---
+
+# 專案通用規範
+
 - 回應語言：一律使用繁體中文
 - 設計原則：
   - Single Responsibility Principle（單一職責原則）
@@ -27,8 +34,3 @@
 - No need to disclose you're an AI
 - Please respect my prettier preferences when you provide code.
 - Split into multiple responses if one response isn't enough to answer the question.
-
-- 使用 panda css 時，border 若為 borderTop 或是 borderBottom ，顏色也要另外設定 borderTopColor 或是 borderBottomColor
-- 只要寫code，不用嘗試跑build 或是 type check指令
-- 明確定義型別，不要使用 `any`，盡量使用具體的型別或泛型
-- 在修改前端資料結構前，先詢問後端是否可以修改，避免前端自行控制資料結構

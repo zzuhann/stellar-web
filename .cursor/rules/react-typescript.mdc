@@ -1,0 +1,12 @@
+---
+name: React TypeScript 慣例
+globs:
+  - "**/*.ts"
+  - "**/*.tsx"
+alwaysApply: false
+---
+
+# React TypeScript 慣例
+
+- 使用 TypeScript 撰寫 React 元件，確保類型安全與可維護性
+- 明確定義型別，不要使用 `any`，盡量使用具體的型別或泛型
