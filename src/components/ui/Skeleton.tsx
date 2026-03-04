@@ -11,7 +11,7 @@ interface SkeletonProps {
 
 const skeletonBase = css({
   display: 'block',
-  backgroundColor: '#e6e6e6',
+  backgroundColor: 'gray.200',
   position: 'relative',
   overflow: 'hidden',
 
@@ -22,7 +22,7 @@ const skeletonBase = css({
     left: '0',
     width: '100%',
     height: '100%',
-    background: 'linear-gradient(90deg, transparent, #cccccc, transparent)',
+    background: 'linear-gradient(90deg, transparent, gray.300, transparent)',
     transform: 'translateX(-100%)',
     animation: 'shimmer 1.8s ease-in-out infinite',
     willChange: 'transform',

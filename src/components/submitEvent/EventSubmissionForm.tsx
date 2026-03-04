@@ -68,7 +68,7 @@ const form = css({
 
 const warningText = css({
   fontSize: '14px',
-  color: '#ef4444 !important',
+  color: 'red.600 !important',
   margin: 'unset',
   marginTop: '8px !important',
   '@media (min-width: 768px)': {

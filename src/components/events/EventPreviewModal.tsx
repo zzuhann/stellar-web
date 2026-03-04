@@ -67,7 +67,7 @@ const closeButton = css({
 });
 
 const contentSection = css({
-  background: '#fff',
+  background: 'gray.0',
   padding: '0 20px 16px 20px',
   marginBottom: '24px',
 });
@@ -297,7 +297,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                             href={`https://www.instagram.com/${handle}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ color: '#3a64c7' }}
+                            style={{ color: 'var(--colors-stellar-blue-500)' }}
                           >
                             @{handle}
                           </a>
@@ -321,7 +321,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                           href={`https://www.threads.net/@${handle}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ color: '#3a64c7' }}
+                          style={{ color: 'var(--colors-stellar-blue-500)' }}
                         >
                           @{handle}
                         </a>
@@ -344,7 +344,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                           href={`https://x.com/${handle}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ color: '#3a64c7' }}
+                          style={{ color: 'var(--colors-stellar-blue-500)' }}
                         >
                           @{handle}
                         </a>
@@ -382,7 +382,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                     href={`https://www.google.com/maps/search/?api=1&query=${event.location.coordinates.lat},${event.location.coordinates.lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: '#3a64c7' }}
+                    style={{ color: 'var(--colors-stellar-blue-500)' }}
                   >
                     {event.location.name}({event.location.address}){' '}
                   </a>

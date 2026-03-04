@@ -110,8 +110,8 @@ const button = cva({
         borderColor: 'color.primary',
         color: 'white',
         '&:hover:not(:disabled)': {
-          background: '#3a5d7a',
-          borderColor: '#3a5d7a',
+          background: 'stellarBlue.600',
+          borderColor: 'stellarBlue.600',
         },
         '&:disabled': {
           background: 'color.text.disabled',
@@ -149,13 +149,13 @@ const removeButton = css({
   width: '32px',
   height: '32px',
   borderRadius: 'radius.md',
-  color: '#dc2626',
+  color: 'red.600',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
-  border: '1px solid #dc2626',
+  border: '1px solid red.600',
   background: 'transparent',
   '&:hover': {
-    background: '#dc2626',
+    background: 'red.600',
     color: 'white',
   },
   '& svg': {

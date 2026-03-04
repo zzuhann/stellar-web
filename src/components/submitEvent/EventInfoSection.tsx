@@ -55,7 +55,7 @@ const characterCount = cva({
   variants: {
     isOverLimit: {
       true: {
-        color: '#ef4444',
+        color: 'red.600',
       },
       false: {
         color: 'color.text.secondary',
@@ -221,7 +221,12 @@ const EventInfoSection = ({
           {!watch('startDate') && (
             <p
               className={helperText}
-              style={{ color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}
+              style={{
+                color: 'var(--colors-amber-500)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
               role="alert"
             >
               <ExclamationTriangleIcon style={{ width: '14px', height: '14px', flexShrink: 0 }} />

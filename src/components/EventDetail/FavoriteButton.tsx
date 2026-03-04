@@ -52,9 +52,9 @@ const favoriteButtonActive = css({
   transition: 'all 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
-  borderColor: '#ff6362',
+  borderColor: 'red.500',
   color: 'white',
-  background: '#ff6362',
+  background: 'red.500',
   marginBottom: '16px',
 
   '&:disabled': {
@@ -63,8 +63,8 @@ const favoriteButtonActive = css({
   },
 
   '&:hover': {
-    background: '#e65958',
-    borderColor: '#e65958',
+    background: 'red.700',
+    borderColor: 'red.700',
   },
 
   '&:active': {

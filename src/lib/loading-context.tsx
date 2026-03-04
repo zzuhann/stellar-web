@@ -98,8 +98,8 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
             style={{
               width: '40px',
               height: '40px',
-              border: '3px solid #f3f3f3',
-              borderTop: '3px solid #6366f1',
+              border: '3px solid var(--colors-gray-200)',
+              borderTop: '3px solid var(--colors-stellar-blue-500)',
               borderRadius: '50%',
               animation: 'spin 1s linear infinite',
             }}

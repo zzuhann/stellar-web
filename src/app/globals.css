@@ -2,43 +2,43 @@
 @import '../styles/marker-cluster.css';
 
 :root {
-  /* 品牌色彩系統 */
-  --color-primary: #3f5a72;
-  --color-secondary: #a3b4c4;
-  --color-accent: #cde6f4;
+  /* 品牌色彩系統 - 引用 Panda CSS tokens */
+  --color-primary: var(--colors-stellar-blue-500);
+  --color-secondary: var(--colors-stellar-blue-200);
+  --color-accent: var(--colors-stellar-blue-50);
 
   /* 文字色系 */
-  --color-text-primary: #4a4a4a;
-  --color-text-secondary: #666666;
-  --color-text-disabled: #c7c7c7;
+  --color-text-primary: var(--colors-gray-700);
+  --color-text-secondary: var(--colors-gray-600);
+  --color-text-disabled: var(--colors-gray-400);
 
   /* 背景色系 */
-  --color-bg-primary: #ffffff;
-  --color-bg-secondary: #f8f9fa;
-  --color-bg-muted: #f1f3f5;
+  --color-bg-primary: var(--colors-gray-0);
+  --color-bg-secondary: var(--colors-gray-50);
+  --color-bg-muted: var(--colors-gray-100);
 
   /* 邊框色系 */
-  --color-border-light: #e9ecef;
-  --color-border-medium: #dee2e6;
-  --color-border-dark: #adb5bd;
+  --color-border-light: var(--colors-gray-200);
+  --color-border-medium: var(--colors-gray-300);
+  --color-border-dark: var(--colors-gray-500);
 
   /* 狀態色系 */
-  --color-success: #28a745;
-  --color-warning: #ffc107;
-  --color-error: #dc3545;
-  --color-info: #17a2b8;
+  --color-success: var(--colors-green-600);
+  --color-warning: var(--colors-amber-500);
+  --color-error: var(--colors-red-600);
+  --color-info: var(--colors-sky-700);
 
   /* 陰影效果 */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-sm: var(--shadows-shadow-sm);
+  --shadow-md: var(--shadows-shadow-md);
+  --shadow-lg: var(--shadows-shadow-lg);
+  --shadow-xl: var(--shadows-shadow-xl);
 
   /* 圓角 */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 12px;
+  --radius-sm: var(--radii-radius-sm);
+  --radius-md: var(--radii-radius-md);
+  --radius-lg: var(--radii-radius-lg);
+  --radius-xl: var(--radii-radius-xl);
 }
 
 /* Skip link: 視覺隱藏，focus 時顯示 */

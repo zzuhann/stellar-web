@@ -24,12 +24,12 @@ const carouselContainer = css({
   },
 
   '& .swiper-pagination-bullet': {
-    background: '#E9ECEF !important',
+    background: 'gray.200 !important',
     opacity: '1 !important',
   },
 
   '& .swiper-pagination-bullet-active': {
-    background: '#3F5A72 !important',
+    background: 'stellarBlue.500 !important',
   },
 });
 

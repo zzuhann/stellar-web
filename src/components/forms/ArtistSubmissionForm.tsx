@@ -129,19 +129,20 @@ const helperText = css({
 
 const errorText = css({
   fontSize: '12px',
-  color: '#ef4444',
+  color: 'red.600',
   margin: '4px 0 0 0',
 });
 
 const infoBox = css({
-  background: '#f0f9ff',
-  border: '1px solid #bae6fd',
+  background: 'sky.50',
+  border: '1px solid',
+  borderColor: 'sky.200',
   borderRadius: 'radius.lg',
   padding: '20px',
   '& .title': {
     fontSize: '14px',
     fontWeight: '600',
-    color: '#0369a1',
+    color: 'sky.700',
     margin: '0 0 12px 0',
     '@media (min-width: 768px)': {
       fontSize: '15px',
@@ -149,7 +150,7 @@ const infoBox = css({
   },
   '& ul': {
     fontSize: '13px',
-    color: '#0369a1',
+    color: 'sky.700',
     margin: '0',
     paddingLeft: '16px',
     '@media (min-width: 768px)': {
@@ -169,7 +170,7 @@ const imageSection = css({
 });
 
 const warningText = css({
-  color: '#ef4444 !important',
+  color: 'red.600 !important',
 });
 
 const bulletPoint = css({
@@ -220,8 +221,8 @@ const button = cva({
         borderColor: 'color.primary',
         color: 'white',
         '&:hover:not(:disabled)': {
-          background: '#3a5d7a',
-          borderColor: '#3a5d7a',
+          background: 'stellarBlue.600',
+          borderColor: 'stellarBlue.600',
           transform: 'translateY(-1px)',
           boxShadow: 'shadow.md',
         },
@@ -451,7 +452,10 @@ export default function ArtistSubmissionForm({
         <h2>{mode === 'edit' ? '編輯偶像' : '投稿偶像'}</h2>
         {mode !== 'edit' && <p>新增偶像到我們的資料庫，審核通過後其他用戶可以為他們建立生日應援</p>}
         {mode === 'edit' && (
-          <p style={{ fontSize: '14px', color: '#ef4444', margin: '8px 0 0 0' }} role="alert">
+          <p
+            style={{ fontSize: '14px', color: 'var(--colors-red-600)', margin: '8px 0 0 0' }}
+            role="alert"
+          >
             編輯後的資料將重新進入審核流程
           </p>
         )}

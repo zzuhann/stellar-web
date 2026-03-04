@@ -56,7 +56,7 @@ const dateInput = cva({
   variants: {
     error: {
       true: {
-        borderColor: '#ef4444',
+        borderColor: 'red.600',
       },
     },
     disabled: {

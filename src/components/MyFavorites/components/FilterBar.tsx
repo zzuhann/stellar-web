@@ -83,7 +83,7 @@ const dropdownOption = css({
   alignItems: 'center',
   transition: 'background 0.15s',
   '&:hover': {
-    background: '#f3f4f6',
+    background: 'gray.50',
   },
 });
 

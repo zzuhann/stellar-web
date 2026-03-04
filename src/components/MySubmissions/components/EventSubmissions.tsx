@@ -23,8 +23,8 @@ const ctaButton = css({
   maxWidth: '60%',
   margin: '0 auto',
   '&:hover': {
-    background: '#3a5d7a',
-    borderColor: '#3a5d7a',
+    background: 'stellarBlue.600',
+    borderColor: 'stellarBlue.600',
   },
 });
 

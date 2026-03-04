@@ -132,15 +132,15 @@ const input = css({
 });
 
 const inputError = css({
-  borderColor: '#ef4444',
+  borderColor: 'red.600',
   '&:focus': {
-    borderColor: '#ef4444',
+    borderColor: 'red.600',
   },
 });
 
 const errorText = css({
   fontSize: '12px',
-  color: '#ef4444',
+  color: 'red.600',
   marginTop: '4px',
 });
 
@@ -177,8 +177,8 @@ const buttonPrimary = css({
   borderColor: 'color.primary',
   color: 'white',
   '&:hover:not(:disabled)': {
-    background: '#3a5d7a',
-    borderColor: '#3a5d7a',
+    background: 'stellarBlue.600',
+    borderColor: 'stellarBlue.600',
   },
 });
 

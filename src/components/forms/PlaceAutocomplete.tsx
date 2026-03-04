@@ -77,11 +77,11 @@ const comboboxInput = cva({
     },
     isError: {
       true: {
-        borderColor: '#ef4444',
-        background: '#fef2f2',
-        color: '#991b1b',
+        borderColor: 'red.600',
+        background: 'red.50',
+        color: 'red.800',
         '&:focus': {
-          borderColor: '#ef4444',
+          borderColor: 'red.600',
           boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.1)',
         },
       },
@@ -210,7 +210,7 @@ const checkIconContainer = cva({
 const errorMessage = css({
   margin: '8px 0 0 0',
   fontSize: '12px',
-  color: '#ef4444',
+  color: 'red.600',
   '@media (min-width: 768px)': {
     fontSize: '13px',
   },
@@ -298,7 +298,7 @@ export default function PlaceAutocomplete({
           <Combobox.Button className={comboboxButton}>
             {isError ? (
               <ExclamationTriangleIcon
-                style={{ width: '20px', height: '20px', color: '#f87171' }}
+                style={{ width: '20px', height: '20px', color: 'var(--colors-red-500)' }}
                 aria-hidden="true"
               />
             ) : (

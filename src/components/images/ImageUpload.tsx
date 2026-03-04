@@ -122,14 +122,14 @@ const actionButton = cva({
         background: 'color.primary',
         color: 'white',
         '&:hover:not(:disabled)': {
-          background: '#2d4a5f',
+          background: 'stellarBlue.600',
         },
       },
       remove: {
         background: 'color.status.color',
         color: 'white',
         '&:hover:not(:disabled)': {
-          background: '#c82333',
+          background: 'red.700',
         },
       },
     },

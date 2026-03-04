@@ -101,7 +101,7 @@ const label = css({
 });
 
 const requiredIndicator = css({
-  color: '#dc2626',
+  color: 'red.600',
   marginLeft: '4px',
 });
 
@@ -142,7 +142,7 @@ const helperText = css({
 
 const errorText = css({
   fontSize: '12px',
-  color: '#dc2626',
+  color: 'red.600',
   marginTop: '6px',
 });
 
@@ -155,7 +155,7 @@ const characterCount = cva({
   variants: {
     isNearLimit: {
       true: {
-        color: '#dc2626',
+        color: 'red.600',
       },
       false: {
         color: 'color.text.secondary',
@@ -189,12 +189,12 @@ const button = cva({
   variants: {
     variant: {
       primary: {
-        background: '#dc2626',
-        borderColor: '#dc2626',
+        background: 'red.600',
+        borderColor: 'red.600',
         color: 'white',
         '&:hover:not(:disabled)': {
-          background: '#b91c1c',
-          borderColor: '#b91c1c',
+          background: 'red.700',
+          borderColor: 'red.700',
         },
         '&:disabled': {
           background: 'color.text.disabled',

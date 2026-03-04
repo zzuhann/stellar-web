@@ -165,16 +165,16 @@ const statusBadge = cva({
   variants: {
     status: {
       approved: {
-        background: '#dcfce7',
-        color: '#166534',
+        background: 'green.50',
+        color: 'green.800',
       },
       rejected: {
-        background: '#fee2e2',
-        color: '#991b1b',
+        background: 'red.50',
+        color: 'red.800',
       },
       pending: {
-        background: '#fef3c7',
-        color: '#92400e',
+        background: 'amber.50',
+        color: 'amber.800',
       },
     },
   },

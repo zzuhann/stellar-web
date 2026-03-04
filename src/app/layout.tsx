@@ -120,9 +120,9 @@ export default function RootLayout({
                   toastOptions={{
                     duration: 4000,
                     style: {
-                      background: '#fff',
-                      color: '#333',
-                      border: '1px solid #e5e7eb',
+                      background: 'var(--colors-gray-0)',
+                      color: 'var(--colors-gray-700)',
+                      border: '1px solid var(--colors-gray-200)',
                       borderRadius: '8px',
                       fontSize: '14px',
                       padding: '12px 16px',
@@ -130,22 +130,22 @@ export default function RootLayout({
                     },
                     success: {
                       style: {
-                        border: '1px solid #10b981',
-                        color: '#065f46',
+                        border: '1px solid var(--colors-green-500)',
+                        color: 'var(--colors-green-800)',
                       },
                       iconTheme: {
-                        primary: '#10b981',
-                        secondary: '#ffffff',
+                        primary: 'var(--colors-green-500)',
+                        secondary: 'var(--colors-gray-0)',
                       },
                     },
                     error: {
                       style: {
-                        border: '1px solid #ef4444',
-                        color: '#991b1b',
+                        border: '1px solid var(--colors-red-600)',
+                        color: 'var(--colors-red-800)',
                       },
                       iconTheme: {
-                        primary: '#ef4444',
-                        secondary: '#ffffff',
+                        primary: 'var(--colors-red-600)',
+                        secondary: 'var(--colors-gray-0)',
                       },
                     },
                   }}

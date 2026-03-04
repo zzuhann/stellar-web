@@ -63,6 +63,6 @@ export const helperText = css({
 
 export const errorText = css({
   fontSize: '12px',
-  color: '#ef4444',
+  color: 'red.600',
   margin: '4px 0 0 0',
 });

@@ -152,7 +152,7 @@ const styledButton = cva({
         borderColor: 'color.primary',
         color: 'white',
         '&:hover:not(:disabled)': {
-          background: '#3a5d7a',
+          background: 'stellarBlue.600',
         },
         '&:disabled': {
           opacity: '0.5',

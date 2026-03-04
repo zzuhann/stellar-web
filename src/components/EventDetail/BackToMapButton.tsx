@@ -24,8 +24,8 @@ const ctaButton = css({
   marginBottom: '20px',
 
   '&:hover': {
-    background: '#3a5d7a',
-    borderColor: '#3a5d7a',
+    background: 'stellarBlue.600',
+    borderColor: 'stellarBlue.600',
     transform: 'translateX(-50%) translateY(-1px)',
   },
 

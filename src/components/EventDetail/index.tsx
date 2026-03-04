@@ -39,7 +39,7 @@ const errorMessage = css({
 });
 
 const contentSection = css({
-  background: '#fff',
+  background: 'gray.0',
   padding: '0 20px 16px 20px',
   marginBottom: '24px',
 });
@@ -191,7 +191,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
                             href={`https://www.instagram.com/${handle}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{ color: '#3a64c7' }}
+                            style={{ color: 'var(--colors-stellar-blue-500)' }}
                           >
                             @{handle}
                             <span className="sr-only">（在新視窗開啟）</span>
@@ -219,7 +219,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
                           href={`https://www.threads.net/@${handle}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ color: '#3a64c7' }}
+                          style={{ color: 'var(--colors-stellar-blue-500)' }}
                         >
                           @{handle}
                           <span className="sr-only">（在新視窗開啟）</span>
@@ -246,7 +246,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
                           href={`https://x.com/${handle}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          style={{ color: '#3a64c7' }}
+                          style={{ color: 'var(--colors-stellar-blue-500)' }}
                         >
                           @{handle}
                           <span className="sr-only">（在新視窗開啟）</span>
@@ -296,7 +296,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
                     href={`https://www.google.com/maps/search/?api=1&query=${event.location.coordinates.lat},${event.location.coordinates.lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: '#3a64c7' }}
+                    style={{ color: 'var(--colors-stellar-blue-500)' }}
                   >
                     {event.location.name}({event.location.address})
                     <span className="sr-only">（在新視窗開啟 Google 地圖）</span>

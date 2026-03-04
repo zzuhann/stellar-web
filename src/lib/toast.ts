@@ -13,8 +13,8 @@ export const showToast = {
     toast(message, {
       icon: '⚠️',
       style: {
-        border: '1px solid #f59e0b',
-        color: '#92400e',
+        border: '1px solid var(--colors-amber-500)',
+        color: 'var(--colors-amber-800)',
       },
     });
   },

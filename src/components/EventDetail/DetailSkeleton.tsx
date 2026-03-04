@@ -22,7 +22,7 @@ const bannerSkeleton = css({
 });
 
 const contentSection = css({
-  background: '#fff',
+  background: 'gray.0',
   padding: '0 20px 16px 20px',
   marginBottom: '24px',
 });

@@ -125,7 +125,7 @@ const itemValue = css({
 
 const verifiedBadge = css({
   fontSize: '12px',
-  color: '#10b981',
+  color: 'green.500',
   fontWeight: 500,
 });
 

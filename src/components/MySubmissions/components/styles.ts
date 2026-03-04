@@ -31,9 +31,9 @@ export const actionButton = cva({
     transition: 'all 0.2s ease',
     cursor: 'pointer',
     border: '1px solid',
-    background: '#fef2f2',
-    borderColor: '#fecaca',
-    color: '#991b1b',
+    background: 'red.50',
+    borderColor: 'red.200',
+    color: 'red.800',
     '&:hover:not(:disabled)': {
       transform: 'translateY(-1px)',
       boxShadow: 'var(--shadow-sm)',
@@ -51,9 +51,9 @@ export const actionButton = cva({
   variants: {
     variant: {
       edit: {
-        background: 'color.background.primary',
-        borderColor: 'color.border.light',
-        color: 'color.text.primary',
+        background: 'gray.0',
+        borderColor: 'gray.200',
+        color: 'gray.700',
       },
     },
   },

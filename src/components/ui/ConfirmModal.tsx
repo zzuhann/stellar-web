@@ -92,8 +92,8 @@ const button = cva({
         borderColor: 'color.status.error',
         color: 'white',
         '&:hover': {
-          background: '#b91c1c',
-          borderColor: '#b91c1c',
+          background: 'red.700',
+          borderColor: 'red.700',
         },
       },
     },
@@ -140,7 +140,7 @@ export default function ConfirmModal({
         <div className={modalHeader}>
           <h3 id="confirm-modal-title" className={modalTitle}>
             <ExclamationTriangleIcon
-              style={{ width: '20px', height: '20px', color: '#eab308' }}
+              style={{ width: '20px', height: '20px', color: 'var(--colors-amber-500)' }}
               aria-hidden="true"
             />
             {title}

@@ -87,8 +87,8 @@ const tabButton = cva({
 });
 
 const badge = css({
-  background: '#fee2e2',
-  color: '#991b1b',
+  background: 'red.50',
+  color: 'red.800',
   fontSize: '12px',
   fontWeight: 600,
   padding: '2px 8px',
@@ -181,12 +181,12 @@ const actionButton = css({
 });
 
 const actionButtonApprove = css({
-  background: '#16a34a',
-  borderColor: '#16a34a',
+  background: 'green.600',
+  borderColor: 'green.600',
   color: 'white',
   '&:hover:not(:disabled)': {
-    background: '#15803d',
-    borderColor: '#15803d',
+    background: 'green.700',
+    borderColor: 'green.700',
     transform: 'translateY(-1px)',
     boxShadow: 'shadow.sm',
   },
@@ -196,12 +196,12 @@ const actionButtonApprove = css({
 });
 
 const actionButtonReject = css({
-  background: '#dc2626',
-  borderColor: '#dc2626',
+  background: 'red.600',
+  borderColor: 'red.600',
   color: 'white',
   '&:hover:not(:disabled)': {
-    background: '#b91c1c',
-    borderColor: '#b91c1c',
+    background: 'red.700',
+    borderColor: 'red.700',
     transform: 'translateY(-1px)',
     boxShadow: 'shadow.sm',
   },
@@ -226,12 +226,12 @@ const actionButtonPreview = css({
 });
 
 const actionButtonExists = css({
-  background: '#f59e0b',
-  borderColor: '#f59e0b',
+  background: 'amber.500',
+  borderColor: 'amber.500',
   color: 'white',
   '&:hover:not(:disabled)': {
-    background: '#d97706',
-    borderColor: '#d97706',
+    background: 'amber.600',
+    borderColor: 'amber.600',
     transform: 'translateY(-1px)',
     boxShadow: 'shadow.sm',
   },
@@ -242,7 +242,7 @@ const actionButtonExists = css({
 
 const batchActionsContainer = css({
   padding: '16px 20px',
-  background: '#f8fafc',
+  background: 'gray.50',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   display: 'flex',
@@ -293,36 +293,36 @@ const batchButton = css({
 });
 
 const batchButtonApprove = css({
-  background: '#16a34a',
-  borderColor: '#16a34a',
+  background: 'green.600',
+  borderColor: 'green.600',
   color: 'white',
   '&:hover:not(:disabled)': {
-    background: '#15803d',
-    borderColor: '#15803d',
+    background: 'green.700',
+    borderColor: 'green.700',
     transform: 'translateY(-1px)',
     boxShadow: 'shadow.sm',
   },
 });
 
 const batchButtonReject = css({
-  background: '#dc2626',
-  borderColor: '#dc2626',
+  background: 'red.600',
+  borderColor: 'red.600',
   color: 'white',
   '&:hover:not(:disabled)': {
-    background: '#b91c1c',
-    borderColor: '#b91c1c',
+    background: 'red.700',
+    borderColor: 'red.700',
     transform: 'translateY(-1px)',
     boxShadow: 'shadow.sm',
   },
 });
 
 const batchButtonExists = css({
-  background: '#f59e0b',
-  borderColor: '#f59e0b',
+  background: 'amber.500',
+  borderColor: 'amber.500',
   color: 'white',
   '&:hover:not(:disabled)': {
-    background: '#d97706',
-    borderColor: '#d97706',
+    background: 'amber.600',
+    borderColor: 'amber.600',
     transform: 'translateY(-1px)',
     boxShadow: 'shadow.sm',
   },
