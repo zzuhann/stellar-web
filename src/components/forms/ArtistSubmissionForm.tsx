@@ -410,8 +410,8 @@ export default function ArtistSubmissionForm({
     const artistData = {
       stageName: data.stageName,
       stageNameZh: data.stageNameZh,
-      realName: data.realName || undefined,
-      birthday: data.birthday || undefined,
+      realName: data.realName,
+      birthday: data.birthday,
       profileImage: finalImageUrl,
     };
 
