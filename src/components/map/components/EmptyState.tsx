@@ -40,7 +40,7 @@ const EmptyState = ({ artistData }: EmptyStateProps) => {
         className={profileImageContainer}
         style={{ backgroundImage: `url(${artistData?.profileImage || ''})` }}
       />
-      <h3 className={emptyStateTitle}>目前{artistData?.stageName}沒有生日應援</h3>
+      <h3 className={emptyStateTitle}>目前沒有 {artistData?.stageName} 的生日應援</h3>
     </div>
   );
 };
