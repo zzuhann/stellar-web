@@ -48,6 +48,37 @@ export const primitiveColors = {
     200: { value: '#BAE6FD' },
     700: { value: '#0369A1' },
   },
+  // Alpha colors（透明色）
+  alpha: {
+    black: {
+      5: { value: 'rgba(0, 0, 0, 0.05)' },
+      10: { value: 'rgba(0, 0, 0, 0.1)' },
+      15: { value: 'rgba(0, 0, 0, 0.15)' },
+      20: { value: 'rgba(0, 0, 0, 0.2)' },
+      30: { value: 'rgba(0, 0, 0, 0.3)' },
+      40: { value: 'rgba(0, 0, 0, 0.4)' },
+      50: { value: 'rgba(0, 0, 0, 0.5)' },
+      60: { value: 'rgba(0, 0, 0, 0.6)' },
+      70: { value: 'rgba(0, 0, 0, 0.7)' },
+      90: { value: 'rgba(0, 0, 0, 0.9)' },
+    },
+    white: {
+      30: { value: 'rgba(255, 255, 255, 0.3)' },
+      50: { value: 'rgba(255, 255, 255, 0.5)' },
+      70: { value: 'rgba(255, 255, 255, 0.7)' },
+      80: { value: 'rgba(255, 255, 255, 0.8)' },
+      90: { value: 'rgba(255, 255, 255, 0.9)' },
+    },
+    primary: {
+      10: { value: 'rgba(63, 90, 114, 0.1)' },
+      20: { value: 'rgba(63, 90, 114, 0.2)' },
+    },
+    error: {
+      5: { value: 'rgba(220, 53, 69, 0.05)' },
+      10: { value: 'rgba(220, 53, 69, 0.1)' },
+      90: { value: 'rgba(220, 53, 69, 0.9)' },
+    },
+  },
 };
 
 // ============================================

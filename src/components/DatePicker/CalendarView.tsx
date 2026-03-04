@@ -51,7 +51,7 @@ const dayButton = cva({
     },
     '&:focus': {
       outline: 'none',
-      boxShadow: '0 0 0 2px rgba(90, 125, 154, 0.2)',
+      boxShadow: '0 0 0 2px var(--colors-alpha-primary-20)',
     },
     '@media (max-width: 410px)': {
       width: '28px',

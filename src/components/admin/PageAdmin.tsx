@@ -334,7 +334,7 @@ const editModal = css({
   zIndex: 1000,
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'rgba(0, 0, 0, 0.5)',
+  background: 'alpha.black.50',
   padding: '16px',
 });
 

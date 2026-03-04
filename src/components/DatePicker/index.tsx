@@ -46,7 +46,7 @@ const dateInput = cva({
     '&:focus': {
       outline: 'none',
       borderColor: 'color.primary',
-      boxShadow: '0 0 0 3px rgba(90, 125, 154, 0.1)',
+      boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
     },
     '@media (min-width: 768px)': {
       padding: '14px 18px',

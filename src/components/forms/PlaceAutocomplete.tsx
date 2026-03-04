@@ -54,7 +54,7 @@ const comboboxInput = cva({
     '&:focus': {
       outline: 'none',
       borderColor: 'color.primary',
-      boxShadow: '0 0 0 3px rgba(90, 125, 154, 0.1)',
+      boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
     },
     '&:disabled': {
       background: 'color.background.secondary',
@@ -82,7 +82,7 @@ const comboboxInput = cva({
         color: 'red.800',
         '&:focus': {
           borderColor: 'red.600',
-          boxShadow: '0 0 0 3px rgba(239, 68, 68, 0.1)',
+          boxShadow: '0 0 0 3px var(--colors-alpha-error-10)',
         },
       },
     },

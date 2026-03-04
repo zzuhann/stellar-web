@@ -39,7 +39,7 @@ export const input = css({
   '&:focus': {
     outline: 'none',
     borderColor: 'color.primary',
-    boxShadow: '0 0 0 3px rgba(90, 125, 154, 0.1)',
+    boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
   },
   '&:disabled': {
     background: 'color.background.secondary',
