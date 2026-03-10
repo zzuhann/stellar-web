@@ -6,7 +6,6 @@ import useDrawer from './hook/useDrawer';
 import { useMapStore } from '@/store';
 import Loading from '../Loading';
 import { css } from '@/styled-system/css';
-import LocationError from './components/LocationError';
 import Drawer from './components/Drawer';
 import { TileLayer, Marker } from 'react-leaflet';
 import { LatLngTuple } from 'leaflet';
@@ -78,7 +77,7 @@ export default function MapPage({
 }: MapPageProps = {}) {
   const center = useMapStore((state) => state.center);
   const position: LatLngTuple = [center.lat, center.lng]; // 地圖中心點座標
-  const { latitude, longitude, locationError } = useMapLocation();
+  const { latitude, longitude } = useMapLocation();
   const userLocationIcon = createUserLocationIcon();
 
   const { mapEvents, isMapLoading, artistData, isArtistLoading } = useMapPageData({
@@ -137,8 +136,6 @@ export default function MapPage({
                 </SafeMapContainer>
               </div>
             </div>
-
-            {locationError && <LocationError locationError={locationError} />}
           </div>
         </div>
 

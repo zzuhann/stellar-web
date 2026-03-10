@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
+import showToast from '@/lib/toast';
+import { useIsInAppBrowser } from './useIsInAppBrowser';
 
 interface GeolocationState {
   latitude: number | null;
@@ -28,6 +30,8 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     hasPermission: false,
   });
 
+  const { isInAppBrowser } = useIsInAppBrowser();
+
   const defaultOptions: PositionOptions = {
     enableHighAccuracy: false,
     timeout: 10000,
@@ -39,7 +43,7 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     if (!state.isSupported) {
       setState((prev) => ({
         ...prev,
-        error: '您的瀏覽器不支援地理位置功能',
+        error: '無法取得你的位置',
       }));
       return;
     }
@@ -63,19 +67,16 @@ export function useGeolocation(options: GeolocationOptions = {}) {
         });
       },
       (error) => {
-        let errorMessage = '無法取得您的位置';
+        let errorMessage = '無法取得你的位置';
 
         switch (error.code) {
           case error.PERMISSION_DENIED:
-            errorMessage = '您拒絕了位置權限請求，可以在瀏覽器設定中重新開啟';
-            break;
-          case error.POSITION_UNAVAILABLE:
-            errorMessage = '無法確定您的位置，請檢查網路連接';
-            break;
-          case error.TIMEOUT:
-            errorMessage = '定位請求超時，請重試';
+            errorMessage = '因為你拒絕了位置權限請求，可以在瀏覽器設定中重新打開';
             break;
         }
+
+        const toastMessage = `${errorMessage}${isInAppBrowser ? '。你目前在 app 內部瀏覽器中，建議外開瀏覽器才能順利定位喔！' : ''}`;
+        showToast.error(toastMessage);
 
         setState((prev) => ({
           ...prev,
@@ -91,6 +92,7 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     defaultOptions.enableHighAccuracy,
     defaultOptions.timeout,
     defaultOptions.maximumAge,
+    isInAppBrowser,
   ]);
 
   // 檢查權限狀態
@@ -122,7 +124,15 @@ export function useGeolocation(options: GeolocationOptions = {}) {
         getCurrentPosition();
       }
     }
-  }, [state.isSupported, options.autoGetPosition, checkPermission, getCurrentPosition]);
+  }, [
+    state.isSupported,
+    state.latitude,
+    state.error,
+    state.isLoading,
+    options.autoGetPosition,
+    checkPermission,
+    getCurrentPosition,
+  ]);
 
   return {
     ...state,
