@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import showToast from '@/lib/toast';
 import { useIsInAppBrowser } from './useIsInAppBrowser';
+
+// module-level 才能撐過 Strict Mode 的 unmount/remount（ref 會重置）
+let hasAttemptedAutoGet = false;
 
 interface GeolocationState {
   latitude: number | null;
@@ -31,7 +34,6 @@ export function useGeolocation(options: GeolocationOptions = {}) {
   });
 
   const { isInAppBrowser, loading: isInAppBrowserLoading } = useIsInAppBrowser();
-  const hasAttemptedAutoGetRef = useRef(false);
 
   const defaultOptions: PositionOptions = {
     enableHighAccuracy: false,
@@ -117,12 +119,12 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     }
   }, [state.isSupported]);
 
-  // 自動嘗試取得位置（僅在組件首次載入時，用 ref 避免 Strict Mode 或依賴變動導致重複觸發）
+  // 自動嘗試取得位置（僅在組件首次載入時，module-level 變數才能撐過 Strict Mode）
   useEffect(() => {
-    if (hasAttemptedAutoGetRef.current) return;
+    if (hasAttemptedAutoGet) return;
     if (isInAppBrowserLoading) return;
     if (state.isSupported && !state.latitude && !state.error && !state.isLoading) {
-      hasAttemptedAutoGetRef.current = true;
+      hasAttemptedAutoGet = true;
       checkPermission();
       if (options.autoGetPosition !== false) {
         getCurrentPosition();
