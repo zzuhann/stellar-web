@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import showToast from '@/lib/toast';
 import { useIsInAppBrowser } from './useIsInAppBrowser';
 
@@ -30,7 +30,8 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     hasPermission: false,
   });
 
-  const { isInAppBrowser } = useIsInAppBrowser();
+  const { isInAppBrowser, loading: isInAppBrowserLoading } = useIsInAppBrowser();
+  const hasAttemptedAutoGetRef = useRef(false);
 
   const defaultOptions: PositionOptions = {
     enableHighAccuracy: false,
@@ -116,15 +117,19 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     }
   }, [state.isSupported]);
 
-  // 自動嘗試取得位置（僅在組件首次載入時）
+  // 自動嘗試取得位置（僅在組件首次載入時，用 ref 避免 Strict Mode 或依賴變動導致重複觸發）
   useEffect(() => {
+    if (hasAttemptedAutoGetRef.current) return;
+    if (isInAppBrowserLoading) return;
     if (state.isSupported && !state.latitude && !state.error && !state.isLoading) {
+      hasAttemptedAutoGetRef.current = true;
       checkPermission();
       if (options.autoGetPosition !== false) {
         getCurrentPosition();
       }
     }
   }, [
+    isInAppBrowserLoading,
     state.isSupported,
     state.latitude,
     state.error,
