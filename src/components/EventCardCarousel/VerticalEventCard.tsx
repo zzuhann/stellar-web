@@ -56,8 +56,7 @@ const imageOverlay = cva({
 });
 
 const eventTitle = css({
-  fontSize: '16px',
-  fontWeight: 600,
+  textStyle: 'bodyStrong',
   color: 'white',
   margin: '0 0 8px 0',
   lineHeight: 1.2,
@@ -75,8 +74,8 @@ const statusBadge = cva({
     gap: '2px',
     padding: '6px 8px',
     borderRadius: 'radius.md',
-    fontSize: '16px',
-    fontWeight: 600,
+    textStyle: 'bodySmall',
+    fontWeight: 'semibold',
     position: 'absolute',
     top: '6px',
     right: '6px',

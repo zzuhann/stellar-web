@@ -67,8 +67,7 @@ const buttonContainer = css({
 });
 
 const eventTitle = css({
-  fontSize: '16px',
-  fontWeight: 600,
+  textStyle: 'bodyStrong',
   color: 'white',
   margin: '0 0 8px 0',
   lineHeight: 1.2,
@@ -84,7 +83,7 @@ const eventArtistSection = css({
   alignItems: 'center',
   flexWrap: 'wrap',
   gap: '4px',
-  fontSize: '16px',
+  textStyle: 'bodySmall',
   color: 'alpha.white.90',
   marginBottom: '8px',
 });
@@ -108,13 +107,13 @@ const eventArtistAvatar = css({
 });
 
 const eventArtistName = css({
-  fontSize: '16px',
-  fontWeight: 500,
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
   color: 'alpha.white.90',
 });
 
 const eventArtistSeparator = css({
-  fontSize: '16px',
+  textStyle: 'bodySmall',
   color: 'alpha.white.70',
   margin: '0 2px',
 });
@@ -123,7 +122,7 @@ const eventDetails = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '4px',
-  fontSize: '16px',
+  textStyle: 'bodySmall',
   color: 'white',
 });
 
@@ -143,7 +142,7 @@ const detailText = css({
 });
 
 const styledSubmissionTime = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'alpha.white.70',
   marginTop: '4px',
 });
@@ -155,8 +154,8 @@ const statusBadge = cva({
     gap: '2px',
     padding: '6px 8px',
     borderRadius: 'radius.md',
-    fontSize: '16px',
-    fontWeight: 600,
+    textStyle: 'bodySmall',
+    fontWeight: 'semibold',
     position: 'absolute',
     top: '6px',
     right: '6px',

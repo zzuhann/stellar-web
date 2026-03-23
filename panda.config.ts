@@ -1,5 +1,12 @@
 import { defineConfig } from '@pandacss/dev';
-import { borderRadius, primitiveColors, semanticColors, shadows } from './src/styles/theme';
+import {
+  borderRadius,
+  primitiveColors,
+  primitiveTypography,
+  semanticColors,
+  shadows,
+  textStyles,
+} from './src/styles/theme';
 import { shimmer, spin, slideDown } from './src/styles/keyframes';
 
 export default defineConfig({
@@ -26,9 +33,13 @@ export default defineConfig({
           ...semanticColors,
         },
         shadows: { ...shadows },
-        // border-radius
         radii: { ...borderRadius },
+        fontSizes: primitiveTypography.fontSizes,
+        fontWeights: primitiveTypography.fontWeights,
+        lineHeights: primitiveTypography.lineHeights,
+        letterSpacings: primitiveTypography.letterSpacings,
       },
+      textStyles,
     },
   },
 

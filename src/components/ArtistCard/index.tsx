@@ -45,28 +45,27 @@ const artistInfo = css({
 });
 
 const artistName = css({
-  fontSize: '16px',
-  fontWeight: '600',
+  textStyle: 'bodyStrong',
   color: 'color.text.primary',
   margin: '0 0 4px 0',
   '@media (min-width: 768px)': {
-    fontSize: '20px',
+    fontSize: 'xl',
   },
 });
 
 const artistBirthday = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
   marginBottom: '8px',
   '& .birthday-label': {
     color: 'color.text.secondary',
   },
   '& .birthday-date': {
-    fontWeight: '500',
+    fontWeight: 'medium',
   },
   '& .today-indicator': {
     color: 'color.accent',
-    fontWeight: '600',
+    fontWeight: 'semibold',
     marginLeft: '8px',
   },
 });
@@ -75,11 +74,10 @@ const eventStatus = css({
   display: 'flex',
   alignItems: 'center',
   gap: '4px',
-  fontSize: '14px',
+  textStyle: 'button',
   color: 'color.primary',
-  fontWeight: '500',
   '& .icon': {
-    fontSize: '12px',
+    fontSize: 'xs',
   },
 });
 

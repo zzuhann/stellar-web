@@ -12,16 +12,14 @@ const emptyStateIcon = css({
 });
 
 const emptyStateTitle = css({
-  fontSize: '18px',
-  fontWeight: '600',
+  textStyle: 'bodyStrong',
   color: 'color.text.primary',
   margin: '0 0 8px 0',
 });
 
 const emptyStateDescription = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   margin: '0',
-  lineHeight: '1.5',
 });
 
 type EmptyStateProps = {

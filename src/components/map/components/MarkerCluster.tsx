@@ -62,7 +62,7 @@ const MarkerCluster = ({ mapEvents, artistData }: MarkerClusterProps) => {
       background-position: center;
       background-repeat: no-repeat;
       border: 3px solid white;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+      box-shadow: var(--shadow-md);
       position: relative;
       display: flex;
       align-items: center;
@@ -80,7 +80,7 @@ const MarkerCluster = ({ mapEvents, artistData }: MarkerClusterProps) => {
         justify-content: center;
         font-size: 18px;
         font-weight: bold;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        box-shadow: var(--shadow-sm);
       ">
         ${count}
       </div>

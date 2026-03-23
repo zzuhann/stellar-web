@@ -29,9 +29,8 @@ const spinner = css({
 });
 
 const text = css({
+  textStyle: 'button',
   margin: '0',
-  fontSize: '14px',
-  fontWeight: 500,
 });
 
 type LoadingProps = {

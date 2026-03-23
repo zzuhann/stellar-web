@@ -27,24 +27,23 @@ const userButton = css({
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   background: 'none',
   border: 'none',
-  color: 'var(--color-text-primary)',
+  color: 'color.text.primary',
   cursor: 'pointer',
   borderRadius: 'radius.sm',
   transition: 'all 0.2s ease',
   '&:hover': {
-    background: 'var(--color-bg-secondary)',
+    background: 'color.background.secondary',
   },
 });
 
 const memberButton = css({
-  fontSize: '14px',
-  color: 'var(--color-text-primary)',
+  textStyle: 'button',
+  color: 'color.text.primary',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
-  fontWeight: 500,
 });
 
 const userMenu = css({
@@ -66,25 +65,25 @@ const userMenuItem = css({
   width: '100%',
   textAlign: 'left',
   padding: '8px 16px',
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.primary',
   background: 'none',
   border: 'none',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
   '&:hover': {
-    background: 'var(--color-bg-secondary)',
+    background: 'color.background.secondary',
   },
 });
 
 const description = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.primary',
   cursor: 'pointer',
 });
 
 const styledLink = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
   cursor: 'pointer',
 });

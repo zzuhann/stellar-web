@@ -51,14 +51,13 @@ const weekInfoContainer = css({
 });
 
 const weekInfoTitle = css({
-  fontSize: '16px',
-  fontWeight: 600,
+  textStyle: 'bodyStrong',
   color: 'color.text.primary',
   margin: '0 0 4px 0',
 });
 
 const weekInfoDateRange = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
   margin: 0,
 });

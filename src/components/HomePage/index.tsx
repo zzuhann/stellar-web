@@ -49,8 +49,7 @@ export const contentWrapper = css({
 });
 
 const heading = css({
-  fontSize: '16px',
-  fontWeight: 'bold',
+  textStyle: 'bodyStrong',
   color: 'color.text.primary',
 });
 

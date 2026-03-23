@@ -195,8 +195,8 @@ export default function PWAInstallPrompt() {
         <div>
           <h3
             className={css({
-              fontSize: '18px',
-              fontWeight: '600',
+              textStyle: 'h4',
+              fontWeight: 'semibold',
               color: 'color.text.primary',
               margin: 0,
               marginBottom: '8px',
@@ -206,13 +206,12 @@ export default function PWAInstallPrompt() {
           </h3>
           <p
             className={css({
-              fontSize: '14px',
+              textStyle: 'bodySmall',
               color: 'color.text.secondary',
               margin: 0,
-              lineHeight: '1.4',
             })}
           >
-            獲得更好的應用程式體驗
+            獲得更好的使用體驗！
           </p>
         </div>
 
@@ -232,7 +231,7 @@ export default function PWAInstallPrompt() {
               borderColor: 'color.border.light',
               borderRadius: 'radius.lg',
               padding: '12px 24px',
-              fontSize: '14px',
+              textStyle: 'bodySmall',
               cursor: 'pointer',
               transition: 'color 0.2s',
               width: '100%',
@@ -241,7 +240,7 @@ export default function PWAInstallPrompt() {
               },
             })}
           >
-            稍後
+            略過
           </button>
           <button
             onClick={handleOpenApp}
@@ -251,8 +250,7 @@ export default function PWAInstallPrompt() {
               border: 'none',
               borderRadius: 'radius.lg',
               padding: '12px 24px',
-              fontSize: '16px',
-              fontWeight: '600',
+              textStyle: 'bodyStrong',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
               width: '100%',
@@ -301,8 +299,8 @@ export default function PWAInstallPrompt() {
       <div>
         <h3
           className={css({
-            fontSize: '18px',
-            fontWeight: '600',
+            textStyle: 'h4',
+            fontWeight: 'semibold',
             color: 'color.text.primary',
             margin: 0,
             marginBottom: '8px',
@@ -312,10 +310,9 @@ export default function PWAInstallPrompt() {
         </h3>
         <p
           className={css({
-            fontSize: '14px',
+            textStyle: 'bodySmall',
             color: 'color.text.secondary',
             margin: 0,
-            lineHeight: '1.4',
           })}
         >
           安裝到主畫面，可以獲得更好的使用體驗～！
@@ -336,7 +333,7 @@ export default function PWAInstallPrompt() {
             color: 'color.text.secondary',
             borderRadius: 'radius.lg',
             padding: '12px 24px',
-            fontSize: '14px',
+            textStyle: 'bodySmall',
             cursor: 'pointer',
             transition: 'color 0.2s',
             width: '100%',
@@ -347,7 +344,7 @@ export default function PWAInstallPrompt() {
             },
           })}
         >
-          稍後
+          略過
         </button>
         <button
           onClick={handleInstallClick}
@@ -357,8 +354,7 @@ export default function PWAInstallPrompt() {
             border: 'none',
             borderRadius: 'radius.lg',
             padding: '12px 24px',
-            fontSize: '16px',
-            fontWeight: '600',
+            textStyle: 'bodyStrong',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
             width: '100%',

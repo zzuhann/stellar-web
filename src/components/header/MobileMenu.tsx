@@ -45,8 +45,8 @@ const mobileMenuHeader = css({
 });
 
 const mobileMenuTitle = css({
-  fontSize: '18px',
-  fontWeight: '600',
+  textStyle: 'h4',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
   margin: '0',
 });
@@ -78,7 +78,7 @@ const mobileMenuButton = css({
   background: 'none',
   border: 'none',
   padding: '8px 0',
-  fontSize: '16px',
+  textStyle: 'body',
   color: 'color.text.primary',
   cursor: 'pointer',
   borderRadius: 'radius.md',
@@ -89,7 +89,7 @@ const mobileMenuButton = css({
 });
 
 const description = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
   cursor: 'pointer',
 });

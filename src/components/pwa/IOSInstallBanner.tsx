@@ -65,11 +65,10 @@ export default function IOSInstallBanner() {
       <div className={css({ flex: 1 })}>
         <h4
           className={css({
-            fontSize: '14px',
-            fontWeight: '600',
+            textStyle: 'bodySmall',
+            fontWeight: 'semibold',
             color: 'color.text.primary',
             margin: '0 0 4px 0',
-            lineHeight: '1.4',
             textAlign: 'center',
           })}
         >
@@ -77,10 +76,9 @@ export default function IOSInstallBanner() {
         </h4>
         <div
           className={css({
-            fontSize: '13px',
+            textStyle: 'bodySmall',
             color: 'color.text.secondary',
             margin: 0,
-            lineHeight: '1.4',
             textAlign: 'center',
             marginTop: '12px',
           })}

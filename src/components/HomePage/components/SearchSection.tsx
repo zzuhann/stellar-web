@@ -26,7 +26,7 @@ const searchInput = css({
   background: 'transparent',
   border: 'none',
   color: 'color.text.primary',
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   outline: 'none',
   padding: '0',
   minHeight: '20px',

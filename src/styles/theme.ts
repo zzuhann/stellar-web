@@ -154,3 +154,125 @@ export const borderRadius = {
     circle: { value: '50%' },
   },
 };
+
+// ============================================
+// Primitive Typography Tokens（原始排版數值）
+// ============================================
+export const primitiveTypography = {
+  fontSizes: {
+    xs: { value: '0.75rem' }, // 12px
+    sm: { value: '0.875rem' }, // 14px
+    base: { value: '1rem' }, // 16px
+    lg: { value: '1.125rem' }, // 18px
+    xl: { value: '1.25rem' }, // 20px
+    '2xl': { value: '1.5rem' }, // 24px
+    '3xl': { value: '1.75rem' }, // 28px
+    '4xl': { value: '2rem' }, // 32px
+    '5xl': { value: '3rem' }, // 48px
+  },
+  fontWeights: {
+    normal: { value: '400' },
+    medium: { value: '500' },
+    semibold: { value: '600' },
+    bold: { value: '700' },
+  },
+  lineHeights: {
+    tight: { value: '1.25' },
+    snug: { value: '1.375' },
+    normal: { value: '1.5' },
+    relaxed: { value: '1.625' },
+  },
+  letterSpacings: {
+    tight: { value: '-0.01em' },
+    normal: { value: '0' },
+    wide: { value: '0.02em' },
+  },
+};
+
+// ============================================
+// Semantic Typography Tokens（語意排版 - textStyles）
+// 用法：css({ textStyle: 'body' })
+// ============================================
+export const textStyles = {
+  // Display - 特殊大標題（如 404 頁面）
+  display: {
+    value: {
+      fontSize: '{fontSizes.5xl}',
+      fontWeight: '{fontWeights.bold}',
+      lineHeight: '{lineHeights.tight}',
+      letterSpacing: '{letterSpacings.tight}',
+    },
+  },
+
+  // Headings
+  h1: {
+    value: {
+      fontSize: '{fontSizes.3xl}',
+      fontWeight: '{fontWeights.bold}',
+      lineHeight: '{lineHeights.tight}',
+      letterSpacing: '{letterSpacings.tight}',
+    },
+  },
+  h2: {
+    value: {
+      fontSize: '{fontSizes.2xl}',
+      fontWeight: '{fontWeights.semibold}',
+      lineHeight: '{lineHeights.tight}',
+    },
+  },
+  h3: {
+    value: {
+      fontSize: '{fontSizes.xl}',
+      fontWeight: '{fontWeights.semibold}',
+      lineHeight: '{lineHeights.snug}',
+    },
+  },
+  h4: {
+    value: {
+      fontSize: '{fontSizes.lg}',
+      fontWeight: '{fontWeights.medium}',
+      lineHeight: '{lineHeights.snug}',
+    },
+  },
+
+  // Body - 主要閱讀內容
+  body: {
+    value: {
+      fontSize: '{fontSizes.base}',
+      fontWeight: '{fontWeights.normal}',
+      lineHeight: '{lineHeights.normal}',
+    },
+  },
+  // Body Strong - 強調內容、小標題
+  bodyStrong: {
+    value: {
+      fontSize: '{fontSizes.base}',
+      fontWeight: '{fontWeights.semibold}',
+      lineHeight: '{lineHeights.normal}',
+    },
+  },
+  // Body Small - UI 元素、次要內容
+  bodySmall: {
+    value: {
+      fontSize: '{fontSizes.sm}',
+      fontWeight: '{fontWeights.normal}',
+      lineHeight: '{lineHeights.normal}',
+    },
+  },
+
+  // UI Elements
+  caption: {
+    value: {
+      fontSize: '{fontSizes.xs}',
+      fontWeight: '{fontWeights.normal}',
+      lineHeight: '{lineHeights.normal}',
+    },
+  },
+  button: {
+    value: {
+      fontSize: '{fontSizes.sm}',
+      fontWeight: '{fontWeights.medium}',
+      lineHeight: '{lineHeights.tight}',
+    },
+  },
+};

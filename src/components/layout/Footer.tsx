@@ -21,7 +21,7 @@ const footerContent = css({
 });
 
 const copyrightText = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
 });
 
@@ -36,7 +36,7 @@ const socialLink = css({
   gap: '8px',
   color: 'color.text.secondary',
   textDecoration: 'none',
-  fontSize: '12px',
+  textStyle: 'caption',
   borderRadius: 'radius.md',
   transition: 'all 0.2s ease',
   '& svg': {
