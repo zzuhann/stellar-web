@@ -20,8 +20,8 @@ const button = cva({
   base: {
     padding: '14px 24px',
     borderRadius: 'radius.lg',
-    fontSize: '16px',
-    fontWeight: '600',
+    textStyle: 'body',
+    fontWeight: 'semibold',
     transition: 'all 0.2s ease',
     cursor: 'pointer',
     border: '1px solid',
@@ -32,7 +32,6 @@ const button = cva({
     flex: '1',
     '@media (min-width: 768px)': {
       padding: '16px 28px',
-      fontSize: '16px',
     },
     '&:disabled': {
       cursor: 'not-allowed',

@@ -38,7 +38,7 @@ const yearMonthButton = cva({
       true: {
         background: 'color.primary',
         color: 'white',
-        fontWeight: '600',
+        fontWeight: 'semibold',
         '&:hover': {
           background: 'color.primary',
         },

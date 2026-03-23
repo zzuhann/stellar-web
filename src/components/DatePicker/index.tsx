@@ -33,7 +33,7 @@ const dateInput = cva({
     borderRadius: 'radius.lg',
     background: 'color.background.primary',
     color: 'color.text.primary',
-    fontSize: '14px',
+    textStyle: 'bodySmall',
     transition: 'all 0.2s ease',
     display: 'flex',
     alignItems: 'center',

@@ -42,8 +42,7 @@ const formHeader = css({
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   '& h2': {
-    fontSize: '24px',
-    fontWeight: '700',
+    textStyle: 'h2',
     color: 'color.text.primary',
     margin: '0 0 8px 0',
     '@media (min-width: 768px)': {
@@ -51,11 +50,11 @@ const formHeader = css({
     },
   },
   '& p': {
-    fontSize: '14px',
+    textStyle: 'bodySmall',
     color: 'color.text.secondary',
     margin: 'unset',
     '@media (min-width: 768px)': {
-      fontSize: '16px',
+      textStyle: 'body',
     },
   },
 });
@@ -67,12 +66,12 @@ const form = css({
 });
 
 const warningText = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'red.600 !important',
   margin: 'unset',
   marginTop: '8px !important',
   '@media (min-width: 768px)': {
-    fontSize: '16px',
+    textStyle: 'body',
   },
 });
 

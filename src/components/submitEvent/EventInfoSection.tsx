@@ -23,7 +23,7 @@ const textarea = css({
   borderRadius: 'radius.lg',
   background: 'color.background.primary',
   color: 'color.text.primary',
-  fontSize: '16px',
+  textStyle: 'body',
   transition: 'all 0.2s ease',
   resize: 'vertical',
   minHeight: '100px',
@@ -42,13 +42,12 @@ const textarea = css({
   },
   '@media (min-width: 768px)': {
     padding: '14px 18px',
-    fontSize: '16px',
   },
 });
 
 const characterCount = cva({
   base: {
-    fontSize: '12px',
+    textStyle: 'caption',
     textAlign: 'right',
     marginTop: '4px',
   },
@@ -78,8 +77,8 @@ const sectionDivider = css({
 });
 
 const sectionTitle = css({
-  fontSize: '18px',
-  fontWeight: '600',
+  textStyle: 'h4',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
   marginBottom: '8px',
 });

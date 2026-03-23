@@ -14,7 +14,7 @@ const artistSelectionButton = css({
   borderRadius: 'radius.lg',
   background: 'color.background.primary',
   color: 'color.text.primary',
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   transition: 'all 0.2s ease',
   display: 'flex',
   alignItems: 'center',
@@ -53,7 +53,7 @@ const imageContainer = css({
 });
 
 const artistName = css({
-  fontWeight: '500',
+  fontWeight: 'medium',
 });
 
 const placeholderText = css({

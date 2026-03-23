@@ -32,8 +32,7 @@ const navigationButton = css({
 });
 
 const monthYearDisplay = css({
-  fontSize: '16px',
-  fontWeight: '600',
+  textStyle: 'bodyStrong',
   color: 'color.text.primary',
   margin: '0',
   cursor: 'pointer',

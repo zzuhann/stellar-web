@@ -106,8 +106,8 @@ const orderIndicator = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontSize: '12px',
-  fontWeight: '600',
+  textStyle: 'caption',
+  fontWeight: 'semibold',
 });
 
 const loadingOverlay = css({
@@ -168,20 +168,20 @@ const uploadCard = cva({
 });
 
 const uploadText = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   textAlign: 'center',
   margin: '0',
 });
 
 const errorText = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.status.error',
   margin: '4px 0 0 0',
 });
 
 const helperText = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   margin: '8px 0 0 0',
 });
@@ -489,9 +489,11 @@ export default function MultiImageUpload({
       {error && <p className={errorText}>{error}</p>}
 
       <p className={helperText}>
-        已上傳 {images.length}/{maxImages} 張圖片 • 支援格式：
-        {acceptedFormats.map((f) => f.split('/')[1]).join(', ')} • 最大 {maxSizeMB}MB
-        {images.length > 1 && ' • 點擊箭頭調整順序'}
+        - 已上傳 {images.length}/{maxImages} 張圖片
+        <br />- 支援格式：{acceptedFormats.map((f) => f.split('/')[1]).join(', ')}
+        <br />- 最大 {maxSizeMB}MB
+        <br />
+        {images.length > 1 && '- 點擊箭頭調整順序'}
       </p>
     </div>
   );

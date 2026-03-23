@@ -45,7 +45,7 @@ const comboboxInput = cva({
     borderRadius: 'radius.lg',
     background: 'color.background.primary',
     color: 'color.text.primary',
-    fontSize: '16px',
+    textStyle: 'body',
     transition: 'all 0.2s ease',
     paddingRight: '40px',
     '&::placeholder': {
@@ -130,7 +130,7 @@ const loadingOption = css({
   userSelect: 'none',
   padding: '12px 16px',
   color: 'color.text.secondary',
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   textAlign: 'center',
   '@media (min-width: 768px)': {
     padding: '14px 18px',
@@ -164,22 +164,22 @@ const optionContent = cva({
   variants: {
     isSelected: {
       true: {
-        fontWeight: '600',
+        fontWeight: 'semibold',
       },
       false: {
-        fontWeight: '400',
+        fontWeight: 'normal',
       },
     },
   },
 });
 
 const optionMainText = css({
-  fontWeight: '500',
+  fontWeight: 'medium',
   marginBottom: '2px',
 });
 
 const optionSecondaryText = css({
-  fontSize: '13px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
 });
 
@@ -209,7 +209,7 @@ const checkIconContainer = cva({
 
 const errorMessage = css({
   margin: '8px 0 0 0',
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'red.600',
   '@media (min-width: 768px)': {
     fontSize: '13px',

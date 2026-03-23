@@ -7,15 +7,12 @@ export const formGroup = css({
 });
 
 export const label = css({
-  fontSize: '14px',
-  fontWeight: '500',
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
   color: 'color.text.primary',
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
-  '@media (min-width: 768px)': {
-    fontSize: '15px',
-  },
   '& svg': {
     width: '18px',
     height: '18px',
@@ -31,7 +28,7 @@ export const input = css({
   borderRadius: 'radius.lg',
   background: 'color.background.primary',
   color: 'color.text.primary',
-  fontSize: '16px',
+  textStyle: 'body',
   transition: 'all 0.2s ease',
   '&::placeholder': {
     color: 'color.text.disabled',
@@ -48,21 +45,17 @@ export const input = css({
   },
   '@media (min-width: 768px)': {
     padding: '14px 18px',
-    fontSize: '15px',
   },
 });
 
 export const helperText = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   margin: '0',
-  '@media (min-width: 768px)': {
-    fontSize: '13px',
-  },
 });
 
 export const errorText = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'red.600',
   margin: '4px 0 0 0',
 });

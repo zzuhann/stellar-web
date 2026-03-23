@@ -14,8 +14,8 @@ const weekDay = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontSize: '12px',
-  fontWeight: '500',
+  textStyle: 'caption',
+  fontWeight: 'medium',
   color: 'color.text.secondary',
   height: '32px',
   width: '32px',
@@ -64,7 +64,7 @@ const dayButton = cva({
       true: {
         background: 'color.primary',
         color: 'white',
-        fontWeight: '600',
+        fontWeight: 'semibold',
         '&:hover:not(:disabled)': {
           background: 'color.primary',
         },
@@ -73,7 +73,7 @@ const dayButton = cva({
     isToday: {
       true: {
         background: 'color.background.secondary',
-        fontWeight: '600',
+        fontWeight: 'semibold',
       },
     },
     isOtherMonth: {

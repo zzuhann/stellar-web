@@ -21,13 +21,13 @@ const step = cva({
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      fontSize: '14px',
-      fontWeight: '600',
+      textStyle: 'bodySmall',
+      fontWeight: 'semibold',
       transition: 'all 0.2s ease',
     },
     '& .step-title': {
-      fontSize: '14px',
-      fontWeight: '500',
+      textStyle: 'bodySmall',
+      fontWeight: 'medium',
     },
   },
   variants: {

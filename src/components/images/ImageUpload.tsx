@@ -142,7 +142,7 @@ const imageHint = css({
   left: '8px',
   background: 'alpha.black.60',
   color: 'white',
-  fontSize: '12px',
+  textStyle: 'caption',
   padding: '4px 8px',
   borderRadius: 'radius.sm',
 });
@@ -162,7 +162,7 @@ const uploadIcon = css({
 });
 
 const uploadTitle = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.primary',
   margin: '0 0 4px 0',
   '@media (min-width: 768px)': {
@@ -171,7 +171,7 @@ const uploadTitle = css({
 });
 
 const uploadSubtitle = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   margin: '0 0 12px 0',
   '@media (min-width: 768px)': {
@@ -185,13 +185,13 @@ const uploadArrow = css({
 
 const errorMessage = css({
   margin: '8px 0 0 0',
-  fontSize: '13px',
+  textStyle: 'caption',
   color: 'color.status.color',
 });
 
 const helperText = css({
   margin: '8px 0 0 0',
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   '@media (min-width: 768px)': {
     fontSize: '13px',
