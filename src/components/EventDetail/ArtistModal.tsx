@@ -28,8 +28,8 @@ const modalContent = css({
 });
 
 const modalTitle = css({
-  fontSize: '18px',
-  fontWeight: '600',
+  textStyle: 'h4',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
   margin: '0 0 16px 0',
   textAlign: 'center',
@@ -89,8 +89,7 @@ const artistAvatar = css({
 });
 
 const artistName = css({
-  fontSize: '14px',
-  fontWeight: '500',
+  textStyle: 'button',
   color: 'color.text.primary',
 });
 

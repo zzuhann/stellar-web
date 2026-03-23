@@ -82,8 +82,8 @@ const pageIndicator = css({
   color: 'white',
   padding: '4px 12px',
   borderRadius: '12px',
-  fontSize: '12px',
-  fontWeight: '500',
+  textStyle: 'caption',
+  fontWeight: 'medium',
   zIndex: '10',
 });
 

@@ -45,16 +45,12 @@ const contentSection = css({
 });
 
 const eventTitle = css({
-  fontSize: '20px',
-  fontWeight: '600',
+  textStyle: 'h3',
   color: 'color.text.primary',
   margin: '0 0 16px 0',
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
-  '@media (min-width: 768px)': {
-    fontSize: '24px',
-  },
 });
 
 const eventDetailsSection = css({
@@ -83,9 +79,8 @@ const detailContent = css({
 });
 
 const detailValue = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  lineHeight: '1.5',
 });
 
 const descriptionSection = css({
@@ -97,8 +92,8 @@ const descriptionSection = css({
 });
 
 const descriptionTitle = css({
-  fontSize: '18px',
-  fontWeight: '600',
+  textStyle: 'h4',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
   margin: '0 0 16px 0',
   display: 'flex',
@@ -107,9 +102,8 @@ const descriptionTitle = css({
 });
 
 const descriptionContent = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  lineHeight: '1.6',
   whiteSpace: 'pre-wrap',
 });
 
@@ -178,7 +172,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
           <div className={eventDetailsSection}>
             {event.socialMedia.instagram && (
               <div className={detailItem}>
-                <div>
+                <div className={detailIcon}>
                   <InstagramIcon size={20} color="var(--color-text-secondary)" aria-hidden="true" />
                   <span className="sr-only">Instagram</span>
                 </div>
@@ -207,7 +201,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
 
             {event.socialMedia.threads && (
               <div className={detailItem}>
-                <div>
+                <div className={detailIcon}>
                   <ThreadsIcon size={20} color="var(--color-text-secondary)" aria-hidden="true" />
                   <span className="sr-only">Threads</span>
                 </div>
@@ -234,7 +228,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
 
             {event.socialMedia.x && (
               <div className={detailItem}>
-                <div>
+                <div className={detailIcon}>
                   <XIcon size={20} color="var(--color-text-secondary)" aria-hidden="true" />
                   <span className="sr-only">X</span>
                 </div>

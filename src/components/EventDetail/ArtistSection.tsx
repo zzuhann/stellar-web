@@ -34,13 +34,12 @@ const artistAvatar = css({
 });
 
 const artistName = css({
-  fontSize: '14px',
-  fontWeight: '500',
+  textStyle: 'button',
   color: 'color.text.primary',
 });
 
 const artistSeparator = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
   margin: '0 4px',
 });

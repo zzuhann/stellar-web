@@ -8,9 +8,9 @@ import { CoffeeEvent } from '@/types';
 
 const ctaButton = css({
   padding: '10px 40px',
-  borderRadius: 'var(--radius-lg)',
-  fontSize: '14px',
-  fontWeight: '600',
+  borderRadius: 'radius.lg',
+  textStyle: 'button',
+  fontWeight: 'semibold',
   transition: 'all 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
