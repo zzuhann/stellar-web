@@ -14,12 +14,15 @@ const useMapLocation = () => {
     longitude,
     isLoading: locationLoading,
     error: locationError,
+    getCurrentPosition,
   } = useGeolocation({ autoGetPosition: true });
 
   // 判斷是否應該顯示定位按鈕
   const shouldShowLocationButton = () => {
-    if (!latitude || !longitude) return false;
     if (isDrawerExpanded) return false;
+
+    // 沒有座標時也顯示，讓使用者點擊觸發權限請求（PWA / iOS standalone 需 user gesture）
+    if (!latitude || !longitude) return true;
 
     const distance = calculateDistance(center.lat, center.lng, latitude, longitude);
 
@@ -30,6 +33,8 @@ const useMapLocation = () => {
   const handleLocateMe = () => {
     if (latitude && longitude) {
       setCenter({ lat: latitude, lng: longitude, zoom: 13 });
+    } else {
+      getCurrentPosition();
     }
   };
 
