@@ -13,8 +13,8 @@ const emptyStateContainer = css({
 });
 
 const emptyStateTitle = css({
-  fontSize: '18px',
-  fontWeight: '600',
+  textStyle: 'h4',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
   margin: '0 0 8px 0',
 });

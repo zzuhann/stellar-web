@@ -26,8 +26,8 @@ const infoContainer = css({
 });
 
 const title = css({
-  fontSize: '16px',
-  fontWeight: '900',
+  textStyle: 'bodyStrong',
+  fontWeight: 'bold',
   color: 'color.text.primary',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -40,10 +40,10 @@ const descriptionContainer = css({
   display: 'flex',
   alignItems: 'flex-start',
   gap: '8px',
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
   '@media (max-width: 400px)': {
-    fontSize: '12px',
+    fontSize: 'xs',
   },
 });
 

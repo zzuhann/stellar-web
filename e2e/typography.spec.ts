@@ -11,6 +11,7 @@ import { test, Page } from '@playwright/test';
 const PUBLIC_PAGES = [
   { path: '/', name: 'home' },
   { path: '/event/D1Otr2o3Du0vLe4ETY7H', name: 'event-detail' },
+  { path: '/map/SrO66ZqNkaf9EtURkiWB', name: 'map' },
 ] as const;
 
 // 模擬使用者調整瀏覽器字體大小
@@ -38,6 +39,22 @@ async function preparePageForScreenshot(page: Page) {
   });
 }
 
+/**
+ * 展開 map page 的 drawer
+ */
+async function expandDrawer(page: Page) {
+  const handle = page.locator('[role="slider"]');
+  const box = await handle.boundingBox();
+
+  if (box) {
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2, 300);
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+  }
+}
+
 test.describe('Typography Screenshots', () => {
   for (const testPage of PUBLIC_PAGES) {
     for (const fontSize of FONT_SIZES) {
@@ -50,6 +67,11 @@ test.describe('Typography Screenshots', () => {
 
         // 前往頁面
         await page.goto(testPage.path, { waitUntil: 'networkidle' });
+
+        // map page 需要展開 drawer
+        if (testPage.name === 'map') {
+          await expandDrawer(page);
+        }
 
         // 設定 base font size
         await setBaseFontSize(page, fontSize);

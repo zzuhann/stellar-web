@@ -31,7 +31,7 @@ const handleBarTextContainer = css({
 });
 
 const handleBarText = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.primary',
 });
 
