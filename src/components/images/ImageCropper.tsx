@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { CheckIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import ModalOverlay from './ModalOverlay';
@@ -14,12 +13,16 @@ const modalContainer = css({
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
   boxShadow: 'shadow.lg',
-  padding: '20px',
-  maxWidth: '500px',
+  padding: '16px',
+  maxWidth: 'calc(100vw - 32px)',
   width: '100%',
   margin: '16px',
   maxHeight: '90vh',
   overflowY: 'auto',
+  '@media (min-width: 480px)': {
+    padding: '20px',
+    maxWidth: '400px',
+  },
   '@media (min-width: 768px)': {
     padding: '24px',
     maxWidth: '520px',
@@ -34,8 +37,8 @@ const modalHeader = css({
 });
 
 const modalTitle = css({
-  fontSize: '18px',
-  fontWeight: '600',
+  textStyle: 'h4',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
   margin: '0',
   '@media (min-width: 768px)': {
@@ -118,28 +121,43 @@ const styledResizeHandle = css({
 
 const actionBar = css({
   display: 'flex',
-  justifyContent: 'space-between',
+  justifyContent: 'center',
   alignItems: 'center',
-  marginTop: '24px',
+  marginTop: '16px',
+  '@media (min-width: 768px)': {
+    marginTop: '24px',
+  },
 });
 
 const buttonGroup = css({
   display: 'flex',
-  gap: '12px',
+  gap: '8px',
+  width: '100%',
+  '@media (min-width: 480px)': {
+    gap: '12px',
+    width: 'auto',
+  },
 });
 
 const styledButton = cva({
   base: {
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
-    padding: '12px 16px',
+    justifyContent: 'center',
+    gap: '6px',
+    padding: '10px 12px',
     borderRadius: 'radius.lg',
-    fontSize: '14px',
-    fontWeight: '600',
+    textStyle: 'bodySmall',
+    fontWeight: 'semibold',
     transition: 'all 0.2s ease',
     cursor: 'pointer',
     border: '1px solid',
+    flex: '1',
+    whiteSpace: 'nowrap',
+    '@media (min-width: 480px)': {
+      padding: '12px 16px',
+      flex: 'none',
+    },
     '@media (min-width: 768px)': {
       padding: '14px 18px',
       fontSize: '15px',
@@ -831,7 +849,6 @@ export default function ImageCropper({
               onClick={onCancel}
               aria-label="取消裁切"
             >
-              <XMarkIcon style={{ width: '16px', height: '16px' }} aria-hidden="true" />
               <span>取消</span>
             </button>
             <button
@@ -840,7 +857,6 @@ export default function ImageCropper({
               disabled={!imageLoaded}
               aria-label="確認裁切"
             >
-              <CheckIcon style={{ width: '16px', height: '16px' }} aria-hidden="true" />
               <span>確認裁切</span>
             </button>
           </div>

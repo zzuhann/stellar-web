@@ -33,7 +33,7 @@ const loadingContent = css({
 
 const loadingText = css({
   color: 'color.text.secondary',
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   margin: '0',
 });
 

@@ -42,8 +42,7 @@ const formHeader = css({
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   '& h2': {
-    fontSize: '24px',
-    fontWeight: '700',
+    textStyle: 'h2',
     color: 'color.text.primary',
     margin: '0 0 8px 0',
     '@media (min-width: 768px)': {
@@ -51,11 +50,11 @@ const formHeader = css({
     },
   },
   '& p': {
-    fontSize: '14px',
+    textStyle: 'bodySmall',
     color: 'color.text.secondary',
     margin: '0',
     '@media (min-width: 768px)': {
-      fontSize: '16px',
+      textStyle: 'body',
     },
   },
 });
@@ -73,8 +72,8 @@ const formGroup = css({
 });
 
 const label = css({
-  fontSize: '14px',
-  fontWeight: '500',
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
   color: 'color.text.primary',
   display: 'flex',
   alignItems: 'center',
@@ -97,7 +96,7 @@ const input = css({
   borderRadius: 'radius.lg',
   background: 'color.background.primary',
   color: 'color.text.primary',
-  fontSize: '16px',
+  textStyle: 'body',
   transition: 'all 0.2s ease',
   '&::placeholder': {
     color: 'color.text.disabled',
@@ -119,7 +118,7 @@ const input = css({
 });
 
 const helperText = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   margin: '0',
   '@media (min-width: 768px)': {
@@ -128,7 +127,7 @@ const helperText = css({
 });
 
 const errorText = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'red.600',
   margin: '4px 0 0 0',
 });
@@ -140,8 +139,8 @@ const infoBox = css({
   borderRadius: 'radius.lg',
   padding: '20px',
   '& .title': {
-    fontSize: '14px',
-    fontWeight: '600',
+    textStyle: 'bodySmall',
+    fontWeight: 'semibold',
     color: 'sky.700',
     margin: '0 0 12px 0',
     '@media (min-width: 768px)': {
@@ -149,12 +148,12 @@ const infoBox = css({
     },
   },
   '& ul': {
-    fontSize: '13px',
+    textStyle: 'caption',
     color: 'sky.700',
     margin: '0',
     paddingLeft: '16px',
     '@media (min-width: 768px)': {
-      fontSize: '14px',
+      textStyle: 'bodySmall',
     },
     '& li': {
       marginBottom: '6px',
@@ -194,8 +193,8 @@ const button = cva({
   base: {
     padding: '14px 24px',
     borderRadius: 'radius.lg',
-    fontSize: '16px',
-    fontWeight: '600',
+    textStyle: 'body',
+    fontWeight: 'semibold',
     transition: 'all 0.2s ease',
     cursor: 'pointer',
     border: '1px solid',
@@ -206,7 +205,6 @@ const button = cva({
     flex: '1',
     '@media (min-width: 768px)': {
       padding: '16px 28px',
-      fontSize: '16px',
     },
     '&:disabled': {
       cursor: 'not-allowed',
