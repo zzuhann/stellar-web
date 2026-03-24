@@ -3,6 +3,8 @@ name: commit-message
 description: Helps write Git commit messages following the Conventional Commits specification. Use this skill when the user asks to commit changes, write commit messages, or mentions git commits.
 ---
 
+only check staged changes, if no staged changes then check all changes
+
 # Commit Message
 
 When writing commit messages, follow these rules:
