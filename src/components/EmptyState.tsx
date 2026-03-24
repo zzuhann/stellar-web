@@ -2,19 +2,22 @@ import { css } from '@/styled-system/css';
 
 const emptyStateContainer = css({
   textAlign: 'center',
-  padding: '40px 20px',
+  paddingY: '10',
+  paddingX: '5',
   color: 'color.text.secondary',
 });
 
 const emptyStateIcon = css({
   fontSize: '32px',
-  marginBottom: '8px',
+  marginBottom: '2',
 });
 
 const emptyStateTitle = css({
   textStyle: 'bodyStrong',
   color: 'color.text.primary',
-  margin: '0 0 8px 0',
+  marginBottom: '2',
+  marginX: '0',
+  marginTop: '0',
 });
 
 const emptyStateDescription = css({

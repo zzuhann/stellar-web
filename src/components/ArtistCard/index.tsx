@@ -6,8 +6,8 @@ import Image from 'next/image';
 const artistCardContainer = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '16px',
-  padding: '20px',
+  gap: '4',
+  padding: '5',
   background: 'color.background.primary',
   border: '1px solid',
   borderColor: 'color.border.light',
@@ -23,15 +23,15 @@ const avatarContainer = css({
 });
 
 const artistAvatar = css({
-  borderRadius: '50%',
+  borderRadius: 'radius.circle',
   overflow: 'hidden',
   objectFit: 'cover',
 });
 
 const birthdayHat = css({
   position: 'absolute',
-  top: '-8px',
-  right: '-4px',
+  top: '-2',
+  right: '-1',
   width: '24px',
   height: '24px',
   transform: 'rotate(15deg)',
@@ -47,7 +47,9 @@ const artistInfo = css({
 const artistName = css({
   textStyle: 'bodyStrong',
   color: 'color.text.primary',
-  margin: '0 0 4px 0',
+  marginBottom: '1',
+  marginX: '0',
+  marginTop: '0',
   '@media (min-width: 768px)': {
     fontSize: 'xl',
   },
@@ -56,7 +58,7 @@ const artistName = css({
 const artistBirthday = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  marginBottom: '8px',
+  marginBottom: '2',
   '& .birthday-label': {
     color: 'color.text.secondary',
   },
@@ -66,14 +68,14 @@ const artistBirthday = css({
   '& .today-indicator': {
     color: 'color.accent',
     fontWeight: 'semibold',
-    marginLeft: '8px',
+    marginLeft: '2',
   },
 });
 
 const eventStatus = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '4px',
+  gap: '1',
   textStyle: 'button',
   color: 'color.primary',
   '& .icon': {

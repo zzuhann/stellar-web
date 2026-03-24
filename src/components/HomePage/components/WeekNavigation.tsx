@@ -8,7 +8,8 @@ const weekNavigationContainer = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '8px 16px',
+  paddingX: '4',
+  paddingY: '2',
   background: 'color.background.secondary',
   borderRadius: 'radius.lg',
   border: '1px solid',
@@ -47,19 +48,22 @@ const weekNavigationButton = cva({
 const weekInfoContainer = css({
   textAlign: 'center',
   flex: 1,
-  margin: '0 16px',
+  marginX: '4',
+  marginY: '0',
 });
 
 const weekInfoTitle = css({
   textStyle: 'bodyStrong',
   color: 'color.text.primary',
-  margin: '0 0 4px 0',
+  marginTop: '0',
+  marginX: '0',
+  marginBottom: '1',
 });
 
 const weekInfoDateRange = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  margin: 0,
+  margin: '0',
 });
 
 interface WeekNavigationProps {

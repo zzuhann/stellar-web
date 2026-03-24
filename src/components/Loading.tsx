@@ -1,7 +1,8 @@
 import { css } from '@/styled-system/css';
 
 const loadingContainer = css({
-  padding: '60px 20px',
+  paddingY: '15',
+  paddingX: '5',
   textAlign: 'center',
   color: 'color.text.secondary',
   background: 'color.background.secondary',
@@ -25,7 +26,9 @@ const spinner = css({
   borderTopColor: 'color.primary',
   borderRadius: 'radius.circle',
   animation: 'spin 1s linear infinite',
-  margin: '0 auto 16px',
+  marginBottom: '4',
+  marginX: 'auto',
+  marginTop: '0',
 });
 
 const text = css({

@@ -3,8 +3,9 @@ import { css } from '@/styled-system/css';
 const ctaButton = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '2px',
-  padding: '12px 24px',
+  gap: '0.5',
+  paddingY: '3',
+  paddingX: '6',
   borderRadius: 'radius.lg',
   textStyle: 'button',
   fontWeight: 'semibold',

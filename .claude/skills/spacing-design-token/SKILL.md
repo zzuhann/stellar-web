@@ -120,22 +120,43 @@ const example = css({
    padding: 4;
    ```
 
-2. **複合值需拆分**：原本的複合寫法需拆成個別屬性
+2. **複合值需拆分**：多值寫法會被當成 px，必須拆成個別屬性
 
    ```typescript
-   // Before
-   padding: '16px 24px'
+   // ❌ 錯誤 - '2 4' 會被解讀為 '2px 4px'，不會對應 token
+   padding: '4 6'
 
-   // After
-   paddingY: '4',
+   // ✅ 正確 - 使用 paddingX / paddingY
    paddingX: '6',
+   paddingY: '4',
+
+   // ✅ 或完全拆分
+   paddingTop: '4',
+   paddingRight: '6',
+   paddingBottom: '4',
+   paddingLeft: '6',
    ```
 
 3. **特殊值**：`auto`、`0`、百分比等仍可直接使用
+
    ```typescript
    margin: '0 auto',     // 仍可使用
    marginX: 'auto',      // 或用這個寫法
    width: '100%',        // 百分比不受影響
+   ```
+
+4. **負數值**：在 token 前加 `-` 即可
+
+   ```typescript
+   // Before
+   top: '-8px',
+   right: '-4px',
+   margin: '-1px',
+
+   // After
+   top: '-2',    // -8px
+   right: '-1',  // -4px
+   margin: '-0.5', // -2px（若需要 -1px 則保留原寫法）
    ```
 
 ---

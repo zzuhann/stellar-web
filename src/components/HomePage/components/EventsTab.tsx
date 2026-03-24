@@ -7,8 +7,8 @@ import Loading from '../../Loading';
 const eventListContainer = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-  gap: '16px',
-  marginTop: '16px',
+  gap: '4',
+  marginTop: '4',
   '@media (min-width: 600px)': {
     gridTemplateColumns: 'repeat(2, 1fr)',
   },

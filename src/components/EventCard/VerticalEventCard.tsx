@@ -42,7 +42,7 @@ const imageOverlay = cva({
     bottom: 0,
     background:
       'linear-gradient(to top, var(--colors-alpha-black-30) 0%, var(--colors-alpha-black-20) 50%, var(--colors-alpha-black-10) 100%)',
-    padding: '16px',
+    padding: '4',
     color: 'white',
     display: 'flex',
     flexDirection: 'column',
@@ -61,15 +61,18 @@ const imageOverlay = cva({
 const buttonContainer = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
   minHeight: '60px',
-  padding: '8px 16px',
+  paddingY: '2',
+  paddingX: '4',
 });
 
 const eventTitle = css({
   textStyle: 'bodyStrong',
   color: 'white',
-  margin: '0 0 8px 0',
+  marginBottom: '2',
+  marginX: '0',
+  marginTop: '0',
   lineHeight: 1.2,
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -82,22 +85,22 @@ const eventArtistSection = css({
   display: 'flex',
   alignItems: 'center',
   flexWrap: 'wrap',
-  gap: '4px',
+  gap: '1',
   textStyle: 'bodySmall',
   color: 'alpha.white.90',
-  marginBottom: '8px',
+  marginBottom: '2',
 });
 
 const eventArtistItem = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '4px',
+  gap: '1',
 });
 
 const eventArtistAvatar = css({
   width: '24px',
   height: '24px',
-  borderRadius: '50%',
+  borderRadius: 'radius.circle',
   overflow: 'hidden',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
@@ -115,13 +118,14 @@ const eventArtistName = css({
 const eventArtistSeparator = css({
   textStyle: 'bodySmall',
   color: 'alpha.white.70',
-  margin: '0 2px',
+  marginY: '0',
+  marginX: '0.5',
 });
 
 const eventDetails = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '4px',
+  gap: '1',
   textStyle: 'bodySmall',
   color: 'white',
 });
@@ -129,7 +133,7 @@ const eventDetails = css({
 const eventDetailItem = css({
   display: 'flex',
   alignItems: 'flex-start',
-  gap: '4px',
+  gap: '1',
 });
 
 const detailText = css({
@@ -144,21 +148,21 @@ const detailText = css({
 const styledSubmissionTime = css({
   textStyle: 'caption',
   color: 'alpha.white.70',
-  marginTop: '4px',
+  marginTop: '1',
 });
 
 const statusBadge = cva({
   base: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '2px',
-    padding: '6px 8px',
+    gap: '0.5',
+    padding: '2',
     borderRadius: 'radius.md',
     textStyle: 'bodySmall',
     fontWeight: 'semibold',
     position: 'absolute',
-    top: '6px',
-    right: '6px',
+    top: '2',
+    right: '2',
     zIndex: 1,
   },
   variants: {
@@ -251,7 +255,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
                   <div className={eventDetailItem}>
                     <CalendarIcon
                       aria-hidden="true"
-                      style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
+                      style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '1' }}
                     />
                     <span className={detailText}>{eventDateText}</span>
                   </div>
@@ -260,7 +264,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
                     <div className={eventDetailItem}>
                       <MapPinIcon
                         aria-hidden="true"
-                        style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
+                        style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '1' }}
                       />
                       <span className={detailText}>{event.location.name}</span>
                     </div>
@@ -322,7 +326,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
                   <div className={eventDetailItem}>
                     <MapPinIcon
                       aria-hidden="true"
-                      style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '4px' }}
+                      style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '1' }}
                     />
                     <span className={detailText}>{event.location.name}</span>
                   </div>

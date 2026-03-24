@@ -32,20 +32,22 @@ export const pageContainer = css({
 });
 
 export const mainContainer = css({
-  paddingTop: '100px',
   maxWidth: '600px',
-  padding: '100px 30px 40px',
+  paddingTop: '25',
+  paddingX: '8',
+  paddingBottom: '10',
   margin: '0 auto',
   width: '100%',
   '@media (min-width: 768px)': {
-    padding: '100px 24px 60px',
+    paddingX: '6',
+    paddingBottom: '15',
   },
 });
 
 export const contentWrapper = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '16px',
+  gap: '4',
 });
 
 const heading = css({
@@ -54,7 +56,7 @@ const heading = css({
 });
 
 const latestEventsContainer = css({
-  marginTop: '20px',
+  marginTop: '5',
 });
 
 function HomePageContent() {
