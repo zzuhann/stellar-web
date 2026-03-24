@@ -118,18 +118,26 @@ const CalendarView = ({
     month: 'long',
   });
 
+  const lastDayOfPreviousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
+  let isPreviousDisabled = false;
+  if (min) {
+    const lastOnly = new Date(
+      lastDayOfPreviousMonth.getFullYear(),
+      lastDayOfPreviousMonth.getMonth(),
+      lastDayOfPreviousMonth.getDate()
+    );
+    const minDate = new Date(min);
+    const minOnly = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
+    isPreviousDisabled = lastOnly < minOnly;
+  }
+
   return (
     <>
       <NavigationHeader
         goToPrevious={goToPreviousMonth}
         goToNext={goToNextMonth}
         headerText={monthYearText}
-        isPreviousDisabled={
-          !!(
-            min &&
-            new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1) < new Date(min)
-          )
-        }
+        isPreviousDisabled={isPreviousDisabled}
         isNextDisabled={
           !!(
             max &&
@@ -163,7 +171,7 @@ const CalendarView = ({
               type="button"
               className={dayButton({
                 isSelected: daySelected,
-                isToday: isToday(day),
+                isToday: !daySelected && isToday(day),
                 isOtherMonth: !isCurrentMonth,
                 isDisabled: dayDisabled,
               })}
