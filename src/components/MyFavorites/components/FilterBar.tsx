@@ -25,12 +25,12 @@ const dropdownContainer = css({
 });
 
 const dropdownButton = css({
+  textStyle: 'bodySmall',
   width: '100%',
   padding: '10px 12px',
   borderRadius: 'radius.md',
   border: '1px solid',
   borderColor: 'color.border.light',
-  fontSize: '14px',
   background: 'white',
   color: 'color.text.primary',
   cursor: 'pointer',
@@ -76,8 +76,8 @@ const dropdownMenu = css({
 });
 
 const dropdownOption = css({
+  textStyle: 'bodySmall',
   padding: '10px 12px',
-  fontSize: '14px',
   cursor: 'pointer',
   display: 'flex',
   justifyContent: 'space-between',
@@ -90,7 +90,7 @@ const dropdownOption = css({
 
 const dropdownOptionSelected = css({
   color: 'color.primary',
-  fontWeight: '500',
+  fontWeight: 'medium',
 });
 
 const checkbox = css({
@@ -100,10 +100,10 @@ const checkbox = css({
 });
 
 const checkboxLabel = css({
+  textStyle: 'bodySmall',
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
-  fontSize: '14px',
   color: 'color.text.primary',
   cursor: 'pointer',
   userSelect: 'none',

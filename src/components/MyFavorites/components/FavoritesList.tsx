@@ -24,10 +24,10 @@ const paginationContainer = css({
 });
 
 const paginationButton = css({
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
   padding: '8px 16px',
   borderRadius: 'radius.md',
-  fontSize: '14px',
-  fontWeight: '600',
   cursor: 'pointer',
   border: '1px solid',
   borderColor: 'color.border.light',
@@ -45,15 +45,15 @@ const paginationButton = css({
 });
 
 const pageInfo = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
 });
 
 const ctaButton = css({
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
   padding: '12px 24px',
   borderRadius: 'radius.lg',
-  fontSize: '14px',
-  fontWeight: '600',
   transition: 'all 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
