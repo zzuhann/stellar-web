@@ -5,6 +5,7 @@ import {
   primitiveTypography,
   semanticColors,
   shadows,
+  spacing,
   textStyles,
 } from './src/styles/theme';
 import { shimmer, spin, slideDown } from './src/styles/keyframes';
@@ -34,6 +35,7 @@ export default defineConfig({
         },
         shadows: { ...shadows },
         radii: { ...borderRadius },
+        spacing,
         fontSizes: primitiveTypography.fontSizes,
         fontWeights: primitiveTypography.fontWeights,
         lineHeights: primitiveTypography.lineHeights,
