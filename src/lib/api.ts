@@ -17,6 +17,8 @@ import {
   FavoritesResponse,
   UserFavorite,
   FavoriteCheckResponse,
+  UserSubmissionsArtistsResponse,
+  UserSubmissionsEventsResponse,
 } from '@/types';
 
 // 建立 Axios 實例
@@ -200,20 +202,6 @@ export const artistsApi = {
   },
 };
 
-// 用戶投稿資料格式
-export interface UserSubmissionsResponse {
-  artists: Artist[];
-  events: CoffeeEvent[];
-  summary: {
-    totalArtists: number;
-    totalEvents: number;
-    pendingArtists: number;
-    pendingEvents: number;
-    approvedArtists: number;
-    approvedEvents: number;
-  };
-}
-
 // 活動相關 API
 export const eventsApi = {
   // 取得活動列表（支援新的查詢參數）
@@ -279,12 +267,6 @@ export const eventsApi = {
       }
       throw error;
     }
-  },
-
-  // 取得用戶投稿
-  getMySubmissions: async () => {
-    const response = await api.get<UserSubmissionsResponse>('/events/me');
-    return response.data;
   },
 
   // 建立活動
@@ -388,6 +370,29 @@ export const usersApi = {
     // 檢查是否已收藏
     check: async (eventId: string) => {
       const response = await api.get<FavoriteCheckResponse>(`/users/favorites/${eventId}/check`);
+      return response.data;
+    },
+  },
+
+  submissions: {
+    getEvents: async (params?: { page?: number; limit?: number }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page != null) searchParams.set('page', String(params.page));
+      if (params?.limit != null) searchParams.set('limit', String(params.limit));
+      const qs = searchParams.toString();
+      const response = await api.get<UserSubmissionsEventsResponse>(
+        `/users/me/submissions/events${qs ? `?${qs}` : ''}`
+      );
+      return response.data;
+    },
+    getArtists: async (params?: { page?: number; limit?: number }) => {
+      const searchParams = new URLSearchParams();
+      if (params?.page != null) searchParams.set('page', String(params.page));
+      if (params?.limit != null) searchParams.set('limit', String(params.limit));
+      const qs = searchParams.toString();
+      const response = await api.get<UserSubmissionsArtistsResponse>(
+        `/users/me/submissions/artists${qs ? `?${qs}` : ''}`
+      );
       return response.data;
     },
   },

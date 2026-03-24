@@ -268,3 +268,29 @@ export interface FavoritesResponse {
 export interface FavoriteCheckResponse {
   isFavorited: boolean;
 }
+
+// 我的投稿（分頁）：單一資源統計
+export interface UserSubmissionResourceSummary {
+  total: number;
+  pending: number;
+  approved: number;
+}
+
+export interface UserSubmissionsPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface UserSubmissionsEventsResponse {
+  events: CoffeeEvent[];
+  summary: UserSubmissionResourceSummary;
+  pagination: UserSubmissionsPagination;
+}
+
+export interface UserSubmissionsArtistsResponse {
+  artists: Artist[];
+  summary: UserSubmissionResourceSummary;
+  pagination: UserSubmissionsPagination;
+}

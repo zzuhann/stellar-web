@@ -4,9 +4,14 @@ import EmptyState from './EmptyState';
 import VerticalArtistCard from '@/components/ArtistCard/VerticalArtistCard';
 import { useRouter } from 'next/navigation';
 import { firebaseTimestampToDate } from '@/utils';
-import { Artist, FirebaseTimestamp } from '@/types';
+import {
+  Artist,
+  FirebaseTimestamp,
+  UserSubmissionResourceSummary,
+  UserSubmissionsPagination,
+} from '@/types';
 import { actionButton, actionButtons, contentCard } from './styles';
-import { useMemo } from 'react';
+import SubmissionsPagination from './SubmissionsPagination';
 
 const artistGrid = css({
   display: 'grid',
@@ -26,73 +31,81 @@ const artistInfo = css({
 
 type ArtistSubmissionsProps = {
   artists: Artist[];
+  summary: UserSubmissionResourceSummary;
+  pagination: UserSubmissionsPagination;
+  currentPage: number;
+  onPageChange: (page: number) => void;
 };
 
-const ArtistSubmissions = ({ artists }: ArtistSubmissionsProps) => {
+const ArtistSubmissions = ({
+  artists,
+  summary,
+  pagination,
+  currentPage,
+  onPageChange,
+}: ArtistSubmissionsProps) => {
   const router = useRouter();
 
-  const isSubmitted = artists.length > 0;
+  const hasAnySubmission = summary.total > 0;
 
   const handleEditArtist = (e: React.MouseEvent, artist: Artist) => {
     e.stopPropagation();
     router.push(`/submit-artist?edit=${artist.id}`);
   };
 
-  // 把 rejected 狀態排到最上面
-  const userArtists = useMemo(() => {
-    if (!artists) return [];
-    return [...artists].sort((a, b) => {
-      if (a.status === 'rejected' && b.status !== 'rejected') return -1;
-      if (a.status !== 'rejected' && b.status === 'rejected') return 1;
-      return 0;
-    });
-  }, [artists]);
-
   return (
     <div className={contentCard}>
       <CardHeader
         title="我投稿的偶像"
-        description={isSubmitted ? `共投稿過 ${userArtists.length} 位偶像` : '還沒有投稿過偶像'}
+        description={hasAnySubmission ? `共投稿過 ${summary.total} 位偶像` : '還沒有投稿過偶像'}
       />
 
-      {!isSubmitted ? (
+      {!hasAnySubmission ? (
         <EmptyState icon="✨" title="還沒有投稿過偶像" />
       ) : (
-        <div className={artistGrid}>
-          {userArtists.map((artist) => (
-            <VerticalArtistCard
-              key={artist.id}
-              artist={artist}
-              onClick={(artist) => {
-                router.push(`/map/${artist.id}`);
-              }}
-              submissionTime={
-                artist.createdAt
-                  ? firebaseTimestampToDate(artist.createdAt as FirebaseTimestamp).toLocaleString(
-                      'zh-TW'
-                    )
-                  : undefined
-              }
-              actionButtons={
-                artist.status === 'rejected' ? (
-                  <div className={artistInfo}>
-                    <div className={actionButtons}>
-                      {artist.status === 'rejected' && (
-                        <button
-                          className={actionButton({ variant: 'edit' })}
-                          onClick={(e) => handleEditArtist(e, artist)}
-                          title="編輯並重新送審"
-                        >
-                          編輯並重新送審
-                        </button>
-                      )}
+        <>
+          <div className={artistGrid}>
+            {artists.map((artist) => (
+              <VerticalArtistCard
+                key={artist.id}
+                artist={artist}
+                onClick={(artist) => {
+                  router.push(`/map/${artist.id}`);
+                }}
+                submissionTime={
+                  artist.createdAt
+                    ? firebaseTimestampToDate(artist.createdAt as FirebaseTimestamp).toLocaleString(
+                        'zh-TW'
+                      )
+                    : undefined
+                }
+                actionButtons={
+                  artist.status === 'rejected' ? (
+                    <div className={artistInfo}>
+                      <div className={actionButtons}>
+                        {artist.status === 'rejected' && (
+                          <button
+                            className={actionButton({ variant: 'edit' })}
+                            onClick={(e) => handleEditArtist(e, artist)}
+                            title="編輯並重新送審"
+                          >
+                            編輯並重新送審
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ) : undefined
-              }
-            />
-          ))}
-        </div>
+                  ) : undefined
+                }
+              />
+            ))}
+          </div>
+
+          <SubmissionsPagination
+            currentPage={currentPage}
+            totalPages={pagination.totalPages}
+            onPageChange={onPageChange}
+          />
+        </>
       )}
     </div>
   );

@@ -1,4 +1,3 @@
-import { CoffeeEvent } from '@/types';
 import CardHeader from './CardHeader';
 import { actionButton, actionButtons, actionButtonsContainer, contentCard } from './styles';
 import EmptyState from './EmptyState';
@@ -7,7 +6,12 @@ import { useRouter } from 'next/navigation';
 import VerticalEventCard from '@/components/EventCard/VerticalEventCard';
 import { UseMutationResult } from '@tanstack/react-query';
 import { EyeIcon, PencilIcon, TrashIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
-import { useMemo } from 'react';
+import SubmissionsPagination from './SubmissionsPagination';
+import type {
+  CoffeeEvent,
+  UserSubmissionResourceSummary,
+  UserSubmissionsPagination,
+} from '@/types';
 
 const ctaButton = css({
   padding: '12px 24px',
@@ -37,6 +41,10 @@ const eventGrid = css({
 
 type EventSubmissionsProps = {
   events: CoffeeEvent[];
+  summary: UserSubmissionResourceSummary;
+  pagination: UserSubmissionsPagination;
+  currentPage: number;
+  onPageChange: (page: number) => void;
   deleteEventMutation: UseMutationResult<void, Error, string>;
   setPreviewingEvent: (event: CoffeeEvent | null) => void;
   setDeleteConfirmModal: (modal: { isOpen: boolean; event: CoffeeEvent | null }) => void;
@@ -44,31 +52,23 @@ type EventSubmissionsProps = {
 
 const EventSubmissions = ({
   events,
+  summary,
+  pagination,
+  currentPage,
+  onPageChange,
   deleteEventMutation,
   setPreviewingEvent,
   setDeleteConfirmModal,
 }: EventSubmissionsProps) => {
   const router = useRouter();
 
-  const isSubmitted = events.length > 0;
+  const hasAnySubmission = summary.total > 0;
 
-  const userEvents = useMemo(() => {
-    if (!events) return [];
-    return [...events].sort((a, b) => {
-      // rejected 狀態排在最上面，其他保持原順序
-      if (a.status === 'rejected' && b.status !== 'rejected') return -1;
-      if (a.status !== 'rejected' && b.status === 'rejected') return 1;
-      return 0;
-    });
-  }, [events]);
-
-  // 處理預覽活動
   const handlePreviewEvent = (e: React.MouseEvent, event: CoffeeEvent) => {
     e.stopPropagation();
     setPreviewingEvent(event);
   };
 
-  // 處理刪除活動
   const handleDeleteEvent = (e: React.MouseEvent, event: CoffeeEvent) => {
     e.stopPropagation();
     setDeleteConfirmModal({ isOpen: true, event });
@@ -89,11 +89,11 @@ const EventSubmissions = ({
       <CardHeader
         title="我投稿的生日應援"
         description={
-          isSubmitted ? `共投稿過 ${userEvents.length} 個生日應援` : '還沒有投稿過生日應援'
+          hasAnySubmission ? `共投稿過 ${summary.total} 個生日應援` : '還沒有投稿過生日應援'
         }
       />
 
-      {!isSubmitted ? (
+      {!hasAnySubmission ? (
         <EmptyState
           icon="🍰"
           title="還沒有舉辦過生日應援"
@@ -105,55 +105,63 @@ const EventSubmissions = ({
           }
         />
       ) : (
-        <div className={eventGrid}>
-          {userEvents.map((event) => (
-            <VerticalEventCard
-              key={event.id}
-              event={event}
-              actionButtons={
-                <div className={actionButtonsContainer}>
-                  <div className={actionButtons}>
-                    <button
-                      className={actionButton({ variant: 'edit' })}
-                      onClick={(e) => handlePreviewEvent(e, event)}
-                      title="預覽"
-                    >
-                      <EyeIcon width={12} height={12} />
-                      預覽
-                    </button>
-                    <button
-                      className={actionButton({ variant: 'edit' })}
-                      onClick={(e) => handleEditEvent(e, event)}
-                      title="編輯"
-                    >
-                      <PencilIcon width={12} height={12} />
-                      編輯
-                    </button>
+        <>
+          <div className={eventGrid}>
+            {events.map((event) => (
+              <VerticalEventCard
+                key={event.id}
+                event={event}
+                actionButtons={
+                  <div className={actionButtonsContainer}>
+                    <div className={actionButtons}>
+                      <button
+                        className={actionButton({ variant: 'edit' })}
+                        onClick={(e) => handlePreviewEvent(e, event)}
+                        title="預覽"
+                      >
+                        <EyeIcon width={12} height={12} />
+                        預覽
+                      </button>
+                      <button
+                        className={actionButton({ variant: 'edit' })}
+                        onClick={(e) => handleEditEvent(e, event)}
+                        title="編輯"
+                      >
+                        <PencilIcon width={12} height={12} />
+                        編輯
+                      </button>
+                    </div>
+                    <div className={actionButtons}>
+                      <button
+                        className={actionButton({ variant: 'edit' })}
+                        onClick={(e) => handleCopyEvent(e, event)}
+                        title="複製"
+                      >
+                        <DocumentDuplicateIcon width={12} height={12} />
+                        複製
+                      </button>
+                      <button
+                        className={actionButton()}
+                        onClick={(e) => handleDeleteEvent(e, event)}
+                        disabled={deleteEventMutation.isPending}
+                        title="刪除"
+                      >
+                        <TrashIcon width={12} height={12} />
+                        {deleteEventMutation.isPending ? '刪除中...' : '刪除'}
+                      </button>
+                    </div>
                   </div>
-                  <div className={actionButtons}>
-                    <button
-                      className={actionButton({ variant: 'edit' })}
-                      onClick={(e) => handleCopyEvent(e, event)}
-                      title="複製"
-                    >
-                      <DocumentDuplicateIcon width={12} height={12} />
-                      複製
-                    </button>
-                    <button
-                      className={actionButton()}
-                      onClick={(e) => handleDeleteEvent(e, event)}
-                      disabled={deleteEventMutation.isPending}
-                      title="刪除"
-                    >
-                      <TrashIcon width={12} height={12} />
-                      {deleteEventMutation.isPending ? '刪除中...' : '刪除'}
-                    </button>
-                  </div>
-                </div>
-              }
-            />
-          ))}
-        </div>
+                }
+              />
+            ))}
+          </div>
+
+          <SubmissionsPagination
+            currentPage={currentPage}
+            totalPages={pagination.totalPages}
+            onPageChange={onPageChange}
+          />
+        </>
       )}
     </div>
   );

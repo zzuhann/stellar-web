@@ -1,12 +1,20 @@
-import { eventsApi } from '@/lib/api';
+import { usersApi } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
 
-const useUserSubmissions = (enabled: boolean) => {
+export const SUBMISSIONS_PAGE_LIMIT = 20;
+
+export function useMySubmittedEvents(page: number, enabled: boolean) {
   return useQuery({
-    queryKey: ['user-submissions'],
-    queryFn: eventsApi.getMySubmissions,
+    queryKey: ['user-submissions', 'events', page],
+    queryFn: () => usersApi.submissions.getEvents({ page, limit: SUBMISSIONS_PAGE_LIMIT }),
     enabled,
   });
-};
+}
 
-export default useUserSubmissions;
+export function useMySubmittedArtists(page: number, enabled: boolean) {
+  return useQuery({
+    queryKey: ['user-submissions', 'artists', page],
+    queryFn: () => usersApi.submissions.getArtists({ page, limit: SUBMISSIONS_PAGE_LIMIT }),
+    enabled,
+  });
+}
