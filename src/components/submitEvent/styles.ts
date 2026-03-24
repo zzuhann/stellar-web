@@ -3,7 +3,7 @@ import { css } from '@/styled-system/css';
 export const formGroup = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '8px',
+  gap: '2',
 });
 
 export const label = css({
@@ -12,7 +12,7 @@ export const label = css({
   color: 'color.text.primary',
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
   '& svg': {
     width: '18px',
     height: '18px',
@@ -22,7 +22,8 @@ export const label = css({
 
 export const input = css({
   width: '100%',
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
@@ -43,9 +44,6 @@ export const input = css({
     color: 'color.text.disabled',
     cursor: 'not-allowed',
   },
-  '@media (min-width: 768px)': {
-    padding: '14px 18px',
-  },
 });
 
 export const helperText = css({
@@ -57,5 +55,5 @@ export const helperText = css({
 export const errorText = css({
   textStyle: 'caption',
   color: 'red.600',
-  margin: '4px 0 0 0',
+  marginTop: '1',
 });

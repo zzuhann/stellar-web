@@ -8,7 +8,8 @@ import { FieldErrors, UseFormRegister } from 'react-hook-form';
 
 const artistSelectionButton = css({
   width: '100%',
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
@@ -38,7 +39,7 @@ const artistSelectionButton = css({
 const selectedArtistInfo = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
   flex: '1',
   justifyContent: 'space-between',
 });
@@ -46,9 +47,9 @@ const selectedArtistInfo = css({
 const imageContainer = css({
   width: '48px',
   height: '48px',
-  borderRadius: '50%',
+  borderRadius: 'radius.circle',
   overflow: 'hidden',
-  marginRight: '8px',
+  marginRight: '2',
   position: 'relative',
 });
 
@@ -72,7 +73,7 @@ type ChooseArtistSectionProps = {
 const removeButtonStyle = css({
   background: 'none',
   border: 'none',
-  padding: '4px',
+  padding: '1',
   borderRadius: 'radius.sm',
   cursor: 'pointer',
   display: 'flex',
@@ -112,7 +113,7 @@ const ChooseArtistSection = ({
         {mode === 'edit' ? '編輯模式下無法修改偶像資訊' : '若為聯合應援，可選擇多個偶像'}
       </p>
       <div
-        style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}
+        className={css({ display: 'flex', flexDirection: 'column', gap: '2' })}
         role="list"
         aria-label="已選擇的偶像列表"
       >
@@ -148,7 +149,7 @@ const ChooseArtistSection = ({
               }}
             >
               <div className={selectedArtistInfo}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className={css({ display: 'flex', alignItems: 'center', gap: '2' })}>
                   <div className={imageContainer}>
                     <Image
                       src={artist.profileImage ?? ''}

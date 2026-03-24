@@ -14,7 +14,8 @@ import type {
 } from '@/types';
 
 const ctaButton = css({
-  padding: '12px 24px',
+  paddingY: '3',
+  paddingX: '6',
   borderRadius: 'radius.lg',
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
@@ -35,8 +36,8 @@ const ctaButton = css({
 const eventGrid = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-  gap: '16px',
-  padding: '16px',
+  gap: '4',
+  padding: '4',
 });
 
 type EventSubmissionsProps = {

@@ -28,16 +28,19 @@ const pageContainer = css({
 const mainContainer = css({
   maxWidth: '600px',
   margin: '0 auto',
-  padding: '100px 16px 40px',
+  paddingTop: '25',
+  paddingX: '4',
+  paddingBottom: '10',
   '@media (min-width: 768px)': {
-    padding: '100px 24px 60px',
+    paddingX: '6',
+    paddingBottom: '15',
   },
 });
 
 const contentWrapper = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '16px',
+  gap: '4',
 });
 
 const parsePage = (raw: string): number => {

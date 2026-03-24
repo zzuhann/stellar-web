@@ -1,7 +1,7 @@
 import { css, cva } from '@/styled-system/css';
 
 const tabContainer = css({
-  marginBottom: '16px',
+  marginBottom: '4',
 });
 
 const tabNav = css({
@@ -10,13 +10,14 @@ const tabNav = css({
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'var(--radius-lg)',
-  padding: '4px',
+  padding: '1',
 });
 
 const tabButton = cva({
   base: {
     flex: 1,
-    padding: '8px 16px',
+    paddingY: '2',
+    paddingX: '4',
     borderRadius: 'radius.md',
     textStyle: 'bodySmall',
     fontWeight: 'semibold',

@@ -4,8 +4,8 @@ const stepIndicator = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  marginBottom: '32px',
-  gap: '16px',
+  marginBottom: '8',
+  gap: '4',
 });
 
 const step = cva({
@@ -13,7 +13,7 @@ const step = cva({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '8px',
+    gap: '2',
     '& .step-number': {
       width: '32px',
       height: '32px',

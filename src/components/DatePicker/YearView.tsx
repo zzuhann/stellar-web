@@ -4,8 +4,8 @@ import NavigationHeader from './NavigationHeader';
 const yearMonthGrid = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(3, 1fr)',
-  gap: '8px',
-  marginTop: '8px',
+  gap: '2',
+  marginTop: '2',
 });
 
 const yearMonthButton = cva({
@@ -13,7 +13,8 @@ const yearMonthButton = cva({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '8px 4px',
+    paddingY: '2',
+    paddingX: '1',
     border: '1px solid',
     borderColor: 'color.border.light',
     borderRadius: 'radius.md',
@@ -27,7 +28,8 @@ const yearMonthButton = cva({
       borderColor: 'color.border.medium',
     },
     '@media (max-width: 410px)': {
-      padding: '6px 2px',
+      paddingY: '1.5',
+      paddingX: '0.5',
     },
   },
   variants: {

@@ -1,7 +1,7 @@
 import { css, cva } from '@/styled-system/css';
 
 const tabContainer = css({
-  marginBottom: '8px',
+  marginBottom: '2',
 });
 
 const tabNav = css({
@@ -10,13 +10,14 @@ const tabNav = css({
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
-  padding: '4px',
+  padding: '1',
 });
 
 const tabButton = cva({
   base: {
     flex: 1,
-    padding: '12px 16px',
+    paddingY: '3',
+    paddingX: '4',
     borderRadius: 'radius.md',
     textStyle: 'button',
     fontWeight: 'semibold',
@@ -26,7 +27,7 @@ const tabButton = cva({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '8px',
+    gap: '2',
   },
   variants: {
     active: {

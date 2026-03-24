@@ -17,7 +17,8 @@ import { dateToLocalDateString } from '@/utils';
 
 const textarea = css({
   width: '100%',
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
@@ -40,16 +41,13 @@ const textarea = css({
     color: 'color.text.disabled',
     cursor: 'not-allowed',
   },
-  '@media (min-width: 768px)': {
-    padding: '14px 18px',
-  },
 });
 
 const characterCount = cva({
   base: {
     textStyle: 'caption',
     textAlign: 'right',
-    marginTop: '4px',
+    marginTop: '1',
   },
   variants: {
     isOverLimit: {
@@ -66,21 +64,21 @@ const characterCount = cva({
 const gridContainer = css({
   display: 'grid',
   gridTemplateColumns: '1fr',
-  gap: '16px',
+  gap: '4',
 });
 
 const sectionDivider = css({
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
-  paddingTop: '24px',
-  marginTop: '24px',
+  paddingTop: '6',
+  marginTop: '6',
 });
 
 const sectionTitle = css({
   textStyle: 'h4',
   fontWeight: 'semibold',
   color: 'color.text.primary',
-  marginBottom: '8px',
+  marginBottom: '2',
 });
 
 type EventInfoSectionProps = {

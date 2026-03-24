@@ -27,7 +27,8 @@ const datePickerContainer = css({
 const dateInput = cva({
   base: {
     width: '100%',
-    padding: '12px 16px',
+    paddingY: '3',
+    paddingX: '4',
     border: '1px solid',
     borderColor: 'color.border.light',
     borderRadius: 'radius.lg',
@@ -82,19 +83,19 @@ const popoverPanel = css({
   left: '0',
   right: '0',
   zIndex: '50',
-  marginTop: '4px',
+  marginTop: '1',
   background: 'color.background.primary',
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
   boxShadow: 'shadow.lg',
-  padding: '12px',
+  padding: '3',
   minWidth: '280px',
   maxWidth: '100vw',
   '@media (max-width: 410px)': {
-    left: '-8px',
-    right: '-8px',
-    padding: '8px',
+    left: '-2',
+    right: '-2',
+    padding: '2',
   },
 });
 

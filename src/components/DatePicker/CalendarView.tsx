@@ -6,8 +6,8 @@ import NavigationHeader from './NavigationHeader';
 const weekDaysHeader = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(7, 1fr)',
-  gap: '4px',
-  marginBottom: '8px',
+  gap: '1',
+  marginBottom: '2',
 });
 
 const weekDay = css({
@@ -28,7 +28,7 @@ const weekDay = css({
 const daysGrid = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(7, 1fr)',
-  gap: '4px',
+  gap: '1',
 });
 
 const dayButton = cva({

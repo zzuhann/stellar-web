@@ -4,8 +4,9 @@ const paginationContainer = css({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  gap: '12px',
-  padding: '20px 16px',
+  gap: '3',
+  paddingY: '5',
+  paddingX: '4',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
 });
@@ -13,7 +14,8 @@ const paginationContainer = css({
 const paginationButton = css({
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
-  padding: '8px 16px',
+  paddingY: '2',
+  paddingX: '4',
   borderRadius: 'radius.md',
   cursor: 'pointer',
   border: '1px solid',

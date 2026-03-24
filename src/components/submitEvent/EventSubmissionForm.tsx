@@ -29,22 +29,24 @@ const formContainer = css({
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
   boxShadow: 'shadow.md',
-  padding: '32px',
+  padding: '8',
   '@media (min-width: 768px)': {
-    padding: '40px',
+    padding: '10',
   },
 });
 
 const formHeader = css({
   textAlign: 'center',
-  marginBottom: '32px',
-  paddingBottom: '24px',
+  marginBottom: '8',
+  paddingBottom: '6',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   '& h2': {
     textStyle: 'h2',
     color: 'color.text.primary',
-    margin: '0 0 8px 0',
+    marginBottom: '2',
+    marginTop: '0',
+    marginX: '0',
     '@media (min-width: 768px)': {
       textStyle: 'h1',
     },
@@ -62,14 +64,14 @@ const formHeader = css({
 const form = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '24px',
+  gap: '6',
 });
 
 const warningText = css({
   textStyle: 'bodySmall',
   color: 'red.600 !important',
   margin: 'unset',
-  marginTop: '8px !important',
+  marginTop: '2 !important',
   '@media (min-width: 768px)': {
     textStyle: 'body',
   },

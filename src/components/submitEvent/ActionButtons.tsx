@@ -6,19 +6,20 @@ import { UseFormHandleSubmit } from 'react-hook-form';
 const buttonGroup = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '12px',
-  paddingTop: '24px',
+  gap: '3',
+  paddingTop: '6',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
   '@media (min-width: 480px)': {
     flexDirection: 'row',
-    gap: '16px',
+    gap: '4',
   },
 });
 
 const button = cva({
   base: {
-    padding: '14px 24px',
+    paddingY: '4',
+    paddingX: '6',
     borderRadius: 'radius.lg',
     textStyle: 'body',
     fontWeight: 'semibold',
@@ -28,11 +29,8 @@ const button = cva({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '8px',
+    gap: '2',
     flex: '1',
-    '@media (min-width: 768px)': {
-      padding: '16px 28px',
-    },
     '&:disabled': {
       cursor: 'not-allowed',
       transform: 'none',
@@ -64,7 +62,7 @@ const loadingSpinner = css({
   height: '16px',
   border: '2px solid transparent',
   borderTop: '2px solid white',
-  borderRadius: '50%',
+  borderRadius: 'radius.circle',
   animation: 'spin 1s linear infinite',
 });
 

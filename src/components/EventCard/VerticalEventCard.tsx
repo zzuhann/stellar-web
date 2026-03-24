@@ -255,7 +255,12 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
                   <div className={eventDetailItem}>
                     <CalendarIcon
                       aria-hidden="true"
-                      style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '1' }}
+                      className={css({
+                        width: '16px',
+                        height: '16px',
+                        flexShrink: 0,
+                        marginTop: '1',
+                      })}
                     />
                     <span className={detailText}>{eventDateText}</span>
                   </div>
@@ -264,7 +269,12 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
                     <div className={eventDetailItem}>
                       <MapPinIcon
                         aria-hidden="true"
-                        style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '1' }}
+                        className={css({
+                          width: '16px',
+                          height: '16px',
+                          flexShrink: 0,
+                          marginTop: '1',
+                        })}
                       />
                       <span className={detailText}>{event.location.name}</span>
                     </div>
@@ -326,7 +336,12 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
                   <div className={eventDetailItem}>
                     <MapPinIcon
                       aria-hidden="true"
-                      style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '1' }}
+                      className={css({
+                        width: '16px',
+                        height: '16px',
+                        flexShrink: 0,
+                        marginTop: '1',
+                      })}
                     />
                     <span className={detailText}>{event.location.name}</span>
                   </div>

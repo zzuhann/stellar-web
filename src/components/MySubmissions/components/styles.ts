@@ -11,20 +11,21 @@ export const contentCard = css({
 export const actionButtonsContainer = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '6px',
+  gap: '1.5',
 });
 
 export const actionButtons = css({
   display: 'flex',
-  gap: '6px',
+  gap: '1.5',
 });
 
 export const actionButton = cva({
   base: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '4px',
-    padding: '6px 8px',
+    gap: '1',
+    paddingY: '1.5',
+    paddingX: '2',
     borderRadius: 'radius.md',
     textStyle: 'caption',
     fontWeight: 'semibold',

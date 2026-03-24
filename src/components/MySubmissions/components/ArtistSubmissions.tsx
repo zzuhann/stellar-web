@@ -16,15 +16,15 @@ import SubmissionsPagination from './SubmissionsPagination';
 const artistGrid = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-  gap: '16px',
-  padding: '16px',
+  gap: '4',
+  padding: '4',
 });
 
 const artistInfo = css({
-  padding: '16px',
+  padding: '4',
   display: 'flex',
   flexDirection: 'column',
-  gap: '8px',
+  gap: '2',
   height: '60px',
   justifyContent: 'center',
 });
