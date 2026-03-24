@@ -21,14 +21,14 @@ const infoCard = css({
 });
 
 const infoTitle = css({
-  fontSize: '14px',
-  fontWeight: '600',
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
   marginBottom: '8px',
 });
 
 const infoText = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   lineHeight: '1.6',
   color: 'color.text.secondary',
 });
@@ -46,7 +46,7 @@ const collapsibleTrigger = css({
   background: 'none',
   border: 'none',
   cursor: 'pointer',
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
   transition: 'color 0.2s ease',
   width: '100%',
@@ -105,7 +105,7 @@ const divider = css({
   textAlign: 'center',
   margin: '24px 0',
   color: 'color.text.secondary',
-  fontSize: '13px',
+  textStyle: 'caption',
   '&::before, &::after': {
     content: '""',
     flex: 1,
@@ -134,8 +134,7 @@ const anonymousButton = cva({
     border: '1px solid',
     borderColor: 'color.border.light',
     color: 'color.text.primary',
-    fontSize: '16px',
-    fontWeight: '600',
+    textStyle: 'bodyStrong',
     transition: 'all 0.2s ease',
     display: 'flex',
     alignItems: 'center',
@@ -168,8 +167,7 @@ const anonymousButton = cva({
 const disclaimer = css({
   marginTop: '16px',
   padding: '12px',
-  fontSize: '13px',
-  lineHeight: '1.5',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   backgroundColor: 'color.background.secondary',
   borderRadius: 'radius.md',

@@ -123,13 +123,10 @@ const searchInput = css({
   background: 'transparent',
   border: 'none',
   color: 'color.text.primary',
-  fontSize: '16px',
+  textStyle: 'body',
   outline: 'none',
   '&::placeholder': {
     color: 'color.text.secondary',
-  },
-  '@media (max-width: 480px)': {
-    fontSize: '16px',
   },
 });
 
@@ -151,8 +148,8 @@ const artistList = css({
 const ctaButton = css({
   padding: '12px 24px',
   borderRadius: 'radius.lg',
-  fontSize: '14px',
-  fontWeight: '600',
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
   transition: 'all 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',

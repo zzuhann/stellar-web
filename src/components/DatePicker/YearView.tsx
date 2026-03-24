@@ -19,8 +19,7 @@ const yearMonthButton = cva({
     borderRadius: 'radius.md',
     background: 'color.background.primary',
     color: 'color.text.primary',
-    fontSize: '13px',
-    fontWeight: '400',
+    textStyle: 'caption',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     '&:hover': {
@@ -28,7 +27,6 @@ const yearMonthButton = cva({
       borderColor: 'color.border.medium',
     },
     '@media (max-width: 410px)': {
-      fontSize: '12px',
       padding: '6px 2px',
     },
   },

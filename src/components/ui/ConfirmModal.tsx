@@ -22,8 +22,8 @@ const modalHeader = css({
 });
 
 const modalTitle = css({
-  fontSize: '18px',
-  fontWeight: '600',
+  textStyle: 'h4',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
   margin: 0,
   display: 'flex',
@@ -50,10 +50,9 @@ const modalBody = css({
 });
 
 const modalMessage = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
   margin: '0 0 20px 0',
-  lineHeight: '1.5',
 });
 
 const modalFooter = css({
@@ -67,8 +66,8 @@ const button = cva({
     flex: 1,
     padding: '10px 16px',
     borderRadius: 'radius.lg',
-    fontSize: '14px',
-    fontWeight: '600',
+    textStyle: 'bodySmall',
+    fontWeight: 'semibold',
     transition: 'all 0.2s ease',
     cursor: 'pointer',
     border: '1px solid',

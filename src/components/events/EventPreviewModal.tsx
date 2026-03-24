@@ -43,8 +43,8 @@ const modalHeader = css({
 });
 
 const modalTitle = css({
-  fontSize: '18px',
-  fontWeight: '600',
+  textStyle: 'h4',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
   margin: '0',
 });
@@ -73,15 +73,14 @@ const contentSection = css({
 });
 
 const eventTitle = css({
-  fontSize: '20px',
-  fontWeight: '600',
+  textStyle: 'h3',
   color: 'color.text.primary',
   margin: '0 0 16px 0',
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
   '@media (min-width: 768px)': {
-    fontSize: '24px',
+    textStyle: 'h2',
   },
 });
 
@@ -115,13 +114,13 @@ const artistAvatar = css({
 });
 
 const artistName = css({
-  fontSize: '14px',
-  fontWeight: '500',
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
   color: 'color.text.primary',
 });
 
 const artistSeparator = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
   margin: '0 4px',
 });
@@ -155,9 +154,8 @@ const detailContent = css({
 });
 
 const detailValue = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  lineHeight: 1.5,
 });
 
 const descriptionSection = css({
@@ -169,8 +167,8 @@ const descriptionSection = css({
 });
 
 const descriptionTitle = css({
-  fontSize: '18px',
-  fontWeight: '600',
+  textStyle: 'h4',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
   margin: '0 0 16px 0',
   display: 'flex',
@@ -179,7 +177,7 @@ const descriptionTitle = css({
 });
 
 const descriptionContent = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
   lineHeight: 1.6,
   whiteSpace: 'pre-wrap',

@@ -46,7 +46,7 @@ const formHeader = css({
     color: 'color.text.primary',
     margin: '0 0 8px 0',
     '@media (min-width: 768px)': {
-      fontSize: '28px',
+      textStyle: 'h1',
     },
   },
   '& p': {

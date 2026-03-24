@@ -6,7 +6,7 @@ import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
 import { QueryProvider } from '@/lib/query-client';
 import { LoadingProvider } from '@/lib/loading-context';
-import { Toaster } from 'react-hot-toast';
+import StyledToaster from '@/components/StyledToaster';
 import Header from '@/components/header';
 import Footer from '@/components/layout/Footer';
 import { Analytics } from '@vercel/analytics/next';
@@ -115,41 +115,7 @@ export default function RootLayout({
                 <ClarityInit />
                 <ServiceWorkerRegistration />
                 <PWAInstallPrompt />
-                <Toaster
-                  position="top-center"
-                  toastOptions={{
-                    duration: 4000,
-                    style: {
-                      background: 'var(--colors-gray-0)',
-                      color: 'var(--colors-gray-700)',
-                      border: '1px solid var(--colors-gray-200)',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      padding: '12px 16px',
-                      maxWidth: '400px',
-                    },
-                    success: {
-                      style: {
-                        border: '1px solid var(--colors-green-500)',
-                        color: 'var(--colors-green-800)',
-                      },
-                      iconTheme: {
-                        primary: 'var(--colors-green-500)',
-                        secondary: 'var(--colors-gray-0)',
-                      },
-                    },
-                    error: {
-                      style: {
-                        border: '1px solid var(--colors-red-600)',
-                        color: 'var(--colors-red-800)',
-                      },
-                      iconTheme: {
-                        primary: 'var(--colors-red-600)',
-                        secondary: 'var(--colors-gray-0)',
-                      },
-                    },
-                  }}
-                />
+                <StyledToaster />
                 <Footer />
               </ShareProvider>
             </LoadingProvider>

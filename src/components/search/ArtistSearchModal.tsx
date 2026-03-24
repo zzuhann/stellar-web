@@ -142,13 +142,10 @@ const searchInput = css({
   background: 'transparent',
   border: 'none',
   color: 'color.text.primary',
-  fontSize: '16px',
+  textStyle: 'body',
   outline: 'none',
   '&::placeholder': {
     color: 'color.text.secondary',
-  },
-  '@media (max-width: 480px)': {
-    fontSize: '16px',
   },
 });
 

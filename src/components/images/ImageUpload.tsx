@@ -166,7 +166,7 @@ const uploadTitle = css({
   color: 'color.text.primary',
   margin: '0 0 4px 0',
   '@media (min-width: 768px)': {
-    fontSize: '15px',
+    textStyle: 'body',
   },
 });
 
@@ -174,9 +174,6 @@ const uploadSubtitle = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
   margin: '0 0 12px 0',
-  '@media (min-width: 768px)': {
-    fontSize: '13px',
-  },
 });
 
 const uploadArrow = css({
@@ -193,9 +190,6 @@ const helperText = css({
   margin: '8px 0 0 0',
   textStyle: 'caption',
   color: 'color.text.secondary',
-  '@media (min-width: 768px)': {
-    fontSize: '13px',
-  },
 });
 
 interface ImageUploadProps {

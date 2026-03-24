@@ -42,7 +42,7 @@ const modalTitle = css({
   color: 'color.text.primary',
   margin: '0',
   '@media (min-width: 768px)': {
-    fontSize: '20px',
+    textStyle: 'h3',
   },
 });
 
@@ -160,7 +160,7 @@ const styledButton = cva({
     },
     '@media (min-width: 768px)': {
       padding: '14px 18px',
-      fontSize: '15px',
+      textStyle: 'body',
     },
   },
   variants: {

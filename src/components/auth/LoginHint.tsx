@@ -6,8 +6,7 @@ const formHeader = css({
 });
 
 const title = css({
-  fontSize: '24px',
-  fontWeight: '700',
+  textStyle: 'h2',
   color: 'color.text.primary',
   margin: '0 0 8px 0',
 });

@@ -111,7 +111,7 @@ export default function IOSInstallBanner() {
           backgroundColor: 'transparent',
           border: 'none',
           color: 'color.text.secondary',
-          fontSize: '16px',
+          textStyle: 'body',
           cursor: 'pointer',
           padding: '4px',
           lineHeight: 1,

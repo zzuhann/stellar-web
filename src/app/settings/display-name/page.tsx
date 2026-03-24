@@ -10,7 +10,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '@/lib/api';
 import { showToast } from '@/lib/toast';
 import { css } from '@/styled-system/css';
-import { CheckIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 import Loading from '@/components/Loading';
 
 const displayNameSchema = z.object({
@@ -52,8 +52,7 @@ const pageHeader = css({
   gap: '16px',
   marginBottom: '8px',
   '& h1': {
-    fontSize: '28px',
-    fontWeight: 700,
+    textStyle: 'h1',
     color: 'color.text.primary',
     margin: '0',
   },
@@ -65,10 +64,6 @@ const backButton = css({
   justifyContent: 'center',
   width: '40px',
   height: '40px',
-  borderRadius: 'radius.md',
-  background: 'color.background.secondary',
-  border: '1px solid',
-  borderColor: 'color.border.light',
   cursor: 'pointer',
   transition: 'all 0.2s ease',
   '&:hover': {
@@ -105,8 +100,8 @@ const formGroup = css({
 });
 
 const label = css({
-  fontSize: '14px',
-  fontWeight: 600,
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
 });
 
@@ -116,7 +111,7 @@ const input = css({
   border: '2px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.md',
-  fontSize: '16px',
+  textStyle: 'body',
   transition: 'all 0.2s ease',
   background: 'white',
   color: 'color.text.primary',
@@ -139,7 +134,7 @@ const inputError = css({
 });
 
 const errorText = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'red.600',
   marginTop: '4px',
 });
@@ -157,8 +152,8 @@ const button = css({
   gap: '8px',
   padding: '12px 20px',
   borderRadius: 'radius.md',
-  fontSize: '14px',
-  fontWeight: 600,
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
   transition: 'all 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
@@ -340,10 +335,7 @@ export default function DisplayNamePage() {
                       更新中...
                     </>
                   ) : (
-                    <>
-                      <CheckIcon aria-hidden="true" />
-                      儲存變更
-                    </>
+                    '儲存'
                   )}
                 </button>
               </div>

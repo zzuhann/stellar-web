@@ -45,9 +45,6 @@ const formHeader = css({
     textStyle: 'h2',
     color: 'color.text.primary',
     margin: '0 0 8px 0',
-    '@media (min-width: 768px)': {
-      fontSize: '28px',
-    },
   },
   '& p': {
     textStyle: 'bodySmall',
@@ -79,7 +76,7 @@ const label = css({
   alignItems: 'center',
   gap: '8px',
   '@media (min-width: 768px)': {
-    fontSize: '15px',
+    textStyle: 'body',
   },
   '& svg': {
     width: '18px',
@@ -113,7 +110,7 @@ const input = css({
   },
   '@media (min-width: 768px)': {
     padding: '14px 18px',
-    fontSize: '15px',
+    textStyle: 'body',
   },
 });
 
@@ -121,9 +118,6 @@ const helperText = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
   margin: '0',
-  '@media (min-width: 768px)': {
-    fontSize: '13px',
-  },
 });
 
 const errorText = css({
@@ -144,7 +138,7 @@ const infoBox = css({
     color: 'sky.700',
     margin: '0 0 12px 0',
     '@media (min-width: 768px)': {
-      fontSize: '15px',
+      textStyle: 'body',
     },
   },
   '& ul': {
@@ -170,6 +164,12 @@ const imageSection = css({
 
 const warningText = css({
   color: 'red.600 !important',
+});
+
+const editWarningText = css({
+  textStyle: 'bodySmall',
+  color: 'red.600',
+  margin: '8px 0 0 0',
 });
 
 const bulletPoint = css({
@@ -450,10 +450,7 @@ export default function ArtistSubmissionForm({
         <h2>{mode === 'edit' ? '編輯偶像' : '投稿偶像'}</h2>
         {mode !== 'edit' && <p>新增偶像到我們的資料庫，審核通過後其他用戶可以為他們建立生日應援</p>}
         {mode === 'edit' && (
-          <p
-            style={{ fontSize: '14px', color: 'var(--colors-red-600)', margin: '8px 0 0 0' }}
-            role="alert"
-          >
+          <p className={editWarningText} role="alert">
             編輯後的資料將重新進入審核流程
           </p>
         )}

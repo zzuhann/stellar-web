@@ -31,7 +31,7 @@ const artistSelectionButton = css({
   },
   '@media (min-width: 768px)': {
     padding: '14px 18px',
-    fontSize: '15px',
+    textStyle: 'body',
   },
 });
 

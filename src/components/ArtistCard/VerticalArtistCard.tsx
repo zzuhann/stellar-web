@@ -78,14 +78,14 @@ const buttonContainer = css({
 });
 
 const artistName = css({
-  fontSize: '14px',
-  fontWeight: '600',
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
   color: 'white',
   margin: '0',
 });
 
 const artistBirthday = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'alpha.white.80',
   display: 'flex',
   alignItems: 'center',
@@ -93,7 +93,7 @@ const artistBirthday = css({
 });
 
 const styledSubmissionTime = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'alpha.white.70',
 });
 
@@ -104,8 +104,8 @@ const statusBadge = cva({
     gap: '2px',
     padding: '6px 8px',
     borderRadius: 'radius.md',
-    fontSize: '14px',
-    fontWeight: '600',
+    textStyle: 'bodySmall',
+    fontWeight: 'semibold',
     position: 'absolute',
     top: '6px',
     right: '6px',

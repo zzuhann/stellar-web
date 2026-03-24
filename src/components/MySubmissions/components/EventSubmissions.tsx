@@ -12,8 +12,8 @@ import { useMemo } from 'react';
 const ctaButton = css({
   padding: '12px 24px',
   borderRadius: 'radius.lg',
-  fontSize: '14px',
-  fontWeight: '600',
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
   transition: 'all 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',

@@ -41,13 +41,12 @@ const contentWrapper = css({
 const pageHeader = css({
   textAlign: 'center',
   '& h1': {
-    fontSize: '28px',
-    fontWeight: 700,
+    textStyle: 'h1',
     color: 'color.text.primary',
     margin: '0 0 8px 0',
   },
   '& p': {
-    fontSize: '16px',
+    textStyle: 'body',
     color: 'color.text.secondary',
     margin: '0',
   },
@@ -65,8 +64,8 @@ const settingsSection = css({
 
 const sectionTitle = css({
   padding: '20px 20px 8px 20px',
-  fontSize: '18px',
-  fontWeight: 600,
+  textStyle: 'h4',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
 });
 
@@ -109,14 +108,14 @@ const itemContent = css({
 });
 
 const itemTitle = css({
-  fontSize: '16px',
-  fontWeight: 500,
+  textStyle: 'body',
+  fontWeight: 'medium',
   color: 'color.text.primary',
   marginBottom: '2px',
 });
 
 const itemValue = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
   display: 'flex',
   alignItems: 'center',
@@ -124,9 +123,9 @@ const itemValue = css({
 });
 
 const verifiedBadge = css({
-  fontSize: '12px',
+  textStyle: 'caption',
+  fontWeight: 'medium',
   color: 'green.500',
-  fontWeight: 500,
 });
 
 const chevronContainer = css({

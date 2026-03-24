@@ -63,7 +63,7 @@ const comboboxInput = cva({
     },
     '@media (min-width: 768px)': {
       padding: '14px 18px',
-      fontSize: '15px',
+      textStyle: 'body',
       paddingRight: '44px',
     },
   },
@@ -134,7 +134,7 @@ const loadingOption = css({
   textAlign: 'center',
   '@media (min-width: 768px)': {
     padding: '14px 18px',
-    fontSize: '15px',
+    textStyle: 'body',
   },
 });
 
@@ -211,9 +211,6 @@ const errorMessage = css({
   margin: '8px 0 0 0',
   textStyle: 'caption',
   color: 'red.600',
-  '@media (min-width: 768px)': {
-    fontSize: '13px',
-  },
 });
 
 export default function PlaceAutocomplete({

@@ -42,8 +42,7 @@ const dayButton = cva({
     borderRadius: 'radius.md',
     background: 'transparent',
     color: 'color.text.primary',
-    fontSize: '13px',
-    fontWeight: '400',
+    textStyle: 'caption',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     '&:hover:not(:disabled)': {
@@ -56,7 +55,7 @@ const dayButton = cva({
     '@media (max-width: 410px)': {
       width: '28px',
       height: '28px',
-      fontSize: '12px',
+      textStyle: 'caption',
     },
   },
   variants: {

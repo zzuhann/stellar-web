@@ -7,21 +7,20 @@ const emptyStateContainer = css({
 });
 
 const emptyStateIcon = css({
-  fontSize: '24px',
+  textStyle: 'h2',
   marginBottom: '8px',
 });
 
 const emptyStateTitle = css({
-  fontSize: '18px',
-  fontWeight: '600',
+  textStyle: 'h4',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
   margin: '0 0 8px 0',
 });
 
 const emptyStateDescription = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   margin: '0 0 16px 0',
-  lineHeight: '1.5',
 });
 
 type EmptyStateProps = {
