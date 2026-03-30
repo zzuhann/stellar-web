@@ -97,6 +97,7 @@ function EventSubmissionForm({
     lng: number;
   } | null>(existingEvent?.location.coordinates || null);
   const [locationAddress, setLocationAddress] = useState(existingEvent?.location.address || '');
+  const [locationCity, setLocationCity] = useState(existingEvent?.location.city || '');
   const [artistSelectionModalOpen, setArtistSelectionModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [pendingSubmitData, setPendingSubmitData] = useState<EventSubmissionFormData | null>(null);
@@ -170,6 +171,7 @@ function EventSubmissionForm({
     address: string;
     coordinates: { lat: number; lng: number };
     name: string;
+    city?: string;
   }) => {
     setValue('addressName', place.name, {
       shouldValidate: true,
@@ -177,6 +179,7 @@ function EventSubmissionForm({
     });
     setLocationCoordinates(place.coordinates);
     setLocationAddress(place.address);
+    setLocationCity(place.city || '');
   };
 
   const handleArtistSelect = (artist: Artist) => {
@@ -366,6 +369,7 @@ function EventSubmissionForm({
         location: {
           name: data.addressName,
           address: locationAddress,
+          city: locationCity,
           coordinates: locationCoordinates || {
             // 如果沒有座標，使用台北市中心座標
             lat: 25.033,
@@ -405,6 +409,7 @@ function EventSubmissionForm({
         location: {
           name: data.addressName,
           address: locationAddress,
+          city: locationCity,
           coordinates: locationCoordinates || existingEvent.location.coordinates,
         },
         socialMedia: {

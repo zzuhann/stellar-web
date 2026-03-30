@@ -32,6 +32,7 @@ export interface CoffeeEvent {
   location: {
     name: string; // 地點名稱
     address: string;
+    city?: string;
     coordinates: {
       lat: number;
       lng: number;
@@ -163,6 +164,7 @@ export interface CreateEventRequest {
     // 必填
     name: string; // 地點名稱
     address: string;
+    city: string;
     coordinates: {
       lat: number;
       lng: number;
@@ -214,6 +216,7 @@ export interface UpdateEventRequest {
   location?: {
     name: string;
     address: string;
+    city: string;
     coordinates: {
       lat: number;
       lng: number;

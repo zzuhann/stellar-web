@@ -14,6 +14,7 @@ interface PlaceAutocompleteProps {
     address: string;
     coordinates: { lat: number; lng: number };
     name: string;
+    city: string;
   }) => void;
   placeholder?: string;
   defaultValue?: string;
@@ -266,11 +267,12 @@ export default function PlaceAutocomplete({
             lng: result.geometry.location.lng,
           },
           name: result.name,
+          city: result.city,
         };
         onPlaceSelect(placeData);
       }
     } catch {
-      showToast.warning('地點詳情取得失敗');
+      showToast.warning('取得地點詳細資訊失敗');
     }
   };
 
