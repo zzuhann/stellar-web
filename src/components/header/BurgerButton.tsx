@@ -7,7 +7,7 @@ const burgerButton = css({
   border: 'none',
   color: 'color.text.primary',
   cursor: 'pointer',
-  padding: '8px',
+  padding: '2',
   borderRadius: 'radius.sm',
   transition: 'all 0.2s ease',
   '&:hover': {

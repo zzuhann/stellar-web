@@ -171,24 +171,24 @@ export default function PWAInstallPrompt() {
       <div
         className={css({
           position: 'fixed',
-          bottom: '20px',
-          left: '20px',
-          right: '20px',
+          bottom: '5',
+          left: '5',
+          right: '5',
           backgroundColor: 'color.background.primary',
           borderRadius: 'radius.xl',
           boxShadow: 'shadow.lg',
-          padding: '20px',
+          padding: '5',
           zIndex: 1000,
           display: 'flex',
           flexDirection: 'column',
-          gap: '16px',
+          gap: '4',
           border: '1px solid',
           borderColor: 'color.border.light',
           textAlign: 'center',
           '@media (min-width: 768px)': {
             width: '35%',
             left: 'auto',
-            right: '20px',
+            right: '5',
           },
         })}
       >
@@ -199,7 +199,7 @@ export default function PWAInstallPrompt() {
               fontWeight: 'semibold',
               color: 'color.text.primary',
               margin: 0,
-              marginBottom: '8px',
+              marginBottom: '2',
             })}
           >
             在 STELLAR App 中開啟
@@ -218,7 +218,7 @@ export default function PWAInstallPrompt() {
         <div
           className={css({
             display: 'flex',
-            gap: '12px',
+            gap: '3',
             width: '100%',
           })}
         >
@@ -230,7 +230,8 @@ export default function PWAInstallPrompt() {
               border: '1px solid',
               borderColor: 'color.border.light',
               borderRadius: 'radius.lg',
-              padding: '12px 24px',
+              paddingY: '3',
+              paddingX: '6',
               textStyle: 'bodySmall',
               cursor: 'pointer',
               transition: 'color 0.2s',
@@ -249,7 +250,8 @@ export default function PWAInstallPrompt() {
               color: 'white',
               border: 'none',
               borderRadius: 'radius.lg',
-              padding: '12px 24px',
+              paddingY: '3',
+              paddingX: '6',
               textStyle: 'bodyStrong',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
@@ -275,24 +277,24 @@ export default function PWAInstallPrompt() {
     <div
       className={css({
         position: 'fixed',
-        bottom: '20px',
-        left: '20px',
-        right: '20px',
+        bottom: '5',
+        left: '5',
+        right: '5',
         backgroundColor: 'color.background.primary',
         borderRadius: 'radius.xl',
         boxShadow: 'shadow.lg',
-        padding: '20px',
+        padding: '5',
         zIndex: 1000,
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
+        gap: '4',
         border: '1px solid',
         borderColor: 'color.border.light',
         textAlign: 'center',
         '@media (min-width: 768px)': {
           width: '35%',
           left: 'auto',
-          right: '20px',
+          right: '5',
         },
       })}
     >
@@ -303,7 +305,7 @@ export default function PWAInstallPrompt() {
             fontWeight: 'semibold',
             color: 'color.text.primary',
             margin: 0,
-            marginBottom: '8px',
+            marginBottom: '2',
           })}
         >
           安裝 STELLAR 到主畫面
@@ -322,7 +324,7 @@ export default function PWAInstallPrompt() {
       <div
         className={css({
           display: 'flex',
-          gap: '12px',
+          gap: '3',
           width: '100%',
         })}
       >
@@ -332,7 +334,8 @@ export default function PWAInstallPrompt() {
             backgroundColor: 'transparent',
             color: 'color.text.secondary',
             borderRadius: 'radius.lg',
-            padding: '12px 24px',
+            paddingY: '3',
+            paddingX: '6',
             textStyle: 'bodySmall',
             cursor: 'pointer',
             transition: 'color 0.2s',
@@ -353,7 +356,8 @@ export default function PWAInstallPrompt() {
             color: 'white',
             border: 'none',
             borderRadius: 'radius.lg',
-            padding: '12px 24px',
+            paddingY: '3',
+            paddingX: '6',
             textStyle: 'bodyStrong',
             cursor: 'pointer',
             transition: 'all 0.2s ease',

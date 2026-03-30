@@ -31,7 +31,6 @@ const artistSelectionButton = css({
     boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
   },
   '@media (min-width: 768px)': {
-    padding: '14px 18px',
     textStyle: 'body',
   },
 });

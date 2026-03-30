@@ -5,8 +5,8 @@ import { SortByOption } from '../queryState';
 const filterBarContainer = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '12px',
-  padding: '16px',
+  gap: '3',
+  padding: '4',
   background: 'white',
   border: '1px solid',
   borderColor: 'color.border.light',
@@ -16,7 +16,7 @@ const filterBarContainer = css({
 const filterRow = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '8px',
+  gap: '2',
 });
 
 const dropdownContainer = css({
@@ -27,7 +27,8 @@ const dropdownContainer = css({
 const dropdownButton = css({
   textStyle: 'bodySmall',
   width: '100%',
-  padding: '10px 12px',
+  paddingY: '2.5',
+  paddingX: '3',
   borderRadius: 'radius.md',
   border: '1px solid',
   borderColor: 'color.border.light',
@@ -45,7 +46,7 @@ const dropdownButton = css({
   '&:focus': {
     outline: 'none',
     borderColor: 'color.primary',
-    boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
+    boxShadow: 'shadow.sm',
   },
 });
 
@@ -67,8 +68,7 @@ const dropdownMenu = css({
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.md',
-  boxShadow:
-    '0 4px 6px -1px var(--colors-alpha-black-10), 0 2px 4px -1px var(--colors-alpha-black-5)',
+  boxShadow: 'shadow.md',
   zIndex: 10,
   overflow: 'hidden',
   transformOrigin: 'top',
@@ -77,12 +77,14 @@ const dropdownMenu = css({
 
 const dropdownOption = css({
   textStyle: 'bodySmall',
-  padding: '10px 12px',
+  paddingY: '2.5',
+  paddingX: '3',
   cursor: 'pointer',
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
   transition: 'background 0.15s',
+  width: '100%',
   '&:hover': {
     background: 'gray.50',
   },
@@ -103,7 +105,7 @@ const checkboxLabel = css({
   textStyle: 'bodySmall',
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
   color: 'color.text.primary',
   cursor: 'pointer',
   userSelect: 'none',

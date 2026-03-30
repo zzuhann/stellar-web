@@ -11,7 +11,7 @@ const modalOverlay = css({
   alignItems: 'center',
   justifyContent: 'center',
   zIndex: 50,
-  padding: '16px',
+  padding: '4',
 });
 
 const ModalOverlay = ({ children }: { children: React.ReactNode }) => {

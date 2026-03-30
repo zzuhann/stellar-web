@@ -7,7 +7,8 @@ const footerContainer = css({
   background: 'color.background.secondary',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
-  padding: '12px 20px',
+  paddingY: '3',
+  paddingX: '5',
   marginTop: 'auto',
 });
 
@@ -16,7 +17,7 @@ const footerContent = css({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  gap: '16px',
+  gap: '4',
   maxWidth: '500px',
 });
 
@@ -33,7 +34,7 @@ const socialLinks = css({
 const socialLink = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
   color: 'color.text.secondary',
   textDecoration: 'none',
   textStyle: 'caption',

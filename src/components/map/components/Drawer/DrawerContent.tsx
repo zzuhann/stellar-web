@@ -20,10 +20,10 @@ const drawerContent = css({
 const eventList = css({
   flex: '1',
   overflowY: 'auto',
-  padding: '16px',
+  padding: '4',
   display: 'flex',
   flexDirection: 'column',
-  gap: '16px',
+  gap: '4',
 });
 
 type DrawerContentProps = {

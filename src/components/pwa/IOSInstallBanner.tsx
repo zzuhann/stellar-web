@@ -54,11 +54,14 @@ export default function IOSInstallBanner() {
         border: '1px solid',
         borderColor: 'color.border.light',
         borderRadius: 'radius.lg',
-        padding: '16px 20px',
-        margin: '0 20px 0',
+        paddingY: '4',
+        paddingX: '5',
+        marginX: '5',
+        marginTop: '0',
+        marginBottom: '0',
         display: 'flex',
         alignItems: 'flex-start',
-        gap: '12px',
+        gap: '3',
         position: 'relative',
       })}
     >
@@ -68,7 +71,9 @@ export default function IOSInstallBanner() {
             textStyle: 'bodySmall',
             fontWeight: 'semibold',
             color: 'color.text.primary',
-            margin: '0 0 4px 0',
+            marginBottom: '1',
+            marginTop: '0',
+            marginX: '0',
             textAlign: 'center',
           })}
         >
@@ -80,20 +85,20 @@ export default function IOSInstallBanner() {
             color: 'color.text.secondary',
             margin: 0,
             textAlign: 'center',
-            marginTop: '12px',
+            marginTop: '3',
           })}
         >
           <div
             className={css({
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
+              gap: '1',
               justifyContent: 'center',
             })}
           >
             在 Safari 中點擊分享按鈕
             {
-              <span className={css({ display: 'inline-block', marginRight: '4px' })}>
+              <span className={css({ display: 'inline-block', marginRight: '1' })}>
                 <ShareIcon aria-hidden="true" width={16} height={16} />
               </span>
             }
@@ -106,14 +111,14 @@ export default function IOSInstallBanner() {
         onClick={handleDismiss}
         className={css({
           position: 'absolute',
-          top: '10px',
-          right: '10px',
+          top: '2.5',
+          right: '2.5',
           backgroundColor: 'transparent',
           border: 'none',
           color: 'color.text.secondary',
           textStyle: 'body',
           cursor: 'pointer',
-          padding: '4px',
+          padding: '1',
           lineHeight: 1,
           transition: 'color 0.2s',
           flexShrink: 0,

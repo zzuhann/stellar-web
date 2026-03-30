@@ -1,7 +1,7 @@
 import { css } from '@/styled-system/css';
 
 const cardHeaderContainer = css({
-  padding: '16px',
+  padding: '4',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   background: 'white',
@@ -10,7 +10,9 @@ const cardHeaderContainer = css({
 const cardHeader = css({
   textStyle: 'bodyStrong',
   color: 'color.text.primary',
-  margin: '0 0 4px 0',
+  marginBottom: '1',
+  marginTop: '0',
+  marginX: '0',
 });
 
 const cardHeaderDescription = css({

@@ -9,16 +9,17 @@ import EmptyState from '@/components/EmptyState';
 const eventGrid = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-  gap: '16px',
-  padding: '16px',
+  gap: '4',
+  padding: '4',
 });
 
 const paginationContainer = css({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  gap: '12px',
-  padding: '20px 16px',
+  gap: '3',
+  paddingY: '5',
+  paddingX: '4',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
 });
@@ -26,7 +27,8 @@ const paginationContainer = css({
 const paginationButton = css({
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
-  padding: '8px 16px',
+  paddingY: '2',
+  paddingX: '4',
   borderRadius: 'radius.md',
   cursor: 'pointer',
   border: '1px solid',
@@ -52,7 +54,8 @@ const pageInfo = css({
 const ctaButton = css({
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
-  padding: '12px 24px',
+  paddingY: '3',
+  paddingX: '6',
   borderRadius: 'radius.lg',
   transition: 'all 0.2s ease',
   cursor: 'pointer',
@@ -61,7 +64,9 @@ const ctaButton = css({
   borderColor: 'color.primary',
   color: 'white',
   maxWidth: '60%',
-  margin: '16px auto 0 auto',
+  marginTop: '4',
+  marginX: 'auto',
+  marginBottom: '0',
   '&:hover': {
     background: 'stellarBlue.600',
     borderColor: 'stellarBlue.600',

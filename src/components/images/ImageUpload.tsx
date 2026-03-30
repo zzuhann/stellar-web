@@ -18,13 +18,13 @@ const uploadArea = cva({
     position: 'relative',
     border: '2px dashed',
     borderRadius: 'radius.lg',
-    padding: '24px',
+    padding: '6',
     transition: 'all 0.2s ease',
     borderColor: 'color.border.light',
     background: 'color.background.primary',
 
     '@media (min-width: 768px)': {
-      padding: '32px',
+      padding: '8',
     },
 
     '&:hover': {
@@ -95,15 +95,15 @@ const previewImage = cva({
 
 const actionButtons = css({
   position: 'absolute',
-  top: '8px',
-  right: '8px',
+  top: '2',
+  right: '2',
   display: 'flex',
-  gap: '4px',
+  gap: '1',
 });
 
 const actionButton = cva({
   base: {
-    padding: '4px',
+    padding: '1',
     borderRadius: 'radius.circle',
     transition: 'all 0.2s ease',
     border: 'none',
@@ -138,12 +138,13 @@ const actionButton = cva({
 
 const imageHint = css({
   position: 'absolute',
-  bottom: '8px',
-  left: '8px',
+  bottom: '2',
+  left: '2',
   background: 'alpha.black.60',
   color: 'white',
   textStyle: 'caption',
-  padding: '4px 8px',
+  paddingX: '2',
+  paddingY: '1',
   borderRadius: 'radius.sm',
 });
 
@@ -158,13 +159,15 @@ const uploadContent = css({
 const uploadIcon = css({
   display: 'flex',
   justifyContent: 'center',
-  marginBottom: '12px',
+  marginBottom: '3',
 });
 
 const uploadTitle = css({
   textStyle: 'bodySmall',
   color: 'color.text.primary',
-  margin: '0 0 4px 0',
+  marginBottom: '1',
+  marginX: '0',
+  marginTop: '0',
   '@media (min-width: 768px)': {
     textStyle: 'body',
   },
@@ -173,21 +176,27 @@ const uploadTitle = css({
 const uploadSubtitle = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
-  margin: '0 0 12px 0',
+  marginBottom: '3',
+  marginX: '0',
+  marginTop: '0',
 });
 
 const uploadArrow = css({
-  marginTop: '12px',
+  marginTop: '3',
 });
 
 const errorMessage = css({
-  margin: '8px 0 0 0',
+  marginTop: '2',
+  marginX: '0',
+  marginBottom: '0',
   textStyle: 'caption',
   color: 'color.status.color',
 });
 
 const helperText = css({
-  margin: '8px 0 0 0',
+  marginTop: '2',
+  marginX: '0',
+  marginBottom: '0',
   textStyle: 'caption',
   color: 'color.text.secondary',
 });

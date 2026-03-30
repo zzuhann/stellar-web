@@ -13,18 +13,18 @@ const modalContainer = css({
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
   boxShadow: 'shadow.lg',
-  padding: '16px',
+  padding: '4',
   maxWidth: 'calc(100vw - 32px)',
   width: '100%',
-  margin: '16px',
+  margin: '4',
   maxHeight: '90vh',
   overflowY: 'auto',
   '@media (min-width: 480px)': {
-    padding: '20px',
+    padding: '5',
     maxWidth: '400px',
   },
   '@media (min-width: 768px)': {
-    padding: '24px',
+    padding: '6',
     maxWidth: '520px',
   },
 });
@@ -33,7 +33,7 @@ const modalHeader = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  marginBottom: '16px',
+  marginBottom: '4',
 });
 
 const modalTitle = css({
@@ -81,7 +81,7 @@ const cropFrame = cva({
     position: 'absolute',
     border: '2px solid',
     borderColor: 'color.primary',
-    boxShadow: '0 0 0 1px var(--colors-alpha-black-30)',
+    boxShadow: 'shadow.sm',
     borderRadius: 'radius.circle',
   },
   variants: {
@@ -123,18 +123,18 @@ const actionBar = css({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
-  marginTop: '16px',
+  marginTop: '4',
   '@media (min-width: 768px)': {
-    marginTop: '24px',
+    marginTop: '6',
   },
 });
 
 const buttonGroup = css({
   display: 'flex',
-  gap: '8px',
+  gap: '2',
   width: '100%',
   '@media (min-width: 480px)': {
-    gap: '12px',
+    gap: '3',
     width: 'auto',
   },
 });
@@ -144,8 +144,9 @@ const styledButton = cva({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '6px',
-    padding: '10px 12px',
+    gap: '1.5',
+    paddingY: '2.5',
+    paddingX: '3',
     borderRadius: 'radius.lg',
     textStyle: 'bodySmall',
     fontWeight: 'semibold',
@@ -155,11 +156,11 @@ const styledButton = cva({
     flex: '1',
     whiteSpace: 'nowrap',
     '@media (min-width: 480px)': {
-      padding: '12px 16px',
+      paddingY: '3',
+      paddingX: '4',
       flex: 'none',
     },
     '@media (min-width: 768px)': {
-      padding: '14px 18px',
       textStyle: 'body',
     },
   },

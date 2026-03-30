@@ -18,7 +18,9 @@ const modalHeader = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '20px 20px 0 20px',
+  paddingTop: '5',
+  paddingX: '5',
+  paddingBottom: '0',
 });
 
 const modalTitle = css({
@@ -28,14 +30,14 @@ const modalTitle = css({
   margin: 0,
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
 });
 
 const closeButton = css({
   background: 'none',
   border: 'none',
   cursor: 'pointer',
-  padding: '4px',
+  padding: '1',
   borderRadius: 'radius.md',
   color: 'color.text.secondary',
   transition: 'all 0.2s ease',
@@ -46,25 +48,30 @@ const closeButton = css({
 });
 
 const modalBody = css({
-  padding: '20px',
+  padding: '5',
 });
 
 const modalMessage = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  margin: '0 0 20px 0',
+  marginBottom: '5',
+  marginTop: '0',
+  marginX: '0',
 });
 
 const modalFooter = css({
   display: 'flex',
-  gap: '12px',
-  padding: '0 20px 20px 20px',
+  gap: '3',
+  paddingX: '5',
+  paddingBottom: '5',
+  paddingTop: '0',
 });
 
 const button = cva({
   base: {
     flex: 1,
-    padding: '10px 16px',
+    paddingY: '2.5',
+    paddingX: '4',
     borderRadius: 'radius.lg',
     textStyle: 'bodySmall',
     fontWeight: 'semibold',

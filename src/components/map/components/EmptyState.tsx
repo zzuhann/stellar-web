@@ -3,26 +3,29 @@ import { Artist } from '@/types';
 
 const emptyStateContainer = css({
   textAlign: 'center',
-  padding: '40px 20px',
+  paddingY: '10',
+  paddingX: '5',
   color: 'color.text.secondary',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: '16px',
+  gap: '4',
 });
 
 const emptyStateTitle = css({
   textStyle: 'h4',
   fontWeight: 'semibold',
   color: 'color.text.primary',
-  margin: '0 0 8px 0',
+  marginBottom: '2',
+  marginTop: '0',
+  marginX: '0',
 });
 
 const profileImageContainer = css({
   width: '80px',
   height: '80px',
-  borderRadius: '50%',
+  borderRadius: 'radius.circle',
   overflow: 'hidden',
   backgroundSize: 'cover',
   backgroundPosition: 'center',

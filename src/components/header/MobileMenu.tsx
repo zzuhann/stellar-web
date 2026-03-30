@@ -36,7 +36,8 @@ const mobileMenu = cva({
 });
 
 const mobileMenuHeader = css({
-  padding: '16px 20px',
+  paddingY: '4',
+  paddingX: '5',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   display: 'flex',
@@ -56,7 +57,7 @@ const closeButton = css({
   border: 'none',
   color: 'color.text.primary',
   cursor: 'pointer',
-  padding: '4px',
+  padding: '1',
   borderRadius: 'radius.sm',
   transition: 'all 0.2s ease',
   '&:hover': {
@@ -66,10 +67,10 @@ const closeButton = css({
 
 const mobileMenuContent = css({
   flex: '1',
-  padding: '20px',
+  padding: '5',
   display: 'flex',
   flexDirection: 'column',
-  gap: '8px',
+  gap: '2',
 });
 
 const mobileMenuButton = css({
@@ -77,7 +78,8 @@ const mobileMenuButton = css({
   textAlign: 'left',
   background: 'none',
   border: 'none',
-  padding: '8px 0',
+  paddingY: '2',
+  paddingX: '0',
   textStyle: 'body',
   color: 'color.text.primary',
   cursor: 'pointer',
@@ -85,7 +87,7 @@ const mobileMenuButton = css({
   transition: 'all 0.2s ease',
   display: 'flex',
   alignItems: 'center',
-  gap: '12px',
+  gap: '3',
 });
 
 const description = css({

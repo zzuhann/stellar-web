@@ -81,7 +81,7 @@ const modalContent = cva({
 });
 
 const modalHeader = css({
-  padding: '20px',
+  padding: '5',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   display: 'flex',
@@ -89,8 +89,8 @@ const modalHeader = css({
   gap: '16px',
   minWidth: 0,
   '@media (max-width: 480px)': {
-    padding: '16px',
-    gap: '12px',
+    padding: '4',
+    gap: '3',
   },
 });
 
@@ -118,12 +118,13 @@ const searchInputContainer = css({
   position: 'relative',
   display: 'flex',
   alignItems: 'center',
-  gap: '12px',
+  gap: '3',
   background: 'color.background.secondary',
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
   '& svg': {
     width: '20px',
     height: '20px',
@@ -131,8 +132,7 @@ const searchInputContainer = css({
     flexShrink: 0,
   },
   '@media (max-width: 480px)': {
-    padding: '10px 12px',
-    gap: '8px',
+    gap: '2',
   },
 });
 
@@ -152,7 +152,9 @@ const searchInput = css({
 const resultsContainer = css({
   flex: 1,
   overflowY: 'auto',
-  padding: '0 20px 20px',
+  paddingX: '5',
+  paddingBottom: '5',
+  paddingTop: '0',
   minHeight: 0,
   position: 'relative',
 });
@@ -160,9 +162,9 @@ const resultsContainer = css({
 const artistList = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '8px',
-  marginTop: '16px',
-  marginBottom: '16px',
+  gap: '2',
+  marginTop: '4',
+  marginBottom: '4',
 });
 
 interface ArtistSearchModalProps {

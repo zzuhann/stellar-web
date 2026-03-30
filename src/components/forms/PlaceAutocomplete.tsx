@@ -40,7 +40,8 @@ const comboboxContainer = css({
 const comboboxInput = cva({
   base: {
     width: '100%',
-    padding: '12px 16px',
+    paddingY: '3',
+    paddingX: '4',
     border: '1px solid',
     borderColor: 'color.border.light',
     borderRadius: 'radius.lg',
@@ -48,7 +49,7 @@ const comboboxInput = cva({
     color: 'color.text.primary',
     textStyle: 'body',
     transition: 'all 0.2s ease',
-    paddingRight: '40px',
+    paddingRight: '10',
     '&::placeholder': {
       color: 'color.text.secondary',
     },
@@ -63,9 +64,7 @@ const comboboxInput = cva({
       cursor: 'not-allowed',
     },
     '@media (min-width: 768px)': {
-      padding: '14px 18px',
       textStyle: 'body',
-      paddingRight: '44px',
     },
   },
   variants: {
@@ -97,7 +96,7 @@ const comboboxButton = css({
   right: '0',
   display: 'flex',
   alignItems: 'center',
-  paddingRight: '12px',
+  paddingRight: '3',
   background: 'none',
   border: 'none',
   cursor: 'pointer',
@@ -105,15 +104,12 @@ const comboboxButton = css({
   '&:hover': {
     color: 'color.text.primary',
   },
-  '@media (min-width: 768px)': {
-    paddingRight: '14px',
-  },
 });
 
 const comboboxOptions = css({
   position: 'absolute',
   zIndex: 10,
-  marginTop: '4px',
+  marginTop: '1',
   maxHeight: '240px',
   width: '100%',
   overflowY: 'auto',
@@ -122,19 +118,20 @@ const comboboxOptions = css({
   border: '1px solid',
   borderColor: 'color.border.light',
   boxShadow: 'shadow.md',
-  padding: '8px 0',
+  paddingY: '2',
+  paddingX: '0',
 });
 
 const loadingOption = css({
   position: 'relative',
   cursor: 'default',
   userSelect: 'none',
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
   color: 'color.text.secondary',
   textStyle: 'bodySmall',
   textAlign: 'center',
   '@media (min-width: 768px)': {
-    padding: '14px 18px',
     textStyle: 'body',
   },
 });
@@ -143,7 +140,8 @@ const comboboxOption = css({
   position: 'relative',
   cursor: 'default',
   userSelect: 'none',
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
   transition: 'all 0.2s ease',
   color: 'color.text.primary',
   '&:hover': {
@@ -176,7 +174,7 @@ const optionContent = cva({
 
 const optionMainText = css({
   fontWeight: 'medium',
-  marginBottom: '2px',
+  marginBottom: '0.5',
 });
 
 const optionSecondaryText = css({
@@ -191,10 +189,7 @@ const checkIconContainer = cva({
     left: 0,
     display: 'flex',
     alignItems: 'center',
-    paddingLeft: '16px',
-    '@media (min-width: 768px)': {
-      paddingLeft: '18px',
-    },
+    paddingLeft: '4',
   },
   variants: {
     isActive: {
@@ -209,7 +204,9 @@ const checkIconContainer = cva({
 });
 
 const errorMessage = css({
-  margin: '8px 0 0 0',
+  marginTop: '2',
+  marginX: '0',
+  marginBottom: '0',
   textStyle: 'caption',
   color: 'red.600',
 });
@@ -297,7 +294,7 @@ export default function PlaceAutocomplete({
           <Combobox.Button className={comboboxButton}>
             {isError ? (
               <ExclamationTriangleIcon
-                style={{ width: '20px', height: '20px', color: 'var(--colors-red-500)' }}
+                className={css({ width: '20px', height: '20px', color: 'red.500' })}
                 aria-hidden="true"
               />
             ) : (

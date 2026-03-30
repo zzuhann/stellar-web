@@ -20,13 +20,13 @@ const userSection = css({
 const rightSection = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '12px',
+  gap: '3',
 });
 
 const userButton = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
   textStyle: 'bodySmall',
   background: 'none',
   border: 'none',
@@ -64,7 +64,8 @@ const userMenuItem = css({
   display: 'block',
   width: '100%',
   textAlign: 'left',
-  padding: '8px 16px',
+  paddingY: '2',
+  paddingX: '4',
   textStyle: 'bodySmall',
   color: 'color.text.primary',
   background: 'none',

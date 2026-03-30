@@ -18,7 +18,8 @@ const modalContent = cva({
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
-    margin: '0 16px',
+    marginY: 0,
+    marginX: '4',
     transition: 'all 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
   },
   variants: {
@@ -34,7 +35,9 @@ const modalContent = cva({
 });
 
 const modalHeader = css({
-  padding: '20px 20px 0',
+  paddingX: '4',
+  paddingTop: '4',
+  paddingBottom: '0',
   display: 'flex',
   justifyContent: 'flex-end',
   flexShrink: '0',
@@ -58,7 +61,9 @@ const closeButton = css({
 
 const contentContainer = css({
   flex: 1,
-  padding: '0 20px 20px',
+  paddingX: '5',
+  paddingBottom: '5',
+  paddingTop: '0',
   overflowY: 'auto',
   minHeight: 0,
 });
