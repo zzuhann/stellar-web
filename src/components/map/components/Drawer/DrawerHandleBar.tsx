@@ -12,7 +12,7 @@ const drawerHandle = css({
   justifyContent: 'center',
   height: '90px',
   cursor: 'grab',
-  gap: '12px',
+  gap: '3',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   background: 'color.background.primary',
@@ -27,7 +27,7 @@ const drawerHandle = css({
 const handleBarTextContainer = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
 });
 
 const handleBarText = css({
@@ -44,8 +44,8 @@ const handleBar = css({
 
 const closeButton = css({
   position: 'absolute',
-  top: '16px',
-  right: '16px',
+  top: '4',
+  right: '4',
   width: '32px',
   height: '32px',
   borderRadius: 'radius.circle',

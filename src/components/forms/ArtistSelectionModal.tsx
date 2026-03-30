@@ -55,7 +55,8 @@ const modalContent = cva({
     transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
     '@media (min-width: 768px)': {
       borderRadius: '16px',
-      margin: '0 16px',
+      marginX: '4',
+      marginY: '4',
       minHeight: '60vh',
       maxHeight: '80vh',
       transition: 'all 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
@@ -80,16 +81,16 @@ const modalContent = cva({
 });
 
 const modalHeader = css({
-  padding: '20px',
+  padding: '5',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   display: 'flex',
   alignItems: 'center',
-  gap: '16px',
+  gap: '4',
   minWidth: 0,
   '@media (max-width: 480px)': {
-    padding: '16px',
-    gap: '12px',
+    padding: '4',
+    gap: '3',
   },
 });
 
@@ -99,12 +100,13 @@ const searchInputContainer = css({
   position: 'relative',
   display: 'flex',
   alignItems: 'center',
-  gap: '12px',
+  gap: '3',
   background: 'color.background.secondary',
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
   '& svg': {
     width: '20px',
     height: '20px',
@@ -112,8 +114,9 @@ const searchInputContainer = css({
     flexShrink: 0,
   },
   '@media (max-width: 480px)': {
-    padding: '10px 12px',
-    gap: '8px',
+    paddingY: '2.5',
+    paddingX: '3',
+    gap: '2',
   },
 });
 
@@ -133,7 +136,9 @@ const searchInput = css({
 const resultsContainer = css({
   flex: 1,
   overflowY: 'auto',
-  padding: '0 20px 20px',
+  paddingTop: '0',
+  paddingX: '5',
+  paddingBottom: '5',
   minHeight: 0,
   position: 'relative',
 });
@@ -141,12 +146,13 @@ const resultsContainer = css({
 const artistList = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '8px',
-  marginTop: '16px',
+  gap: '2',
+  marginTop: '4',
 });
 
 const ctaButton = css({
-  padding: '12px 24px',
+  paddingY: '3',
+  paddingX: '6',
   borderRadius: 'radius.lg',
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
@@ -157,7 +163,7 @@ const ctaButton = css({
   borderColor: 'color.primary',
   color: 'white',
   position: 'relative',
-  marginTop: '24px',
+  marginTop: '6',
 });
 
 const closeButton = css({

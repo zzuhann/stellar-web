@@ -142,7 +142,7 @@ const example = css({
    ```typescript
    margin: '0 auto',     // 仍可使用
    marginX: 'auto',      // 或用這個寫法
-   width: '100%',        // 百分比不受影響
+   margin: '1px' or margin: '-1px' // 仍可使用
    ```
 
 4. **負數值**：在 token 前加 `-` 即可
@@ -151,13 +151,15 @@ const example = css({
    // Before
    top: '-8px',
    right: '-4px',
-   margin: '-1px',
 
    // After
    top: '-2',    // -8px
    right: '-1',  // -4px
-   margin: '-0.5', // -2px（若需要 -1px 則保留原寫法）
    ```
+
+5. width, height 相關不更改
+6. 如果有遇到不確定要不要更改 可以先跳過
+7. admin 跳過
 
 ---
 

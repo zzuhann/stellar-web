@@ -5,7 +5,7 @@ const calendarHeader = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  marginBottom: '16px',
+  marginBottom: '4',
 });
 
 const navigationButton = css({
@@ -32,7 +32,8 @@ const monthYearDisplay = css({
   color: 'color.text.primary',
   margin: '0',
   cursor: 'pointer',
-  padding: '4px 8px',
+  paddingY: '1',
+  paddingX: '2',
   borderRadius: 'radius.md',
   transition: 'all 0.2s ease',
   '&:hover': {

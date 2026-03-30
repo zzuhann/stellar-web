@@ -25,13 +25,14 @@ const mainContainer = css({
 
 const errorContainer = css({
   textAlign: 'center',
-  padding: '40px 20px',
-  marginTop: '16px',
+  paddingY: '10',
+  paddingX: '5',
+  marginTop: '4',
 });
 
 const errorTitle = css({
   color: 'color.text.primary',
-  marginBottom: '16px',
+  marginBottom: '4',
 });
 
 const errorMessage = css({
@@ -40,42 +41,46 @@ const errorMessage = css({
 
 const contentSection = css({
   background: 'gray.0',
-  padding: '0 20px 16px 20px',
-  marginBottom: '24px',
+  paddingTop: '0',
+  paddingX: '5',
+  paddingBottom: '4',
+  marginBottom: '6',
 });
 
 const eventTitle = css({
   textStyle: 'h3',
   color: 'color.text.primary',
-  margin: '0 0 16px 0',
+  marginTop: '0',
+  marginX: '0',
+  marginBottom: '4',
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
 });
 
 const eventDetailsSection = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '4px',
+  gap: '1',
 });
 
 const detailItem = css({
   display: 'flex',
   alignItems: 'flex-start',
-  gap: '12px',
-  padding: '4px',
+  gap: '3',
+  padding: '1',
 });
 
 const detailIcon = css({
   flexShrink: '0',
-  marginTop: '2px',
+  marginTop: '0.5',
 });
 
 const detailContent = css({
   flex: '1',
   display: 'flex',
   flexDirection: 'column',
-  gap: '4px',
+  gap: '1',
 });
 
 const detailValue = css({
@@ -84,8 +89,8 @@ const detailValue = css({
 });
 
 const descriptionSection = css({
-  marginTop: '24px',
-  paddingTop: '24px',
+  marginTop: '6',
+  paddingTop: '6',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
   wordBreak: 'break-word',
@@ -95,10 +100,12 @@ const descriptionTitle = css({
   textStyle: 'h4',
   fontWeight: 'semibold',
   color: 'color.text.primary',
-  margin: '0 0 16px 0',
+  marginTop: '0',
+  marginX: '0',
+  marginBottom: '4',
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
 });
 
 const descriptionContent = css({
@@ -108,7 +115,7 @@ const descriptionContent = css({
 });
 
 const bottomImagesContainer = css({
-  marginTop: '24px',
+  marginTop: '6',
 });
 
 interface EventDetailProps {

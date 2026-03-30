@@ -8,8 +8,8 @@ const container = css({
   display: 'flex',
   alignItems: 'flex-start',
   justifyContent: 'space-between',
-  gap: '16px',
-  padding: '16px',
+  gap: '4',
+  padding: '4',
   background: 'color.background.primary',
   border: '1px solid',
   borderColor: 'color.border.light',
@@ -22,7 +22,7 @@ const container = css({
 const infoContainer = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '4px',
+  gap: '1',
 });
 
 const title = css({
@@ -39,7 +39,7 @@ const title = css({
 const descriptionContainer = css({
   display: 'flex',
   alignItems: 'flex-start',
-  gap: '8px',
+  gap: '2',
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
   '@media (max-width: 400px)': {

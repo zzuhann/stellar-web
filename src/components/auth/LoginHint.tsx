@@ -2,13 +2,15 @@ import { css } from '@/styled-system/css';
 
 const formHeader = css({
   textAlign: 'center',
-  marginBottom: '16px',
+  marginBottom: '4',
 });
 
 const title = css({
   textStyle: 'h2',
   color: 'color.text.primary',
-  margin: '0 0 8px 0',
+  marginTop: '0',
+  marginX: '0',
+  marginBottom: '2',
 });
 
 const LoginHint = () => {

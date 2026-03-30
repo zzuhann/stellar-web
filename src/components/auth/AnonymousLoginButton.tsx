@@ -8,7 +8,7 @@ import { UserIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 
 const infoSection = css({
-  marginBottom: '24px',
+  marginBottom: '6',
 });
 
 const infoCard = css({
@@ -16,15 +16,15 @@ const infoCard = css({
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
-  padding: '16px',
-  marginBottom: '12px',
+  padding: '4',
+  marginBottom: '3',
 });
 
 const infoTitle = css({
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
   color: 'color.text.primary',
-  marginBottom: '8px',
+  marginBottom: '2',
 });
 
 const infoText = css({
@@ -34,15 +34,16 @@ const infoText = css({
 });
 
 const collapsibleSection = css({
-  marginBottom: '24px',
+  marginBottom: '6',
 });
 
 const collapsibleTrigger = css({
   display: 'grid',
   gridTemplateColumns: '30px 1fr',
   alignItems: 'center',
-  gap: '8px',
-  padding: '4px 0',
+  gap: '2',
+  paddingY: '1',
+  paddingX: '0',
   background: 'none',
   border: 'none',
   cursor: 'pointer',
@@ -81,8 +82,8 @@ const collapsibleContent = css({
 
 const collapsibleInner = css({
   minHeight: 0,
-  paddingLeft: '20px',
-  paddingTop: '12px',
+  paddingLeft: '5',
+  paddingTop: '3',
 });
 
 const imageContainer = css({
@@ -103,7 +104,8 @@ const divider = css({
   display: 'flex',
   alignItems: 'center',
   textAlign: 'center',
-  margin: '24px 0',
+  marginY: '6',
+  marginX: '0',
   color: 'color.text.secondary',
   textStyle: 'caption',
   '&::before, &::after': {
@@ -113,23 +115,24 @@ const divider = css({
     borderColor: 'color.border.light',
   },
   '&::before': {
-    marginRight: '12px',
+    marginRight: '3',
   },
   '&::after': {
-    marginLeft: '12px',
+    marginLeft: '3',
   },
 });
 
 const buttonGroup = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '12px',
+  gap: '3',
 });
 
 const anonymousButton = cva({
   base: {
     width: '100%',
-    padding: '14px 24px',
+    paddingY: '3',
+    paddingX: '6',
     borderRadius: 'radius.lg',
     border: '1px solid',
     borderColor: 'color.border.light',
@@ -139,7 +142,7 @@ const anonymousButton = cva({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '12px',
+    gap: '3',
     '&:hover:not(:disabled)': {
       background: 'color.background.tertiary',
       borderColor: 'color.border.medium',
@@ -165,8 +168,8 @@ const anonymousButton = cva({
 });
 
 const disclaimer = css({
-  marginTop: '16px',
-  padding: '12px',
+  marginTop: '4',
+  padding: '3',
   textStyle: 'caption',
   color: 'color.text.secondary',
   backgroundColor: 'color.background.secondary',

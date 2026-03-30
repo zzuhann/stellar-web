@@ -29,22 +29,24 @@ const formContainer = css({
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
   boxShadow: 'shadow.md',
-  padding: '32px',
+  padding: '8',
   '@media (min-width: 768px)': {
-    padding: '40px',
+    padding: '10',
   },
 });
 
 const formHeader = css({
   textAlign: 'center',
-  marginBottom: '32px',
-  paddingBottom: '24px',
+  marginBottom: '8',
+  paddingBottom: '6',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   '& h2': {
     textStyle: 'h2',
     color: 'color.text.primary',
-    margin: '0 0 8px 0',
+    marginTop: '0',
+    marginX: '0',
+    marginBottom: '2',
   },
   '& p': {
     textStyle: 'bodySmall',
@@ -59,13 +61,13 @@ const formHeader = css({
 const form = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '24px',
+  gap: '6',
 });
 
 const formGroup = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '8px',
+  gap: '2',
 });
 
 const label = css({
@@ -74,7 +76,7 @@ const label = css({
   color: 'color.text.primary',
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
   '@media (min-width: 768px)': {
     textStyle: 'body',
   },
@@ -87,7 +89,8 @@ const label = css({
 
 const input = css({
   width: '100%',
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
@@ -109,7 +112,6 @@ const input = css({
     cursor: 'not-allowed',
   },
   '@media (min-width: 768px)': {
-    padding: '14px 18px',
     textStyle: 'body',
   },
 });
@@ -123,7 +125,9 @@ const helperText = css({
 const errorText = css({
   textStyle: 'caption',
   color: 'red.600',
-  margin: '4px 0 0 0',
+  marginTop: '1',
+  marginX: '0',
+  marginBottom: '0',
 });
 
 const infoBox = css({
@@ -131,12 +135,14 @@ const infoBox = css({
   border: '1px solid',
   borderColor: 'sky.200',
   borderRadius: 'radius.lg',
-  padding: '20px',
+  padding: '5',
   '& .title': {
     textStyle: 'bodySmall',
     fontWeight: 'semibold',
     color: 'sky.700',
-    margin: '0 0 12px 0',
+    marginTop: '0',
+    marginX: '0',
+    marginBottom: '3',
     '@media (min-width: 768px)': {
       textStyle: 'body',
     },
@@ -145,12 +151,12 @@ const infoBox = css({
     textStyle: 'caption',
     color: 'sky.700',
     margin: '0',
-    paddingLeft: '16px',
+    paddingLeft: '4',
     '@media (min-width: 768px)': {
       textStyle: 'bodySmall',
     },
     '& li': {
-      marginBottom: '6px',
+      marginBottom: '1.5',
       lineHeight: '1.5',
     },
   },
@@ -158,7 +164,7 @@ const infoBox = css({
 
 const imageSection = css({
   '& .manual-input': {
-    marginTop: '16px',
+    marginTop: '4',
   },
 });
 
@@ -169,7 +175,9 @@ const warningText = css({
 const editWarningText = css({
   textStyle: 'bodySmall',
   color: 'red.600',
-  margin: '8px 0 0 0',
+  marginTop: '2',
+  marginX: '0',
+  marginBottom: '0',
 });
 
 const bulletPoint = css({
@@ -179,19 +187,20 @@ const bulletPoint = css({
 const buttonGroup = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '12px',
-  paddingTop: '24px',
+  gap: '3',
+  paddingTop: '6',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
   '@media (min-width: 480px)': {
     flexDirection: 'row',
-    gap: '16px',
+    gap: '4',
   },
 });
 
 const button = cva({
   base: {
-    padding: '14px 24px',
+    paddingY: '3',
+    paddingX: '6',
     borderRadius: 'radius.lg',
     textStyle: 'body',
     fontWeight: 'semibold',
@@ -201,10 +210,11 @@ const button = cva({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '8px',
+    gap: '2',
     flex: '1',
     '@media (min-width: 768px)': {
-      padding: '16px 28px',
+      paddingY: '4',
+      paddingX: '8',
     },
     '&:disabled': {
       cursor: 'not-allowed',
@@ -247,7 +257,7 @@ const loadingSpinner = css({
   height: '16px',
   border: '2px solid transparent',
   borderTop: '2px solid white',
-  borderRadius: '50%',
+  borderRadius: 'radius.circle',
   animation: 'spin 1s linear infinite',
 });
 

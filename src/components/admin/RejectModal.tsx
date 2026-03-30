@@ -30,7 +30,8 @@ const modalHeader = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  padding: '20px 24px',
+  paddingY: '5',
+  paddingX: '6',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
 });
@@ -43,7 +44,7 @@ const modalTitle = css({
 });
 
 const closeButton = css({
-  padding: '4px',
+  padding: '1',
   border: 'none',
   background: 'none',
   color: 'color.text.secondary',
@@ -61,12 +62,13 @@ const closeButton = css({
 });
 
 const modalBody = css({
-  padding: '24px',
+  padding: '6',
 });
 
 const itemInfo = css({
-  marginBottom: '20px',
-  padding: '12px 16px',
+  marginBottom: '5',
+  paddingY: '3',
+  paddingX: '4',
   background: 'color.background.secondary',
   border: '1px solid',
   borderColor: 'color.border.light',
@@ -79,7 +81,7 @@ const itemLabel = css({
   color: 'color.text.secondary',
   textTransform: 'uppercase',
   letterSpacing: '0.025em',
-  marginBottom: '4px',
+  marginBottom: '1',
 });
 
 const styledItemName = css({
@@ -89,7 +91,7 @@ const styledItemName = css({
 });
 
 const formGroup = css({
-  marginBottom: '20px',
+  marginBottom: '5',
 });
 
 const label = css({
@@ -97,17 +99,18 @@ const label = css({
   fontSize: '14px',
   fontWeight: '500',
   color: 'color.text.primary',
-  marginBottom: '8px',
+  marginBottom: '2',
 });
 
 const requiredIndicator = css({
   color: 'red.600',
-  marginLeft: '4px',
+  marginLeft: '1',
 });
 
 const textarea = css({
   width: '100%',
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.md',
@@ -137,20 +140,20 @@ const textarea = css({
 const helperText = css({
   fontSize: '12px',
   color: 'color.text.secondary',
-  marginTop: '6px',
+  marginTop: '1.5',
 });
 
 const errorText = css({
   fontSize: '12px',
   color: 'red.600',
-  marginTop: '6px',
+  marginTop: '1.5',
 });
 
 const characterCount = cva({
   base: {
     fontSize: '11px',
     textAlign: 'right',
-    marginTop: '4px',
+    marginTop: '1',
   },
   variants: {
     isNearLimit: {
@@ -166,16 +169,18 @@ const characterCount = cva({
 
 const modalFooter = css({
   display: 'flex',
-  gap: '12px',
+  gap: '3',
   justifyContent: 'flex-end',
-  padding: '20px 24px',
+  paddingY: '5',
+  paddingX: '6',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
 });
 
 const button = cva({
   base: {
-    padding: '10px 20px',
+    paddingY: '2.5',
+    paddingX: '5',
     borderRadius: 'radius.md',
     fontSize: '14px',
     fontWeight: '600',
@@ -184,7 +189,7 @@ const button = cva({
     border: '1px solid',
     display: 'flex',
     alignItems: 'center',
-    gap: '8px',
+    gap: '2',
   },
   variants: {
     variant: {

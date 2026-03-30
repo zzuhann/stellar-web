@@ -16,23 +16,25 @@ const bannerSkeleton = css({
   position: 'relative',
   width: '100%',
   aspectRatio: '3/4',
-  marginBottom: '24px',
+  marginBottom: '6',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
 });
 
 const contentSection = css({
   background: 'gray.0',
-  padding: '0 20px 16px 20px',
-  marginBottom: '24px',
+  paddingTop: '0',
+  paddingX: '5',
+  paddingBottom: '4',
+  marginBottom: '6',
 });
 
 const skeletonSpacing = css({
-  marginBottom: '16px',
+  marginBottom: '4',
 });
 
 const skeletonSpacingLarge = css({
-  marginBottom: '24px',
+  marginBottom: '6',
 });
 
 const DetailSkeleton = () => {

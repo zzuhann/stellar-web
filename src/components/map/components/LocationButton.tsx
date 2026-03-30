@@ -6,15 +6,15 @@ import { MapPinIcon } from '@heroicons/react/24/outline';
 const locationButton = cva({
   base: {
     position: 'absolute',
-    bottom: '100px',
-    right: '20px',
+    bottom: '25',
+    right: '5',
     zIndex: '10',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     width: '48px',
     height: '48px',
-    borderRadius: '50%',
+    borderRadius: 'radius.circle',
     background: 'color.background.primary',
     border: '1px solid',
     borderColor: 'color.border.light',

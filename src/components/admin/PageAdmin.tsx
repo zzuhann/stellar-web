@@ -34,11 +34,12 @@ const pageContainer = css({
 const mainContainer = css({
   maxWidth: '1200px',
   margin: '0 auto',
-  padding: '100px 16px',
+  paddingTop: '25',
+  paddingX: '4',
 });
 
 const tabContainer = css({
-  marginBottom: '24px',
+  marginBottom: '6',
 });
 
 const tabNav = css({
@@ -47,13 +48,14 @@ const tabNav = css({
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
-  padding: '4px',
+  padding: '1',
 });
 
 const tabButton = cva({
   base: {
     flex: 1,
-    padding: '12px 16px',
+    paddingY: '3',
+    paddingX: '4',
     borderRadius: 'radius.md',
     fontSize: '14px',
     fontWeight: 600,
@@ -64,7 +66,7 @@ const tabButton = cva({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '8px',
+    gap: '2',
   },
   variants: {
     active: {
@@ -91,7 +93,8 @@ const badge = css({
   color: 'red.800',
   fontSize: '12px',
   fontWeight: 600,
-  padding: '2px 8px',
+  paddingY: '0.5',
+  paddingX: '2',
   borderRadius: 'radius.md',
 });
 
@@ -104,7 +107,7 @@ const contentCard = css({
 });
 
 const cardHeader = css({
-  padding: '20px',
+  padding: '5',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   background: 'white',
@@ -112,7 +115,9 @@ const cardHeader = css({
     fontSize: '18px',
     fontWeight: 600,
     color: 'color.text.primary',
-    margin: '0 0 4px 0',
+    marginTop: '0',
+    marginX: '0',
+    marginBottom: '1',
   },
   '& p': {
     fontSize: '14px',
@@ -123,12 +128,13 @@ const cardHeader = css({
 
 const emptyState = css({
   textAlign: 'center',
-  padding: '60px 20px',
+  paddingY: '15',
+  paddingX: '5',
   color: 'color.text.secondary',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: '16px',
+  gap: '4',
   '& h3': {
     fontSize: '18px',
     fontWeight: 600,
@@ -144,13 +150,13 @@ const emptyState = css({
 const itemList = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-  gap: '20px',
-  padding: '20px',
+  gap: '5',
+  padding: '5',
 });
 
 const actionButtons = css({
   display: 'flex',
-  gap: '8px',
+  gap: '2',
   flexShrink: 0,
   justifyContent: 'flex-end',
   height: '60px',
@@ -160,8 +166,9 @@ const actionButtons = css({
 const actionButton = css({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '6px',
-  padding: '8px 12px',
+  gap: '1.5',
+  paddingY: '2',
+  paddingX: '3',
   borderRadius: 'radius.md',
   fontSize: '13px',
   fontWeight: 600,
@@ -241,26 +248,27 @@ const actionButtonExists = css({
 });
 
 const batchActionsContainer = css({
-  padding: '16px 20px',
+  paddingY: '4',
+  paddingX: '5',
   background: 'gray.50',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: '16px',
+  gap: '4',
 });
 
 const batchActionsLeft = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '12px',
+  gap: '3',
 });
 
 const batchActionsRight = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
 });
 
 const checkbox = css({
@@ -272,8 +280,9 @@ const checkbox = css({
 const batchButton = css({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '6px',
-  padding: '8px 12px',
+  gap: '1.5',
+  paddingY: '2',
+  paddingX: '3',
   borderRadius: 'radius.md',
   fontSize: '13px',
   fontWeight: 600,
@@ -335,7 +344,7 @@ const editModal = css({
   alignItems: 'center',
   justifyContent: 'center',
   background: 'alpha.black.50',
-  padding: '16px',
+  padding: '4',
 });
 
 const editModalOpen = css({

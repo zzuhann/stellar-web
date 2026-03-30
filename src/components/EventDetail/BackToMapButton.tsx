@@ -7,7 +7,8 @@ import ArtistModal from './ArtistModal';
 import { CoffeeEvent } from '@/types';
 
 const ctaButton = css({
-  padding: '10px 40px',
+  paddingY: '2.5',
+  paddingX: '10',
   borderRadius: 'radius.lg',
   textStyle: 'button',
   fontWeight: 'semibold',
@@ -20,8 +21,8 @@ const ctaButton = css({
   position: 'relative',
   left: '50%',
   transform: 'translateX(-50%)',
-  marginTop: '32px',
-  marginBottom: '20px',
+  marginTop: '8',
+  marginBottom: '5',
 
   '&:hover': {
     background: 'stellarBlue.600',

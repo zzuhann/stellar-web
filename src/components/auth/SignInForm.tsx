@@ -17,7 +17,7 @@ const formContainer = css({
 const buttonGroup = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '12px',
+  gap: '3',
 });
 
 interface SignInFormProps {

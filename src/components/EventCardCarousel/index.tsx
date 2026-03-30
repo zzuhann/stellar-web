@@ -15,12 +15,13 @@ import Skeleton from '../ui/Skeleton';
 const carouselContainer = css({
   position: 'relative',
   width: '100%',
-  padding: '16px 0',
+  paddingY: '4',
+  paddingX: '0',
 
   '& .swiper-pagination': {
     position: 'relative !important',
     bottom: 'auto !important',
-    marginTop: '16px',
+    marginTop: '4',
   },
 
   '& .swiper-pagination-bullet': {

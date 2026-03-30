@@ -7,9 +7,9 @@ const artistSection = css({
   display: 'flex',
   alignItems: 'center',
   flexWrap: 'wrap',
-  gap: '8px',
-  marginBottom: '16px',
-  paddingBottom: '16px',
+  gap: '2',
+  marginBottom: '4',
+  paddingBottom: '4',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
 });
@@ -17,14 +17,14 @@ const artistSection = css({
 const artistItem = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '6px',
+  gap: '1.5',
   cursor: 'pointer',
 });
 
 const artistAvatar = css({
   width: '24px',
   height: '24px',
-  borderRadius: '50%',
+  borderRadius: 'radius.circle',
   overflow: 'hidden',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
@@ -41,7 +41,8 @@ const artistName = css({
 const artistSeparator = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  margin: '0 4px',
+  marginY: '0',
+  marginX: '1',
 });
 
 interface Artist {

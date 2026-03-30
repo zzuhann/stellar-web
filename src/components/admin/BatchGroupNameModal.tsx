@@ -9,7 +9,7 @@ import ModalOverlay from '../ui/ModalOverlay';
 const modalContent = css({
   background: 'color.background.primary',
   borderRadius: 'radius.lg',
-  padding: '24px',
+  padding: '6',
   width: '100%',
   maxWidth: '600px',
   maxHeight: '80vh',
@@ -18,14 +18,16 @@ const modalContent = css({
 });
 
 const modalHeader = css({
-  marginBottom: '20px',
+  marginBottom: '5',
 });
 
 const modalTitle = css({
   fontSize: '18px',
   fontWeight: '600',
   color: 'color.text.primary',
-  margin: '0 0 8px 0',
+  marginTop: '0',
+  marginX: '0',
+  marginBottom: '2',
 });
 
 const modalDescription = css({
@@ -36,8 +38,8 @@ const modalDescription = css({
 });
 
 const artistSection = css({
-  marginBottom: '24px',
-  padding: '16px',
+  marginBottom: '6',
+  padding: '4',
   background: 'color.background.secondary',
   borderRadius: 'radius.md',
   border: '1px solid',
@@ -48,24 +50,26 @@ const artistName = css({
   fontSize: '16px',
   fontWeight: '600',
   color: 'color.text.primary',
-  margin: '0 0 12px 0',
+  marginTop: '0',
+  marginX: '0',
+  marginBottom: '3',
 });
 
 const formGroup = css({
-  marginBottom: '16px',
+  marginBottom: '4',
 });
 
 const label = css({
   display: 'block',
-  fontSize: '14px',
-  fontWeight: '500',
+  textStyle: 'bodySmall',
   color: 'color.text.primary',
-  marginBottom: '8px',
+  marginBottom: '2',
 });
 
 const input = css({
   width: '100%',
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
@@ -85,17 +89,18 @@ const input = css({
 
 const buttonGroup = css({
   display: 'flex',
-  gap: '12px',
+  gap: '3',
   justifyContent: 'flex-end',
-  marginTop: '24px',
-  paddingTop: '20px',
+  marginTop: '6',
+  paddingTop: '5',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
 });
 
 const button = cva({
   base: {
-    padding: '10px 20px',
+    paddingY: '2.5',
+    paddingX: '5',
     borderRadius: 'radius.lg',
     fontSize: '14px',
     fontWeight: '600',
@@ -137,9 +142,9 @@ const button = cva({
 
 const groupItemContainer = css({
   display: 'flex',
-  gap: '8px',
+  gap: '2',
   alignItems: 'center',
-  marginBottom: '8px',
+  marginBottom: '2',
 });
 
 const removeButton = css({
@@ -167,8 +172,9 @@ const removeButton = css({
 const addButton = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
-  padding: '8px 12px',
+  gap: '2',
+  paddingY: '2',
+  paddingX: '3',
   borderRadius: 'radius.md',
   fontSize: '14px',
   fontWeight: '500',
@@ -178,7 +184,7 @@ const addButton = css({
   borderColor: 'color.border.light',
   background: 'color.background.secondary',
   color: 'color.text.primary',
-  marginTop: '8px',
+  marginTop: '2',
   '&:hover': {
     background: 'color.border.light',
   },

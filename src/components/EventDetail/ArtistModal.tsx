@@ -19,8 +19,8 @@ const modalOverlay = css({
 const modalContent = css({
   background: 'white',
   borderRadius: 'var(--radius-lg)',
-  padding: '24px',
-  margin: '20px',
+  padding: '6',
+  margin: '5',
   maxWidth: '400px',
   width: '100%',
   maxHeight: '80vh',
@@ -31,7 +31,9 @@ const modalTitle = css({
   textStyle: 'h4',
   fontWeight: 'semibold',
   color: 'color.text.primary',
-  margin: '0 0 16px 0',
+  marginTop: '0',
+  marginX: '0',
+  marginBottom: '4',
   textAlign: 'center',
 });
 
@@ -39,14 +41,14 @@ const artistOption = css({
   width: '100%',
   display: 'flex',
   alignItems: 'center',
-  gap: '12px',
-  padding: '12px',
+  gap: '3',
+  padding: '3',
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'var(--radius-md)',
   background: 'white',
   cursor: 'pointer',
-  marginBottom: '8px',
+  marginBottom: '2',
   transition: 'all 0.2s ease',
 
   '&:hover': {
@@ -61,14 +63,14 @@ const artistOption = css({
 
 const cancelButton = css({
   width: '100%',
-  padding: '12px',
+  padding: '3',
   border: '1px solid',
   borderColor: 'color.border.medium',
   borderRadius: 'var(--radius-md)',
   background: 'white',
   color: 'color.text.secondary',
   cursor: 'pointer',
-  marginTop: '16px',
+  marginTop: '4',
   transition: 'all 0.2s ease',
 
   '&:hover': {
@@ -79,7 +81,7 @@ const cancelButton = css({
 const artistAvatar = css({
   width: '56px',
   height: '56px',
-  borderRadius: '50%',
+  borderRadius: 'radius.circle',
   overflow: 'hidden',
   backgroundSize: 'cover',
   backgroundPosition: 'center',

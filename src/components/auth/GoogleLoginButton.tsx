@@ -8,7 +8,8 @@ import showToast from '@/lib/toast';
 const googleButton = cva({
   base: {
     width: '100%',
-    padding: '14px 24px',
+    paddingY: '3',
+    paddingX: '6',
     borderRadius: 'radius.lg',
     background: 'white',
     border: '1px solid',
@@ -19,7 +20,7 @@ const googleButton = cva({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: '12px',
+    gap: '3',
     '&:hover:not(:disabled)': {
       background: 'color.background.secondary',
       borderColor: 'color.border.medium',

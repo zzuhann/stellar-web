@@ -13,8 +13,9 @@ const favoriteButton = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: '8px',
-  padding: '8px 12px',
+  gap: '2',
+  paddingY: '2',
+  paddingX: '3',
   borderRadius: 'radius.lg',
   textStyle: 'button',
   fontWeight: 'semibold',
@@ -23,7 +24,7 @@ const favoriteButton = css({
   border: '1px solid',
   borderColor: 'color.text.secondary',
   color: 'color.text.secondary',
-  marginBottom: '16px',
+  marginBottom: '4',
   background: 'transparent',
 
   '&:disabled': {
@@ -44,8 +45,9 @@ const favoriteButtonActive = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: '8px',
-  padding: '8px 12px',
+  gap: '2',
+  paddingY: '2',
+  paddingX: '3',
   borderRadius: 'radius.lg',
   textStyle: 'button',
   fontWeight: 'semibold',
@@ -55,7 +57,7 @@ const favoriteButtonActive = css({
   borderColor: 'red.500',
   color: 'white',
   background: 'red.500',
-  marginBottom: '16px',
+  marginBottom: '4',
 
   '&:disabled': {
     opacity: 0.6,
