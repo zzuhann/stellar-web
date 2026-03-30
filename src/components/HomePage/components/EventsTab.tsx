@@ -21,15 +21,15 @@ interface EventsTabProps {
 
 export default function EventsTab({ events, loading }: EventsTabProps) {
   return (
-    <>
+    <div className={eventListContainer}>
       {loading ? (
         <Loading description="載入當週生日應援中..." />
       ) : events.length > 0 ? (
-        <div className={eventListContainer}>
+        <>
           {events.map((event) => (
             <VerticalEventCard key={event.id} event={event} />
           ))}
-        </div>
+        </>
       ) : (
         <EmptyState
           icon="🎉"
@@ -37,6 +37,6 @@ export default function EventsTab({ events, loading }: EventsTabProps) {
           description="可以切換查看其他週的生日應援活動"
         />
       )}
-    </>
+    </div>
   );
 }
