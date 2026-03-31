@@ -34,23 +34,26 @@ const pageContainer = css({
 const mainContainer = css({
   maxWidth: '600px',
   margin: '0 auto',
-  padding: '100px 16px 40px',
+  paddingTop: '25',
+  paddingX: '4',
+  paddingBottom: '10',
   '@media (min-width: 768px)': {
-    padding: '100px 24px 60px',
+    paddingX: '6',
+    paddingBottom: '15',
   },
 });
 
 const contentWrapper = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '24px',
+  gap: '6',
 });
 
 const pageHeader = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '16px',
-  marginBottom: '8px',
+  gap: '4',
+  marginBottom: '2',
   '& h1': {
     textStyle: 'h1',
     color: 'color.text.primary',
@@ -87,16 +90,16 @@ const settingsCard = css({
 });
 
 const formContainer = css({
-  padding: '24px',
+  padding: '6',
   display: 'flex',
   flexDirection: 'column',
-  gap: '20px',
+  gap: '5',
 });
 
 const formGroup = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '8px',
+  gap: '2',
 });
 
 const label = css({
@@ -107,7 +110,8 @@ const label = css({
 
 const input = css({
   width: '100%',
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
   border: '2px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.md',
@@ -136,21 +140,22 @@ const inputError = css({
 const errorText = css({
   textStyle: 'caption',
   color: 'red.600',
-  marginTop: '4px',
+  marginTop: '1',
 });
 
 const buttonGroup = css({
   display: 'flex',
-  gap: '12px',
+  gap: '3',
   justifyContent: 'flex-end',
-  marginTop: '8px',
+  marginTop: '2',
 });
 
 const button = css({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '8px',
-  padding: '12px 20px',
+  gap: '2',
+  paddingY: '3',
+  paddingX: '5',
   borderRadius: 'radius.md',
   textStyle: 'bodySmall',
   fontWeight: 'semibold',

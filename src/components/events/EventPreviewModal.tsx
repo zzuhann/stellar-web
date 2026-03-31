@@ -33,7 +33,8 @@ const modalHeader = css({
   position: 'sticky',
   top: 0,
   background: 'white',
-  padding: '16px 20px',
+  paddingY: '4',
+  paddingX: '5',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   display: 'flex',
@@ -54,7 +55,7 @@ const closeButton = css({
   border: 'none',
   color: 'color.text.primary',
   cursor: 'pointer',
-  padding: '4px',
+  padding: '1',
   borderRadius: 'radius.sm',
   transition: 'all 0.2s ease',
   '&:hover': {
@@ -68,17 +69,19 @@ const closeButton = css({
 
 const contentSection = css({
   background: 'gray.0',
-  padding: '0 20px 16px 20px',
-  marginBottom: '24px',
+  paddingTop: '0',
+  paddingX: '5',
+  paddingBottom: '4',
+  marginBottom: '6',
 });
 
 const eventTitle = css({
   textStyle: 'h3',
   color: 'color.text.primary',
-  margin: '0 0 16px 0',
+  marginBottom: '4',
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
   '@media (min-width: 768px)': {
     textStyle: 'h2',
   },
@@ -88,9 +91,9 @@ const artistSection = css({
   display: 'flex',
   alignItems: 'center',
   flexWrap: 'wrap',
-  gap: '8px',
-  marginBottom: '16px',
-  paddingBottom: '16px',
+  gap: '2',
+  marginBottom: '4',
+  paddingBottom: '4',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
 });
@@ -98,7 +101,7 @@ const artistSection = css({
 const artistItem = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '6px',
+  gap: '1.5',
 });
 
 const artistAvatar = css({
@@ -122,20 +125,20 @@ const artistName = css({
 const artistSeparator = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  margin: '0 4px',
+  marginX: '1',
 });
 
 const eventDetailsSection = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '4px',
+  gap: '1',
 });
 
 const detailItem = css({
   display: 'flex',
   alignItems: 'flex-start',
-  gap: '12px',
-  padding: '4px',
+  gap: '3',
+  padding: '1',
 });
 
 const detailIcon = css({
@@ -150,7 +153,7 @@ const detailContent = css({
   flex: 1,
   display: 'flex',
   flexDirection: 'column',
-  gap: '4px',
+  gap: '1',
 });
 
 const detailValue = css({
@@ -159,8 +162,8 @@ const detailValue = css({
 });
 
 const descriptionSection = css({
-  marginTop: '24px',
-  paddingTop: '24px',
+  marginTop: '6',
+  paddingTop: '6',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
   wordBreak: 'break-word',
@@ -170,10 +173,10 @@ const descriptionTitle = css({
   textStyle: 'h4',
   fontWeight: 'semibold',
   color: 'color.text.primary',
-  margin: '0 0 16px 0',
+  marginBottom: '4',
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
 });
 
 const descriptionContent = css({
@@ -184,7 +187,7 @@ const descriptionContent = css({
 });
 
 const bottomImagesContainer = css({
-  marginTop: '24px',
+  marginTop: '6',
 });
 
 export default function EventPreviewModal({ event, isOpen, onClose }: EventPreviewModalProps) {

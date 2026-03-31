@@ -24,7 +24,7 @@ const bannerContainer = css({
   position: 'relative',
   width: '100%',
   aspectRatio: '3/4',
-  marginBottom: '24px',
+  marginBottom: '6',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
 
@@ -76,11 +76,12 @@ const slideImage = css({
 
 const pageIndicator = css({
   position: 'absolute',
-  top: '16px',
-  right: '16px',
+  top: '4',
+  right: '4',
   background: 'alpha.black.30',
   color: 'white',
-  padding: '4px 12px',
+  paddingY: '1',
+  paddingX: '3',
   borderRadius: '12px',
   textStyle: 'caption',
   fontWeight: 'medium',
@@ -120,11 +121,11 @@ const navigationButton = css({
 });
 
 const prevButton = css({
-  left: '16px',
+  left: '4',
 });
 
 const nextButton = css({
-  right: '16px',
+  right: '4',
 });
 
 interface SwiperBannerProps {

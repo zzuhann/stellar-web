@@ -26,16 +26,19 @@ const pageContainer = css({
 const mainContainer = css({
   maxWidth: '600px',
   margin: '0 auto',
-  padding: '100px 16px 40px',
+  paddingTop: '25',
+  paddingX: '4',
+  paddingBottom: '10',
   '@media (min-width: 768px)': {
-    padding: '100px 24px 60px',
+    paddingX: '6',
+    paddingBottom: '15',
   },
 });
 
 const contentWrapper = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '24px',
+  gap: '6',
 });
 
 const pageHeader = css({
@@ -59,11 +62,13 @@ const settingsSection = css({
   borderRadius: 'radius.lg',
   overflow: 'hidden',
   boxShadow: 'shadow.sm',
-  marginBottom: '16px',
+  marginBottom: '4',
 });
 
 const sectionTitle = css({
-  padding: '20px 20px 8px 20px',
+  paddingTop: '5',
+  paddingX: '5',
+  paddingBottom: '2',
   textStyle: 'h4',
   fontWeight: 'semibold',
   color: 'color.text.primary',
@@ -72,7 +77,8 @@ const sectionTitle = css({
 const settingItemContainer = css({
   display: 'flex',
   alignItems: 'center',
-  padding: '16px 20px',
+  paddingY: '4',
+  paddingX: '5',
   cursor: 'pointer',
   transition: 'background-color 0.2s ease',
   borderBottom: '1px solid',
@@ -94,7 +100,7 @@ const iconContainer = css({
   justifyContent: 'center',
   width: '40px',
   height: '40px',
-  marginRight: '16px',
+  marginRight: '4',
   '& svg': {
     width: '20px',
     height: '20px',
@@ -119,7 +125,7 @@ const itemValue = css({
   color: 'color.text.secondary',
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
 });
 
 const verifiedBadge = css({

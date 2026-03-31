@@ -20,8 +20,8 @@ const container = css({
 const imageGrid = css({
   display: 'grid',
   gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-  gap: '12px',
-  marginBottom: '16px',
+  gap: '3',
+  marginBottom: '4',
 });
 
 const imageCard = css({
@@ -53,7 +53,7 @@ const actionButtonsContainer = css({
   justifyContent: 'center',
   opacity: '1',
   transition: 'opacity 0.2s ease',
-  gap: '8px',
+  gap: '2',
 });
 
 const actionButton = cva({
@@ -96,8 +96,8 @@ const actionButton = cva({
 
 const orderIndicator = css({
   position: 'absolute',
-  top: '4px',
-  left: '4px',
+  top: '1',
+  left: '1',
   background: 'alpha.black.50',
   color: 'white',
   borderRadius: 'radius.circle',
@@ -177,13 +177,13 @@ const uploadText = css({
 const errorText = css({
   textStyle: 'caption',
   color: 'color.status.error',
-  margin: '4px 0 0 0',
+  marginTop: '1',
 });
 
 const helperText = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
-  margin: '8px 0 0 0',
+  marginTop: '2',
 });
 
 const hiddenInput = css({

@@ -52,6 +52,15 @@ export const helperText = css({
   margin: '0',
 });
 
+export const helperTextWarning = css({
+  textStyle: 'caption',
+  margin: '0',
+  color: 'amber.500',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1',
+});
+
 export const errorText = css({
   textStyle: 'caption',
   color: 'red.600',

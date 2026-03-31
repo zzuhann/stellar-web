@@ -8,8 +8,8 @@ const container = css({
   justifyContent: 'center',
   background: 'gray.50',
   flexDirection: 'column',
-  gap: '16px',
-  padding: '20px',
+  gap: '4',
+  padding: '5',
 });
 
 const title = css({
@@ -25,7 +25,8 @@ const description = css({
 });
 
 const homeLink = css({
-  padding: '12px 24px',
+  paddingY: '3',
+  paddingX: '6',
   background: 'color.primary',
   color: 'white',
   textDecoration: 'none',

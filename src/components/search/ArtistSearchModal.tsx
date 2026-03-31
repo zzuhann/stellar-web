@@ -86,7 +86,7 @@ const modalHeader = css({
   borderBottomColor: 'color.border.light',
   display: 'flex',
   alignItems: 'center',
-  gap: '16px',
+  gap: '4',
   minWidth: 0,
   '@media (max-width: 480px)': {
     padding: '4',

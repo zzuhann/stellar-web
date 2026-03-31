@@ -39,12 +39,12 @@ const imageOverlay = cva({
     bottom: 0,
     background:
       'linear-gradient(to top, var(--colors-alpha-black-30) 0%, var(--colors-alpha-black-20) 50%, var(--colors-alpha-black-10) 100%)',
-    padding: '16px',
+    padding: '4',
     color: 'white',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'flex-end',
-    gap: '4px',
+    gap: '1',
     // button reset：移除預設樣式，視覺與 div 一致
     appearance: 'none',
     border: 'none',
@@ -73,7 +73,7 @@ const imageOverlay = cva({
 const buttonContainer = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '2',
   minHeight: '60px',
 });
 
@@ -89,7 +89,7 @@ const artistBirthday = css({
   color: 'alpha.white.80',
   display: 'flex',
   alignItems: 'center',
-  gap: '4px',
+  gap: '1',
 });
 
 const styledSubmissionTime = css({
@@ -101,14 +101,15 @@ const statusBadge = cva({
   base: {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '2px',
-    padding: '6px 8px',
+    gap: '0.5',
+    paddingY: '1.5',
+    paddingX: '2',
     borderRadius: 'radius.md',
     textStyle: 'bodySmall',
     fontWeight: 'semibold',
     position: 'absolute',
-    top: '6px',
-    right: '6px',
+    top: '1.5',
+    right: '1.5',
     zIndex: 1,
   },
   variants: {

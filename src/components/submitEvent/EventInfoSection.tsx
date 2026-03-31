@@ -4,7 +4,7 @@ import {
   MapPinIcon,
   PhotoIcon,
 } from '@heroicons/react/24/outline';
-import { errorText, formGroup, helperText, input, label } from './styles';
+import { errorText, formGroup, helperText, helperTextWarning, input, label } from './styles';
 import ImageUpload from '../images/ImageUpload';
 import { css, cva } from '@/styled-system/css';
 import DatePicker from '../DatePicker';
@@ -216,16 +216,7 @@ const EventInfoSection = ({
             error={!!errors.endDate}
           />
           {!watch('startDate') && (
-            <p
-              className={helperText}
-              style={{
-                color: 'var(--colors-amber-500)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '4px',
-              }}
-              role="alert"
-            >
+            <p className={helperTextWarning} role="alert">
               <ExclamationTriangleIcon style={{ width: '14px', height: '14px', flexShrink: 0 }} />
               請先選擇開始日期
             </p>
