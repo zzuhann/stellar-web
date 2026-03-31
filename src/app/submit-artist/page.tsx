@@ -27,9 +27,11 @@ const spinner = css({
   borderColor: 'color.border.light',
   borderTop: '3px solid',
   borderTopColor: 'color.primary',
-  borderRadius: '50%',
+  borderRadius: 'radius.circle',
   animation: 'spin 1s linear infinite',
-  margin: '0 auto 16px',
+  marginTop: '0',
+  marginX: 'auto',
+  marginBottom: '4',
 });
 
 const loadingText = css({

@@ -107,7 +107,7 @@ const artistItem = css({
 const artistAvatar = css({
   width: '24px',
   height: '24px',
-  borderRadius: '50%',
+  borderRadius: 'radius.circle',
   overflow: 'hidden',
   backgroundSize: 'cover',
   backgroundPosition: 'center',
@@ -146,7 +146,7 @@ const detailIcon = css({
   height: '20px',
   color: 'color.text.secondary',
   flexShrink: 0,
-  marginTop: '2px',
+  marginTop: '0.5',
 });
 
 const detailContent = css({

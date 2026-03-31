@@ -97,7 +97,7 @@ const navigationButton = css({
   color: 'white',
   width: '40px',
   height: '40px',
-  borderRadius: '50%',
+  borderRadius: 'radius.circle',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

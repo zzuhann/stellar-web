@@ -17,7 +17,7 @@ const step = cva({
     '& .step-number': {
       width: '32px',
       height: '32px',
-      borderRadius: '50%',
+      borderRadius: 'radius.circle',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',

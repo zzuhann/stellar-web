@@ -198,7 +198,7 @@ const loadingSpinner = css({
   border: '2px solid transparent',
   borderTop: '2px solid currentColor',
   borderTopColor: 'currentColor',
-  borderRadius: '50%',
+  borderRadius: 'radius.circle',
   animation: 'spin 1s linear infinite',
 });
 
