@@ -106,14 +106,30 @@ sendGAEvent('event', 'search_event', {
 });
 ```
 
-### 頁面瀏覽
+### 頁面瀏覽 (page_view)
+
+使用 `usePageView` hook 或 `PageViewTracker` 元件：
 
 ```typescript
-sendGAEvent('event', 'view_event_detail', {
-  event_page: '/event/[id]',
-  user_id: user?.uid ?? '',
-  content_id: eventId,
-});
+// Client Component 使用 hook
+import { usePageView } from '@/hooks/usePageView';
+
+function MyPage() {
+  usePageView({ eventPage: '/my-page', contentId: 'optional-id' });
+  return <div>...</div>;
+}
+
+// Server Component 使用元件
+import PageViewTracker from '@/components/PageViewTracker';
+
+function ServerPage({ id }: { id: string }) {
+  return (
+    <div>
+      <PageViewTracker eventPage="/page/[id]" contentId={id} />
+      ...
+    </div>
+  );
+}
 ```
 
 ### 登入/註冊
@@ -175,4 +191,6 @@ sendGAEvent('event', 'login', {
 ## 相關檔案
 
 - `src/components/GATracker.tsx` - User Properties 初始化
+- `src/hooks/usePageView.ts` - 頁面瀏覽追蹤 hook
+- `src/components/PageViewTracker.tsx` - 頁面瀏覽追蹤元件（用於 Server Component）
 - `src/utils/pwa.ts` - PWA 模式判斷

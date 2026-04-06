@@ -7,6 +7,7 @@ import { css } from '@/styled-system/css';
 import { UserIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useEffect } from 'react';
 import Loading from '@/components/Loading';
+import { usePageView } from '@/hooks/usePageView';
 
 interface SettingItem {
   id: string;
@@ -170,6 +171,8 @@ function SettingItem({ item }: { item: SettingItem }) {
 export default function SettingsPage() {
   const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  usePageView({ eventPage: '/settings' });
 
   // 權限檢查
   useEffect(() => {

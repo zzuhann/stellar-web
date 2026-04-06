@@ -17,6 +17,7 @@ import { useAuth } from '@/lib/auth-context';
 import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
 import EventCardCarousel from '../EventCardCarousel';
 import { useEventFilters } from '@/hooks/useEventFilters';
+import { usePageView } from '@/hooks/usePageView';
 
 const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearchModal'), {
   ssr: false,
@@ -65,6 +66,8 @@ function HomePageContent() {
   const { user, toggleAuthModal } = useAuth();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
+
+  usePageView({ eventPage: '/' });
 
   const { currentWeekStart, goToPreviousWeek, goToNextWeek, isCurrentWeek, currentWeekEnd } =
     useWeekNavigation();

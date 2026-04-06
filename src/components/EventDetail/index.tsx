@@ -10,6 +10,7 @@ import BackToMapButton from './BackToMapButton';
 import ShareHandler from './ShareHandler';
 import { CoffeeEvent } from '@/types';
 import { formatEventDate } from '@/utils';
+import PageViewTracker from '@/components/PageViewTracker';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -161,6 +162,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
 
   return (
     <div className={pageContainer}>
+      <PageViewTracker eventPage="/event/[id]" contentId={event.id} />
       <div className={mainContainer}>
         {/* Banner 區域 */}
         {bannerItems.length > 0 && <SwiperBanner items={bannerItems} />}

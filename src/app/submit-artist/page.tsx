@@ -3,6 +3,7 @@
 import { Suspense } from 'react';
 import dynamicImport from 'next/dynamic';
 import { css } from '@/styled-system/css';
+import { usePageView } from '@/hooks/usePageView';
 
 const SubmitArtistClient = dynamicImport(() => import('./SubmitArtistClient'), {
   ssr: false,
@@ -57,6 +58,8 @@ function SubmitArtistFallback() {
 }
 
 export default function SubmitArtistPage() {
+  usePageView({ eventPage: '/submit-artist' });
+
   return (
     <div className={pageContainer}>
       <Suspense fallback={<SubmitArtistFallback />}>
