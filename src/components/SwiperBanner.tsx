@@ -185,17 +185,25 @@ export default function SwiperBanner({ items = [] }: SwiperBannerProps) {
 
       {items.length > 1 && (
         <>
-          <button className={`${navigationButton} ${prevButton}`} onClick={handlePrevSlide}>
-            <ChevronLeftIcon />
+          <button
+            className={`${navigationButton} ${prevButton}`}
+            onClick={handlePrevSlide}
+            aria-label="上一張"
+          >
+            <ChevronLeftIcon aria-hidden="true" />
           </button>
-          <button className={`${navigationButton} ${nextButton}`} onClick={handleNextSlide}>
-            <ChevronRightIcon />
+          <button
+            className={`${navigationButton} ${nextButton}`}
+            onClick={handleNextSlide}
+            aria-label="下一張"
+          >
+            <ChevronRightIcon aria-hidden="true" />
           </button>
         </>
       )}
 
       {items.length > 1 && (
-        <div className={pageIndicator}>
+        <div className={pageIndicator} aria-live="polite" aria-atomic="true">
           {currentSlide + 1} / {items.length}
         </div>
       )}
