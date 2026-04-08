@@ -1,19 +1,10 @@
 import { useQueryState } from '@/hooks/useQueryState';
-import { getWeekEnd, getWeekStart } from '@/utils/weekHelpers';
+import { getWeekEnd, getWeekStart, parseWeekStartFromString } from '@/utils/weekHelpers';
 
 const useWeekNavigation = () => {
   const [currentWeekStart, setCurrentWeekStart] = useQueryState('week', {
     defaultValue: getWeekStart(new Date()),
-    parse: (value) => {
-      // 將 YYYY-MM-DD 字符串反序列化為 Date，並確保是週的開始日期
-      if (!value) return getWeekStart(new Date());
-      try {
-        const date = new Date(value);
-        return getWeekStart(date);
-      } catch {
-        return getWeekStart(new Date());
-      }
-    },
+    parse: parseWeekStartFromString,
   });
 
   const goToPreviousWeek = (activeTab: 'birthday' | 'events') => {

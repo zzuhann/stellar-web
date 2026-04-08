@@ -9,6 +9,16 @@ export const getWeekStart = (date: Date): Date => {
   return d;
 };
 
+export const parseWeekStartFromString = (value: string): Date => {
+  if (!value) return getWeekStart(new Date());
+  try {
+    const [year, month, day] = value.split('-').map(Number);
+    return getWeekStart(new Date(year, month - 1, day));
+  } catch {
+    return getWeekStart(new Date());
+  }
+};
+
 export const getWeekEnd = (weekStart: Date): Date => {
   const d = new Date(weekStart);
   d.setDate(d.getDate() + 6);
