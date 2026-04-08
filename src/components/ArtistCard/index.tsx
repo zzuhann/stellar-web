@@ -98,8 +98,8 @@ const srOnly = css({
 const getBirthdayText = (birthday: string): { text: string; isToday: boolean } => {
   if (!birthday) return { text: '', isToday: false };
 
-  const date = new Date(birthday);
-  return { text: `${date.getMonth() + 1} 月 ${date.getDate()} 日`, isToday: false };
+  const [, month, day] = birthday.split('-').map(Number);
+  return { text: `${month} 月 ${day} 日`, isToday: false };
 };
 
 interface ArtistCardProps {
