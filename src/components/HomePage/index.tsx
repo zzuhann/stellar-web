@@ -16,6 +16,7 @@ import CTAButton from '@/components/CTAButton';
 import { useAuth } from '@/lib/auth-context';
 import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
 import EventCardCarousel from '../EventCardCarousel';
+// import TrendingEventsSection from '@/components/HomePage/components/TrendingEventsSection';
 import { useEventFilters } from '@/hooks/useEventFilters';
 import { usePageView } from '@/hooks/usePageView';
 
@@ -110,9 +111,12 @@ function HomePageContent() {
           </CTAButton>
 
           <section className={latestEventsContainer} aria-label="最新生日應援">
-            <h2 className={heading}>✩ 即將到來的生日應援</h2>
+            <h2 className={heading}>✨ 即將到來的生日應援</h2>
             <EventCardCarousel events={uniqueEvents ?? []} isLoading={isLatestEventsLoading} />
           </section>
+
+          {/* TODO: 熱門生咖、生日應援 等數據多一點的時候再開啟 */}
+          {/* <TrendingEventsSection /> */}
 
           <section aria-label="每週壽星與生日應援">
             <WeekNavigation

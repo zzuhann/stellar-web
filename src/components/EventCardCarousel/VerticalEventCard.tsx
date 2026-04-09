@@ -2,6 +2,7 @@ import { CoffeeEvent } from '@/types';
 import { css, cva } from '@/styled-system/css';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Skeleton from '@/components/ui/Skeleton';
 
 const verticalEventCardContainer = css({
   display: 'flex',
@@ -105,6 +106,47 @@ const statusBadge = cva({
   },
 });
 
+const eventArtistSection = css({
+  display: 'flex',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  gap: '1',
+  textStyle: 'bodySmall',
+  color: 'alpha.white.90',
+  marginBottom: '2',
+});
+
+const eventArtistItem = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1',
+});
+
+const eventArtistAvatar = css({
+  width: '24px',
+  height: '24px',
+  borderRadius: 'radius.circle',
+  overflow: 'hidden',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  backgroundColor: 'color.background.secondary',
+  flexShrink: 0,
+});
+
+const eventArtistName = css({
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
+  color: 'alpha.white.90',
+});
+
+const eventArtistSeparator = css({
+  textStyle: 'bodySmall',
+  color: 'alpha.white.70',
+  marginY: '0',
+  marginX: '0.5',
+});
+
 const getStatusText = (status: 'pending' | 'approved' | 'rejected', rejectedReason?: string) => {
   switch (status) {
     case 'approved':
@@ -116,6 +158,14 @@ const getStatusText = (status: 'pending' | 'approved' | 'rejected', rejectedReas
       return '審核中';
   }
 };
+
+export function VerticalEventCardSkeleton() {
+  return (
+    <div className={verticalEventCardContainer}>
+      <Skeleton width="100%" height="auto" borderRadius="0" style={{ aspectRatio: '3/4' }} />
+    </div>
+  );
+}
 
 interface VerticalEventCardProps {
   event: CoffeeEvent;
@@ -142,6 +192,25 @@ const VerticalEventCard = ({ event }: VerticalEventCardProps) => {
 
               <div className={imageOverlay({ isApproved: true })}>
                 <h3 className={eventTitle}>{event.title}</h3>
+                {event.artists && event.artists.length > 0 && (
+                  <div className={eventArtistSection}>
+                    {event.artists.map((artist, index) => (
+                      <div
+                        key={artist.id || index}
+                        style={{ display: 'flex', alignItems: 'center' }}
+                      >
+                        {index > 0 && <span className={eventArtistSeparator}>/</span>}
+                        <div className={eventArtistItem}>
+                          <div
+                            className={eventArtistAvatar}
+                            style={{ backgroundImage: `url(${artist.profileImage ?? ''})` }}
+                          />
+                          <span className={eventArtistName}>{artist.name || 'Unknown Artist'}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </Link>

@@ -55,6 +55,12 @@ export interface CoffeeEvent {
   createdAt: FirebaseTimestamp;
   updatedAt: FirebaseTimestamp;
   isFavorited?: boolean; // 收藏狀態（登入時才有）
+  viewCount?: number;
+}
+
+export interface TrendingEventsResponse {
+  events: CoffeeEvent[];
+  total: number;
 }
 
 export interface User {

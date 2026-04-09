@@ -23,6 +23,16 @@ export const useBirthdayArtistsQuery = (
   });
 };
 
+export const useTrendingEventsQuery = (limit = 10) => {
+  return useQuery({
+    queryKey: queryKey.trendingEvents(limit),
+    queryFn: () => eventsApi.getTrending(limit),
+    staleTime: 1000 * 60 * 60 * 6, // 6 小時，對應後端 cache TTL
+    gcTime: 1000 * 60 * 60 * 7,
+    select: (data) => data.events,
+  });
+};
+
 export const useWeeklyEventsQuery = (
   startDate: string,
   endDate: string,

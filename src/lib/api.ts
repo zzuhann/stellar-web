@@ -19,6 +19,7 @@ import {
   FavoriteCheckResponse,
   UserSubmissionsArtistsResponse,
   UserSubmissionsEventsResponse,
+  TrendingEventsResponse,
 } from '@/types';
 
 // 建立 Axios 實例
@@ -289,6 +290,19 @@ export const eventsApi = {
   // 重新送審活動
   resubmit: async (id: string) => {
     const response = await api.patch<CoffeeEvent>(`/events/${id}/resubmit`);
+    return response.data;
+  },
+
+  // 記錄活動瀏覽量
+  recordView: async (id: string): Promise<void> => {
+    await api.post(`/events/${id}/view`);
+  },
+
+  // 取得熱門活動排行
+  getTrending: async (limit = 10): Promise<TrendingEventsResponse> => {
+    const response = await api.get<TrendingEventsResponse>('/events/trending', {
+      params: { limit },
+    });
     return response.data;
   },
 

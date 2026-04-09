@@ -6,11 +6,12 @@ import type { Swiper as SwiperType } from 'swiper';
 import { Pagination } from 'swiper/modules';
 import { css } from '@/styled-system/css';
 import { CoffeeEvent } from '@/types';
-import VerticalEventCard from '@/components/EventCardCarousel/VerticalEventCard';
+import VerticalEventCard, {
+  VerticalEventCardSkeleton,
+} from '@/components/EventCardCarousel/VerticalEventCard';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
-import Skeleton from '../ui/Skeleton';
 
 const carouselContainer = css({
   position: 'relative',
@@ -100,11 +101,14 @@ export default function EventCardCarousel({ events, isLoading }: EventCardCarous
           swiperRef.current = swiper;
         }}
       >
-        {isLoading && (
-          <SwiperSlide aria-label="生日應援載入中" aria-live="polite">
-            <Skeleton width="100%" height="300px" borderRadius="8px" />
-          </SwiperSlide>
-        )}
+        {isLoading &&
+          [0, 1].map((i) => (
+            <SwiperSlide key={i} aria-label="活動載入中" aria-live="polite">
+              <div className={slideContent}>
+                <VerticalEventCardSkeleton />
+              </div>
+            </SwiperSlide>
+          ))}
 
         {!isLoading &&
           events.map((event) => (
