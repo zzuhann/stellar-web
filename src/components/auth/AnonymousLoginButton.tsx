@@ -6,6 +6,7 @@ import { signInAnonymously } from '@/lib/auth';
 import showToast from '@/lib/toast';
 import { UserIcon, ChevronRightIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
+import { sendGAEvent } from '@next/third-parties/google';
 
 const infoSection = css({
   marginBottom: '6',
@@ -195,6 +196,11 @@ const AnonymousLoginButton = ({ onSuccess }: AnonymousLoginButtonProps) => {
         showToast.error('訪客登入失敗');
       } else if (user) {
         await fetchUserDataByUid(user.uid);
+        sendGAEvent('event', 'login', {
+          event_page: '/',
+          user_id: user.uid,
+          content_id: 'anonymous',
+        });
         showToast.success('以訪客模式登入');
         onSuccess?.();
       }

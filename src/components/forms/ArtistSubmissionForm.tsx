@@ -19,6 +19,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import showToast from '@/lib/toast';
 import { uploadImageToAPI } from '@/lib/r2-upload';
 import { CDN_DOMAIN } from '@/constants';
+import { sendGAEvent } from '@next/third-parties/google';
 
 const formContainer = css({
   width: '100%',
@@ -318,6 +319,13 @@ export default function ArtistSubmissionForm({
     mutationFn: createArtist,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
+
+      sendGAEvent('event', 'submit_artist', {
+        event_page: '/submit-artist',
+        user_id: user?.uid ?? '',
+        content_id: '',
+      });
+
       showToast.success('投稿成功');
       onSuccess?.();
       if (!onSuccess) {

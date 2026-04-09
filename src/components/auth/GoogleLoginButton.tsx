@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { signInWithGoogle } from '@/lib/auth';
 import showToast from '@/lib/toast';
+import { sendGAEvent } from '@next/third-parties/google';
 
 const googleButton = cva({
   base: {
@@ -63,6 +64,11 @@ const GoogleLoginButton = ({ onSuccess }: GoogleLoginButtonProps) => {
         showToast.error('Google 登入失敗');
       } else if (user) {
         await fetchUserDataByUid(user.uid);
+        sendGAEvent('event', 'login', {
+          event_page: '/',
+          user_id: user.uid,
+          content_id: 'google',
+        });
         showToast.success('登入成功');
         onSuccess?.();
       }

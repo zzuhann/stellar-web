@@ -3,6 +3,8 @@ import showToast from '@/lib/toast';
 import { CoffeeEvent, CreateEventRequest } from '@/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth-context';
+import { sendGAEvent } from '@next/third-parties/google';
 
 type UseCreateEventMutationProps = {
   onSuccess?: (event: CoffeeEvent) => void;
@@ -11,6 +13,7 @@ type UseCreateEventMutationProps = {
 const useCreateEventMutation = ({ onSuccess }: UseCreateEventMutationProps) => {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const { user } = useAuth();
 
   return useMutation({
     mutationFn: (eventData: CreateEventRequest) => eventsApi.create(eventData),
@@ -18,6 +21,13 @@ const useCreateEventMutation = ({ onSuccess }: UseCreateEventMutationProps) => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['map-data'] });
       queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
+
+      sendGAEvent('event', 'submit_event', {
+        event_page: '/submit-event',
+        user_id: user?.uid ?? '',
+        content_id: newEvent.id,
+      });
+
       showToast.success('投稿成功');
 
       onSuccess?.(newEvent);
