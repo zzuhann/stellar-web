@@ -1,7 +1,10 @@
 import { useMapStore } from '@/store';
 import { MapEvent } from '@/types';
+import { sendGAEvent } from '@next/third-parties/google';
+import { useAuth } from '@/lib/auth-context';
 
 const useMapSelection = () => {
+  const { user } = useAuth();
   const selectedEventId = useMapStore((state) => state.selectedEventId);
   const setSelectedEventId = useMapStore((state) => state.setSelectedEventId);
   const setIsDrawerExpanded = useMapStore((state) => state.setIsDrawerExpanded);
@@ -14,6 +17,12 @@ const useMapSelection = () => {
 
   // 處理地圖 marker 點擊
   const handleMarkerClick = (event: MapEvent) => {
+    sendGAEvent('event', 'click_map_marker', {
+      event_page: '/map/[artistId]',
+      user_id: user?.uid ?? '',
+      content_id: event.id,
+    });
+
     setCenter({
       lat: event.location.coordinates.lat,
       lng: event.location.coordinates.lng,

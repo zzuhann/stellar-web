@@ -14,6 +14,7 @@ import CTAButton from '../CTAButton';
 import Loading from '../Loading';
 import { css, cva } from '@/styled-system/css';
 import Link from 'next/link';
+import { sendGAEvent } from '@next/third-parties/google';
 
 const modalOverlay = cva({
   base: {
@@ -202,12 +203,17 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
     }
   }, [isOpen]);
 
-  // Focus search input when modal opens
+  // Focus search input when modal opens & track search event
   useEffect(() => {
     if (isOpen) {
       searchInputRef.current?.focus();
+      sendGAEvent('event', 'search_artist', {
+        event_page: '/',
+        user_id: user?.uid ?? '',
+        content_id: '',
+      });
     }
-  }, [isOpen]);
+  }, [isOpen, user?.uid]);
 
   return (
     <div
@@ -258,7 +264,14 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
                     <Link
                       href={`/map/${artist.id}`}
                       key={artist.id}
-                      onClick={onClose}
+                      onClick={() => {
+                        sendGAEvent('event', 'click_artist', {
+                          event_page: '/',
+                          user_id: user?.uid ?? '',
+                          content_id: artist.id,
+                        });
+                        onClose();
+                      }}
                       aria-label={`前往 ${artist.stageName} 的生日應援地圖頁面`}
                     >
                       <ArtistCard artist={artist} />

@@ -7,11 +7,14 @@ import { ShareIcon } from '@/lib/svg';
 import { useWebShare } from '@/hooks/useWebShare';
 import { useShare } from '@/context/ShareContext';
 import { isPWAMode } from '@/utils/pwa';
+import { useAuth } from '@/lib/auth-context';
+import { sendGAEvent } from '@next/third-parties/google';
 
 export default function ShareButton() {
   const { share } = useWebShare();
   const { shareData } = useShare();
   const pathname = usePathname();
+  const { user } = useAuth();
   const [shouldShow, setShouldShow] = useState(false);
 
   useEffect(() => {
@@ -33,6 +36,16 @@ export default function ShareButton() {
   }, [pathname]);
 
   const handleShare = () => {
+    // 從 pathname 取得 contentId
+    const pathParts = pathname.split('/');
+    const contentId = pathParts[pathParts.length - 1] || '';
+
+    sendGAEvent('event', 'share_event', {
+      event_page: pathname.startsWith('/event/') ? '/event/[id]' : '/map/[artistId]',
+      user_id: user?.uid ?? '',
+      content_id: contentId,
+    });
+
     share(shareData);
   };
 
