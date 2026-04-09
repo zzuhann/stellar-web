@@ -95,23 +95,96 @@
 
 ---
 
-## 待實作的事件
+### login
 
-### 中優先
+登入成功時觸發（Google 登入或訪客登入）。
 
-| 事件            | 說明     | 觸發時機     |
-| --------------- | -------- | ------------ |
-| `login`         | 登入     | 登入成功     |
-| `sign_up`       | 註冊     | 註冊成功     |
-| `submit_event`  | 提交活動 | 表單送出成功 |
-| `submit_artist` | 提交藝人 | 表單送出成功 |
+| 參數       | 值                      |
+| ---------- | ----------------------- |
+| event_page | `/`                     |
+| user_id    | 用戶 UID                |
+| content_id | `google` 或 `anonymous` |
 
-### 低優先
+**實作位置：**
 
-| 事件                  | 說明         | 觸發時機               |
-| --------------------- | ------------ | ---------------------- |
-| `click_external_link` | 點擊外部連結 | 點擊 IG/X/Threads 連結 |
-| `install_pwa`         | 安裝 PWA     | PWA 安裝成功           |
+- `src/components/auth/GoogleLoginButton.tsx`
+- `src/components/auth/AnonymousLoginButton.tsx`
+
+---
+
+### submit_event
+
+投稿活動成功時觸發。
+
+| 參數       | 值              |
+| ---------- | --------------- |
+| event_page | `/submit-event` |
+| user_id    | 用戶 UID        |
+| content_id | eventId         |
+
+**實作位置：** `src/components/submitEvent/hooks/useCreateEventMutation.ts`
+
+---
+
+### submit_artist
+
+投稿藝人表單成功時觸發。
+
+| 參數       | 值               |
+| ---------- | ---------------- |
+| event_page | `/submit-artist` |
+| user_id    | 用戶 UID         |
+| content_id | -                |
+
+**實作位置：** `src/components/forms/ArtistSubmissionForm.tsx`
+
+---
+
+### click_instagram / click_threads / click_x
+
+點擊外部社群連結。
+
+| 參數       | 值            |
+| ---------- | ------------- |
+| event_page | `/event/[id]` |
+| user_id    | 用戶 UID      |
+| content_id | eventId       |
+
+**實作位置：**
+
+- `src/components/ui/ExternalLink.tsx`
+- `src/components/EventDetail/index.tsx`
+
+---
+
+### click_location
+
+點擊活動地點連結（開啟 Google Maps）。
+
+| 參數       | 值            |
+| ---------- | ------------- |
+| event_page | `/event/[id]` |
+| user_id    | 用戶 UID      |
+| content_id | eventId       |
+
+**實作位置：**
+
+- `src/components/ui/ExternalLink.tsx`
+- `src/components/EventDetail/index.tsx`
+
+---
+
+### install_pwa
+
+PWA 安裝成功時觸發。
+
+| 參數       | 值           |
+| ---------- | ------------ |
+| event_page | 當前頁面路徑 |
+| user_id    | 用戶 UID     |
+| content_id | -            |
+
+**實作位置：** `src/components/pwa/PWAInstallPrompt.tsx`
 
 ---
 

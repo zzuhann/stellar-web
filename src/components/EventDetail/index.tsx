@@ -3,6 +3,7 @@ import { parseSocialMediaHandles } from '@/utils/socialMedia';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import SwiperBanner from '../SwiperBanner';
 import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
+import ExternalLink from '../ui/ExternalLink';
 import Image from 'next/image';
 import FavoriteButton from './FavoriteButton';
 import ArtistSection from './ArtistSection';
@@ -190,15 +191,16 @@ const EventDetail = ({ event }: EventDetailProps) => {
                     {parseSocialMediaHandles(event.socialMedia.instagram).map(
                       (handle, idx, arr) => (
                         <span key={handle}>
-                          <a
+                          <ExternalLink
                             href={`https://www.instagram.com/${handle}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            platform="instagram"
+                            eventPage="/event/[id]"
+                            contentId={event.id}
                             style={{ color: 'var(--colors-stellar-blue-500)' }}
                           >
                             @{handle}
                             <span className="sr-only">（在新視窗開啟）</span>
-                          </a>
+                          </ExternalLink>
                           {idx < arr.length - 1 && '、'}
                         </span>
                       )
@@ -218,15 +220,16 @@ const EventDetail = ({ event }: EventDetailProps) => {
                   <div className={detailValue}>
                     {parseSocialMediaHandles(event.socialMedia.threads).map((handle, idx, arr) => (
                       <span key={handle}>
-                        <a
+                        <ExternalLink
                           href={`https://www.threads.net/@${handle}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          platform="threads"
+                          eventPage="/event/[id]"
+                          contentId={event.id}
                           style={{ color: 'var(--colors-stellar-blue-500)' }}
                         >
                           @{handle}
                           <span className="sr-only">（在新視窗開啟）</span>
-                        </a>
+                        </ExternalLink>
                         {idx < arr.length - 1 && '、'}
                       </span>
                     ))}
@@ -245,15 +248,16 @@ const EventDetail = ({ event }: EventDetailProps) => {
                   <div className={detailValue}>
                     {parseSocialMediaHandles(event.socialMedia.x).map((handle, idx, arr) => (
                       <span key={handle}>
-                        <a
+                        <ExternalLink
                           href={`https://x.com/${handle}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          platform="x"
+                          eventPage="/event/[id]"
+                          contentId={event.id}
                           style={{ color: 'var(--colors-stellar-blue-500)' }}
                         >
                           @{handle}
                           <span className="sr-only">（在新視窗開啟）</span>
-                        </a>
+                        </ExternalLink>
                         {idx < arr.length - 1 && '、'}
                       </span>
                     ))}
@@ -295,15 +299,16 @@ const EventDetail = ({ event }: EventDetailProps) => {
               </div>
               <div className={detailContent}>
                 <div className={detailValue}>
-                  <a
+                  <ExternalLink
                     href={`https://www.google.com/maps/search/?api=1&query=${event.location.coordinates.lat},${event.location.coordinates.lng}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    platform="location"
+                    eventPage="/event/[id]"
+                    contentId={event.id}
                     style={{ color: 'var(--colors-stellar-blue-500)' }}
                   >
                     {event.location.name}({event.location.address})
                     <span className="sr-only">（在新視窗開啟 Google 地圖）</span>
-                  </a>
+                  </ExternalLink>
                 </div>
               </div>
             </div>

@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { css } from '../../../styled-system/css';
+import { sendGAEvent } from '@next/third-parties/google';
+import { useAuth } from '@/lib/auth-context';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -23,6 +25,12 @@ export default function PWAInstallPrompt() {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
   const [showOpenAppPrompt, setShowOpenAppPrompt] = useState(false);
+  const { user } = useAuth();
+  const userRef = useRef(user);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   useEffect(() => {
     // 檢查是否為mobile，只在手機顯示 PWA 提示
@@ -99,6 +107,12 @@ export default function PWAInstallPrompt() {
       setShowInstallPrompt(false);
       setDeferredPrompt(null);
       localStorage.setItem('pwa-installed', 'true');
+
+      sendGAEvent('event', 'install_pwa', {
+        event_page: window.location.pathname,
+        user_id: userRef.current?.uid ?? '',
+        content_id: '',
+      });
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
