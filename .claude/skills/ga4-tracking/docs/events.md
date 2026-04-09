@@ -25,19 +25,7 @@
 
 ---
 
-### add_to_favorite / remove_from_favorite
-
-收藏/取消收藏活動。
-
-| 參數       | 值            |
-| ---------- | ------------- |
-| event_page | `/event/[id]` |
-| user_id    | 用戶 UID      |
-| content_id | eventId       |
-
-**實作位置：** `src/components/EventDetail/FavoriteButton.tsx`
-
----
+## Home
 
 ### search_artist
 
@@ -50,8 +38,6 @@
 | content_id | -        |
 
 **實作位置：** `src/components/search/ArtistSearchModal.tsx`
-
----
 
 ### click_artist
 
@@ -67,19 +53,53 @@
 
 ---
 
-### share_event
+## Event Detail
 
-分享活動或藝人頁面（PWA 模式下）。
+### add_to_favorite / remove_from_favorite
 
-| 參數       | 值                                 |
-| ---------- | ---------------------------------- |
-| event_page | `/event/[id]` 或 `/map/[artistId]` |
-| user_id    | 用戶 UID                           |
-| content_id | eventId 或 artistId                |
+收藏/取消收藏活動。
 
-**實作位置：** `src/components/ShareButton.tsx`
+| 參數       | 值            |
+| ---------- | ------------- |
+| event_page | `/event/[id]` |
+| user_id    | 用戶 UID      |
+| content_id | eventId       |
+
+**實作位置：** `src/components/EventDetail/FavoriteButton.tsx`
+
+### click_instagram / click_threads / click_x
+
+點擊外部社群連結。
+
+| 參數       | 值            |
+| ---------- | ------------- |
+| event_page | `/event/[id]` |
+| user_id    | 用戶 UID      |
+| content_id | eventId       |
+
+**實作位置：**
+
+- `src/components/ui/ExternalLink.tsx`
+- `src/components/EventDetail/index.tsx`
+
+### click_location
+
+點擊活動地點連結（開啟 Google Maps）。
+
+| 參數       | 值            |
+| ---------- | ------------- |
+| event_page | `/event/[id]` |
+| user_id    | 用戶 UID      |
+| content_id | eventId       |
+
+**實作位置：**
+
+- `src/components/ui/ExternalLink.tsx`
+- `src/components/EventDetail/index.tsx`
 
 ---
+
+## Map
 
 ### click_map_marker
 
@@ -92,6 +112,22 @@
 | content_id | eventId           |
 
 **實作位置：** `src/components/map/hook/useMapSelection.ts`
+
+---
+
+## Map & Event Detail
+
+### share_event
+
+分享活動或藝人頁面（PWA 模式下）。
+
+| 參數       | 值                                 |
+| ---------- | ---------------------------------- |
+| event_page | `/event/[id]` 或 `/map/[artistId]` |
+| user_id    | 用戶 UID                           |
+| content_id | eventId 或 artistId                |
+
+**實作位置：** `src/components/ShareButton.tsx`
 
 ---
 
@@ -137,40 +173,6 @@
 | content_id | -                |
 
 **實作位置：** `src/components/forms/ArtistSubmissionForm.tsx`
-
----
-
-### click_instagram / click_threads / click_x
-
-點擊外部社群連結。
-
-| 參數       | 值            |
-| ---------- | ------------- |
-| event_page | `/event/[id]` |
-| user_id    | 用戶 UID      |
-| content_id | eventId       |
-
-**實作位置：**
-
-- `src/components/ui/ExternalLink.tsx`
-- `src/components/EventDetail/index.tsx`
-
----
-
-### click_location
-
-點擊活動地點連結（開啟 Google Maps）。
-
-| 參數       | 值            |
-| ---------- | ------------- |
-| event_page | `/event/[id]` |
-| user_id    | 用戶 UID      |
-| content_id | eventId       |
-
-**實作位置：**
-
-- `src/components/ui/ExternalLink.tsx`
-- `src/components/EventDetail/index.tsx`
 
 ---
 
