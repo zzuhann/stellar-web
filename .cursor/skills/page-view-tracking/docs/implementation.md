@@ -50,9 +50,32 @@ useEffect(() => {
 
 ## 排行榜 UI
 
-| 元件                           | 位置 | 狀態 |
-| ------------------------------ | ---- | ---- |
-| TrendingTab 或 TrendingSection | 待定 | TODO |
+**位置**：`HomePage/index.tsx` 的「即將到來的生日應援」carousel 下方，WeekNavigation 上方
+
+**UI 參考**：直接複用 `EventCardCarousel`（Swiper carousel）
+
+**viewCount 顯示**：不顯示數字，僅用於後端排序
+
+| 元件                    | 位置                                                           | 狀態 |
+| ----------------------- | -------------------------------------------------------------- | ---- |
+| `TrendingEventsSection` | `src/components/HomePage/components/TrendingEventsSection.tsx` | TODO |
+
+### 首頁結構（修改後）
+
+```
+HomePage
+├── CTA Button
+├── ✩ 即將到來的生日應援（EventCardCarousel）  ← 既有
+├── ✩ 熱門活動排行（TrendingEventsSection）    ← 新增
+└── 每週壽星與生日應援（WeekNavigation + tabs）← 既有
+```
+
+### TrendingEventsSection 規格
+
+- 標題：`✩ 熱門活動排行`（與既有 heading 樣式一致）
+- 資料：`getTrendingEvents(10)`
+- 呈現：直接複用 `EventCardCarousel` 元件
+- Empty / loading：由 `EventCardCarousel` 內部處理（events 為空時 return null）
 
 ---
 
