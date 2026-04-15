@@ -2,7 +2,7 @@ import { css } from '@/styled-system/css';
 import { parseSocialMediaHandles } from '@/utils/socialMedia';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import SwiperBanner from '../SwiperBanner';
-import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
+import { InstagramIcon, ThreadsIcon } from '../ui/SocialMediaIcons';
 import ExternalLink from '../ui/ExternalLink';
 import Image from 'next/image';
 import FavoriteButton from './FavoriteButton';
@@ -225,34 +225,6 @@ const EventDetail = ({ event }: EventDetailProps) => {
                         <ExternalLink
                           href={`https://www.threads.net/@${handle}`}
                           platform="threads"
-                          eventPage="/event/[id]"
-                          contentId={event.id}
-                          style={{ color: 'var(--colors-stellar-blue-500)' }}
-                        >
-                          @{handle}
-                          <span className="sr-only">（在新視窗開啟）</span>
-                        </ExternalLink>
-                        {idx < arr.length - 1 && '、'}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {event.socialMedia.x && (
-              <div className={detailItem}>
-                <div className={detailIcon}>
-                  <XIcon size={20} color="var(--color-text-secondary)" aria-hidden="true" />
-                  <span className="sr-only">X</span>
-                </div>
-                <div className={detailContent}>
-                  <div className={detailValue}>
-                    {parseSocialMediaHandles(event.socialMedia.x).map((handle, idx, arr) => (
-                      <span key={handle}>
-                        <ExternalLink
-                          href={`https://x.com/${handle}`}
-                          platform="x"
                           eventPage="/event/[id]"
                           contentId={event.id}
                           style={{ color: 'var(--colors-stellar-blue-500)' }}

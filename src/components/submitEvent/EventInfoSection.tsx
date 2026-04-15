@@ -353,19 +353,6 @@ const EventInfoSection = ({
             />
           </div>
           <div className={formGroup}>
-            <label className={label} htmlFor="x">
-              X
-            </label>
-            <input
-              className={input}
-              id="x"
-              type="text"
-              placeholder="填寫 id 例如: BOYNEXTDOOR_KOZ"
-              {...register('x')}
-              aria-describedby="social-media-hint"
-            />
-          </div>
-          <div className={formGroup}>
             <label className={label} htmlFor="threads">
               Threads
             </label>

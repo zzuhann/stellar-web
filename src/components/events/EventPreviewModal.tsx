@@ -1,11 +1,11 @@
 'use client';
 
 import { css } from '@/styled-system/css';
-import { CoffeeEvent } from '@/types';
+import { CoffeeEvent, FirebaseTimestamp } from '@/types';
 import SwiperBanner from '@/components/SwiperBanner';
 import { firebaseTimestampToDate } from '@/utils';
 import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { InstagramIcon, ThreadsIcon, XIcon } from '../ui/SocialMediaIcons';
+import { InstagramIcon, ThreadsIcon } from '../ui/SocialMediaIcons';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { parseSocialMediaHandles } from '@/utils/socialMedia';
 import Image from 'next/image';
@@ -196,7 +196,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
 
   if (!isOpen) return null;
 
-  const formatEventDate = (startDate: any, endDate: any) => {
+  const formatEventDate = (startDate: FirebaseTimestamp, endDate: FirebaseTimestamp) => {
     const start = firebaseTimestampToDate(startDate);
     const end = firebaseTimestampToDate(endDate);
 
@@ -320,29 +320,6 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                       <span key={handle}>
                         <a
                           href={`https://www.threads.net/@${handle}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ color: 'var(--colors-stellar-blue-500)' }}
-                        >
-                          @{handle}
-                        </a>
-                        {idx < arr.length - 1 && '、'}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {event.socialMedia.x && (
-              <div className={detailItem}>
-                <XIcon size={20} color="var(--color-text-secondary)" />
-                <div className={detailContent}>
-                  <div className={detailValue}>
-                    {parseSocialMediaHandles(event.socialMedia.x).map((handle, idx, arr) => (
-                      <span key={handle}>
-                        <a
-                          href={`https://x.com/${handle}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{ color: 'var(--colors-stellar-blue-500)' }}

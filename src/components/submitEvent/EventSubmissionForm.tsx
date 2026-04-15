@@ -150,7 +150,6 @@ function EventSubmissionForm({
           startDate: dateToLocalDateString(firebaseTimestampToDate(existingEvent.datetime.start)),
           endDate: dateToLocalDateString(firebaseTimestampToDate(existingEvent.datetime.end)),
           instagram: existingEvent.socialMedia.instagram || '',
-          x: existingEvent.socialMedia.x || '',
           threads: existingEvent.socialMedia.threads || '',
           mainImage: existingEvent.mainImage || '',
           detailImage: Array.isArray(existingEvent.detailImage)
@@ -378,7 +377,6 @@ function EventSubmissionForm({
         },
         socialMedia: {
           instagram: data.instagram || undefined,
-          x: data.x || undefined,
           threads: data.threads || undefined,
         },
         mainImage: mainImageUrl || undefined,
@@ -414,7 +412,6 @@ function EventSubmissionForm({
         },
         socialMedia: {
           instagram: data.instagram || undefined,
-          x: data.x || undefined,
           threads: data.threads || undefined,
         },
         mainImage: mainImageUrl || undefined,

@@ -20,7 +20,6 @@ export const eventSubmissionSchema = z
       .refine((date) => !isNaN(Date.parse(date)), '請選擇有效的結束日期'),
     addressName: z.string().min(1, '請輸入地點').max(200, '地址不能超過200個字'),
     instagram: z.string().optional().or(z.literal('')),
-    x: z.string().optional().or(z.literal('')),
     threads: z.string().optional().or(z.literal('')),
     mainImage: z.string().min(1, '請上傳主視覺圖片'),
     detailImage: z.array(z.string()).max(10, '詳細說明圖片最多上傳10張').optional(),
@@ -39,12 +38,11 @@ export const eventSubmissionSchema = z
   .refine(
     (data) => {
       const hasInstagram = data.instagram && data.instagram.trim() !== '';
-      const hasX = data.x && data.x.trim() !== '';
       const hasThreads = data.threads && data.threads.trim() !== '';
-      return hasInstagram || hasX || hasThreads;
+      return hasInstagram || hasThreads;
     },
     {
-      message: '請至少填寫一個社群媒體帳號（Instagram、X 或 Threads）',
+      message: '請至少填寫一個社群媒體帳號（Instagram 或 Threads）',
       path: ['instagram'],
     }
   );
