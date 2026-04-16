@@ -101,6 +101,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="STELLAR" />
+        <meta name="facebook-domain-verification" content="njhhuk1cs84mvg4rhfibcyyx009m3d" />
         <link rel="apple-touch-icon" href="/icon.png?v=2" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png?v=2" />
         <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png?v=2" />
