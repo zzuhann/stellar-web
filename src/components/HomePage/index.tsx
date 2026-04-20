@@ -15,9 +15,8 @@ import { css } from '@/styled-system/css';
 import CTAButton from '@/components/CTAButton';
 import { useAuth } from '@/lib/auth-context';
 import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
-import EventCardCarousel from '../EventCardCarousel';
-// import TrendingEventsSection from '@/components/HomePage/components/TrendingEventsSection';
-import { useEventFilters } from '@/hooks/useEventFilters';
+// import EventCardCarousel from '../EventCardCarousel';
+import TrendingEventsSection from '@/components/HomePage/components/TrendingEventsSection';
 import { usePageView } from '@/hooks/usePageView';
 
 const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearchModal'), {
@@ -52,18 +51,8 @@ export const contentWrapper = css({
   gap: '4',
 });
 
-const heading = css({
-  textStyle: 'bodyStrong',
-  color: 'color.text.primary',
-});
-
-const latestEventsContainer = css({
-  marginTop: '5',
-});
-
 function HomePageContent() {
   const router = useRouter();
-  const [today] = useState(new Date().toISOString());
   const { user, toggleAuthModal } = useAuth();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
@@ -77,20 +66,6 @@ function HomePageContent() {
 
   const { weekBirthdayArtists, isLoading: isArtistsLoading } = useBirthdayArtists();
   const { weeklyEvents, isLoading: isEventsLoading } = useWeeklyEvents();
-  const { data: events, isLoading: isLatestEventsLoading } = useEventFilters({
-    status: 'approved',
-    sortBy: 'startTime',
-    sortOrder: 'asc',
-    limit: 20,
-    page: 1,
-    // 從今天開始
-    startTimeFrom: today,
-  });
-
-  // 同一個標題只顯示一次
-  const uniqueEvents = events?.filter(
-    (event, index, self) => index === self.findIndex((t) => t.title === event.title)
-  );
 
   return (
     <main className={pageContainer} id="main-content">
@@ -110,13 +85,13 @@ function HomePageContent() {
             <span>點擊投稿生日應援 ➡️</span>
           </CTAButton>
 
-          <section className={latestEventsContainer} aria-label="最新生日應援">
+          {/* <section className={latestEventsContainer} aria-label="最新生日應援">
             <h2 className={heading}>✨ 即將到來的生日應援</h2>
             <EventCardCarousel events={uniqueEvents ?? []} isLoading={isLatestEventsLoading} />
-          </section>
+          </section> */}
 
-          {/* TODO: 熱門生咖、生日應援 等數據多一點的時候再開啟 */}
-          {/* <TrendingEventsSection /> */}
+          {/* 熱門生咖、生日應援 */}
+          <TrendingEventsSection />
 
           <section aria-label="每週壽星與生日應援">
             <WeekNavigation
