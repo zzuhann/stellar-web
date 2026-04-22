@@ -2,6 +2,7 @@
 
 import { InstagramIcon } from '@/components/ui/SocialMediaIcons';
 import { css } from '@/styled-system/css';
+import Link from 'next/link';
 
 const footerContainer = css({
   background: 'color.background.secondary',
@@ -52,7 +53,15 @@ const Footer = () => {
   return (
     <footer className={footerContainer}>
       <div className={footerContent}>
-        <div className={copyrightText}>Copyright © {currentYear} _stellar.tw</div>
+        <div className={copyrightText}>
+          <div>Copyright © {currentYear} _stellar.tw</div>
+          <Link
+            href="/terms"
+            className={css({ textDecoration: 'underline', marginTop: '1', display: 'block' })}
+          >
+            服務條款
+          </Link>
+        </div>
 
         <div className={socialLinks}>
           <a
