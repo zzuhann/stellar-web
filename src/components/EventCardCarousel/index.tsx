@@ -53,9 +53,14 @@ const slideContent = css({
 interface EventCardCarouselProps {
   events: CoffeeEvent[];
   isLoading: boolean;
+  onCardClick?: (eventId: string) => void;
 }
 
-export default function EventCardCarousel({ events, isLoading }: EventCardCarouselProps) {
+export default function EventCardCarousel({
+  events,
+  isLoading,
+  onCardClick,
+}: EventCardCarouselProps) {
   const swiperRef = useRef<SwiperType | null>(null);
 
   if (events.length === 0 && !isLoading) {
@@ -114,7 +119,7 @@ export default function EventCardCarousel({ events, isLoading }: EventCardCarous
           events.map((event) => (
             <SwiperSlide key={event.id}>
               <div className={slideContent}>
-                <VerticalEventCard event={event} />
+                <VerticalEventCard event={event} onClick={onCardClick} />
               </div>
             </SwiperSlide>
           ))}

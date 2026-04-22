@@ -27,6 +27,66 @@
 
 ## Home
 
+### switch_to_artist_tab
+
+切換到「壽星」tab。
+
+| 參數       | 值       |
+| ---------- | -------- |
+| event_page | `/`      |
+| user_id    | 用戶 UID |
+| content_id | -        |
+
+**實作位置：** `src/components/HomePage/hook/useTabState.ts`
+
+### switch_to_event_tab
+
+切換到「生日應援」tab。
+
+| 參數       | 值       |
+| ---------- | -------- |
+| event_page | `/`      |
+| user_id    | 用戶 UID |
+| content_id | -        |
+
+**實作位置：** `src/components/HomePage/hook/useTabState.ts`
+
+### navigate_previous_week
+
+點擊上一週按鈕。
+
+| 參數       | 值       |
+| ---------- | -------- |
+| event_page | `/`      |
+| user_id    | 用戶 UID |
+| content_id | -        |
+
+**實作位置：** `src/components/HomePage/components/WeekNavigation.tsx`
+
+### navigate_next_week
+
+點擊下一週按鈕。
+
+| 參數       | 值       |
+| ---------- | -------- |
+| event_page | `/`      |
+| user_id    | 用戶 UID |
+| content_id | -        |
+
+**實作位置：** `src/components/HomePage/components/WeekNavigation.tsx`
+
+### click_trending_event
+
+點擊熱門生咖活動卡片。
+
+| 參數       | 值       |
+| ---------- | -------- |
+| event_page | `/`      |
+| user_id    | 用戶 UID |
+| content_id | eventId  |
+
+**實作位置：** `src/components/HomePage/components/TrendingEventsSection.tsx`
+
 ### search_artist
 
 開啟搜尋框，當使用者點擊搜尋按鈕開啟 modal 時觸發。

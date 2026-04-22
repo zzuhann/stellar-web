@@ -169,9 +169,10 @@ export function VerticalEventCardSkeleton() {
 
 interface VerticalEventCardProps {
   event: CoffeeEvent;
+  onClick?: (eventId: string) => void;
 }
 
-const VerticalEventCard = ({ event }: VerticalEventCardProps) => {
+const VerticalEventCard = ({ event, onClick }: VerticalEventCardProps) => {
   const pathname = usePathname();
   const isShowSubmissionInfo = pathname !== '/' && pathname !== '/my-favorite';
 
@@ -179,7 +180,7 @@ const VerticalEventCard = ({ event }: VerticalEventCardProps) => {
     <>
       {event.status === 'approved' && (
         <div className={verticalEventCardContainer}>
-          <Link href={`/event/${event.id}`}>
+          <Link href={`/event/${event.id}`} onClick={() => onClick?.(event.id)}>
             <div
               className={eventImageStyle}
               style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}

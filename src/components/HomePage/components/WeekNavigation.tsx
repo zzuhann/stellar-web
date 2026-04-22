@@ -3,6 +3,8 @@ import { formatDate, getWeekStart } from '@/utils/weekHelpers';
 import TabNavigation from './TabNavigation';
 import { css } from '@/styled-system/css';
 import { cva } from '@/styled-system/css';
+import { sendGAEvent } from '@next/third-parties/google';
+import { useAuth } from '@/lib/auth-context';
 
 const weekNavigationContainer = css({
   display: 'flex',
@@ -85,10 +87,28 @@ export default function WeekNavigation({
   onNextWeek,
   onTabChange,
 }: WeekNavigationProps) {
+  const { user } = useAuth();
+
   // 計算本週開始時間，用於限制生咖tab的導航
   const thisWeekStart = getWeekStart(new Date());
   const canGoToPrevious =
     activeTab === 'birthday' || currentWeekStart.getTime() > thisWeekStart.getTime();
+
+  const handlePreviousWeek = () => {
+    sendGAEvent('event', 'navigate_previous_week', {
+      event_page: '/',
+      user_id: user?.uid ?? '',
+    });
+    onPreviousWeek(activeTab);
+  };
+
+  const handleNextWeek = () => {
+    sendGAEvent('event', 'navigate_next_week', {
+      event_page: '/',
+      user_id: user?.uid ?? '',
+    });
+    onNextWeek();
+  };
 
   return (
     <div>
@@ -96,7 +116,7 @@ export default function WeekNavigation({
       <div className={weekNavigationContainer}>
         <button
           className={weekNavigationButton({ disabled: !canGoToPrevious })}
-          onClick={() => onPreviousWeek(activeTab)}
+          onClick={handlePreviousWeek}
           disabled={!canGoToPrevious}
           aria-label="前往上一週"
           aria-disabled={!canGoToPrevious}
@@ -121,7 +141,7 @@ export default function WeekNavigation({
 
         <button
           className={weekNavigationButton({ disabled: false })}
-          onClick={onNextWeek}
+          onClick={handleNextWeek}
           aria-label="前往下一週"
         >
           <ChevronRightIcon width={20} height={20} aria-hidden="true" />
