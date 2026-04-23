@@ -8,8 +8,8 @@ const artistSection = css({
   alignItems: 'center',
   flexWrap: 'wrap',
   gap: '2',
-  marginBottom: '4',
-  paddingBottom: '4',
+  marginBottom: '3',
+  paddingBottom: '3',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
 });

@@ -20,13 +20,20 @@ interface BannerItem {
   description?: string;
 }
 
-const bannerContainer = css({
+const bannerWrapper = css({
   position: 'relative',
   width: '100%',
+  marginBottom: '4',
+});
+
+const bannerContainer = css({
+  position: 'relative',
+  width: '70%',
+  margin: '0 auto',
   aspectRatio: '3/4',
-  marginBottom: '6',
-  borderBottom: '1px solid',
-  borderBottomColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  overflow: 'hidden',
+  boxShadow: 'shadow.md',
 
   '& .swiper': {
     width: '100%',
@@ -77,7 +84,7 @@ const slideImage = css({
 const pageIndicator = css({
   position: 'absolute',
   top: '4',
-  right: '4',
+  right: '19%',
   background: 'alpha.black.30',
   color: 'white',
   paddingY: '1',
@@ -92,11 +99,12 @@ const navigationButton = css({
   position: 'absolute',
   top: '50%',
   transform: 'translateY(-50%)',
-  background: 'alpha.black.30',
-  border: 'none',
-  color: 'white',
-  width: '40px',
-  height: '40px',
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  color: 'color.text.secondary',
+  width: '36px',
+  height: '36px',
   borderRadius: 'radius.circle',
   display: 'flex',
   alignItems: 'center',
@@ -106,7 +114,9 @@ const navigationButton = css({
   zIndex: '10',
 
   '&:hover': {
-    background: 'alpha.black.50',
+    background: 'color.background.primary',
+    borderColor: 'color.border.medium',
+    color: 'color.text.primary',
   },
 
   '&:disabled': {
@@ -115,8 +125,8 @@ const navigationButton = css({
   },
 
   '& svg': {
-    width: '20px',
-    height: '20px',
+    width: '18px',
+    height: '18px',
   },
 });
 
@@ -149,39 +159,41 @@ export default function SwiperBanner({ items = [] }: SwiperBannerProps) {
   };
 
   return (
-    <div className={bannerContainer}>
-      <Swiper
-        modules={[Pagination]}
-        pagination={{
-          clickable: true,
-          dynamicBullets: false,
-        }}
-        loop={items.length > 1}
-        spaceBetween={0}
-        slidesPerView={1}
-        watchSlidesProgress={true}
-        onSwiper={(swiper) => {
-          swiperRef.current = swiper;
-        }}
-        onSlideChange={(swiper) => setCurrentSlide(swiper.realIndex)}
-      >
-        {items.map((item, index) => (
-          <SwiperSlide key={item.id}>
-            <div className={slideContent}>
-              <Image
-                src={item.imageUrl}
-                alt={item.title}
-                width={600}
-                height={800}
-                priority={index === 0}
-                fetchPriority={index === 0 ? 'high' : 'auto'}
-                loading={index === 0 ? 'eager' : 'lazy'}
-                className={slideImage}
-              />
-            </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+    <div className={bannerWrapper}>
+      <div className={bannerContainer}>
+        <Swiper
+          modules={[Pagination]}
+          pagination={{
+            clickable: true,
+            dynamicBullets: false,
+          }}
+          loop={items.length > 1}
+          spaceBetween={0}
+          slidesPerView={1}
+          watchSlidesProgress={true}
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
+          }}
+          onSlideChange={(swiper) => setCurrentSlide(swiper.realIndex)}
+        >
+          {items.map((item, index) => (
+            <SwiperSlide key={item.id}>
+              <div className={slideContent}>
+                <Image
+                  src={item.imageUrl}
+                  alt={item.title}
+                  width={600}
+                  height={800}
+                  priority={index === 0}
+                  fetchPriority={index === 0 ? 'high' : 'auto'}
+                  loading={index === 0 ? 'eager' : 'lazy'}
+                  className={slideImage}
+                />
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
 
       {items.length > 1 && (
         <>

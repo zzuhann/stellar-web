@@ -23,7 +23,7 @@ const favoriteButton = css({
   border: '1px solid',
   borderColor: 'color.text.secondary',
   color: 'color.text.secondary',
-  marginBottom: '4',
+  marginBottom: '3',
   background: 'transparent',
 
   '&:disabled': {
@@ -56,7 +56,7 @@ const favoriteButtonActive = css({
   borderColor: 'red.500',
   color: 'white',
   background: 'red.500',
-  marginBottom: '4',
+  marginBottom: '3',
 
   '&:disabled': {
     opacity: 0.6,

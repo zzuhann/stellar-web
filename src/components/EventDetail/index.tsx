@@ -92,8 +92,8 @@ const detailValue = css({
 });
 
 const descriptionSection = css({
-  marginTop: '6',
-  paddingTop: '6',
+  marginTop: '4',
+  paddingTop: '4',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
   wordBreak: 'break-word',
@@ -105,7 +105,7 @@ const descriptionTitle = css({
   color: 'color.text.primary',
   marginTop: '0',
   marginX: '0',
-  marginBottom: '4',
+  marginBottom: '2',
   display: 'flex',
   alignItems: 'center',
   gap: '2',
