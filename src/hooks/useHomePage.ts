@@ -33,6 +33,15 @@ export const useTrendingEventsQuery = (limit = 10) => {
   });
 };
 
+export const useTopArtistsQuery = (limit = 10) => {
+  return useQuery({
+    queryKey: queryKey.topArtists(limit),
+    queryFn: () => artistsApi.getTop(limit),
+    staleTime: 1000 * 60 * 60 * 6, // 6 小時快取
+    gcTime: 1000 * 60 * 60 * 7,
+  });
+};
+
 export const useWeeklyEventsQuery = (
   startDate: string,
   endDate: string,

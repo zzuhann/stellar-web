@@ -70,8 +70,21 @@ export interface ArtistSearchParams {
   sortOrder?: 'asc' | 'desc';
 }
 
+// Top Artist 回傳型別
+export interface TopArtist extends Artist {
+  upcomingEventCount: number;
+}
+
 // 藝人相關 API
 export const artistsApi = {
+  // 取得擁有最多生咖的藝人
+  getTop: async (limit = 10): Promise<TopArtist[]> => {
+    const response = await api.get<TopArtist[]>('/artists/top', {
+      params: { limit: Math.min(limit, 50) },
+    });
+    return response.data;
+  },
+
   // 取得藝人列表（支援新的查詢參數）
   getAll: async (params?: ArtistSearchParams): Promise<Artist[]> => {
     const queryParams: Record<string, string> = {};

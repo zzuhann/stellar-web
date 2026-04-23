@@ -17,6 +17,7 @@ import { useAuth } from '@/lib/auth-context';
 import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
 // import EventCardCarousel from '../EventCardCarousel';
 import TrendingEventsSection from '@/components/HomePage/components/TrendingEventsSection';
+import TopArtistsSection from '@/components/HomePage/components/TopArtistsSection';
 import { usePageView } from '@/hooks/usePageView';
 
 const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearchModal'), {
@@ -92,6 +93,9 @@ function HomePageContent() {
 
           {/* 熱門生咖、生日應援 */}
           <TrendingEventsSection />
+
+          {/* 擁有最多生咖的藝人 */}
+          <TopArtistsSection />
 
           <section aria-label="每週壽星與生日應援">
             <WeekNavigation
