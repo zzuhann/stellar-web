@@ -1,6 +1,6 @@
 import { css } from '@/styled-system/css';
 import { parseSocialMediaHandles } from '@/utils/socialMedia';
-import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { ArrowTopRightOnSquareIcon, CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import SwiperBanner from '../SwiperBanner';
 import { InstagramIcon, ThreadsIcon } from '../ui/SocialMediaIcons';
 import ExternalLink from '../ui/ExternalLink';
@@ -280,7 +280,13 @@ const EventDetail = ({ event }: EventDetailProps) => {
                     contentId={event.id}
                     style={{ color: 'var(--colors-stellar-blue-500)' }}
                   >
-                    {event.location.name}({event.location.address})
+                    {event.location.name}({event.location.address})&nbsp;
+                    <ArrowTopRightOnSquareIcon
+                      style={{ display: 'inline', verticalAlign: 'middle' }}
+                      width={16}
+                      height={16}
+                      aria-hidden="true"
+                    />
                     <span className="sr-only">（在新視窗開啟 Google 地圖）</span>
                   </ExternalLink>
                 </div>
