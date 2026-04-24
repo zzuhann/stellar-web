@@ -56,12 +56,12 @@ const ArtistSubmissions = ({
   return (
     <div className={contentCard}>
       <CardHeader
-        title="我投稿的偶像"
-        description={hasAnySubmission ? `共投稿過 ${summary.total} 位偶像` : '還沒有投稿過偶像'}
+        title="我投稿的藝人"
+        description={hasAnySubmission ? `共投稿過 ${summary.total} 位藝人` : '還沒有投稿過藝人'}
       />
 
       {!hasAnySubmission ? (
-        <EmptyState icon="✨" title="還沒有投稿過偶像" />
+        <EmptyState icon="✨" title="還沒有投稿過藝人" />
       ) : (
         <>
           <div className={artistGrid}>

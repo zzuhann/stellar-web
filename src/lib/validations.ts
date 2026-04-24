@@ -6,7 +6,7 @@ import { z } from 'zod';
 export const eventSubmissionSchema = z
   .object({
     title: z.string().min(1, '請輸入標題').max(100, '標題不能超過 100 個字'),
-    artistIds: z.array(z.string()).min(1, '請至少選擇一個偶像').max(10, '最多只能選擇 10 個偶像'),
+    artistIds: z.array(z.string()).min(1, '請至少選擇一個藝人').max(10, '最多只能選擇 10 個藝人'),
     description: z.string().max(1500, '描述不能超過 1500 個字').optional(),
     startDate: z
       .string()
@@ -61,7 +61,7 @@ export const artistSubmissionSchema = z.object({
     .refine((date) => !isNaN(Date.parse(date)), '請選擇有效的生日日期'),
   profileImage: z
     .string()
-    .min(1, '請上傳偶像照片')
+    .min(1, '請上傳藝人照片')
     .refine((val) => val === 'pending' || /^https?:\/\//.test(val), '請輸入正確的圖片連結格式'),
 });
 

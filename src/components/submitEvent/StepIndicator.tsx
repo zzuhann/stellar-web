@@ -121,7 +121,7 @@ const StepIndicator = ({ currentStep }: StepIndicatorProps) => {
           </div>
           <div className="step-title">
             <span className="sr-only">步驟 1：</span>
-            選擇偶像
+            選擇藝人
             {currentStep > 1 && <span className="sr-only">（已完成）</span>}
           </div>
         </li>

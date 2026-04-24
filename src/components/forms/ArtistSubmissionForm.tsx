@@ -465,8 +465,8 @@ export default function ArtistSubmissionForm({
   return (
     <div className={formContainer}>
       <div className={formHeader}>
-        <h2>{mode === 'edit' ? '編輯偶像' : '投稿偶像'}</h2>
-        {mode !== 'edit' && <p>新增偶像到我們的資料庫，審核通過後其他用戶可以為他們建立生日應援</p>}
+        <h2>{mode === 'edit' ? '編輯藝人' : '投稿藝人'}</h2>
+        {mode !== 'edit' && <p>新增藝人到我們的資料庫，審核通過後其他用戶可以為他們建立生日應援</p>}
         {mode === 'edit' && (
           <p className={editWarningText} role="alert">
             編輯後的資料將重新進入審核流程
@@ -474,7 +474,7 @@ export default function ArtistSubmissionForm({
         )}
       </div>
 
-      <form className={form} aria-label="偶像投稿表單">
+      <form className={form} aria-label="藝人投稿表單">
         {/* 英文藝名 */}
         <div className={formGroup}>
           <label className={label} htmlFor="stageName">
@@ -582,7 +582,7 @@ export default function ArtistSubmissionForm({
             <label id="profileImage-label" className={label}>
               <PhotoIcon aria-hidden="true" />
               <div>
-                偶像照片<span aria-hidden="true">*</span>
+                藝人照片<span aria-hidden="true">*</span>
                 <span className="sr-only">（必填）</span>
               </div>
             </label>
@@ -632,7 +632,7 @@ export default function ArtistSubmissionForm({
                   });
                 }
               }}
-              placeholder="點擊上傳偶像照片"
+              placeholder="點擊上傳藝人照片"
               maxSizeMB={5}
               disabled={
                 createArtistMutation.isPending || updateArtistMutation.isPending || isUploadingImage
@@ -655,14 +655,14 @@ export default function ArtistSubmissionForm({
         <div className={infoBox}>
           <div className="title">投稿說明：</div>
           <ul className={bulletPoint}>
-            <li>投稿的偶像將經過審核</li>
-            <li>審核通過後，所有用戶都可以選擇這位偶像來建立生日應援</li>
-            <li>請確保偶像資訊的正確性以及照片來源是否可公開使用</li>
+            <li>投稿的藝人將經過審核</li>
+            <li>審核通過後，所有用戶都可以選擇這位藝人來建立生日應援</li>
+            <li>請確保藝人資訊的正確性以及照片來源是否可公開使用</li>
             <li className={warningText} role="alert">
-              偶像名字若包含中文，<b>需 100% 為正體字</b>。若非正體字，審核將不會通過
+              藝人名字若包含中文，<b>需 100% 為正體字</b>。若非正體字，審核將不會通過
             </li>
-            <li>資料錯誤、重複的偶像投稿審核不會通過</li>
-            <li>若有多人重複投稿偶像，將以投稿時間較早者為準</li>
+            <li>資料錯誤、重複的藝人投稿審核不會通過</li>
+            <li>若有多人重複投稿藝人，將以投稿時間較早者為準</li>
           </ul>
         </div>
 

@@ -104,17 +104,17 @@ const ChooseArtistSection = ({
       <label id="artistIds-label" className={label}>
         <UserIcon aria-hidden="true" />
         <div>
-          應援偶像<span aria-hidden="true">*</span>
+          應援藝人<span aria-hidden="true">*</span>
         </div>
         <span className="sr-only">（必填）</span>
       </label>
       <p id="artistIds-hint" className={helperText}>
-        {mode === 'edit' ? '編輯模式下無法修改偶像資訊' : '若為聯合應援，可選擇多個偶像'}
+        {mode === 'edit' ? '編輯模式下無法修改藝人資訊' : '若為聯合應援，可選擇多個藝人'}
       </p>
       <div
         className={css({ display: 'flex', flexDirection: 'column', gap: '2' })}
         role="list"
-        aria-label="已選擇的偶像列表"
+        aria-label="已選擇的藝人列表"
       >
         {/* 已選擇的藝人按鈕 */}
         {selectedArtists.map((artist) => (
@@ -137,7 +137,7 @@ const ChooseArtistSection = ({
               aria-label={
                 mode === 'edit'
                   ? `已選擇 ${artist.stageName}，編輯模式下無法修改`
-                  : `已選擇 ${artist.stageName}，點擊更換偶像`
+                  : `已選擇 ${artist.stageName}，點擊更換藝人`
               }
               aria-disabled={mode === 'edit'}
               style={{
@@ -192,7 +192,7 @@ const ChooseArtistSection = ({
             }
             aria-invalid={!!errors.artistIds}
           >
-            <span className={placeholderText}>請選擇偶像</span>
+            <span className={placeholderText}>請選擇藝人</span>
             <ChevronDownIcon width={16} height={16} aria-hidden="true" />
           </button>
         )}

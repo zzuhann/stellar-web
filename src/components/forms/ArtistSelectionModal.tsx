@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
 import { useArtistSearch, useMonthlyBirthdayArtists } from '@/hooks/useArtistSearch';
@@ -252,29 +252,30 @@ export default function ArtistSelectionModal({
   const handleArtistSelect = (artist: Artist) => {
     onArtistSelect(artist);
     onClose();
+    setInputValue('');
   };
 
-  useEffect(() => {
-    if (!isOpen) {
-      setInputValue('');
-    }
-  }, [isOpen]);
-
   return (
-    <div className={modalOverlay({ isOpen })} onClick={onClose}>
+    <div
+      className={modalOverlay({ isOpen })}
+      onClick={() => {
+        setInputValue('');
+        onClose();
+      }}
+    >
       <div
         ref={focusTrapRef}
         className={modalContent({ isOpen })}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-label="選擇偶像"
+        aria-label="選擇藝人"
       >
         <div className={modalHeader}>
           <div className={searchInputContainer}>
             <UserIcon aria-hidden="true" />
             <input
-              aria-label="搜尋偶像的藝名、本名或團名"
+              aria-label="搜尋藝人的藝名、本名或團名"
               className={searchInput}
               type="text"
               placeholder="藝名(英文)/本名(中文)/團名"
@@ -283,7 +284,14 @@ export default function ArtistSelectionModal({
               autoFocus
             />
           </div>
-          <button className={closeButton} onClick={onClose} aria-label="關閉選擇偶像">
+          <button
+            className={closeButton}
+            onClick={() => {
+              setInputValue('');
+              onClose();
+            }}
+            aria-label="關閉選擇藝人"
+          >
             <XMarkIcon aria-hidden="true" />
           </button>
         </div>
@@ -304,22 +312,22 @@ export default function ArtistSelectionModal({
                     key={artist.id}
                     onClick={() => handleArtistSelect(artist)}
                     type="button"
-                    aria-label={`選擇 ${artist.stageName} 作為要應援的偶像`}
+                    aria-label={`選擇 ${artist.stageName} 作為要應援的藝人`}
                   >
                     <ArtistCard artist={artist} />
                   </button>
                 ))}
                 <EmptyState
-                  title="找不到偶像嗎？"
+                  title="找不到藝人嗎？"
                   description={
                     <>
                       <p>試試其他關鍵字、檢查拼寫是否正確</p>
-                      <p>也可能是系統中還沒有你偶像的個人檔案 ⬇️</p>
+                      <p>也可能是系統中還沒有你藝人的個人檔案 ⬇️</p>
                     </>
                   }
                   cta={
                     <button className={ctaButton} onClick={() => router.push('/submit-artist')}>
-                      點擊前往新增偶像 ✨<p>點擊後，將會跳轉至新增偶像頁面</p>
+                      點擊前往新增藝人 ✨<p>點擊後，將會跳轉至新增藝人頁面</p>
                     </button>
                   }
                 />
@@ -327,16 +335,16 @@ export default function ArtistSelectionModal({
             ) : (
               <EmptyState
                 icon="😔"
-                title="找不到該偶像"
+                title="找不到該藝人"
                 description={
                   <>
                     <p>試試其他關鍵字、檢查拼寫是否正確</p>
-                    <p>也可能是系統中還沒有你偶像的個人檔案 ⬇️</p>
+                    <p>也可能是系統中還沒有你藝人的個人檔案 ⬇️</p>
                   </>
                 }
                 cta={
                   <button className={ctaButton} onClick={() => router.push('/submit-artist')}>
-                    點擊前往新增偶像 ✨<p>點擊後，將會跳轉至新增偶像頁面</p>
+                    點擊前往新增藝人 ✨<p>點擊後，將會跳轉至新增藝人頁面</p>
                   </button>
                 }
               />
@@ -351,7 +359,7 @@ export default function ArtistSelectionModal({
             <div className={artistList}>
               <EmptyState
                 title="本月即將到來的壽星 ✨"
-                description="選擇要應援的偶像，或在上方搜尋其他偶像"
+                description="選擇要應援的藝人，或在上方搜尋其他藝人"
                 style={{ paddingBottom: '20px' }}
               />
               {filteredMonthlyArtists.map((artist) => (
@@ -360,14 +368,14 @@ export default function ArtistSelectionModal({
                   key={artist.id}
                   onClick={() => handleArtistSelect(artist)}
                   type="button"
-                  aria-label={`選擇 ${artist.stageName} 作為要應援的偶像`}
+                  aria-label={`選擇 ${artist.stageName} 作為要應援的藝人`}
                 >
                   <ArtistCard artist={artist} />
                 </button>
               ))}
             </div>
           ) : (
-            <EmptyState description="在上方輸入偶像名稱來搜尋並選擇 ✨" />
+            <EmptyState description="在上方輸入藝人名稱來搜尋並選擇 ✨" />
           )}
         </div>
       </div>

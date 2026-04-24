@@ -50,10 +50,10 @@ const SearchSection = forwardRef<HTMLButtonElement, SearchSectionProps>(function
       type="button"
       className={container}
       onClick={onSearchClick}
-      aria-label="搜尋你的偶像的生日應援"
+      aria-label="搜尋你的藝人的生日應援"
     >
       <MagnifyingGlassIcon width={20} height={20} color="var(--color-text-secondary)" aria-hidden />
-      <span className={searchInput}>搜尋你的偶像的生日應援</span>
+      <span className={searchInput}>搜尋你的藝人的生日應援</span>
     </button>
   );
 });

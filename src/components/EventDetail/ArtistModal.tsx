@@ -129,7 +129,7 @@ const ArtistModal = ({ event, handleArtistSelect, handleCloseModal }: ArtistModa
         aria-labelledby="artist-modal-title"
       >
         <h3 id="artist-modal-title" className={modalTitle}>
-          選擇要查看的偶像
+          選擇要查看的藝人
         </h3>
         {event.artists?.map((artist) => (
           <button

@@ -712,7 +712,7 @@ export default function AdminPage() {
                 setSelectedEvents(new Set());
               }}
             >
-              待審偶像
+              待審藝人
               {pendingArtists.length > 0 && <span className={badge}>{pendingArtists.length}</span>}
             </button>
             <button
@@ -732,14 +732,14 @@ export default function AdminPage() {
         {activeTab === 'artists' && (
           <div className={contentCard}>
             <div className={cardHeader}>
-              <h2>待審核偶像</h2>
-              <p>{pendingArtists.length} 位偶像等待審核</p>
+              <h2>待審核藝人</h2>
+              <p>{pendingArtists.length} 位藝人等待審核</p>
             </div>
             {pendingArtists.length === 0 ? (
               <div className={emptyState}>
                 <UserIcon className="icon" width={48} height={48} />
-                <h3>沒有待審核偶像</h3>
-                <p>所有偶像投稿都已處理完成</p>
+                <h3>沒有待審核藝人</h3>
+                <p>所有藝人投稿都已處理完成</p>
               </div>
             ) : (
               <>
@@ -748,7 +748,7 @@ export default function AdminPage() {
                   <div className={batchActionsContainer}>
                     <div className={batchActionsLeft}>
                       <span style={{ fontSize: '14px', fontWeight: '500' }}>
-                        已選擇 {selectedArtists.size} 位偶像
+                        已選擇 {selectedArtists.size} 位藝人
                       </span>
                     </div>
                     <div className={batchActionsRight}>
@@ -771,7 +771,7 @@ export default function AdminPage() {
                       <button
                         className={`${batchButton} ${batchButtonReject}`}
                         onClick={() =>
-                          setRejectingArtist({ id: 'batch', stageName: '選中的偶像' } as Artist)
+                          setRejectingArtist({ id: 'batch', stageName: '選中的藝人' } as Artist)
                         }
                         disabled={batchReviewMutation.isPending}
                       >

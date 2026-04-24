@@ -196,13 +196,6 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Reset input when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setInputValue('');
-    }
-  }, [isOpen]);
-
   // Focus search input when modal opens & track search event
   useEffect(() => {
     if (isOpen) {
@@ -218,10 +211,13 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
   return (
     <div
       className={modalOverlay({ isOpen })}
-      onClick={onClose}
+      onClick={() => {
+        setInputValue('');
+        onClose();
+      }}
       role="dialog"
       aria-modal="true"
-      aria-label="搜尋偶像"
+      aria-label="搜尋藝人"
       aria-hidden={!isOpen}
     >
       <div
@@ -240,17 +236,24 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               autoFocus
-              aria-label="搜尋偶像"
+              aria-label="搜尋藝人"
             />
           </div>
-          <button className={closeButton} onClick={onClose} aria-label="關閉搜尋">
+          <button
+            className={closeButton}
+            onClick={() => {
+              setInputValue('');
+              onClose();
+            }}
+            aria-label="關閉搜尋"
+          >
             <XMarkIcon aria-hidden="true" width={20} height={20} />
           </button>
         </div>
 
         <div className={resultsContainer}>
           {!showResults ? (
-            <EmptyState icon="🔍" title="搜尋偶像" description="輸入偶像名稱來尋找生日應援" />
+            <EmptyState icon="🔍" title="搜尋藝人" description="輸入藝人名稱來尋找生日應援" />
           ) : searchLoading ? (
             <Loading
               description="搜尋中..."
@@ -270,6 +273,7 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
                           user_id: user?.uid ?? '',
                           content_id: artist.id,
                         });
+                        setInputValue('');
                         onClose();
                       }}
                       aria-label={`前往 ${artist.stageName} 的生日應援地圖頁面`}
@@ -288,16 +292,16 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
                   }
                 }}
               >
-                找不到偶像?
+                找不到藝人?
                 <br />
-                點擊前往新增偶像 ✨
+                點擊前往新增藝人 ✨
               </CTAButton>
             </>
           ) : (
             <>
               <EmptyState
                 icon="😔"
-                title="找不到該偶像"
+                title="找不到該藝人"
                 description="試試其他關鍵字、檢查拼寫是否正確"
               />
               <CTAButton
@@ -309,9 +313,9 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
                   }
                 }}
               >
-                找不到偶像?
+                找不到藝人?
                 <br />
-                點擊前往新增偶像 ✨
+                點擊前往新增藝人 ✨
               </CTAButton>
             </>
           )}

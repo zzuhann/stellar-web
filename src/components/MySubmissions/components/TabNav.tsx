@@ -65,7 +65,7 @@ const TabNav = ({ activeTab, handleTabChange }: TabNavProps) => {
           className={tabButton({ active: activeTab === 'artist' })}
           onClick={() => handleTabChange('artist')}
         >
-          偶像投稿
+          藝人投稿
         </button>
       </nav>
     </div>

@@ -222,7 +222,7 @@ function EventSubmissionForm({
     if (currentStep === 1) {
       // 檢查是否已選擇藝人
       if (selectedArtists.length === 0) {
-        showToast.warning('請至少選擇一個偶像');
+        showToast.warning('請至少選擇一個藝人');
         return;
       }
       setCurrentStep(2);
@@ -283,7 +283,7 @@ function EventSubmissionForm({
       detailImageUrls.length !== originalDetailImages.length ||
       detailImageUrls.some((url, index) => url !== originalDetailImages[index]);
 
-    // 檢查偶像選擇改變
+    // 檢查藝人選擇改變
     const originalArtistIds = existingEvent.artists?.map((artist) => artist.id) || [];
     const selectedArtistIds = selectedArtists.map((artist) => artist.id);
     const artistsChanged =

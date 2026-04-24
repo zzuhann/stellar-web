@@ -71,7 +71,7 @@ export default function SubmitArtistClient() {
     if (artistLoading || loading) return;
     if (isEditMode) {
       if (!existingArtist) {
-        showToast.warning('偶像不存在');
+        showToast.warning('藝人不存在');
         router.push('/my-submissions?tab=artist');
         return;
       }
@@ -85,7 +85,7 @@ export default function SubmitArtistClient() {
             exists: '已存在',
           }[existingArtist.status] || '無法編輯';
 
-        showToast.warning(`此偶像目前狀態為「${statusText}」，無法編輯`);
+        showToast.warning(`此藝人目前狀態為「${statusText}」，無法編輯`);
         router.push('/my-submissions?tab=artist');
       }
       if (existingArtist.createdBy !== user?.uid) {
@@ -108,7 +108,7 @@ export default function SubmitArtistClient() {
   if (isLoading) {
     return (
       <Loading
-        description={isEditMode ? '載入偶像資料中...' : '載入中...'}
+        description={isEditMode ? '載入藝人資料中...' : '載入中...'}
         style={{ height: '100vh' }}
       />
     );
@@ -123,7 +123,7 @@ export default function SubmitArtistClient() {
       <main className={mainContent}>
         <div className={loadingContainer}>
           <div className={loadingContent}>
-            <p className={loadingText}>載入偶像資料失敗，請重試</p>
+            <p className={loadingText}>載入藝人資料失敗，請重試</p>
           </div>
         </div>
       </main>
