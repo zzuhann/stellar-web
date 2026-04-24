@@ -10,7 +10,7 @@ import ArtistSection from './ArtistSection';
 import BackToMapButton from './BackToMapButton';
 import ShareHandler from './ShareHandler';
 import { CoffeeEvent } from '@/types';
-import { formatEventDate } from '@/utils';
+import { formatEventDate, generateGoogleCalendarUrl } from '@/utils';
 import PageViewTracker from '@/components/PageViewTracker';
 import EventViewTracker from '@/components/EventViewTracker';
 
@@ -89,6 +89,17 @@ const detailContent = css({
 const detailValue = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
+});
+
+const addToCalendarLink = css({
+  textStyle: 'bodySmall',
+  color: 'color.link',
+  marginLeft: '2',
+  textDecoration: 'none',
+  '&:hover': {
+    color: 'color.linkHover',
+    textDecoration: 'underline',
+  },
 });
 
 const descriptionSection = css({
@@ -257,6 +268,21 @@ const EventDetail = ({ event }: EventDetailProps) => {
               <div className={detailContent}>
                 <div className={detailValue}>
                   {formatEventDate(event.datetime.start, event.datetime.end)}
+                  <ExternalLink
+                    href={generateGoogleCalendarUrl({
+                      title: event.title,
+                      startDate: event.datetime.start,
+                      endDate: event.datetime.end,
+                      location: `${event.location.name} ${event.location.address}`,
+                      eventId: event.id,
+                    })}
+                    platform="calendar"
+                    eventPage="/event/[id]"
+                    contentId={event.id}
+                    className={addToCalendarLink}
+                  >
+                    加入行事曆
+                  </ExternalLink>
                 </div>
               </div>
             </div>

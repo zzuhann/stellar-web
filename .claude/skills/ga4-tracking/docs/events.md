@@ -157,6 +157,21 @@
 - `src/components/ui/ExternalLink.tsx`
 - `src/components/EventDetail/index.tsx`
 
+### click_calendar
+
+點擊「加入行事曆」連結（開啟 Google Calendar）。
+
+| 參數       | 值            |
+| ---------- | ------------- |
+| event_page | `/event/[id]` |
+| user_id    | 用戶 UID      |
+| content_id | eventId       |
+
+**實作位置：**
+
+- `src/components/ui/ExternalLink.tsx`
+- `src/components/EventDetail/index.tsx`
+
 ---
 
 ## Map
