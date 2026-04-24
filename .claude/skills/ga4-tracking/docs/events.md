@@ -87,6 +87,30 @@
 
 **實作位置：** `src/components/HomePage/components/TrendingEventsSection.tsx`
 
+### click_top_artist
+
+點擊「擁有最多生咖」區塊的藝人卡片。
+
+| 參數       | 值       |
+| ---------- | -------- |
+| event_page | `/`      |
+| user_id    | 用戶 UID |
+| content_id | artistId |
+
+**實作位置：** `src/components/HomePage/components/TopArtistsSection.tsx`
+
+### click_add_event_button
+
+點擊「新增生咖」按鈕（在擁有最多生咖區塊）。
+
+| 參數       | 值       |
+| ---------- | -------- |
+| event_page | `/`      |
+| user_id    | 用戶 UID |
+| content_id | -        |
+
+**實作位置：** `src/components/HomePage/components/TopArtistCarousel/index.tsx`
+
 ### search_artist
 
 開啟搜尋框，當使用者點擊搜尋按鈕開啟 modal 時觸發。

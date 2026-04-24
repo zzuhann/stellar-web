@@ -9,6 +9,7 @@ import TopArtistCard, { TopArtistCardSkeleton } from './TopArtistCard';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
+import { sendGAEvent } from '@next/third-parties/google';
 
 import 'swiper/css';
 
@@ -141,6 +142,12 @@ export default function TopArtistCarousel({
   const [showRightFade, setShowRightFade] = useState(true);
 
   const handleAddClick = () => {
+    sendGAEvent('event', 'click_add_event_button', {
+      event_page: '/',
+      user_id: user?.uid ?? '',
+      content_id: '',
+    });
+
     if (!user) {
       toggleAuthModal('/submit-event');
     } else {
@@ -175,7 +182,7 @@ export default function TopArtistCarousel({
         {/* 新增生咖按鈕 */}
         <SwiperSlide style={{ width: 'auto' }}>
           {user ? (
-            <Link href="/submit-event" className={addButtonItem}>
+            <Link href="/submit-event" className={addButtonItem} onClick={handleAddClick}>
               <div className={addButtonWrapper}>
                 <div className={addButtonCircle}>
                   <Image
