@@ -33,8 +33,8 @@ export default function TopArtistsSection() {
   };
 
   return (
-    <section className={container} aria-label="最多生咖的藝人或團體">
-      <h2 className={heading}>🧚 擁有最多生咖</h2>
+    <section className={container} aria-label="擁有最多即將到來的生咖的藝人或團體">
+      <h2 className={heading}>🧚 擁有最多即將到來的生咖</h2>
       <TopArtistCarousel
         artists={artists}
         isLoading={isLoading}
