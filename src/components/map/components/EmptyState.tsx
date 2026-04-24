@@ -3,8 +3,7 @@ import { Artist } from '@/types';
 
 const emptyStateContainer = css({
   textAlign: 'center',
-  paddingY: '10',
-  paddingX: '5',
+  padding: '4',
   color: 'color.text.secondary',
   display: 'flex',
   flexDirection: 'column',

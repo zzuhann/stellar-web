@@ -76,6 +76,10 @@ export default function MapPage({
   search: propsSearch,
 }: MapPageProps = {}) {
   const center = useMapStore((state) => state.center);
+  const selectedEventId = useMapStore((state) => state.selectedEventId);
+  const isLocationSelected = useMapStore((state) => state.isLocationSelected);
+  const selectedLocationEvents = useMapStore((state) => state.selectedLocationEvents);
+
   const position: LatLngTuple = [center.lat, center.lng]; // 地圖中心點座標
   const { latitude, longitude } = useMapLocation();
   const userLocationIcon = createUserLocationIcon();
@@ -85,12 +89,19 @@ export default function MapPage({
     propsArtistId,
   });
 
+  // 計算實際顯示的事件數量
+  const displayEventsCount = selectedEventId
+    ? 1
+    : isLocationSelected
+      ? selectedLocationEvents.length
+      : mapEvents.length;
+
   usePageShare({
     text: `${artistData?.stageName} 的生日應援地圖 | STELLAR 台灣生日應援地圖`,
     url: window.location.href,
   });
 
-  const { springs, bind } = useDrawer();
+  const { springs, bind } = useDrawer({ eventsCount: displayEventsCount });
 
   if (isMapLoading || isArtistLoading) {
     return (
