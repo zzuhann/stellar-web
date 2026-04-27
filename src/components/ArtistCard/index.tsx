@@ -1,5 +1,5 @@
 import { Artist } from '@/types';
-import { shouldShowBirthdayHat } from '@/utils/birthdayHelpers';
+import { shouldShowBirthdayHat, formatBirthdayMonthDay } from '@/utils/birthdayHelpers';
 import { css } from '@/styled-system/css';
 import Image from 'next/image';
 
@@ -95,19 +95,12 @@ const srOnly = css({
   border: 0,
 });
 
-const getBirthdayText = (birthday: string): { text: string; isToday: boolean } => {
-  if (!birthday) return { text: '', isToday: false };
-
-  const [, month, day] = birthday.split('-').map(Number);
-  return { text: `${month} 月 ${day} 日`, isToday: false };
-};
-
 interface ArtistCardProps {
   artist: Artist;
 }
 
 const ArtistCard = ({ artist }: ArtistCardProps) => {
-  const { text: birthdayText } = getBirthdayText(artist.birthday ?? '');
+  const birthdayText = formatBirthdayMonthDay(artist.birthday ?? '');
   const isBirthday = shouldShowBirthdayHat(artist.birthday ?? '');
 
   return (

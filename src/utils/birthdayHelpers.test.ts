@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { shouldShowBirthdayHat } from './birthdayHelpers';
+import {
+  shouldShowBirthdayHat,
+  formatBirthdayMonthDay,
+  formatBirthdayFull,
+} from './birthdayHelpers';
 
 describe('shouldShowBirthdayHat', () => {
   beforeEach(() => {
@@ -47,5 +51,50 @@ describe('shouldShowBirthdayHat', () => {
       vi.setSystemTime(new Date(2025, 3, 16, 17, 0, 0)); // April 16 5pm local
       expect(shouldShowBirthdayHat('2001-04-17')).toBe(false);
     });
+  });
+});
+
+describe('formatBirthdayMonthDay', () => {
+  it('應該格式化為「X 月 X 日」', () => {
+    expect(formatBirthdayMonthDay('2001-04-17')).toBe('4 月 17 日');
+  });
+
+  it('應該處理個位數月份和日期', () => {
+    expect(formatBirthdayMonthDay('2001-01-05')).toBe('1 月 5 日');
+  });
+
+  it('應該處理兩位數月份和日期', () => {
+    expect(formatBirthdayMonthDay('2001-12-31')).toBe('12 月 31 日');
+  });
+
+  it('空字串應該回傳空字串', () => {
+    expect(formatBirthdayMonthDay('')).toBe('');
+  });
+
+  it('無效格式應該回傳空字串', () => {
+    expect(formatBirthdayMonthDay('invalid')).toBe('');
+    expect(formatBirthdayMonthDay('2001-13-01')).toBe('13 月 1 日'); // 不驗證月份範圍
+  });
+});
+
+describe('formatBirthdayFull', () => {
+  it('應該格式化為「YYYY/M/D」', () => {
+    expect(formatBirthdayFull('2001-04-17')).toBe('2001/4/17');
+  });
+
+  it('應該處理個位數月份和日期', () => {
+    expect(formatBirthdayFull('2001-01-05')).toBe('2001/1/5');
+  });
+
+  it('應該處理兩位數月份和日期', () => {
+    expect(formatBirthdayFull('2001-12-31')).toBe('2001/12/31');
+  });
+
+  it('空字串應該回傳空字串', () => {
+    expect(formatBirthdayFull('')).toBe('');
+  });
+
+  it('無效格式應該回傳空字串', () => {
+    expect(formatBirthdayFull('invalid')).toBe('');
   });
 });

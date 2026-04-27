@@ -1,6 +1,7 @@
 import { Artist } from '@/types';
 import { css, cva } from '@/styled-system/css';
 import { FirebaseTimestamp } from '@/types';
+import { formatBirthdayFull } from '@/utils/birthdayHelpers';
 
 const verticalArtistCardContainer = css({
   display: 'flex',
@@ -154,12 +155,6 @@ const getStatusText = (
   }
 };
 
-const getBirthdayText = (birthday: string): string => {
-  if (!birthday) return '';
-  const date = new Date(birthday);
-  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
-};
-
 interface VerticalArtistCardProps {
   artist: Artist & {
     status?: 'pending' | 'approved' | 'rejected' | 'exists';
@@ -177,7 +172,7 @@ const VerticalArtistCard = ({
   actionButtons,
   submissionTime,
 }: VerticalArtistCardProps) => {
-  const birthdayText = getBirthdayText(artist.birthday ?? '');
+  const birthdayText = formatBirthdayFull(artist.birthday ?? '');
 
   return (
     <div className={verticalArtistCardContainer}>
