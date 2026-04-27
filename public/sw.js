@@ -1,5 +1,5 @@
 // Service Worker for STELLAR PWA
-const VERSION = '20260423T21445';
+const VERSION = '20260428T10001';
 const CACHE_NAME = `stellar-cache-v${VERSION}`;
 const STATIC_CACHE_URLS = [
   '/',
@@ -47,6 +47,28 @@ self.addEventListener('fetch', (event) => {
   // Skip for external requests
   if (!event.request.url.startsWith(self.location.origin)) return;
 
+  // For navigation requests (HTML pages), use Network-First strategy
+  // This ensures query parameters are properly handled in PWA mode
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((fetchResponse) => {
+          // Cache the response for offline use
+          const responseClone = fetchResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseClone);
+          });
+          return fetchResponse;
+        })
+        .catch(() => {
+          // Offline fallback - return cached root page
+          return caches.match('/');
+        })
+    );
+    return;
+  }
+
+  // For other requests (assets, etc.), use Cache-First strategy
   event.respondWith(
     caches
       .match(event.request)
@@ -55,7 +77,7 @@ self.addEventListener('fetch', (event) => {
         return (
           response ||
           fetch(event.request).then((fetchResponse) => {
-            // Don't cache API responses or dynamic content
+            // Don't cache API responses
             if (event.request.url.includes('/api/')) {
               return fetchResponse;
             }
@@ -69,10 +91,8 @@ self.addEventListener('fetch', (event) => {
         );
       })
       .catch(() => {
-        // Offline fallback for navigation requests
-        if (event.request.mode === 'navigate') {
-          return caches.match('/');
-        }
+        // No fallback for non-navigation requests
+        return new Response('Offline', { status: 503 });
       })
   );
 });
