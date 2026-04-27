@@ -1,5 +1,4 @@
 import { css } from '@/styled-system/css';
-import { animated, SpringValue } from '@react-spring/web';
 import { Artist, MapEvent } from '@/types';
 import LocationButton from '../LocationButton';
 import DrawerHandleBar from './DrawerHandleBar';
@@ -14,11 +13,13 @@ const drawerContainer = css({
   borderRadius: '16px 16px 0 0',
   boxShadow: '0 -4px 20px var(--colors-alpha-black-15)',
   zIndex: '100',
+  overflow: 'hidden',
 });
 
 type DrawerProps = {
-  springs: {
-    height: SpringValue<number>;
+  style: {
+    height: number;
+    transition: string;
   };
   bind: {
     handleMouseDown: (e: React.MouseEvent) => void;
@@ -28,13 +29,17 @@ type DrawerProps = {
   mapEvents: MapEvent[];
 };
 
-const Drawer = ({ springs, bind, artistData, mapEvents }: DrawerProps) => {
+const Drawer = ({ style, bind, artistData, mapEvents }: DrawerProps) => {
   return (
-    <animated.div className={drawerContainer} style={springs}>
+    <div
+      className={drawerContainer}
+      style={{ height: style.height, transition: style.transition }}
+      data-drawer
+    >
       <LocationButton />
       <DrawerHandleBar bind={bind} artistData={artistData} mapEvents={mapEvents} />
       <DrawerContent mapEvents={mapEvents} artistData={artistData ?? null} />
-    </animated.div>
+    </div>
   );
 };
 

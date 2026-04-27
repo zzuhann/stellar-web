@@ -101,7 +101,7 @@ export default function MapPage({
     url: window.location.href,
   });
 
-  const { springs, bind } = useDrawer({ eventsCount: displayEventsCount });
+  const { style, bind } = useDrawer({ eventsCount: displayEventsCount });
 
   if (isMapLoading || isArtistLoading) {
     return (
@@ -150,12 +150,7 @@ export default function MapPage({
           </div>
         </div>
 
-        <Drawer
-          springs={springs}
-          bind={bind}
-          artistData={artistData ?? null}
-          mapEvents={mapEvents}
-        />
+        <Drawer style={style} bind={bind} artistData={artistData ?? null} mapEvents={mapEvents} />
       </div>
     </div>
   );
