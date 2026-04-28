@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
 import { useQueryStateContext, RouterMethod, SetQueryStateOptions } from './useQueryStateContext';
 
 interface Options<T> {
@@ -30,9 +29,8 @@ export function useQueryState<T = string>(
   name: string,
   { parse = parseAsString as () => T, defaultValue, defaultMethod = 'replace' }: Options<T> = {}
 ): UseQueryStateReturn<T, typeof defaultValue> {
-  const { setState } = useQueryStateContext();
-  const searchParams = useSearchParams();
-  const rawValue = searchParams.get(name);
+  const { setState, params } = useQueryStateContext();
+  const rawValue = params[name] ?? null;
 
   const value = useMemo(() => {
     if (rawValue === null) return defaultValue;
