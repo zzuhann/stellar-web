@@ -17,6 +17,7 @@ import MarkerCluster from './components/MarkerCluster';
 import SafeMapContainer from './components/SafeMapContainer';
 import { initializeLeafletIcons } from './utils/leaflet-icons';
 import { usePageShare } from '@/hooks/usePageShare';
+import InAppBrowserBanner from './components/InAppBrowserBanner';
 
 // 初始化 Leaflet 圖標
 initializeLeafletIcons();
@@ -113,6 +114,7 @@ export default function MapPage({
 
   return (
     <div className={pageContainer}>
+      <InAppBrowserBanner />
       <div className={mainContainer}>
         {/* 地圖區域 */}
         <div className={mapSection}>

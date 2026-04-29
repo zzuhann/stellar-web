@@ -1,32 +1,49 @@
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { useIsInAppBrowser } from '@/hooks/useIsInAppBrowser';
 import { useMapStore } from '@/store';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { calculateDistance } from '../utils/calculateDistance';
+
+// module-level 才能撐過 Strict Mode 的 unmount/remount（ref 會重置）
+let hasAttemptedAutoGet = false;
 
 const useMapLocation = () => {
   const { center, setCenter, resetMap, isDrawerExpanded } = useMapStore();
-
-  // 是否應該自動定位到用戶位置
-  const [shouldAutoCenter, setShouldAutoCenter] = useState(true);
+  const hasAutoCenteredRef = useRef(false);
+  const { loading: isInAppBrowserLoading } = useIsInAppBrowser();
 
   const {
     latitude,
     longitude,
     isLoading: locationLoading,
     error: locationError,
+    isSupported,
     getCurrentPosition,
-  } = useGeolocation({ autoGetPosition: true });
+  } = useGeolocation();
 
-  // 判斷是否應該顯示定位按鈕
+  // 等待 IAB 偵測完成後，自動嘗試取得位置一次
+  useEffect(() => {
+    if (hasAttemptedAutoGet) return;
+    if (isInAppBrowserLoading) return;
+    if (!isSupported || latitude || locationError || locationLoading) return;
+
+    hasAttemptedAutoGet = true;
+     
+    getCurrentPosition();
+  }, [
+    isInAppBrowserLoading,
+    isSupported,
+    latitude,
+    locationError,
+    locationLoading,
+    getCurrentPosition,
+  ]);
+
   const shouldShowLocationButton = () => {
     if (isDrawerExpanded) return false;
-
-    // 沒有座標時也顯示，讓使用者點擊觸發權限請求（PWA / iOS standalone 需 user gesture）
     if (!latitude || !longitude) return true;
 
     const distance = calculateDistance(center.lat, center.lng, latitude, longitude);
-
-    // 如果距離超過 1 公里，顯示定位按鈕
     return distance > 1;
   };
 
@@ -38,15 +55,14 @@ const useMapLocation = () => {
     }
   };
 
-  // 取得用戶位置時，更新地圖中心（僅第一次）
   useEffect(() => {
-    if (latitude && longitude && setCenter && shouldAutoCenter) {
+    if (hasAutoCenteredRef.current) return;
+    if (latitude && longitude && setCenter) {
+      hasAutoCenteredRef.current = true;
       setCenter({ lat: latitude, lng: longitude, zoom: 8 });
-      setShouldAutoCenter(false);
     }
-  }, [latitude, longitude, setCenter, shouldAutoCenter]);
+  }, [latitude, longitude, setCenter]);
 
-  // 離開頁面時重置地圖狀態
   useEffect(() => {
     return () => {
       resetMap();

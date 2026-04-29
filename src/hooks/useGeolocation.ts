@@ -1,9 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import showToast from '@/lib/toast';
-import { useIsInAppBrowser } from './useIsInAppBrowser';
-
-// module-level 才能撐過 Strict Mode 的 unmount/remount（ref 會重置）
-let hasAttemptedAutoGet = false;
 
 interface GeolocationState {
   latitude: number | null;
@@ -19,7 +15,6 @@ interface GeolocationOptions {
   enableHighAccuracy?: boolean;
   timeout?: number;
   maximumAge?: number;
-  autoGetPosition?: boolean;
 }
 
 export function useGeolocation(options: GeolocationOptions = {}) {
@@ -33,29 +28,20 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     hasPermission: false,
   });
 
-  const { isInAppBrowser, loading: isInAppBrowserLoading } = useIsInAppBrowser();
-
   const defaultOptions: PositionOptions = {
     enableHighAccuracy: false,
     timeout: 10000,
-    maximumAge: 600000, // 10 分鐘內的快取位置可接受
+    maximumAge: 600000,
     ...options,
   };
 
   const getCurrentPosition = useCallback(() => {
     if (!state.isSupported) {
-      setState((prev) => ({
-        ...prev,
-        error: '無法取得你的位置',
-      }));
+      setState((prev) => ({ ...prev, error: '無法取得你的位置' }));
       return;
     }
 
-    setState((prev) => ({
-      ...prev,
-      isLoading: true,
-      error: null,
-    }));
+    setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -72,14 +58,11 @@ export function useGeolocation(options: GeolocationOptions = {}) {
       (error) => {
         let errorMessage = '無法取得你的位置';
 
-        switch (error.code) {
-          case error.PERMISSION_DENIED:
-            errorMessage = '因為你拒絕了位置權限請求，可以在瀏覽器設定中重新打開';
-            break;
+        if (error.code === error.PERMISSION_DENIED) {
+          errorMessage = '因為你拒絕了位置權限請求，可以在瀏覽器設定中重新打開';
         }
 
-        const toastMessage = `${errorMessage}${isInAppBrowser ? '。你目前在 app 內部瀏覽器中，建議外開瀏覽器才能順利定位喔！' : ''}`;
-        showToast.error(toastMessage);
+        showToast.error(errorMessage);
 
         setState((prev) => ({
           ...prev,
@@ -95,10 +78,8 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     defaultOptions.enableHighAccuracy,
     defaultOptions.timeout,
     defaultOptions.maximumAge,
-    isInAppBrowser,
   ]);
 
-  // 檢查權限狀態
   const checkPermission = useCallback(async () => {
     if (!state.isSupported) return;
 
@@ -106,40 +87,11 @@ export function useGeolocation(options: GeolocationOptions = {}) {
       const permission = await navigator.permissions.query({
         name: 'geolocation' as PermissionName,
       });
-      setState((prev) => ({
-        ...prev,
-        hasPermission: permission.state === 'granted',
-      }));
+      setState((prev) => ({ ...prev, hasPermission: permission.state === 'granted' }));
     } catch {
-      // 某些瀏覽器可能不支援 permissions API，我們假設有權限
-      setState((prev) => ({
-        ...prev,
-        hasPermission: true,
-      }));
+      setState((prev) => ({ ...prev, hasPermission: true }));
     }
   }, [state.isSupported]);
-
-  // 自動嘗試取得位置（僅在組件首次載入時，module-level 變數才能撐過 Strict Mode）
-  useEffect(() => {
-    if (hasAttemptedAutoGet) return;
-    if (isInAppBrowserLoading) return;
-    if (state.isSupported && !state.latitude && !state.error && !state.isLoading) {
-      hasAttemptedAutoGet = true;
-      checkPermission();
-      if (options.autoGetPosition !== false) {
-        getCurrentPosition();
-      }
-    }
-  }, [
-    isInAppBrowserLoading,
-    state.isSupported,
-    state.latitude,
-    state.error,
-    state.isLoading,
-    options.autoGetPosition,
-    checkPermission,
-    getCurrentPosition,
-  ]);
 
   return {
     ...state,

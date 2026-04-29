@@ -1,31 +1,15 @@
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 export const showToast = {
-  success: (message: string) => {
-    toast.success(message);
-  },
+  success: (message: string) => toast.success(message),
 
-  error: (message: string) => {
-    toast.error(message);
-  },
+  error: (message: string) => toast.error(message),
 
-  warning: (message: string) => {
-    toast(message, {
-      icon: '⚠️',
-      style: {
-        border: '1px solid var(--colors-amber-500)',
-        color: 'var(--colors-amber-800)',
-      },
-    });
-  },
+  warning: (message: string) => toast.warning(message),
 
-  loading: (message: string) => {
-    return toast.loading(message);
-  },
+  loading: (message: string) => toast.loading(message),
 
-  dismiss: (toastId: string) => {
-    toast.dismiss(toastId);
-  },
+  dismiss: (toastId?: string | number) => toast.dismiss(toastId),
 };
 
 export default showToast;

@@ -2,7 +2,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '@/lib/api';
 import { CoffeeEvent } from '@/types';
 import toast from '@/lib/toast';
-import { toast as reactHotToast } from 'react-hot-toast';
 
 interface UseFavoriteToggleOptions {
   eventId: string;
@@ -44,12 +43,12 @@ export const useFavoriteToggle = () => {
         queryClient.setQueryData(['favorite', eventId], context.previousEvent);
       }
       // 關閉所有 toast，避免快速點擊時出現多個 toast
-      reactHotToast.dismiss();
+      toast.dismiss();
       toast.error('收藏生日應援失敗，請稍後再試');
     },
     onSuccess: (data) => {
       // 關閉所有 toast，避免快速點擊時出現多個 toast
-      reactHotToast.dismiss();
+      toast.dismiss();
       const message = data.isFavorited ? '已加入收藏' : '已取消收藏';
       toast.success(message);
     },
