@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  allowedDevOrigins: ['zzuhann-dev.stellar-zone.com'],
   images: {
     remotePatterns: [
       {
