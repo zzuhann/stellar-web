@@ -158,6 +158,7 @@ const useDrawer = ({ eventsCount }: UseDrawerOptions) => {
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
     // 停止動畫，進入拖曳模式
     setIsAnimating(false);
     const maxHeight = getMaxHeight();

@@ -1,4 +1,5 @@
 import { css } from '@/styled-system/css';
+import { useEffect, useRef } from 'react';
 import useMapSelection from '../../hook/useMapSelection';
 import { Artist } from '@/types';
 import { MapEvent } from '@/types';
@@ -79,14 +80,29 @@ type DrawerHandleBarProps = {
 
 const DrawerHandleBar = ({ bind, artistData, mapEvents }: DrawerHandleBarProps) => {
   const { selectedEventId } = useMapStore();
+  const handleRef = useRef<HTMLDivElement>(null);
 
   const { selectedLocationEvents, isLocationSelected, handleCloseButtonClick } = useMapSelection();
 
+  // React 19 的 onTouchStart 是 passive listener，無法呼叫 preventDefault()
+  // 手動以 { passive: false } 掛載，防止 touchend 後 browser 補發合成 mouse events
+  useEffect(() => {
+    const el = handleRef.current;
+    if (!el) return;
+
+    const onTouchStart = (e: TouchEvent) => bind.handleTouchStart(e as unknown as React.TouchEvent);
+
+    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+    };
+  }, [bind.handleTouchStart]);
+
   return (
     <div
+      ref={handleRef}
       className={drawerHandle}
       onMouseDown={bind.handleMouseDown}
-      onTouchStart={bind.handleTouchStart}
       role="slider"
       aria-label="拖曳調整高度"
       aria-orientation="vertical"
