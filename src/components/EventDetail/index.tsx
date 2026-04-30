@@ -8,6 +8,7 @@ import Image from 'next/image';
 import FavoriteButton from './FavoriteButton';
 import ArtistSection from './ArtistSection';
 import BackToMapButton from './BackToMapButton';
+import BackToHomeButton from './BackToHomeButton';
 import ShareHandler from './ShareHandler';
 import { CoffeeEvent } from '@/types';
 import { formatEventDate, generateGoogleCalendarUrl } from '@/utils';
@@ -130,6 +131,22 @@ const descriptionContent = css({
 
 const bottomImagesContainer = css({
   marginTop: '6',
+});
+
+const buttonGroup = css({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '3',
+  marginTop: '8',
+  marginBottom: '5',
+  '& > button': {
+    minWidth: '200px',
+  },
+  '@media (min-width: 400px)': {
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
 });
 
 interface EventDetailProps {
@@ -350,8 +367,11 @@ const EventDetail = ({ event }: EventDetailProps) => {
             ))}
           </div>
 
-          {/* 回到地圖頁按鈕 - Client Component */}
-          <BackToMapButton event={event} />
+          {/* 底部按鈕群組 */}
+          <div className={buttonGroup}>
+            <BackToMapButton event={event} />
+            <BackToHomeButton eventId={event.id} />
+          </div>
         </div>
 
         {/* 分享處理 - Client Component */}

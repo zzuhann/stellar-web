@@ -151,6 +151,18 @@
 
 **實作位置：** `src/components/EventDetail/FavoriteButton.tsx`
 
+### click_home
+
+點擊「回首頁」按鈕。
+
+| 參數       | 值            |
+| ---------- | ------------- |
+| event_page | `/event/[id]` |
+| user_id    | 用戶 UID      |
+| content_id | eventId       |
+
+**實作位置：** `src/components/EventDetail/BackToHomeButton.tsx`
+
 ### click_instagram / click_threads / click_x
 
 點擊外部社群連結。

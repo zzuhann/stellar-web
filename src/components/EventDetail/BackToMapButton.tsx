@@ -18,20 +18,15 @@ const ctaButton = css({
   background: 'color.primary',
   borderColor: 'color.primary',
   color: 'white',
-  position: 'relative',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  marginTop: '8',
-  marginBottom: '5',
 
   '&:hover': {
     background: 'stellarBlue.600',
     borderColor: 'stellarBlue.600',
-    transform: 'translateX(-50%) translateY(-1px)',
+    transform: 'translateY(-1px)',
   },
 
   '&:active': {
-    transform: 'translateX(-50%) translateY(0)',
+    transform: 'translateY(0)',
   },
 });
 
