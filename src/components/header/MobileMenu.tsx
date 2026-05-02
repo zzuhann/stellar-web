@@ -182,6 +182,9 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
               <Link href="/submit-event" className={mobileMenuButton} onClick={closeMobileMenu}>
                 舉辦生日應援
               </Link>
+              <Link href="/submit-artist" className={mobileMenuButton} onClick={closeMobileMenu}>
+                新增藝人
+              </Link>
               <Link href="/my-submissions" className={mobileMenuButton} onClick={closeMobileMenu}>
                 我的投稿
               </Link>
@@ -215,6 +218,9 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
 
               <Link href="/submit-event" className={mobileMenuButton} onClick={closeMobileMenu}>
                 舉辦生日應援
+              </Link>
+              <Link href="/submit-artist" className={mobileMenuButton} onClick={closeMobileMenu}>
+                新增藝人
               </Link>
             </>
           )}

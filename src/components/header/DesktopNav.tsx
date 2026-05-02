@@ -121,6 +121,9 @@ const DesktopNav = () => {
           <Link className={styledLink} href="/submit-event">
             舉辦生日應援
           </Link>
+          <Link className={styledLink} href="/submit-artist">
+            新增藝人
+          </Link>
           <Link className={styledLink} href="/my-submissions">
             我的投稿
           </Link>
