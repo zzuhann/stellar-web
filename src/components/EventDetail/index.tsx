@@ -83,6 +83,7 @@ const detailIcon = css({
 
 const detailContent = css({
   flex: '1',
+  minWidth: '0',
   display: 'flex',
   flexDirection: 'column',
   gap: '1',
@@ -91,6 +92,8 @@ const detailContent = css({
 const detailValue = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
+  flexWrap: 'wrap',
+  overflowWrap: 'break-word',
 });
 
 const addToCalendarLink = css({
