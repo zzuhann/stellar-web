@@ -1,9 +1,8 @@
 import { css } from '@/styled-system/css';
 import Link from 'next/link';
-import Image from 'next/image';
 import Skeleton from '@/components/ui/Skeleton';
 import { TopArtist } from '@/lib/api';
-import { shouldShowBirthdayHat } from '@/utils/birthdayHelpers';
+import BirthdayHat from '@/components/BirthdayHat';
 
 const topArtistItem = css({
   display: 'flex',
@@ -85,7 +84,6 @@ interface TopArtistCardProps {
 
 const TopArtistCard = ({ artist, onClick }: TopArtistCardProps) => {
   const eventCount = artist.upcomingEventCount ?? 0;
-  const isBirthday = shouldShowBirthdayHat(artist.birthday ?? '');
 
   return (
     <Link href={`/map/${artist.id}`} className={topArtistItem} onClick={() => onClick?.(artist.id)}>
@@ -96,15 +94,7 @@ const TopArtistCard = ({ artist, onClick }: TopArtistCardProps) => {
             backgroundImage: artist.profileImage ? `url(${artist.profileImage})` : undefined,
           }}
         />
-        {isBirthday && (
-          <Image
-            className={birthdayHat}
-            src="/party-hat.png"
-            alt="今日壽星"
-            width={24}
-            height={24}
-          />
-        )}
+        <BirthdayHat birthday={artist.birthday ?? ''} className={birthdayHat} />
       </div>
       <div>
         <p className={artistName}>{artist.stageName}</p>

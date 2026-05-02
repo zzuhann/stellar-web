@@ -1,7 +1,8 @@
 import { Artist } from '@/types';
-import { shouldShowBirthdayHat, formatBirthdayMonthDay } from '@/utils/birthdayHelpers';
+import { formatBirthdayMonthDay } from '@/utils/birthdayHelpers';
 import { css } from '@/styled-system/css';
 import Image from 'next/image';
+import BirthdayHat from '@/components/BirthdayHat';
 
 const artistCardContainer = css({
   display: 'flex',
@@ -101,7 +102,6 @@ interface ArtistCardProps {
 
 const ArtistCard = ({ artist }: ArtistCardProps) => {
   const birthdayText = formatBirthdayMonthDay(artist.birthday ?? '');
-  const isBirthday = shouldShowBirthdayHat(artist.birthday ?? '');
 
   return (
     <div className={artistCardContainer}>
@@ -113,15 +113,7 @@ const ArtistCard = ({ artist }: ArtistCardProps) => {
           height={64}
           className={artistAvatar}
         />
-        {isBirthday && (
-          <Image
-            className={birthdayHat}
-            src="/party-hat.png"
-            alt="今日壽星"
-            width={24}
-            height={24}
-          />
-        )}
+        <BirthdayHat birthday={artist.birthday ?? ''} className={birthdayHat} />
       </div>
 
       <div className={artistInfo}>
