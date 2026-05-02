@@ -5,6 +5,13 @@ import { getWeekStart, getWeekEnd, formatDateForAPI } from '@/utils/weekHelpers'
 import queryKey from '@/hooks/queryKey';
 import { Suspense } from 'react';
 import Loading from '@/components/Loading';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: 'https://www.stellar-zone.com/',
+  },
+};
 
 export default async function Home() {
   const queryClient = new QueryClient();
