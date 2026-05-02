@@ -561,7 +561,7 @@ export default function ArtistSubmissionForm({
             placeholder="選擇生日"
             disabled={createArtistMutation.isPending || updateArtistMutation.isPending}
             error={!!errors.birthday}
-            max={new Date().toISOString().split('T')[0]}
+            // max={new Date().toISOString().split('T')[0]}
           />
           <input type="hidden" {...register('birthday')} aria-hidden="true" />
           {errors.birthday && (
