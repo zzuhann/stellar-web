@@ -54,10 +54,31 @@ export default async function MapWithArtistPage({ params, searchParams }: MapWit
   const { artistId } = await params;
   const { search } = await searchParams;
 
-  // Validate artistId format if needed
   if (!artistId || artistId.trim() === '') {
     notFound();
   }
 
-  return <MapClientWrapper artistId={artistId} search={search} />;
+  const artist = await artistsApi.getById(artistId).catch(() => null);
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: '首頁', item: 'https://www.stellar-zone.com/' },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: artist ? `${artist.stageName} 生日應援地圖` : '生日應援地圖',
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <MapClientWrapper artistId={artistId} search={search} />
+    </>
+  );
 }

@@ -14,6 +14,7 @@ import { CoffeeEvent } from '@/types';
 import { formatEventDate, generateGoogleCalendarUrl } from '@/utils';
 import PageViewTracker from '@/components/PageViewTracker';
 import EventViewTracker from '@/components/EventViewTracker';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -190,11 +191,21 @@ const EventDetail = ({ event }: EventDetailProps) => {
     });
   }
 
+  const primaryArtist = event.artists?.[0];
+  const breadcrumbItems = [
+    { label: '首頁', href: '/' },
+    ...(primaryArtist
+      ? [{ label: `${primaryArtist.name} 生日應援地圖`, href: `/map/${primaryArtist.id}` }]
+      : []),
+    { label: event.title },
+  ];
+
   return (
     <div className={pageContainer}>
       <PageViewTracker eventPage="/event/[id]" contentId={event.id} />
       <EventViewTracker eventId={event.id} />
       <div className={mainContainer}>
+        <Breadcrumb items={breadcrumbItems} />
         {/* Banner 區域 */}
         {bannerItems.length > 0 && <SwiperBanner items={bannerItems} />}
 
