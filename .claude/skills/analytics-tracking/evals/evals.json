@@ -1,0 +1,65 @@
+{
+  "skill_name": "analytics-tracking",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "我要做活動收藏功能，在正式實作前想先規劃埋點。",
+      "expected_output": "Should ask what decisions this data will inform. Should produce a Tracking Plan covering: add_to_favorite (收藏), remove_from_favorite (取消收藏), and possibly view_event_detail before favorite. Should use content_id = eventId. Should note event_page context. Should NOT provide sendGAEvent code — defer implementation to ga4-tracking. Should check docs/events.md for existing events to reuse.",
+      "assertions": [
+        "Asks what business question the tracking will answer",
+        "Produces a Tracking Plan document",
+        "Includes add_to_favorite and remove_from_favorite",
+        "Uses content_id = eventId",
+        "Does not write sendGAEvent code",
+        "References ga4-tracking for implementation",
+        "Checks docs/events.md for existing events"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "想知道首頁地圖哪些活動標記最多人點，應該追蹤什麼？",
+      "expected_output": "Should identify click_map_marker as the key event. Should clarify content_id should be eventId. Should note event_page = '/'. Should ask what decision this data will drive (e.g. featured events ranking, map UX improvement). Should output a minimal Tracking Plan. Should reference docs/events.md to check if click_map_marker already exists. Should not write implementation code.",
+      "assertions": [
+        "Identifies click_map_marker as the event",
+        "Specifies content_id = eventId",
+        "Specifies event_page = '/'",
+        "Asks what decision drives this tracking need",
+        "Outputs a Tracking Plan",
+        "References docs/events.md",
+        "Does not write implementation code"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "藝人申請表單要上線了，幫我想一下要埋哪些點，送出之後要能追蹤成功率。",
+      "expected_output": "Should define 'success rate' as the conversion. Should recommend tracking: submit_artist (form submitted successfully), and optionally form abandonment signals. Should use content_id = artistId if available, empty string if not. Should note event_page = '/submit-artist' (or relevant path). Should ask if there are validation errors worth tracking. Should output a Tracking Plan with must-have vs nice-to-have. Should not write code.",
+      "assertions": [
+        "Defines conversion as successful form submission",
+        "Recommends submit_artist event",
+        "Uses content_id = artistId or empty string",
+        "Asks about form error tracking",
+        "Outputs Tracking Plan with prioritization",
+        "Does not write implementation code",
+        "References ga4-tracking for implementation"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "我想在活動詳情頁加一個分享按鈕，要追蹤分享行為。幫我規劃一下。",
+      "expected_output": "Should recommend share_event with content_id = eventId and event_page = '/event/[id]'. Should ask what platform/method the share button uses (system share API, copy link, LINE share, etc.) to decide if a property is needed. Should check docs/events.md for existing share events. Should output a Tracking Plan. Should defer code to ga4-tracking.",
+      "assertions": [
+        "Recommends share_event",
+        "content_id = eventId",
+        "event_page = '/event/[id]'",
+        "Asks about share method/platform",
+        "Checks docs/events.md",
+        "Outputs Tracking Plan",
+        "Defers implementation to ga4-tracking"
+      ],
+      "files": []
+    }
+  ]
+}
