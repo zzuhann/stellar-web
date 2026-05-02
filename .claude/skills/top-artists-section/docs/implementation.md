@@ -67,6 +67,22 @@ HomePage/index.tsx
 | 邊框    | `linear-gradient(135deg, #3F5A72 0%, #CDE6F4 50%, #344D63 100%)` |
 | padding | `0.5`（spacing token）                                           |
 
+### 壽星帽子（`TopArtistCard`）
+
+| 屬性 | 值                                                       |
+| ---- | -------------------------------------------------------- |
+| 圖片 | `/party-hat.png`                                         |
+| 尺寸 | 24x24px                                                  |
+| 位置 | `absolute`, `top: -2`, `right: -1`                       |
+| 旋轉 | `rotate(15deg)`                                          |
+| 條件 | `shouldShowBirthdayHat(artist.birthday ?? '')` 為 `true` |
+
+### 壽星排序（`TopArtistsSection`）
+
+- 使用 `useMemo`，呼叫 `shouldShowBirthdayHat` 判斷
+- 當日壽星放入 `today[]`，其餘放入 `others[]`
+- 回傳 `[...today, ...others]` 傳給 `TopArtistCarousel`
+
 ### 新增按鈕
 
 | 屬性     | 值                       |

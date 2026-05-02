@@ -45,6 +45,13 @@ description: 擁有最多生咖的藝人 - 首頁區塊實作規格
 - 邊框：stellarBlue 漸層（`linear-gradient(135deg, #3F5A72 0%, #CDE6F4 50%, #344D63 100%)`）
 - 內容：藝名、本名（各一行）、生咖數量（`X 個`）
 - 點擊：導向 `/map/${artistId}`
+- 壽星帽子：當天生日的藝人，頭像右上角顯示 `/party-hat.png`（24x24，`rotate(15deg)`）
+
+### 藝人排序
+
+- 當日壽星排最前（`shouldShowBirthdayHat` 判斷）
+- 其餘依 API 原始順序（已按 `upcomingEventCount` 降序）
+- 排序邏輯在 `TopArtistsSection` 以 `useMemo` 實作，Carousel 純展示
 
 ### 輪播效果
 
@@ -86,5 +93,7 @@ description: 擁有最多生咖的藝人 - 首頁區塊實作規格
 - `docs/implementation.md` - 實作位置清單
 - `src/lib/api.ts` - `TopArtist` 型別、`artistsApi.getTop()`
 - `src/hooks/useHomePage.ts` - `useTopArtistsQuery`
-- `src/components/HomePage/components/TopArtistsSection.tsx` - 區塊容器
+- `src/components/HomePage/components/TopArtistsSection.tsx` - 區塊容器、壽星排序邏輯
 - `src/components/HomePage/components/TopArtistCarousel/` - 輪播組件
+- `src/components/HomePage/components/TopArtistCarousel/TopArtistCard.tsx` - 藝人卡片、壽星帽子
+- `src/utils/birthdayHelpers.ts` - `shouldShowBirthdayHat`
