@@ -7,13 +7,12 @@ import { useArtistSearch } from '@/hooks/useArtistSearch';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
-import ArtistCard from '../ArtistCard';
+import ArtistCardLink from '../ArtistCard/ArtistCardLink';
 import { useAuth } from '@/lib/auth-context';
 import EmptyState from '../EmptyState';
 import CTAButton from '../CTAButton';
 import Loading from '../Loading';
 import { css, cva } from '@/styled-system/css';
-import Link from 'next/link';
 import { sendGAEvent } from '@next/third-parties/google';
 
 const modalOverlay = cva({
@@ -264,10 +263,10 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
               <div className={artistList}>
                 {searchResults.map((artist) => {
                   return (
-                    <Link
-                      href={`/map/${artist.id}`}
+                    <ArtistCardLink
                       key={artist.id}
-                      onClick={() => {
+                      artist={artist}
+                      onBeforeNavigate={() => {
                         sendGAEvent('event', 'click_artist', {
                           event_page: '/',
                           user_id: user?.uid ?? '',
@@ -276,10 +275,7 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
                         setInputValue('');
                         onClose();
                       }}
-                      aria-label={`前往 ${artist.stageName} 的生日應援地圖頁面`}
-                    >
-                      <ArtistCard artist={artist} />
-                    </Link>
+                    />
                   );
                 })}
               </div>

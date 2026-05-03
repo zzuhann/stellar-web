@@ -1,10 +1,9 @@
 import { Artist } from '@/types';
-import ArtistCard from '../../ArtistCard';
+import ArtistCardLink from '../../ArtistCard/ArtistCardLink';
 import SearchSection from './SearchSection';
 import { css } from '@/styled-system/css';
 import EmptyState from '../../EmptyState';
 import Loading from '../../Loading';
-import Link from 'next/link';
 
 const artistListContainer = css({
   display: 'flex',
@@ -37,15 +36,7 @@ export default function BirthdayTab({
           <>
             {artists.map((artist) => {
               if (!artist.birthday) return null;
-              return (
-                <Link
-                  href={`/map/${artist.id}`}
-                  key={artist.id}
-                  aria-label={`前往 ${artist.stageName} 的生日應援地圖頁面`}
-                >
-                  <ArtistCard artist={artist} />
-                </Link>
-              );
+              return <ArtistCardLink key={artist.id} artist={artist} />;
             })}
           </>
         ) : (

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import BirthdayHat from '@/components/BirthdayHat';
 
 const artistCardContainer = css({
+  position: 'relative',
   display: 'flex',
   alignItems: 'center',
   gap: '4',
@@ -96,11 +97,32 @@ const srOnly = css({
   border: 0,
 });
 
+const loadingOverlay = css({
+  position: 'absolute',
+  inset: 0,
+  borderRadius: 'radius.lg',
+  backgroundColor: 'rgba(255,255,255,0.6)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 3,
+});
+
+const spinner = css({
+  width: '24px',
+  height: '24px',
+  borderRadius: '50%',
+  border: '2px solid rgba(0,0,0,0.15)',
+  borderTopColor: 'rgba(0,0,0,0.6)',
+  animation: 'spin 0.7s linear infinite',
+});
+
 interface ArtistCardProps {
   artist: Artist;
+  isPending?: boolean;
 }
 
-const ArtistCard = ({ artist }: ArtistCardProps) => {
+const ArtistCard = ({ artist, isPending }: ArtistCardProps) => {
   const birthdayText = formatBirthdayMonthDay(artist.birthday ?? '');
 
   return (
@@ -136,6 +158,11 @@ const ArtistCard = ({ artist }: ArtistCardProps) => {
           </span>
         </div>
       </div>
+      {isPending && (
+        <div className={loadingOverlay}>
+          <div className={spinner} />
+        </div>
+      )}
     </div>
   );
 };
