@@ -60,6 +60,7 @@ export default function BottomImagesGallery({ items }: BottomImagesGalleryProps)
               alt={item.title}
               width={800}
               height={600}
+              sizes="(max-width: 540px) calc(100vw - 40px), 460px"
               quality={95}
               priority={i === 0}
               fetchPriority={i === 0 ? 'high' : 'auto'}

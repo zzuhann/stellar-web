@@ -188,7 +188,7 @@ export default function SwiperBanner({ items = [], onSlideClick }: SwiperBannerP
                   src={item.imageUrl}
                   alt={item.title}
                   fill
-                  sizes="70vw"
+                  sizes="(min-width: 500px) 350px, 70vw"
                   priority={index === 0}
                   fetchPriority={index === 0 ? 'high' : 'auto'}
                   loading={index === 0 ? 'eager' : 'lazy'}

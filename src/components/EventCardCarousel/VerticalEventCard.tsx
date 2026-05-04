@@ -186,7 +186,7 @@ const VerticalEventCard = ({ event, onClick, isFirst = false }: VerticalEventCar
                   src={event.mainImage}
                   alt={event.title}
                   fill
-                  sizes="(max-width: 600px) 45vw, 180px"
+                  sizes="(max-width: 479px) 75vw, (max-width: 1023px) 50vw, 512px"
                   style={{ objectFit: 'cover' }}
                   priority={isFirst}
                 />
