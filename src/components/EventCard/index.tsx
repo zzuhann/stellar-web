@@ -1,3 +1,7 @@
+'use client';
+
+import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { MapEvent } from '@/types';
 import { formatDateRange } from '@/utils';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
@@ -5,6 +9,7 @@ import Link from 'next/link';
 import { css } from '@/styled-system/css';
 
 const container = css({
+  position: 'relative',
   display: 'flex',
   alignItems: 'flex-start',
   justifyContent: 'space-between',
@@ -17,6 +22,26 @@ const container = css({
   cursor: 'pointer',
   transition: 'all 0.2s ease',
   boxShadow: 'shadow.sm',
+});
+
+const loadingOverlay = css({
+  position: 'absolute',
+  inset: 0,
+  borderRadius: 'radius.lg',
+  backgroundColor: 'rgba(255,255,255,0.6)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 3,
+});
+
+const spinner = css({
+  width: '24px',
+  height: '24px',
+  borderRadius: '50%',
+  border: '2px solid rgba(0,0,0,0.15)',
+  borderTopColor: 'rgba(0,0,0,0.6)',
+  animation: 'spin 0.7s linear infinite',
 });
 
 const infoContainer = css({
@@ -77,9 +102,19 @@ type EventCardProps = {
 };
 
 const EventCard = ({ event }: EventCardProps) => {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    startTransition(() => {
+      router.push(`/event/${event.id}`);
+    });
+  };
+
   return (
-    <Link href={`/event/${event.id}`}>
-      <div className={container} key={event.id}>
+    <Link href={`/event/${event.id}`} onClick={handleClick}>
+      <div className={container}>
         <div className={infoContainer}>
           <div className={title}>{event.title}</div>
           <div className={descriptionContainer}>
@@ -107,6 +142,11 @@ const EventCard = ({ event }: EventCardProps) => {
             backgroundImage: event.mainImage ? `url(${event.mainImage})` : undefined,
           }}
         />
+        {isPending && (
+          <div className={loadingOverlay}>
+            <div className={spinner} />
+          </div>
+        )}
       </div>
     </Link>
   );
