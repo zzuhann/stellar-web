@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import useMapSelection from '../hook/useMapSelection';
 import useMapMarkers from '../hook/useMapMarkers';
@@ -19,45 +19,35 @@ const MarkerCluster = ({ mapEvents, artistData }: MarkerClusterProps) => {
   const { handleMarkerClick, handleClusterClick } = useMapSelection();
   const { groupedEvents, markerIcons } = useMapMarkers({ mapEvents });
 
-  return (
-    <MarkerClusterGroup
-      ref={clusterGroupRef}
-      // 控制聚合行為的選項
-      maxClusterRadius={80} // 聚合半徑 (像素)，預設 80
-      disableClusteringAtZoom={20} // 在最大縮放等級才停用聚合，讓同地點的活動始終聚合
-      spiderfyOnMaxZoom={false} // 停用 spiderfy，讓同地點的活動保持聚合
-      eventHandlers={{
-        clusterclick: (event: {
-          layer: { getBounds(): { getCenter(): { lat: number; lng: number } } };
-          originalEvent: { preventDefault(): void; stopPropagation(): void };
-        }) => handleClusterClick(event, groupedEvents),
-      }}
-      iconCreateFunction={(cluster: { getChildCount(): number }) => {
-        const count = cluster.getChildCount();
+  const profileImage = artistData?.profileImage;
 
-        // 決定 cluster 大小
-        let size = 50;
-        let className = 'marker-cluster-small';
+  const createClusterIcon = useCallback(
+    (cluster: { getChildCount(): number }) => {
+      const count = cluster.getChildCount();
 
-        if (count < 10) {
-          size = 50;
-          className = 'marker-cluster-small';
-        } else if (count < 100) {
-          size = 60;
-          className = 'marker-cluster-medium';
-        } else {
-          size = 70;
-          className = 'marker-cluster-large';
-        }
+      // 決定 cluster 大小
+      let size = 50;
+      let className = 'marker-cluster-small';
 
-        // 如果有 artist profileImage，使用自定義樣式
-        if (artistData?.profileImage) {
-          const html = `
+      if (count < 10) {
+        size = 50;
+        className = 'marker-cluster-small';
+      } else if (count < 100) {
+        size = 60;
+        className = 'marker-cluster-medium';
+      } else {
+        size = 70;
+        className = 'marker-cluster-large';
+      }
+
+      // 如果有 artist profileImage，使用自定義樣式
+      if (profileImage) {
+        const html = `
     <div style="
       width: ${size}px;
       height: ${size}px;
       border-radius: 50%;
-      background-image: url('${artistData.profileImage}');
+      background-image: url('${profileImage}');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -87,21 +77,38 @@ const MarkerCluster = ({ mapEvents, artistData }: MarkerClusterProps) => {
     </div>
   `;
 
-          return new DivIcon({
-            html: html,
-            className: '',
-            iconSize: new Point(size, size),
-            iconAnchor: [size / 2, size / 2],
-          });
-        }
-
-        // 預設樣式（沒有 artist profileImage 時）
         return new DivIcon({
-          html: `<div><span>${count}</span></div>`,
-          className: `marker-cluster ${className}`,
+          html: html,
+          className: '',
           iconSize: new Point(size, size),
+          iconAnchor: [size / 2, size / 2],
         });
+      }
+
+      // 預設樣式（沒有 artist profileImage 時）
+      return new DivIcon({
+        html: `<div><span>${count}</span></div>`,
+        className: `marker-cluster ${className}`,
+        iconSize: new Point(size, size),
+      });
+    },
+    [profileImage]
+  );
+
+  return (
+    <MarkerClusterGroup
+      ref={clusterGroupRef}
+      // 控制聚合行為的選項
+      maxClusterRadius={80} // 聚合半徑 (像素)，預設 80
+      disableClusteringAtZoom={20} // 在最大縮放等級才停用聚合，讓同地點的活動始終聚合
+      spiderfyOnMaxZoom={false} // 停用 spiderfy，讓同地點的活動保持聚合
+      eventHandlers={{
+        clusterclick: (event: {
+          layer: { getBounds(): { getCenter(): { lat: number; lng: number } } };
+          originalEvent: { preventDefault(): void; stopPropagation(): void };
+        }) => handleClusterClick(event, groupedEvents),
       }}
+      iconCreateFunction={createClusterIcon}
     >
       {mapEvents.map((event) => {
         const isSelected = selectedEventId === event.id;
