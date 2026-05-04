@@ -1,5 +1,6 @@
 import { css } from '@/styled-system/css';
 import { Artist } from '@/types';
+import Image from 'next/image';
 
 const emptyStateContainer = css({
   textAlign: 'center',
@@ -22,13 +23,12 @@ const emptyStateTitle = css({
 });
 
 const profileImageContainer = css({
+  position: 'relative',
   width: '80px',
   height: '80px',
   borderRadius: 'radius.circle',
   overflow: 'hidden',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
+  backgroundColor: 'color.background.secondary',
 });
 
 type EmptyStateProps = {
@@ -38,10 +38,17 @@ type EmptyStateProps = {
 const EmptyState = ({ artistData }: EmptyStateProps) => {
   return (
     <div className={emptyStateContainer}>
-      <div
-        className={profileImageContainer}
-        style={{ backgroundImage: `url(${artistData?.profileImage || ''})` }}
-      />
+      <div className={profileImageContainer}>
+        {artistData?.profileImage && (
+          <Image
+            src={artistData.profileImage}
+            alt={artistData.stageName ?? ''}
+            fill
+            sizes="80px"
+            style={{ objectFit: 'cover' }}
+          />
+        )}
+      </div>
       <h3 className={emptyStateTitle}>目前沒有 {artistData?.stageName} 的生日應援</h3>
     </div>
   );

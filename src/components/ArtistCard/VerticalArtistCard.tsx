@@ -2,6 +2,7 @@ import { Artist } from '@/types';
 import { css, cva } from '@/styled-system/css';
 import { FirebaseTimestamp } from '@/types';
 import { formatBirthdayFull } from '@/utils/birthdayHelpers';
+import Image from 'next/image';
 
 const verticalArtistCardContainer = css({
   display: 'flex',
@@ -24,9 +25,6 @@ const verticalArtistCardContainer = css({
 const artistImage = css({
   width: '100%',
   height: '100%',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
   backgroundColor: 'color.background.secondary',
   position: 'relative',
 });
@@ -176,12 +174,16 @@ const VerticalArtistCard = ({
 
   return (
     <div className={verticalArtistCardContainer}>
-      <div
-        className={artistImage}
-        style={{
-          backgroundImage: artist.profileImage ? `url(${artist.profileImage})` : undefined,
-        }}
-      >
+      <div className={artistImage}>
+        {artist.profileImage && (
+          <Image
+            src={artist.profileImage}
+            alt={artist.stageName}
+            fill
+            sizes="(max-width: 600px) 50vw, 200px"
+            style={{ objectFit: 'cover' }}
+          />
+        )}
         {artist.status && (
           <span
             className={statusBadge({ status: artist.status })}

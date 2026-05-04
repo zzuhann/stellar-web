@@ -4,6 +4,7 @@ import { useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { css } from '@/styled-system/css';
 import Link from 'next/link';
+import Image from 'next/image';
 import Skeleton from '@/components/ui/Skeleton';
 import { TopArtist } from '@/lib/api';
 import BirthdayHat from '@/components/BirthdayHat';
@@ -28,6 +29,7 @@ const avatarWrapper = css({
 });
 
 const avatarInner = css({
+  position: 'relative',
   width: '100%',
   height: '100%',
   borderRadius: 'radius.circle',
@@ -35,9 +37,6 @@ const avatarInner = css({
   border: '2px solid',
   borderColor: 'color.background.primary',
   backgroundColor: 'color.background.secondary',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
 });
 
 const artistName = css({
@@ -122,12 +121,17 @@ const TopArtistCard = ({ artist, onClick }: TopArtistCardProps) => {
   return (
     <Link href={`/map/${artist.slug ?? artist.id}`} className={topArtistItem} onClick={handleClick}>
       <div className={avatarWrapper}>
-        <div
-          className={avatarInner}
-          style={{
-            backgroundImage: artist.profileImage ? `url(${artist.profileImage})` : undefined,
-          }}
-        />
+        <div className={avatarInner}>
+          {artist.profileImage && (
+            <Image
+              src={artist.profileImage}
+              alt={artist.stageName}
+              fill
+              sizes="68px"
+              style={{ objectFit: 'cover' }}
+            />
+          )}
+        </div>
         <BirthdayHat birthday={artist.birthday ?? ''} className={birthdayHat} />
         {isPending && (
           <div className={loadingOverlay}>

@@ -116,10 +116,10 @@ export default function EventCardCarousel({
           ))}
 
         {!isLoading &&
-          events.map((event) => (
+          events.map((event, index) => (
             <SwiperSlide key={event.id}>
               <div className={slideContent}>
-                <VerticalEventCard event={event} onClick={onCardClick} />
+                <VerticalEventCard event={event} onClick={onCardClick} isFirst={index === 0} />
               </div>
             </SwiperSlide>
           ))}

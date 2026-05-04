@@ -6,6 +6,7 @@ import { MapEvent } from '@/types';
 import { formatDateRange } from '@/utils';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import Image from 'next/image';
 import { css } from '@/styled-system/css';
 
 const container = css({
@@ -86,9 +87,9 @@ const imageContainer = css({
   minWidth: '100px',
   minHeight: '100px',
   borderRadius: 'radius.lg',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
+  overflow: 'hidden',
+  flexShrink: 0,
+  backgroundColor: 'color.background.secondary',
   '@media (max-width: 400px)': {
     width: '80px',
     height: '80px',
@@ -136,12 +137,17 @@ const EventCard = ({ event }: EventCardProps) => {
             </div>
           </div>
         </div>
-        <div
-          className={imageContainer}
-          style={{
-            backgroundImage: event.mainImage ? `url(${event.mainImage})` : undefined,
-          }}
-        />
+        <div className={imageContainer}>
+          {event.mainImage && (
+            <Image
+              src={event.mainImage}
+              alt={event.title}
+              width={100}
+              height={100}
+              style={{ objectFit: 'cover', width: '100%', height: '100%' }}
+            />
+          )}
+        </div>
         {isPending && (
           <div className={loadingOverlay}>
             <div className={spinner} />

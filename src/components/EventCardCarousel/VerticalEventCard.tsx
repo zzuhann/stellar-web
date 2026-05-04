@@ -2,6 +2,7 @@ import { CoffeeEvent } from '@/types';
 import { css, cva } from '@/styled-system/css';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import Skeleton from '@/components/ui/Skeleton';
 
 const verticalEventCardContainer = css({
@@ -24,9 +25,6 @@ const verticalEventCardContainer = css({
 const eventImageStyle = css({
   width: '100%',
   aspectRatio: '3/4',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
   backgroundColor: 'color.background.secondary',
   position: 'relative',
 });
@@ -170,9 +168,10 @@ export function VerticalEventCardSkeleton() {
 interface VerticalEventCardProps {
   event: CoffeeEvent;
   onClick?: (eventId: string) => void;
+  isFirst?: boolean;
 }
 
-const VerticalEventCard = ({ event, onClick }: VerticalEventCardProps) => {
+const VerticalEventCard = ({ event, onClick, isFirst = false }: VerticalEventCardProps) => {
   const pathname = usePathname();
   const isShowSubmissionInfo = pathname !== '/' && pathname !== '/my-favorite';
 
@@ -181,10 +180,17 @@ const VerticalEventCard = ({ event, onClick }: VerticalEventCardProps) => {
       {event.status === 'approved' && (
         <div className={verticalEventCardContainer}>
           <Link href={`/event/${event.slug ?? event.id}`} onClick={() => onClick?.(event.id)}>
-            <div
-              className={eventImageStyle}
-              style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}
-            >
+            <div className={eventImageStyle}>
+              {event.mainImage && (
+                <Image
+                  src={event.mainImage}
+                  alt={event.title}
+                  fill
+                  sizes="(max-width: 600px) 45vw, 180px"
+                  style={{ objectFit: 'cover' }}
+                  priority={isFirst}
+                />
+              )}
               {isShowSubmissionInfo && (
                 <span className={statusBadge({ status: event.status })}>
                   {getStatusText(event.status, event.rejectedReason)}

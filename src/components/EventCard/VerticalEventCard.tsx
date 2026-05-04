@@ -5,6 +5,7 @@ import { FirebaseTimestamp } from '@/types';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 
 const verticalEventCardContainer = css({
   display: 'flex',
@@ -26,9 +27,6 @@ const verticalEventCardContainer = css({
 const eventImageStyle = css({
   width: '100%',
   aspectRatio: '3/4',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
   backgroundColor: 'color.background.secondary',
   position: 'relative',
 });
@@ -218,10 +216,16 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
       {event.status === 'approved' && (
         <div className={verticalEventCardContainer}>
           <Link href={`/event/${event.slug ?? event.id}`}>
-            <div
-              className={eventImageStyle}
-              style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}
-            >
+            <div className={eventImageStyle}>
+              {event.mainImage && (
+                <Image
+                  src={event.mainImage}
+                  alt={event.title}
+                  fill
+                  sizes="(max-width: 600px) 45vw, 180px"
+                  style={{ objectFit: 'cover' }}
+                />
+              )}
               {isShowSubmissionInfo && (
                 <span className={statusBadge({ status: event.status })}>
                   {getStatusText(event.status, event.rejectedReason)}
@@ -293,10 +297,16 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
       )}
       {event.status !== 'approved' && (
         <div className={verticalEventCardContainer}>
-          <div
-            className={eventImageStyle}
-            style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}
-          >
+          <div className={eventImageStyle}>
+            {event.mainImage && (
+              <Image
+                src={event.mainImage}
+                alt={event.title}
+                fill
+                sizes="(max-width: 600px) 45vw, 180px"
+                style={{ objectFit: 'cover' }}
+              />
+            )}
             {isShowSubmissionInfo && (
               <span className={statusBadge({ status: event.status })}>
                 {getStatusText(event.status, event.rejectedReason)}
