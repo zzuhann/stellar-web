@@ -1,4 +1,4 @@
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, cleanup } from '@testing-library/react';
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import BirthdayHat from './index';
 
@@ -16,6 +16,7 @@ describe('BirthdayHat', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    cleanup();
   });
 
   it('今天是生日 -> 顯示帽子圖片', async () => {

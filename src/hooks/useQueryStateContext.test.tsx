@@ -8,9 +8,6 @@ import { useQueryState } from './useQueryState';
 
 // ─── next/navigation mock ──────────────────────────────────────────────────────
 
-const mockReplace = vi.fn();
-const mockPush = vi.fn();
-
 function createSearchParamsMock(entries: [string, string][]) {
   return {
     get: (key: string) => entries.find(([k]) => k === key)?.[1] ?? null,
@@ -29,13 +26,12 @@ function setMockSearchParams(entries: [string, string][]) {
 }
 
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({
-    replace: mockReplace,
-    push: mockPush,
-  }),
   useSearchParams: () => currentSearchParams,
   usePathname: () => '/',
 }));
+
+let historyReplaceSpy: ReturnType<typeof vi.spyOn>;
+let historyPushSpy: ReturnType<typeof vi.spyOn>;
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -51,6 +47,8 @@ describe('QueryStateProvider', () => {
   beforeEach(() => {
     setMockSearchParams([]);
     vi.clearAllMocks();
+    historyReplaceSpy = vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
+    historyPushSpy = vi.spyOn(window.history, 'pushState').mockImplementation(() => {});
   });
 
   describe('初始化', () => {
@@ -101,7 +99,7 @@ describe('QueryStateProvider', () => {
         result.current.setState('tab', 'events');
       });
 
-      expect(mockReplace).toHaveBeenCalledWith('/?tab=events', { scroll: false });
+      expect(historyReplaceSpy).toHaveBeenCalledWith(null, '', '/?tab=events');
     });
 
     it('value 為 null 時應從 params 刪除該 key', () => {
@@ -156,8 +154,8 @@ describe('QueryStateProvider', () => {
         result.current.setState('tab', 'events', { method: 'push' });
       });
 
-      expect(mockPush).toHaveBeenCalled();
-      expect(mockReplace).not.toHaveBeenCalled();
+      expect(historyPushSpy).toHaveBeenCalled();
+      expect(historyReplaceSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -176,7 +174,7 @@ describe('QueryStateProvider', () => {
 
       expect(result.current.params.tab).toBe('events');
       expect(result.current.params.week).toBe('2026-05-05');
-      expect(mockReplace).toHaveBeenCalledTimes(1);
+      expect(historyReplaceSpy).toHaveBeenCalledTimes(1);
     });
 
     it('mergeUpdates 完成後 shouldMerge 應重置（單獨 setState 應正常觸發 URL 更新）', () => {
@@ -196,7 +194,7 @@ describe('QueryStateProvider', () => {
         result.current.setState('tab', 'birthday');
       });
 
-      expect(mockReplace).toHaveBeenCalledTimes(1);
+      expect(historyReplaceSpy).toHaveBeenCalledTimes(1);
     });
   });
 
