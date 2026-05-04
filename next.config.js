@@ -2,6 +2,7 @@
 const nextConfig = {
   allowedDevOrigins: ['zzuhann-dev.stellar-zone.com'],
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
