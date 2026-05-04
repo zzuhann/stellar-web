@@ -1,4 +1,5 @@
 import { css } from '@/styled-system/css';
+import Link from 'next/link';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -46,12 +47,6 @@ const sectionTitle = css({
   textStyle: 'h2',
   color: 'color.text.primary',
   margin: '0 0 16px 0',
-});
-
-const subSectionTitle = css({
-  textStyle: 'h4',
-  color: 'color.text.primary',
-  margin: '20px 0 10px 0',
 });
 
 const paragraph = css({
@@ -104,6 +99,13 @@ export default function TermsPage() {
             STELLAR 服務；當您完成 STELLAR 會員註冊程序，作為 STELLAR
             服務的用戶時，代表您已瞭解且同意遵守本協議下示條款。
           </p>
+          <p>
+            個人資料保護相關事項，請參閱{' '}
+            <Link href="/privacy" className={link}>
+              隱私權政策
+            </Link>
+            。
+          </p>
         </div>
 
         <hr className={divider} />
@@ -140,117 +142,7 @@ export default function TermsPage() {
         <hr className={divider} />
 
         <div className={section}>
-          <h2 className={sectionTitle}>2. 個人資料及隱私保護</h2>
-          <p className={paragraph}>
-            STELLAR 將依法保護您的個人資料及隱私。您瞭解並確認 STELLAR 已經依據個人資料保護法第 8
-            條第 1 項明確告知與個人資料保護有關事項如下：
-          </p>
-
-          <h3 className={subSectionTitle}>2.1 蒐集目的</h3>
-          <p className={paragraph}>
-            STELLAR 蒐集您的個人資料，以提供您 STELLAR 服務，特定目的包括：
-          </p>
-          <ol className={orderedList}>
-            <li>行銷（特定目的項目 040）</li>
-            <li>會員或其他成員名冊之內部管理（特定目的項目 052）</li>
-            <li>非公務機關依法定義務所進行個人資料之蒐集處理及利用（特定目的項目 063）</li>
-            <li>契約、類契約或其他法律關係事務（特定目的項目 069）</li>
-            <li>消費者、客戶管理與服務（特定目的項目 090）</li>
-            <li>調查、統計與研究分析（特定目的項目 157）</li>
-            <li>其他與 STELLAR 服務相關的利用</li>
-          </ol>
-
-          <h3 className={subSectionTitle}>2.2 蒐集類別</h3>
-          <p className={paragraph}>
-            因您使用 STELLAR 服務的程度不同，我們可能因主動（請注意，在您使用 STELLAR
-            服務時，即便您未登入，我們仍然可能會辨識出您或您的裝置）或被動（如您自行投稿應援活動或發佈資訊時揭露），蒐集您的註冊資料、使用
-            STELLAR
-            服務的活動紀錄，包括但不限於您的所在位置、瀏覽應援活動的喜好、投稿紀錄、收藏紀錄、上網的
-            IP 位址、裝置資訊、使用時間、瀏覽及點選紀錄及其他 STELLAR
-            因您使用服務所取得之一切資訊等，實際的資料端視您的使用情形，惟可能包括下列類型：
-          </p>
-          <ol className={orderedList}>
-            <li>
-              辨識個人者：如消費者之姓名、職稱、住址、工作地址、以前地址、住家電話號碼、行動電話、即時通帳號、網路平臺申請之帳號、通訊及戶籍地址、相片、電子郵遞地址、電子簽章、憑證卡序號、憑證序號、提供網路身分認證或申辦查詢服務之紀錄及其他任何可辨識資料本人者等。（類別代號
-              C001）
-            </li>
-            <li>個人描述：如年齡、性別、出生年月日、出生地、國籍等。（類別代號 C011）</li>
-            <li>休閒活動及興趣：如嗜好、運動及其他興趣等。（類別代號 C035）</li>
-            <li>
-              生活格調：如使用消費品之種類及服務之細節、個人或家庭之消費模式等。（類別代號 C036）
-            </li>
-            <li>著作：如書籍、文章、報告、視聽出版品及其他著作等。（類別代號 C056）</li>
-          </ol>
-
-          <h3 className={subSectionTitle}>2.3 利用期間及地區</h3>
-          <ol className={orderedList}>
-            <li>
-              STELLAR 將於營運期間持續保存您的個人資料，STELLAR
-              將所蒐集之個人資料，儲存於我們購買或租用的儲存空間，實際儲存地點可能因伺服器位置不同而改變（可能包括臺灣、日本），您同意我們無須為了單純的伺服器儲存位置改變而對您為通知。
-            </li>
-            <li>
-              STELLAR 的使用者可能於全球任何地點登入並使用 STELLAR
-              服務，因此您理解並同意，於此範圍內我們得於全球地區利用您的個人資料，以完善提供 STELLAR
-              服務。
-            </li>
-          </ol>
-
-          <h3 className={subSectionTitle}>2.4 利用對象及方式</h3>
-          <ol className={orderedList}>
-            <li>
-              對象：STELLAR
-              及其關係企業、其他業務相關之機構、依法有權機關、您所同意之對象（例如本協議第 11
-              條之情形等）、STELLAR 所使用之社群媒體或軟體服務供應商。
-            </li>
-            <li>
-              方式：以電子、書面、電話、電信、網際網路及其他方式，於蒐集之特定目的範圍內處理並利用或國際傳輸您的個人資料。
-            </li>
-          </ol>
-
-          <h3 className={subSectionTitle}>2.5 其他提供或超出特定目的之使用</h3>
-          <p className={paragraph}>
-            此外，STELLAR
-            於下列情形，亦可能將您的個人資料提供給第三人、或超出本政策之特定目的必要範圍使用：
-          </p>
-          <ol className={orderedList}>
-            <li>受司法、警察或其他有權機關基於調查之要求時。</li>
-            <li>於維護公益或保護本站或他人權益時。</li>
-            <li>於您的行為違反法令或您與本站間的契約（不限於本協議）規定時。</li>
-            <li>
-              為維護您本人、其他會員或第三人之生命、身體、自由、財產、交易內容、個人資料之完整與安全時。
-            </li>
-            <li>其他合法情形。</li>
-          </ol>
-
-          <h3 className={subSectionTitle}>2.6 您對個人資料所享有之權利</h3>
-          <p className={paragraph}>
-            就您的個人資料，您有更改用戶名稱的權利；其餘請求請以電子郵件寄至：
-            <a href="mailto:stellar.taiwan.2025@gmail.com" className={link}>
-              stellar.taiwan.2025@gmail.com
-            </a>
-            ，本站將於收悉後與您聯繫及處理。您理解並同意，為了保護您的隱私，我們可能於您行使本項權利時，以查驗身份證明文件，或其他我們認為適合的方式，驗證請求人的身份，且依個人資料保護法規定，於您查詢或請求閱覽個人資料或製給複製本時，我們得向您酌收必要成本費用：
-          </p>
-          <ol className={orderedList}>
-            <li>查詢或請求閱覽。</li>
-            <li>請求製給複製本。</li>
-            <li>請求補充或更正。</li>
-            <li>請求停止蒐集、處理或利用。</li>
-            <li>
-              請求刪除。惟 STELLAR 仍會以無法直接識別您個人的方式，保留您的
-              Email、用戶名稱等不重複資料。
-            </li>
-          </ol>
-
-          <h3 className={subSectionTitle}>2.7 不提供資料之影響</h3>
-          <p className={paragraph}>
-            如您拒絕提供部分個人資料，您可能無法完成註冊程序，或無法使用部分 STELLAR 服務。
-          </p>
-        </div>
-
-        <hr className={divider} />
-
-        <div className={section}>
-          <h2 className={sectionTitle}>3. 用戶內容授權</h2>
+          <h2 className={sectionTitle}>2. 用戶內容授權</h2>
           <p className={paragraph}>
             就您利用 STELLAR
             服務發佈之文章及其他表述內容（以下合稱為「用戶內容」），您得依法享有相關智慧財產權。惟就上述用戶內容及相關智慧財產權，您同意以下事項：
@@ -282,7 +174,7 @@ export default function TermsPage() {
         <hr className={divider} />
 
         <div className={section}>
-          <h2 className={sectionTitle}>4. 用戶內容限制</h2>
+          <h2 className={sectionTitle}>3. 用戶內容限制</h2>
           <p className={paragraph}>用戶內容不得包含下述資訊：</p>
           <ol className={orderedList}>
             <li>刪文規則、各看板板規中禁止之內容。</li>
@@ -314,7 +206,7 @@ export default function TermsPage() {
         <hr className={divider} />
 
         <div className={section}>
-          <h2 className={sectionTitle}>5. 用戶行為限制</h2>
+          <h2 className={sectionTitle}>4. 用戶行為限制</h2>
           <p className={paragraph}>您同意不得為下列行為：</p>
           <ol className={orderedList}>
             <li>以自動化登入及操作方式蒐集 STELLAR 其他用戶的用戶內容。</li>
@@ -341,7 +233,7 @@ export default function TermsPage() {
               用來防止或限制全部或部分使用服務的措施，或以解碼、破譯、反編譯、逆向工程或其他方式，試圖獲得任何
               STELLAR 服務、其網站或相關程式之原始碼或程式碼。
             </li>
-            <li>發布違反前述第四條之用戶內容。</li>
+            <li>發布違反前述第三條之用戶內容。</li>
             <li>
               任何涉及騷擾、猥褻、威脅、詐欺、霸凌、侵害 STELLAR 及他人權益或濫用 STELLAR
               服務之行為。
@@ -355,7 +247,7 @@ export default function TermsPage() {
         <hr className={divider} />
 
         <div className={section}>
-          <h2 className={sectionTitle}>6. 檢舉及申訴</h2>
+          <h2 className={sectionTitle}>5. 檢舉及申訴</h2>
           <p className={paragraph}>您同意 STELLAR 可以針對用戶違反本協議之行為，按下述機制處置：</p>
           <ol className={orderedList}>
             <li>
@@ -382,7 +274,7 @@ export default function TermsPage() {
         <hr className={divider} />
 
         <div className={section}>
-          <h2 className={sectionTitle}>7. 行動裝置</h2>
+          <h2 className={sectionTitle}>6. 行動裝置</h2>
           <ol className={orderedList}>
             <li>STELLAR 透過網頁提供 STELLAR 服務，本協議適用於所有用戶。</li>
             <li>
@@ -396,7 +288,7 @@ export default function TermsPage() {
         <hr className={divider} />
 
         <div className={section}>
-          <h2 className={sectionTitle}>8. 修訂</h2>
+          <h2 className={sectionTitle}>7. 修訂</h2>
           <ol className={orderedList}>
             <li>
               STELLAR 保留未來隨時修訂本協議及相關 STELLAR 規則之權利，而無須另行通知您。STELLAR
@@ -413,7 +305,7 @@ export default function TermsPage() {
         <hr className={divider} />
 
         <div className={section}>
-          <h2 className={sectionTitle}>9. 聲明及免責及賠償</h2>
+          <h2 className={sectionTitle}>8. 聲明及免責及賠償</h2>
           <ol className={orderedList}>
             <li>
               如有任何第三人因您利用 STELLAR 服務之行為或因您發佈之用戶內容而向 STELLAR
@@ -448,7 +340,7 @@ export default function TermsPage() {
         <hr className={divider} />
 
         <div className={section}>
-          <h2 className={sectionTitle}>10. 終止</h2>
+          <h2 className={sectionTitle}>9. 終止</h2>
           <ol className={orderedList}>
             <li>
               STELLAR
@@ -462,7 +354,8 @@ export default function TermsPage() {
               團隊通知終止本協議。
             </li>
             <li>
-              無論本協議因何原因終止，本協議下述條款於終止後仍有效力：第 2、3 條及第 9～11 條。
+              無論本協議因何原因終止，本協議第 2 條及第 8 至 10
+              條，以及《隱私權政策》之條款於終止後仍有效力。
             </li>
           </ol>
         </div>
@@ -470,7 +363,7 @@ export default function TermsPage() {
         <hr className={divider} />
 
         <div className={section}>
-          <h2 className={sectionTitle}>11. 準據法及管轄法院</h2>
+          <h2 className={sectionTitle}>10. 準據法及管轄法院</h2>
           <ol className={orderedList}>
             <li>本協議的準據法為中華民國法律。</li>
             <li>
@@ -482,7 +375,7 @@ export default function TermsPage() {
         <hr className={divider} />
 
         <div className={section}>
-          <h2 className={sectionTitle}>12. 其他</h2>
+          <h2 className={sectionTitle}>11. 其他</h2>
           <ol className={orderedList}>
             <li>本協議各條文之標題僅係為閱讀方便而使用，並不影響本協議之內容及解釋。</li>
             <li>

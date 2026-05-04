@@ -1,6 +1,4 @@
-'use client';
-
-import { InstagramIcon } from '@/components/ui/SocialMediaIcons';
+import { ThreadsIcon } from '@/components/ui/SocialMediaIcons';
 import { css } from '@/styled-system/css';
 import Link from 'next/link';
 
@@ -17,7 +15,6 @@ const footerContent = css({
   margin: '0 auto',
   display: 'flex',
   justifyContent: 'space-between',
-  alignItems: 'center',
   gap: '4',
   maxWidth: '500px',
 });
@@ -61,16 +58,22 @@ const Footer = () => {
           >
             服務條款
           </Link>
+          <Link
+            href="/privacy"
+            className={css({ textDecoration: 'underline', marginTop: '1', display: 'block' })}
+          >
+            隱私權政策
+          </Link>
         </div>
 
         <div className={socialLinks}>
           <a
-            className={socialLink}
-            href="https://www.instagram.com/_stellar.tw"
+            href="https://www.threads.net/@_stellar.tw"
             target="_blank"
             rel="noopener noreferrer"
+            className={socialLink}
           >
-            <InstagramIcon size={16} />
+            <ThreadsIcon size={16} />
             _stellar.tw
           </a>
         </div>

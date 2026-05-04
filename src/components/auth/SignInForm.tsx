@@ -48,6 +48,10 @@ export default function SignInForm({ onSuccess }: SignInFormProps) {
       註冊/登入後即代表您同意我們的{' '}
       <Link href="/terms" target="_blank">
         服務條款
+      </Link>{' '}
+      及{' '}
+      <Link href="/privacy" target="_blank">
+        隱私權政策
       </Link>
     </p>
   );
