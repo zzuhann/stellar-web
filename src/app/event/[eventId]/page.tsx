@@ -1,3 +1,4 @@
+import { notFound, permanentRedirect } from 'next/navigation';
 import { Metadata } from 'next';
 import { eventsApi } from '@/lib/api';
 import EventDetail from '@/components/EventDetail';
@@ -40,9 +41,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function EventDetailPage({ params }: PageProps) {
   const { eventId } = await params;
 
-  // 直接在 Server Component 取得資料
-  const event = await eventsApi.getById(eventId);
+  if (!eventId || eventId.trim() === '') {
+    notFound();
+  }
 
-  // 直接傳 event 給 EventDetail
+  const event = await eventsApi.getById(eventId).catch(() => null);
+
+  if (event?.slug && eventId !== event.slug) {
+    permanentRedirect(`/event/${event.slug}`);
+  }
+
   return <EventDetail event={event} />;
 }

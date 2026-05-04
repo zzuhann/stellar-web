@@ -217,7 +217,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
     <>
       {event.status === 'approved' && (
         <div className={verticalEventCardContainer}>
-          <Link href={`/event/${event.id}`}>
+          <Link href={`/event/${event.slug ?? event.id}`}>
             <div
               className={eventImageStyle}
               style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}

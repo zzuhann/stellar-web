@@ -23,6 +23,7 @@ export interface Artist {
 
 export interface CoffeeEvent {
   id: string;
+  slug?: string;
   artists: Array<{
     id: string;
     slug?: string;
@@ -117,6 +118,7 @@ export interface MapEvent {
     start: string;
     end: string;
   };
+  slug?: string;
 }
 
 // 地圖資料回應格式

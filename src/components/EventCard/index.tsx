@@ -108,12 +108,12 @@ const EventCard = ({ event }: EventCardProps) => {
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
     startTransition(() => {
-      router.push(`/event/${event.id}`);
+      router.push(`/event/${event.slug ?? event.id}`);
     });
   };
 
   return (
-    <Link href={`/event/${event.id}`} onClick={handleClick}>
+    <Link href={`/event/${event.slug ?? event.id}`} onClick={handleClick}>
       <div className={container}>
         <div className={infoContainer}>
           <div className={title}>{event.title}</div>

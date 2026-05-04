@@ -180,7 +180,7 @@ const VerticalEventCard = ({ event, onClick }: VerticalEventCardProps) => {
     <>
       {event.status === 'approved' && (
         <div className={verticalEventCardContainer}>
-          <Link href={`/event/${event.id}`} onClick={() => onClick?.(event.id)}>
+          <Link href={`/event/${event.slug ?? event.id}`} onClick={() => onClick?.(event.id)}>
             <div
               className={eventImageStyle}
               style={{ backgroundImage: `url(${event.mainImage ?? ''})` }}
