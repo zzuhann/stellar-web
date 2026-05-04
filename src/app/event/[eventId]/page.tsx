@@ -2,11 +2,43 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { Metadata } from 'next';
 import { eventsApi } from '@/lib/api';
 import EventDetail from '@/components/EventDetail';
+import type { CoffeeEvent, FirebaseTimestamp } from '@/types';
 
 interface PageProps {
   params: Promise<{
     eventId: string;
   }>;
+}
+
+function tsToIso(ts: FirebaseTimestamp): string {
+  return new Date(ts._seconds * 1000).toISOString();
+}
+
+function buildEventJsonLd(event: CoffeeEvent) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: event.title,
+    description: event.description,
+    startDate: tsToIso(event.datetime.start),
+    endDate: tsToIso(event.datetime.end),
+    location: {
+      '@type': 'Place',
+      name: event.location.name,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: event.location.address,
+        addressCountry: 'TW',
+      },
+    },
+    ...(event.mainImage && { image: [event.mainImage] }),
+    url: `https://www.stellar-zone.com/event/${event.slug ?? event.id}`,
+    organizer: {
+      '@type': 'Organization',
+      name: 'STELLAR',
+      url: 'https://www.stellar-zone.com',
+    },
+  };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -18,6 +50,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title,
       description,
+      alternates: {
+        canonical: `https://www.stellar-zone.com/event/${event?.slug ?? eventId}`,
+      },
       openGraph: {
         title,
         description,
@@ -51,5 +86,15 @@ export default async function EventDetailPage({ params }: PageProps) {
     permanentRedirect(`/event/${event.slug}`);
   }
 
-  return <EventDetail event={event} />;
+  return (
+    <>
+      {event && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildEventJsonLd(event)) }}
+        />
+      )}
+      <EventDetail event={event} />
+    </>
+  );
 }

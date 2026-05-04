@@ -30,6 +30,9 @@ export async function generateMetadata({ params }: MapWithArtistPageProps): Prom
     return {
       title,
       description,
+      alternates: {
+        canonical: `https://www.stellar-zone.com/map/${artist.slug ?? artistId}`,
+      },
       openGraph: {
         title,
         description,

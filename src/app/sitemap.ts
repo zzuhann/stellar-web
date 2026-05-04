@@ -14,7 +14,6 @@ function tsToDate(ts: FirebaseTimestamp | string): Date {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: BASE_URL, changeFrequency: 'daily', priority: 1 },
-    { url: `${BASE_URL}/map`, changeFrequency: 'daily', priority: 0.9 },
     { url: `${BASE_URL}/submit-event`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE_URL}/submit-artist`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${BASE_URL}/terms`, changeFrequency: 'yearly', priority: 0.2 },
