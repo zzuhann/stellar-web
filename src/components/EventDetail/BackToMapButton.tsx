@@ -45,7 +45,7 @@ export default function BackToMapButton({ event }: BackToMapButtonProps) {
 
     if (event.artists.length === 1) {
       // 只有一個藝人，直接跳轉
-      router.push(`/map/${event.artists[0].id}`);
+      router.push(`/map/${event.artists[0].slug ?? event.artists[0].id}`);
     } else {
       // 多個藝人時需選擇藝人
       setShowArtistModal(true);

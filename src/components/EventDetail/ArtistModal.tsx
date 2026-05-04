@@ -135,7 +135,7 @@ const ArtistModal = ({ event, handleArtistSelect, handleCloseModal }: ArtistModa
           <button
             key={artist.id}
             type="button"
-            onClick={() => handleArtistSelect(artist.id)}
+            onClick={() => handleArtistSelect(artist.slug ?? artist.id)}
             className={artistOption}
             aria-label={`選擇 ${artist.name || 'Unknown Artist'}`}
           >

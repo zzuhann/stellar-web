@@ -115,12 +115,12 @@ const TopArtistCard = ({ artist, onClick }: TopArtistCardProps) => {
     e.preventDefault();
     onClick?.(artist.id);
     startTransition(() => {
-      router.push(`/map/${artist.id}`);
+      router.push(`/map/${artist.slug ?? artist.id}`);
     });
   };
 
   return (
-    <Link href={`/map/${artist.id}`} className={topArtistItem} onClick={handleClick}>
+    <Link href={`/map/${artist.slug ?? artist.id}`} className={topArtistItem} onClick={handleClick}>
       <div className={avatarWrapper}>
         <div
           className={avatarInner}

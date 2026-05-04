@@ -24,13 +24,13 @@ export default function ArtistCardLink({
     e.preventDefault();
     onBeforeNavigate?.();
     startTransition(() => {
-      router.push(`/map/${artist.id}`);
+      router.push(`/map/${artist.slug ?? artist.id}`);
     });
   };
 
   return (
     <Link
-      href={`/map/${artist.id}`}
+      href={`/map/${artist.slug ?? artist.id}`}
       aria-label={ariaLabel ?? `前往 ${artist.stageName} 的生日應援地圖頁面`}
       onClick={handleClick}
     >

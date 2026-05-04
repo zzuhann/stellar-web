@@ -6,6 +6,7 @@ export interface FirebaseTimestamp {
 
 export interface Artist {
   id: string;
+  slug?: string; // 人類可讀的 URL slug（例：bts, blackpink）
   stageName: string; // 英文藝名（必填）
   stageNameZh?: string; // 中文藝名（選填）
   groupNames?: string[]; // 團名陣列（選填，支援多個團名）
@@ -24,6 +25,7 @@ export interface CoffeeEvent {
   id: string;
   artists: Array<{
     id: string;
+    slug?: string;
     name: string;
     profileImage?: string;
   }>; // 支援聯合應援

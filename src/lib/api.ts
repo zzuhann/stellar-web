@@ -103,6 +103,7 @@ export const artistsApi = {
     // 轉換後端格式到前端格式
     return rawArtists.map((artist: Record<string, unknown>) => ({
       id: artist.id,
+      slug: artist.slug,
       stageName: artist.stageName,
       stageNameZh: artist.stageNameZh, // 新增中文藝名
       groupNames: artist.groupNames, // 新增團名陣列
@@ -170,6 +171,7 @@ export const artistsApi = {
     // 轉換後端格式到前端格式
     return {
       id: artist.id,
+      slug: artist.slug,
       stageName: artist.stageName,
       stageNameZh: artist.stageNameZh, // 新增中文藝名
       groupNames: artist.groupNames, // 新增團名陣列

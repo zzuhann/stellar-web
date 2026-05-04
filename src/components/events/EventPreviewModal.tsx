@@ -266,7 +266,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
             {event.artists?.map((artist, index) => (
               <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
                 {index > 0 && <span className={artistSeparator}>/</span>}
-                <Link href={`/map/${artist.id}`}>
+                <Link href={`/map/${artist.slug ?? artist.id}`}>
                   <div className={artistItem}>
                     <div
                       className={artistAvatar}

@@ -70,7 +70,7 @@ const ArtistSubmissions = ({
                 key={artist.id}
                 artist={artist}
                 onClick={(artist) => {
-                  router.push(`/map/${artist.id}`);
+                  router.push(`/map/${artist.slug ?? artist.id}`);
                 }}
                 submissionTime={
                   artist.createdAt

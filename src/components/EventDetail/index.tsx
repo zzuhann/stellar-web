@@ -194,7 +194,12 @@ const EventDetail = ({ event }: EventDetailProps) => {
   const breadcrumbItems = [
     { label: '首頁', href: '/' },
     ...(primaryArtist
-      ? [{ label: `${primaryArtist.name} 生日應援地圖`, href: `/map/${primaryArtist.id}` }]
+      ? [
+          {
+            label: `${primaryArtist.name} 生日應援地圖`,
+            href: `/map/${primaryArtist.slug ?? primaryArtist.id}`,
+          },
+        ]
       : []),
     { label: event.title },
   ];

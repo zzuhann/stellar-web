@@ -27,7 +27,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]);
 
     const artistRoutes: MetadataRoute.Sitemap = artists.map((artist) => ({
-      url: `${BASE_URL}/map/${artist.id}`,
+      url: `${BASE_URL}/map/${artist.slug ?? artist.id}`,
       lastModified: tsToDate(artist.updatedAt),
       changeFrequency: 'weekly',
       priority: 0.8,

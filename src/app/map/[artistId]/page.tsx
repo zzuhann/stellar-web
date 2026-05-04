@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { Metadata } from 'next';
 import { artistsApi } from '@/lib/api';
 import MapClientWrapper from './MapClientWrapper';
@@ -59,6 +59,11 @@ export default async function MapWithArtistPage({ params, searchParams }: MapWit
   }
 
   const artist = await artistsApi.getById(artistId).catch(() => null);
+
+  if (artist?.slug && artistId !== artist.slug) {
+    permanentRedirect(`/map/${artist.slug}`);
+  }
+
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',

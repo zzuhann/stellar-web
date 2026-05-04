@@ -11,6 +11,7 @@ interface MapDataOptions {
   search?: string;
   artistId?: string;
   region?: string;
+  enabled?: boolean;
 }
 
 interface MapDataResponse {
@@ -19,21 +20,21 @@ interface MapDataResponse {
 }
 
 export function useMapData(options: MapDataOptions = {}) {
+  const { enabled = true, ...queryOptions } = options;
   return useQuery({
-    queryKey: ['map-data', options],
+    queryKey: ['map-data', queryOptions],
     queryFn: async (): Promise<MapDataResponse> => {
-      // 使用統一的 API 函數
       return eventsApi.getMapData({
-        status: options.status,
-        bounds: options.bounds,
-        center: options.center, // 新增 center 支援
-        zoom: options.zoom,
-        search: options.search?.trim(),
-        artistId: options.artistId,
-        region: options.region,
+        status: queryOptions.status,
+        bounds: queryOptions.bounds,
+        center: queryOptions.center,
+        zoom: queryOptions.zoom,
+        search: queryOptions.search?.trim(),
+        artistId: queryOptions.artistId,
+        region: queryOptions.region,
       });
     },
-    staleTime: 1000 * 60 * 5, // 5 分鐘快取（地圖資料更新頻率較低）
-    enabled: true,
+    staleTime: 1000 * 60 * 5,
+    enabled,
   });
 }

@@ -47,6 +47,7 @@ const artistSeparator = css({
 
 interface Artist {
   id: string;
+  slug?: string;
   name: string;
   profileImage?: string;
 }
@@ -65,7 +66,7 @@ export default function ArtistSection({ artists }: ArtistSectionProps) {
       {artists.map((artist, index) => (
         <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
           {index > 0 && <span className={artistSeparator}>/</span>}
-          <Link href={`/map/${artist.id}`} className={artistItem}>
+          <Link href={`/map/${artist.slug ?? artist.id}`} className={artistItem}>
             <div
               className={artistAvatar}
               style={{ backgroundImage: `url(${artist.profileImage})` }}
