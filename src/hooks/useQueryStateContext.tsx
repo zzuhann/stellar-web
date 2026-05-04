@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useSearchParams, usePathname } from 'next/navigation';
 
 export type RouterMethod = 'replace' | 'push';
 
@@ -45,7 +45,6 @@ function stringifyValue(value: unknown): string {
 }
 
 export function QueryStateProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const shouldMerge = useRef(false);
@@ -105,9 +104,9 @@ export function QueryStateProvider({ children }: { children: ReactNode }) {
       const newUrl = search
         ? `${optionPathname ?? pathname}?${search}`
         : (optionPathname ?? pathname);
-      router[method](newUrl, { scroll: false });
+      window.history[method === 'push' ? 'pushState' : 'replaceState'](null, '', newUrl);
     },
-    [router, searchParams, pathname]
+    [searchParams, pathname]
   );
 
   const mergeUpdates: QueryStateContextValue['mergeUpdates'] = useCallback(
@@ -141,11 +140,11 @@ export function QueryStateProvider({ children }: { children: ReactNode }) {
 
       const search = current.toString();
       const newUrl = search ? `${pathname}?${search}` : pathname;
-      router[method](newUrl, { scroll: false });
+      window.history[method === 'push' ? 'pushState' : 'replaceState'](null, '', newUrl);
 
       shouldMerge.current = false;
     },
-    [router, searchParams, pathname]
+    [searchParams, pathname]
   );
 
   const value = useMemo(
