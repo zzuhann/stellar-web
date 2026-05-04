@@ -55,6 +55,16 @@ export default async function Home() {
           }),
         staleTime: 1000 * 60 * 5,
       }),
+      queryClient.prefetchQuery({
+        queryKey: queryKey.trendingEvents(10),
+        queryFn: () => eventsApi.getTrending(10),
+        staleTime: 1000 * 60 * 60 * 6,
+      }),
+      queryClient.prefetchQuery({
+        queryKey: queryKey.topArtists(20),
+        queryFn: () => artistsApi.getTop(20),
+        staleTime: 1000 * 60 * 60 * 6,
+      }),
     ]);
   } catch {}
 
