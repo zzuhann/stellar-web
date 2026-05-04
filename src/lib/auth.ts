@@ -4,6 +4,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInAnonymously as firebaseSignInAnonymously,
+  browserPopupRedirectResolver,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
@@ -14,7 +15,7 @@ import { FIREBASE_ERROR_MESSAGES } from '@/constants';
 export async function signInWithGoogle() {
   try {
     const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider, browserPopupRedirectResolver);
 
     // 在 Firestore 中建立或更新使用者資料
     await createUserDocument(result.user);
