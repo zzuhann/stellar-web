@@ -1,10 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import Lightbox from 'yet-another-react-lightbox';
+import dynamic from 'next/dynamic';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
 import SwiperBanner, { BannerItem } from '@/components/SwiperBanner';
+
+const Lightbox = dynamic(() => import('yet-another-react-lightbox'), {
+  ssr: false,
+});
 
 interface EventImageGalleryProps {
   items: BannerItem[];
@@ -27,15 +31,17 @@ export default function EventImageGallery({ items }: EventImageGalleryProps) {
           setOpen(true);
         }}
       />
-      <Lightbox
-        open={open}
-        close={() => setOpen(false)}
-        slides={slides}
-        index={index}
-        plugins={[Zoom]}
-        zoom={{ maxZoomPixelRatio: 3, scrollToZoom: true, doubleTapDelay: 300 }}
-        controller={{ closeOnBackdropClick: true }}
-      />
+      {open && (
+        <Lightbox
+          open={open}
+          close={() => setOpen(false)}
+          slides={slides}
+          index={index}
+          plugins={[Zoom]}
+          zoom={{ maxZoomPixelRatio: 3, scrollToZoom: true, doubleTapDelay: 300 }}
+          controller={{ closeOnBackdropClick: true }}
+        />
+      )}
     </>
   );
 }
