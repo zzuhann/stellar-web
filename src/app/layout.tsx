@@ -15,6 +15,7 @@ import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import { ShareProvider } from '@/context/ShareContext';
 import ClarityInit from '@/components/ClarityInit';
 import GATracker from '@/components/GATracker';
+import WebVitalsReporter from '@/components/WebVitalsReporter';
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
@@ -119,6 +120,7 @@ export default function RootLayout({
                 <Analytics />
                 <ClarityInit />
                 <GATracker />
+                <WebVitalsReporter />
                 <ServiceWorkerRegistration />
                 <PWAInstallPrompt />
                 <StyledToaster />
