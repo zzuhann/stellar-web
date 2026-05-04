@@ -1,11 +1,11 @@
 import { css } from '@/styled-system/css';
 import { parseSocialMediaHandles } from '@/utils/socialMedia';
 import { ArrowTopRightOnSquareIcon, CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import SwiperBanner from '../SwiperBanner';
 import { InstagramIcon, ThreadsIcon } from '../ui/SocialMediaIcons';
 import ExternalLink from '../ui/ExternalLink';
-import Image from 'next/image';
 import FavoriteButton from './FavoriteButton';
+import EventImageGallery from './EventImageGallery';
+import BottomImagesGallery from './BottomImagesGallery';
 import ArtistSection from './ArtistSection';
 import BackToMapButton from './BackToMapButton';
 import BackToHomeButton from './BackToHomeButton';
@@ -133,10 +133,6 @@ const descriptionContent = css({
   whiteSpace: 'pre-wrap',
 });
 
-const bottomImagesContainer = css({
-  marginTop: '6',
-});
-
 const buttonGroup = css({
   display: 'flex',
   flexDirection: 'column',
@@ -209,8 +205,8 @@ const EventDetail = ({ event }: EventDetailProps) => {
       <EventViewTracker eventId={event.id} />
       <div className={mainContainer}>
         <Breadcrumb items={breadcrumbItems} />
-        {/* Banner 區域 */}
-        {bannerItems.length > 0 && <SwiperBanner items={bannerItems} />}
+        {/* Banner 區域 + 底部圖片列表 + Lightbox */}
+        <EventImageGallery items={bannerItems} />
 
         {/* 主要內容 */}
         <div className={contentSection}>
@@ -359,27 +355,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
             </div>
           )}
 
-          <div className={bottomImagesContainer}>
-            {bannerItems.map((item, index) => (
-              <div key={item.id}>
-                <Image
-                  src={item.imageUrl}
-                  alt={item.title}
-                  width={800}
-                  height={600}
-                  quality={95}
-                  priority={index === 0}
-                  fetchPriority={index === 0 ? 'high' : 'auto'}
-                  loading={index === 0 ? 'eager' : 'lazy'}
-                  style={{
-                    width: '100%',
-                    height: 'auto',
-                    display: 'block',
-                  }}
-                />
-              </div>
-            ))}
-          </div>
+          <BottomImagesGallery items={bannerItems} />
 
           {/* 底部按鈕群組 */}
           <div className={buttonGroup}>

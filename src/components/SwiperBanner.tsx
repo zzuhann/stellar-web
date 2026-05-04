@@ -12,7 +12,7 @@ import { css } from '@/styled-system/css';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
-interface BannerItem {
+export interface BannerItem {
   id: string;
   imageUrl: string;
   title: string;
@@ -140,9 +140,10 @@ const nextButton = css({
 
 interface SwiperBannerProps {
   items?: BannerItem[];
+  onSlideClick?: (index: number) => void;
 }
 
-export default function SwiperBanner({ items = [] }: SwiperBannerProps) {
+export default function SwiperBanner({ items = [], onSlideClick }: SwiperBannerProps) {
   const [currentSlide, setCurrentSlide] = useState(0);
   const swiperRef = useRef<SwiperType | null>(null);
 
@@ -178,7 +179,11 @@ export default function SwiperBanner({ items = [] }: SwiperBannerProps) {
         >
           {items.map((item, index) => (
             <SwiperSlide key={item.id}>
-              <div className={slideContent}>
+              <div
+                className={slideContent}
+                onClick={() => onSlideClick?.(index)}
+                style={onSlideClick ? { cursor: 'zoom-in' } : undefined}
+              >
                 <Image
                   src={item.imageUrl}
                   alt={item.title}
