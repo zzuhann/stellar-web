@@ -193,6 +193,7 @@ export interface CreateEventRequest {
   };
   mainImage?: string; // 主要圖片 URL
   detailImage?: string[]; // 詳細圖片 URL
+  submitterEmail?: string; // 匿名用戶可選填的 email
 }
 
 // 藝人編輯請求格式

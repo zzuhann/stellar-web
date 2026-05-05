@@ -14,7 +14,7 @@ interface ArtistState {
     artist: Omit<
       Artist,
       'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status' | 'coffeeEventCount'
-    >
+    > & { submitterEmail?: string }
   ) => Promise<void>;
 }
 

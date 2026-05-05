@@ -67,6 +67,62 @@ const form = css({
   gap: '6',
 });
 
+const emailSection = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2',
+  padding: '5',
+  background: 'color.background.secondary',
+  borderRadius: 'radius.lg',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+});
+
+const emailSectionTitle = css({
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
+  color: 'color.text.primary',
+  margin: '0',
+  '@media (min-width: 768px)': {
+    textStyle: 'body',
+  },
+});
+
+const emailSectionDesc = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+  margin: '0',
+});
+
+const emailInput = css({
+  width: '100%',
+  paddingY: '3',
+  paddingX: '4',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.lg',
+  background: 'color.background.primary',
+  color: 'color.text.primary',
+  textStyle: 'body',
+  transition: 'all 0.2s ease',
+  '&::placeholder': {
+    color: 'color.text.disabled',
+  },
+  '&:focus': {
+    outline: 'none',
+    borderColor: 'color.primary',
+    boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
+  },
+});
+
+const emailError = css({
+  textStyle: 'caption',
+  color: 'red.600',
+  marginTop: '1',
+  marginX: '0',
+  marginBottom: '0',
+});
+
 const warningText = css({
   textStyle: 'bodySmall',
   color: 'red.600 !important',
@@ -101,6 +157,8 @@ function EventSubmissionForm({
   const [artistSelectionModalOpen, setArtistSelectionModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [pendingSubmitData, setPendingSubmitData] = useState<EventSubmissionFormData | null>(null);
+  const [submitterEmail, setSubmitterEmail] = useState('');
+  const [submitterEmailError, setSubmitterEmailError] = useState('');
   const [selectedArtists, setSelectedArtists] = useState<Artist[]>(() => {
     if (existingEvent?.artists) {
       // 將 CoffeeEvent.artists 轉換為 Artist 格式（用於顯示）
@@ -301,11 +359,24 @@ function EventSubmissionForm({
     );
   };
 
+  const validateSubmitterEmail = (email: string): boolean => {
+    if (!email) return true;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setSubmitterEmailError('請輸入正確的 email 格式');
+      return false;
+    }
+    setSubmitterEmailError('');
+    return true;
+  };
+
   const onSubmit = async (data: EventSubmissionFormData) => {
     if (!user) {
       showToast.warning('請先登入');
       return;
     }
+
+    if (!validateSubmitterEmail(submitterEmail)) return;
 
     // 檢查是否有變更
     if (!checkForChanges()) {
@@ -381,6 +452,7 @@ function EventSubmissionForm({
         },
         mainImage: mainImageUrl || undefined,
         detailImage: detailImageUrls,
+        ...(submitterEmail ? { submitterEmail } : {}),
       };
 
       createEventMutation.mutate(eventData, {
@@ -495,6 +567,28 @@ function EventSubmissionForm({
             watch={watch}
             existingEventLocationName={existingEvent?.location.name || ''}
           />
+        )}
+
+        {/* 匿名用戶 email 欄位 */}
+        {user?.isAnonymous && (mode === 'create' || mode === 'copy') && currentStep === 2 && (
+          <div className={emailSection}>
+            <p className={emailSectionTitle}>你的信箱（選填）</p>
+            <p className={emailSectionDesc}>
+              如果你想要取得最新的審核狀態，可以填寫你的電子信箱，我們會在審核通過後寄信通知你～！
+            </p>
+            <input
+              className={emailInput}
+              type="email"
+              placeholder="example@email.com"
+              value={submitterEmail}
+              onChange={(e) => {
+                setSubmitterEmail(e.target.value);
+                if (submitterEmailError) setSubmitterEmailError('');
+              }}
+              onBlur={() => validateSubmitterEmail(submitterEmail)}
+            />
+            {submitterEmailError && <p className={emailError}>{submitterEmailError}</p>}
+          </div>
         )}
 
         <ActionButtons

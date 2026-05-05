@@ -128,7 +128,7 @@ export const artistsApi = {
     artist: Omit<
       Artist,
       'id' | 'createdAt' | 'updatedAt' | 'createdBy' | 'status' | 'coffeeEventCount'
-    >
+    > & { submitterEmail?: string }
   ) => {
     const response = await api.post<Artist>('/artists', artist);
     return response.data;

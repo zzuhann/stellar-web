@@ -131,6 +131,33 @@ const errorText = css({
   marginBottom: '0',
 });
 
+const emailSection = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2',
+  padding: '5',
+  background: 'color.background.secondary',
+  borderRadius: 'radius.lg',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+});
+
+const emailSectionTitle = css({
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
+  color: 'color.text.primary',
+  margin: '0',
+  '@media (min-width: 768px)': {
+    textStyle: 'body',
+  },
+});
+
+const emailSectionDesc = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+  margin: '0',
+});
+
 const infoBox = css({
   background: 'sky.50',
   border: '1px solid',
@@ -283,6 +310,8 @@ export default function ArtistSubmissionForm({
   const [hasImageChanged, setHasImageChanged] = useState(false); // 追蹤圖片是否有變更
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [pendingSubmitData, setPendingSubmitData] = useState<ArtistSubmissionFormData | null>(null);
+  const [submitterEmail, setSubmitterEmail] = useState('');
+  const [emailError, setEmailError] = useState('');
   const router = useRouter();
   const { createArtist } = useArtistStore();
   const { user } = useAuth();
@@ -377,11 +406,24 @@ export default function ArtistSubmissionForm({
     return formHasChanges || imageChanged;
   };
 
+  const validateEmail = (email: string): boolean => {
+    if (!email) return true;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError('請輸入正確的 email 格式');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
   const onSubmit = async (data: ArtistSubmissionFormData) => {
     if (!user) {
       showToast.warning('請先登入');
       return;
     }
+
+    if (!validateEmail(submitterEmail)) return;
 
     // 檢查是否有變更
     const hasChanges = checkForChanges();
@@ -430,6 +472,7 @@ export default function ArtistSubmissionForm({
       realName: data.realName,
       birthday: data.birthday,
       profileImage: finalImageUrl,
+      ...(mode === 'create' && submitterEmail ? { submitterEmail } : {}),
     };
 
     if (mode === 'create') {
@@ -650,6 +693,28 @@ export default function ArtistSubmissionForm({
             )}
           </div>
         </div>
+
+        {/* 匿名用戶 email 欄位 */}
+        {user?.isAnonymous && mode === 'create' && (
+          <div className={emailSection}>
+            <p className={emailSectionTitle}>你的信箱（選填）</p>
+            <p className={emailSectionDesc}>
+              如果你想要取得最新的審核狀態，可以填寫你的電子信箱，我們會在審核通過後寄信通知你～！
+            </p>
+            <input
+              className={input}
+              type="email"
+              placeholder="example@email.com"
+              value={submitterEmail}
+              onChange={(e) => {
+                setSubmitterEmail(e.target.value);
+                if (emailError) setEmailError('');
+              }}
+              onBlur={() => validateEmail(submitterEmail)}
+            />
+            {emailError && <p className={errorText}>{emailError}</p>}
+          </div>
+        )}
 
         {/* 說明區塊 */}
         <div className={infoBox}>
