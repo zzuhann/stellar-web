@@ -19,7 +19,7 @@ const container = css({
 });
 
 export default function TopArtistsSection() {
-  const { data: artists = [], isLoading } = useTopArtistsQuery(20);
+  const { data: artists = [], isLoading } = useTopArtistsQuery(50);
   const { user } = useAuth();
 
   const sortedArtists = useMemo(() => {

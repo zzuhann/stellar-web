@@ -170,7 +170,7 @@ export default function TopArtistCarousel({
 
       <Swiper
         className={swiperStyles}
-        spaceBetween={12}
+        spaceBetween={15}
         slidesPerView="auto"
         onSwiper={(swiper) => {
           swiperRef.current = swiper;
