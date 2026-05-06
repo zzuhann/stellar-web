@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import SignInForm from './SignInForm';
 import ModalOverlayWithTransition from '../ui/ModalOverlayWithTransition';
 import { css, cva } from '@/styled-system/css';
@@ -79,6 +80,7 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { redirectUrl } = useAuth();
 
   useScrollLock(isOpen);
+  const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
 
   const handleSuccess = () => {
     onClose();
@@ -102,10 +104,17 @@ export default function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
   return (
     <ModalOverlayWithTransition isOpen={isOpen} onClick={handleClose}>
-      <div className={modalContent({ isOpen })} onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={focusTrapRef}
+        className={modalContent({ isOpen })}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label="登入"
+      >
         <div className={modalHeader}>
-          <button className={closeButton} onClick={handleClose}>
-            <XMarkIcon width={20} height={20} />
+          <button className={closeButton} onClick={handleClose} aria-label="關閉登入視窗">
+            <XMarkIcon width={20} height={20} aria-hidden="true" />
           </button>
         </div>
 
