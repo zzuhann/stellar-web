@@ -148,9 +148,8 @@ const ArtistCard = ({ artist, isPending }: ArtistCardProps) => {
           <span className="birthday-date">{birthdayText}</span>
         </div>
         <div className={eventStatus}>
-          <span className="icon" aria-label="目前生日應援數量">
-            📍
-          </span>
+          <span aria-hidden="true">📍</span>
+          <span className={srOnly}>目前生日應援數量：</span>
           <span>
             {artist.coffeeEventCount !== undefined && artist.coffeeEventCount > 0
               ? `${artist.coffeeEventCount} 個生日應援`
