@@ -141,7 +141,12 @@ export default function MapPage({
 
                   {/* 用戶位置標記 */}
                   {latitude && longitude && userLocationIcon && (
-                    <Marker position={[latitude, longitude]} icon={userLocationIcon} />
+                    <Marker
+                      position={[latitude, longitude]}
+                      icon={userLocationIcon}
+                      title="我的位置"
+                      alt="我的位置"
+                    />
                   )}
 
                   {/* Marker 聚合群組 */}

@@ -18,6 +18,8 @@ const MemoizedMarker = memo(
       key={event.id}
       position={[event.location.coordinates.lat, event.location.coordinates.lng]}
       icon={icon}
+      title={event.title}
+      alt={event.title}
       eventHandlers={{
         click: () => onMarkerClick(event),
       }}
