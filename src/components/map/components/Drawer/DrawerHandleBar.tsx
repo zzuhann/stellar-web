@@ -79,10 +79,23 @@ type DrawerHandleBarProps = {
 };
 
 const DrawerHandleBar = ({ bind, artistData, mapEvents }: DrawerHandleBarProps) => {
-  const { selectedEventId } = useMapStore();
+  const { selectedEventId, isDrawerExpanded, setIsDrawerExpanded } = useMapStore();
   const handleRef = useRef<HTMLDivElement>(null);
 
   const { selectedLocationEvents, isLocationSelected, handleCloseButtonClick } = useMapSelection();
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setIsDrawerExpanded(true);
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setIsDrawerExpanded(false);
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setIsDrawerExpanded(!isDrawerExpanded);
+    }
+  };
 
   // React 19 的 onTouchStart 是 passive listener，無法呼叫 preventDefault()
   // 手動以 { passive: false } 掛載，防止 touchend 後 browser 補發合成 mouse events
@@ -103,9 +116,14 @@ const DrawerHandleBar = ({ bind, artistData, mapEvents }: DrawerHandleBarProps) 
       ref={handleRef}
       className={drawerHandle}
       onMouseDown={bind.handleMouseDown}
+      onKeyDown={handleKeyDown}
       role="slider"
-      aria-label="拖曳調整高度"
+      aria-label="調整活動列表高度"
       aria-orientation="vertical"
+      aria-valuenow={isDrawerExpanded ? 100 : 0}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuetext={isDrawerExpanded ? '展開' : '收合'}
       tabIndex={0}
     >
       <div className={handleBar} aria-hidden="true" />
