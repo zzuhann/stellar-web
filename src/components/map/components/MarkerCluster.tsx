@@ -43,7 +43,7 @@ const MarkerCluster = ({ mapEvents, artistData }: MarkerClusterProps) => {
       // 如果有 artist profileImage，使用自定義樣式
       if (profileImage) {
         const html = `
-    <div style="
+    <div role="img" aria-label="${count} 個活動" style="
       width: ${size}px;
       height: ${size}px;
       border-radius: 50%;
@@ -58,9 +58,8 @@ const MarkerCluster = ({ mapEvents, artistData }: MarkerClusterProps) => {
       align-items: center;
       justify-content: center;
     ">
-      <div style="
+      <div aria-hidden="true" style="
         background: rgba(0, 0, 0, 0.2);
-        // backdrop-filter: blur(2px);
         color: #fff;
         border-radius: 50%;
         width: 100%;
@@ -87,7 +86,7 @@ const MarkerCluster = ({ mapEvents, artistData }: MarkerClusterProps) => {
 
       // 預設樣式（沒有 artist profileImage 時）
       return new DivIcon({
-        html: `<div><span>${count}</span></div>`,
+        html: `<div role="img" aria-label="${count} 個活動"><span aria-hidden="true">${count}</span></div>`,
         className: `marker-cluster ${className}`,
         iconSize: new Point(size, size),
       });
