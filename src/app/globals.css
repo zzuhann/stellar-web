@@ -92,6 +92,17 @@ body {
     sans-serif;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* 確保 Leaflet 地圖的 z-index 不會覆蓋彈出視窗 */
 .leaflet-container {
   z-index: 1 !important;
