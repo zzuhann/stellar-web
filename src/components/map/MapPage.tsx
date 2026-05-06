@@ -113,7 +113,7 @@ export default function MapPage({
   }
 
   return (
-    <div className={pageContainer}>
+    <div className={pageContainer} id="main-content">
       <InAppBrowserBanner />
       <div className={mainContainer}>
         {/* 地圖區域 */}

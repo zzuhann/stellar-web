@@ -205,7 +205,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
   ];
 
   return (
-    <div className={pageContainer}>
+    <div className={pageContainer} id="main-content">
       <PageViewTracker eventPage="/event/[id]" contentId={event.id} />
       <EventViewTracker eventId={event.id} />
       <div className={mainContainer}>
