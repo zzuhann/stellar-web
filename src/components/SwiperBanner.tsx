@@ -73,6 +73,10 @@ const slideContent = css({
   position: 'relative',
   width: '100%',
   height: '100%',
+  background: 'none',
+  border: 'none',
+  padding: '0',
+  display: 'block',
 });
 
 const slideImage = css({
@@ -179,22 +183,39 @@ export default function SwiperBanner({ items = [], onSlideClick }: SwiperBannerP
         >
           {items.map((item, index) => (
             <SwiperSlide key={item.id}>
-              <div
-                className={slideContent}
-                onClick={() => onSlideClick?.(index)}
-                style={onSlideClick ? { cursor: 'zoom-in' } : undefined}
-              >
-                <Image
-                  src={item.imageUrl}
-                  alt={item.title}
-                  fill
-                  sizes="(min-width: 500px) 350px, 70vw"
-                  priority={index === 0}
-                  fetchPriority={index === 0 ? 'high' : 'auto'}
-                  loading={index === 0 ? 'eager' : 'lazy'}
-                  className={slideImage}
-                />
-              </div>
+              {onSlideClick ? (
+                <button
+                  type="button"
+                  className={slideContent}
+                  onClick={() => onSlideClick(index)}
+                  style={{ cursor: 'zoom-in' }}
+                  aria-label={`放大檢視${items.length > 1 ? `第 ${index + 1} 張` : ''}：${item.title}`}
+                >
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.title}
+                    fill
+                    sizes="(min-width: 500px) 350px, 70vw"
+                    priority={index === 0}
+                    fetchPriority={index === 0 ? 'high' : 'auto'}
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    className={slideImage}
+                  />
+                </button>
+              ) : (
+                <div className={slideContent}>
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.title}
+                    fill
+                    sizes="(min-width: 500px) 350px, 70vw"
+                    priority={index === 0}
+                    fetchPriority={index === 0 ? 'high' : 'auto'}
+                    loading={index === 0 ? 'eager' : 'lazy'}
+                    className={slideImage}
+                  />
+                </div>
+              )}
             </SwiperSlide>
           ))}
         </Swiper>
