@@ -53,7 +53,7 @@ const comboboxInput = cva({
     '&::placeholder': {
       color: 'color.text.secondary',
     },
-    '&:focus': {
+    '&:focus-visible': {
       outline: 'none',
       borderColor: 'color.primary',
       boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
@@ -80,7 +80,7 @@ const comboboxInput = cva({
         borderColor: 'red.600',
         background: 'red.50',
         color: 'red.800',
-        '&:focus': {
+        '&:focus-visible': {
           borderColor: 'red.600',
           boxShadow: '0 0 0 3px var(--colors-alpha-error-10)',
         },

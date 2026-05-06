@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Popover } from '@headlessui/react';
 import { CalendarIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
@@ -44,7 +44,7 @@ const dateInput = cva({
     '&:hover:not(:disabled)': {
       borderColor: 'color.border.medium',
     },
-    '&:focus': {
+    '&:focus-visible': {
       outline: 'none',
       borderColor: 'color.primary',
       boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
@@ -115,6 +115,14 @@ export default function DatePicker({
     return new Date();
   });
 
+  const [prevValue, setPrevValue] = useState(value);
+  if (prevValue !== value) {
+    setPrevValue(value);
+    if (value) {
+      setCurrentDate(new Date(value));
+    }
+  }
+
   const [viewMode, setViewMode] = useState<'calendar' | 'year' | 'month'>('calendar');
 
   const handleDateSelect = (date: Date, close: () => void) => {
@@ -166,13 +174,6 @@ export default function DatePicker({
     setCurrentDate(new Date(currentDate.getFullYear(), month, 1));
     setViewMode('calendar');
   };
-
-  // 當 value 改變時更新 currentDate
-  useEffect(() => {
-    if (value) {
-      setCurrentDate(new Date(value));
-    }
-  }, [value]);
 
   return (
     <div className={datePickerContainer}>

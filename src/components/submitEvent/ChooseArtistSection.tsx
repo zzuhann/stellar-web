@@ -25,7 +25,7 @@ const artistSelectionButton = css({
     borderColor: 'color.border.medium',
     background: 'color.background.secondary',
   },
-  '&:focus': {
+  '&:focus-visible': {
     outline: 'none',
     borderColor: 'color.primary',
     boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
@@ -84,7 +84,7 @@ const removeButtonStyle = css({
     color: 'color.text.primary',
     background: 'color.background.secondary',
   },
-  '&:focus': {
+  '&:focus-visible': {
     outline: '2px solid',
     outlineColor: 'color.primary',
     outlineOffset: '2px',

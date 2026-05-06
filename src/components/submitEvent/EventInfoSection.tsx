@@ -31,7 +31,7 @@ const textarea = css({
   '&::placeholder': {
     color: 'color.text.secondary',
   },
-  '&:focus': {
+  '&:focus-visible': {
     outline: 'none',
     borderColor: 'color.primary',
     boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',

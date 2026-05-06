@@ -43,7 +43,7 @@ const dropdownButton = css({
   '&:hover': {
     borderColor: 'color.primary',
   },
-  '&:focus': {
+  '&:focus-visible': {
     outline: 'none',
     borderColor: 'color.primary',
     boxShadow: 'shadow.sm',

@@ -48,7 +48,7 @@ const dayButton = cva({
     '&:hover:not(:disabled)': {
       background: 'color.background.secondary',
     },
-    '&:focus': {
+    '&:focus-visible': {
       outline: 'none',
       boxShadow: '0 0 0 2px var(--colors-alpha-primary-20)',
     },
