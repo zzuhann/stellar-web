@@ -22,6 +22,15 @@ const footerContent = css({
 const copyrightText = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1',
+});
+
+const copyrightItem = css({
+  display: 'flex',
+  alignItems: 'center',
+  minHeight: '24px',
 });
 
 const socialLinks = css({
@@ -51,16 +60,26 @@ const Footer = () => {
     <footer className={footerContainer}>
       <div className={footerContent}>
         <div className={copyrightText}>
-          <div>Copyright © {currentYear} _stellar.tw</div>
+          <div className={copyrightItem}>Copyright © {currentYear} _stellar.tw</div>
           <Link
             href="/terms"
-            className={css({ textDecoration: 'underline', marginTop: '1', display: 'block' })}
+            className={css({
+              textDecoration: 'underline',
+              display: 'flex',
+              alignItems: 'center',
+              minHeight: '24px',
+            })}
           >
             服務條款
           </Link>
           <Link
             href="/privacy"
-            className={css({ textDecoration: 'underline', marginTop: '1', display: 'block' })}
+            className={css({
+              textDecoration: 'underline',
+              display: 'flex',
+              alignItems: 'center',
+              minHeight: '24px',
+            })}
           >
             隱私權政策
           </Link>

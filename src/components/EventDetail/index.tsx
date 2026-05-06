@@ -100,10 +100,9 @@ const addToCalendarLink = css({
   textStyle: 'bodySmall',
   color: 'color.link',
   marginLeft: '2',
-  textDecoration: 'none',
+  textDecoration: 'underline',
   '&:hover': {
     color: 'color.linkHover',
-    textDecoration: 'underline',
   },
 });
 
