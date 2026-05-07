@@ -61,6 +61,8 @@ const eventTitle = css({
   display: 'flex',
   alignItems: 'center',
   gap: '2',
+  userSelect: 'text',
+  cursor: 'text',
 });
 
 const eventDetailsSection = css({
