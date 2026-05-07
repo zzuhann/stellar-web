@@ -55,8 +55,20 @@ const bannerContainer = css({
     backgroundColor: 'var(--colors-alpha-white-30) !important',
     border: '1px solid var(--colors-alpha-white-50) !important',
     opacity: '1 !important',
-    width: '8px !important',
-    height: '8px !important',
+    width: '10px !important',
+    height: '10px !important',
+    margin: '0 6px !important',
+    position: 'relative',
+  },
+
+  // 透明擴大 hit area，bullet 視覺不變但點擊容易
+  '& .swiper-pagination-bullet::before': {
+    content: '""',
+    position: 'absolute',
+    top: '-10px',
+    left: '-10px',
+    right: '-10px',
+    bottom: '-10px',
   },
 
   '& .swiper-pagination-bullet-active': {
