@@ -42,6 +42,19 @@ const srOnly = css({
   border: '0',
 });
 
+const logoLink = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  minWidth: '44px',
+  minHeight: '44px',
+});
+
+const logoImage = css({
+  width: '120px',
+  height: 'auto',
+  display: 'block',
+});
+
 const Header = () => {
   const { authModalOpen, toggleAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -52,16 +65,14 @@ const Header = () => {
     <>
       <header className={headerContainer}>
         <h1 className={srOnly}>STELLAR | 台灣生日應援地圖平台</h1>
-        <Link href="/">
+        <Link href="/" className={logoLink} aria-label="STELLAR 首頁">
           <Image
             src="/icon-with-text.png"
             alt="STELLAR"
             width={120}
             height={120}
-            style={{
-              width: '120px',
-              height: 'auto',
-            }}
+            className={logoImage}
+            priority
           />
         </Link>
 
