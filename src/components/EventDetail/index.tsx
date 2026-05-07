@@ -98,14 +98,28 @@ const detailValue = css({
   overflowWrap: 'break-word',
 });
 
-const addToCalendarLink = css({
-  textStyle: 'bodySmall',
-  color: 'color.link',
-  marginLeft: '2',
-  textDecoration: 'underline',
+const dateRowLink = css({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '3',
+  padding: '1',
+  textDecoration: 'none',
+  color: 'inherit',
+  borderRadius: 'radius.md',
+  transition: 'background-color 0.2s ease',
+  cursor: 'pointer',
   '&:hover': {
-    color: 'color.linkHover',
+    backgroundColor: 'color.background.secondary',
   },
+});
+
+const addToCalendarHint = css({
+  textStyle: 'caption',
+  color: 'color.link',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  marginTop: '0.5',
 });
 
 const descriptionSection = css({
@@ -288,7 +302,19 @@ const EventDetail = ({ event }: EventDetailProps) => {
           {/* 活動詳情 */}
           <div className={descriptionSection}>
             <h3 className={descriptionTitle}>時間/地點</h3>
-            <div className={detailItem}>
+            <ExternalLink
+              href={generateGoogleCalendarUrl({
+                title: event.title,
+                startDate: event.datetime.start,
+                endDate: event.datetime.end,
+                location: `${event.location.name} ${event.location.address}`,
+                eventId: event.id,
+              })}
+              platform="calendar"
+              eventPage="/event/[id]"
+              contentId={event.id}
+              className={dateRowLink}
+            >
               <div className={detailIcon}>
                 <CalendarIcon
                   width={20}
@@ -296,29 +322,18 @@ const EventDetail = ({ event }: EventDetailProps) => {
                   color="var(--color-text-secondary)"
                   aria-hidden="true"
                 />
-                <span className="sr-only">活動時間</span>
+                <span className="sr-only">活動時間，點擊加入行事曆</span>
               </div>
               <div className={detailContent}>
                 <div className={detailValue}>
                   {formatEventDate(event.datetime.start, event.datetime.end)}
-                  <ExternalLink
-                    href={generateGoogleCalendarUrl({
-                      title: event.title,
-                      startDate: event.datetime.start,
-                      endDate: event.datetime.end,
-                      location: `${event.location.name} ${event.location.address}`,
-                      eventId: event.id,
-                    })}
-                    platform="calendar"
-                    eventPage="/event/[id]"
-                    contentId={event.id}
-                    className={addToCalendarLink}
-                  >
-                    加入行事曆
-                  </ExternalLink>
+                </div>
+                <div className={addToCalendarHint}>
+                  加入行事曆
+                  <ArrowTopRightOnSquareIcon width={12} height={12} aria-hidden="true" />
                 </div>
               </div>
-            </div>
+            </ExternalLink>
 
             <div className={detailItem}>
               <div className={detailIcon}>
