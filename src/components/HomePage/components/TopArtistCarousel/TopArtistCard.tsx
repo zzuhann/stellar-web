@@ -103,9 +103,10 @@ export function TopArtistCardSkeleton() {
 interface TopArtistCardProps {
   artist: TopArtist;
   onClick?: (artistId: string) => void;
+  isFirst?: boolean;
 }
 
-const TopArtistCard = ({ artist, onClick }: TopArtistCardProps) => {
+const TopArtistCard = ({ artist, onClick, isFirst = false }: TopArtistCardProps) => {
   const eventCount = artist.upcomingEventCount ?? 0;
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -129,6 +130,8 @@ const TopArtistCard = ({ artist, onClick }: TopArtistCardProps) => {
               fill
               sizes="68px"
               style={{ objectFit: 'cover' }}
+              priority={isFirst}
+              fetchPriority={isFirst ? 'high' : 'auto'}
             />
           )}
         </div>

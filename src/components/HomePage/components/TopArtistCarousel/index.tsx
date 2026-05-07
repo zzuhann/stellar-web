@@ -208,9 +208,9 @@ export default function TopArtistCarousel({
 
         {/* 藝人列表 */}
         {!isLoading &&
-          artists.map((artist) => (
+          artists.map((artist, index) => (
             <SwiperSlide key={artist.id} style={{ width: 'auto' }}>
-              <TopArtistCard artist={artist} onClick={onCardClick} />
+              <TopArtistCard artist={artist} onClick={onCardClick} isFirst={index === 0} />
             </SwiperSlide>
           ))}
       </Swiper>

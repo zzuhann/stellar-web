@@ -189,6 +189,7 @@ const VerticalEventCard = ({ event, onClick, isFirst = false }: VerticalEventCar
                   sizes="(max-width: 479px) 75vw, (max-width: 1023px) 50vw, 512px"
                   style={{ objectFit: 'cover' }}
                   priority={isFirst}
+                  fetchPriority={isFirst ? 'high' : 'auto'}
                 />
               )}
               {isShowSubmissionInfo && (
