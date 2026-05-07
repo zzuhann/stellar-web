@@ -61,8 +61,8 @@ export default async function Home() {
         staleTime: 1000 * 60 * 60 * 6,
       }),
       queryClient.prefetchQuery({
-        queryKey: queryKey.topArtists(20),
-        queryFn: () => artistsApi.getTop(20),
+        queryKey: queryKey.topArtists(50),
+        queryFn: () => artistsApi.getTop(50),
         staleTime: 1000 * 60 * 60 * 6,
       }),
     ]);
