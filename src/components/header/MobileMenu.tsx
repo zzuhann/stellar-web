@@ -140,7 +140,7 @@ type MobileMenuProps = {
 };
 
 const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
-  const { user, userData, signOut, toggleAuthModal } = useAuth();
+  const { user, userData, signOut, toggleAuthModal, loading } = useAuth();
   const pathname = usePathname();
 
   // 使用 focus trap 和 scroll lock
@@ -180,102 +180,81 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
         </div>
 
         <div className={mobileMenuContent}>
-          {user ? (
-            <>
-              {userData?.role === 'admin' && (
-                <Link href="/admin" className={mobileMenuButton} onClick={closeMobileMenu}>
-                  管理員審核
-                </Link>
-              )}
-              <Link
-                href="/submit-event"
-                className={mobileMenuButton}
-                onClick={() => {
-                  sendGAEvent('event', 'nav_submit_event', {
-                    event_page: pathname,
-                    user_id: user?.uid ?? '',
-                    content_id: 'mobile_menu',
-                  });
-                  closeMobileMenu();
-                }}
-              >
-                舉辦生日應援
-              </Link>
-              <Link
-                href="/submit-artist"
-                className={mobileMenuButton}
-                onClick={() => {
-                  sendGAEvent('event', 'nav_submit_artist', {
-                    event_page: pathname,
-                    user_id: user?.uid ?? '',
-                    content_id: 'mobile_menu',
-                  });
-                  closeMobileMenu();
-                }}
-              >
-                新增藝人
-              </Link>
-              <div className={menuSeparator} role="separator" aria-hidden="true" />
-              <div className={description}>{userData?.displayName || 'member'}</div>
-              <Link href="/my-submissions" className={mobileMenuButton} onClick={closeMobileMenu}>
-                我的投稿
-              </Link>
-              <Link href="/my-favorite" className={mobileMenuButton} onClick={closeMobileMenu}>
-                我的收藏
-              </Link>
-              <Link href="/settings" className={mobileMenuButton} onClick={closeMobileMenu}>
-                設定
-              </Link>
-              <button
-                className={mobileMenuButton}
-                onClick={() => {
-                  signOut();
-                  closeMobileMenu();
-                }}
-              >
-                登出
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                className={mobileMenuButton}
-                onClick={() => {
-                  toggleAuthModal();
-                  closeMobileMenu();
-                }}
-              >
-                登入 / 註冊
-              </button>
+          {!loading && user && userData?.role === 'admin' && (
+            <Link href="/admin" className={mobileMenuButton} onClick={closeMobileMenu}>
+              管理員審核
+            </Link>
+          )}
 
-              <Link
-                href="/submit-event"
-                className={mobileMenuButton}
-                onClick={() => {
-                  sendGAEvent('event', 'nav_submit_event', {
-                    event_page: pathname,
-                    user_id: '',
-                    content_id: 'mobile_menu',
-                  });
-                  closeMobileMenu();
-                }}
-              >
-                舉辦生日應援
-              </Link>
-              <Link
-                href="/submit-artist"
-                className={mobileMenuButton}
-                onClick={() => {
-                  sendGAEvent('event', 'nav_submit_artist', {
-                    event_page: pathname,
-                    user_id: '',
-                    content_id: 'mobile_menu',
-                  });
-                  closeMobileMenu();
-                }}
-              >
-                新增藝人
-              </Link>
+          <Link
+            href="/submit-event"
+            className={mobileMenuButton}
+            onClick={() => {
+              sendGAEvent('event', 'nav_submit_event', {
+                event_page: pathname,
+                user_id: user?.uid ?? '',
+                content_id: 'mobile_menu',
+              });
+              closeMobileMenu();
+            }}
+          >
+            舉辦生日應援
+          </Link>
+          <Link
+            href="/submit-artist"
+            className={mobileMenuButton}
+            onClick={() => {
+              sendGAEvent('event', 'nav_submit_artist', {
+                event_page: pathname,
+                user_id: user?.uid ?? '',
+                content_id: 'mobile_menu',
+              });
+              closeMobileMenu();
+            }}
+          >
+            新增藝人
+          </Link>
+
+          {!loading && (
+            <>
+              <div className={menuSeparator} role="separator" aria-hidden="true" />
+              {user ? (
+                <>
+                  <div className={description}>{userData?.displayName || 'member'}</div>
+                  <Link
+                    href="/my-submissions"
+                    className={mobileMenuButton}
+                    onClick={closeMobileMenu}
+                  >
+                    我的投稿
+                  </Link>
+                  <Link href="/my-favorite" className={mobileMenuButton} onClick={closeMobileMenu}>
+                    我的收藏
+                  </Link>
+                  <Link href="/settings" className={mobileMenuButton} onClick={closeMobileMenu}>
+                    設定
+                  </Link>
+                  <button
+                    className={mobileMenuButton}
+                    onClick={() => {
+                      signOut();
+                      closeMobileMenu();
+                    }}
+                  >
+                    登出
+                  </button>
+                </>
+              ) : (
+                <button
+                  className={mobileMenuButton}
+                  onClick={() => {
+                    toggleAuthModal();
+                    closeMobileMenu();
+                  }}
+                >
+                  登入 / 註冊
+                </button>
+              )}
             </>
           )}
         </div>

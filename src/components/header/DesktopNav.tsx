@@ -33,10 +33,25 @@ const styledLink = css({
   cursor: 'pointer',
 });
 
+const loadingPlaceholder = css({
+  width: '80px',
+  height: '20px',
+  borderRadius: 'radius.sm',
+  background: 'color.background.secondary',
+});
+
 const DesktopNav = () => {
   const pathname = usePathname();
-  const { user, userData, signOut, toggleAuthModal } = useAuth();
+  const { user, userData, signOut, toggleAuthModal, loading } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+
+  if (loading) {
+    return (
+      <nav className={desktopNav} aria-label="功能選單" aria-busy="true">
+        <div className={loadingPlaceholder} />
+      </nav>
+    );
+  }
 
   return (
     <nav className={desktopNav} aria-label="功能選單">
