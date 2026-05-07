@@ -4,6 +4,8 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { sendGAEvent } from '@next/third-parties/google';
 
 const mobileMenu = cva({
   base: {
@@ -132,6 +134,7 @@ type MobileMenuProps = {
 
 const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
   const { user, userData, signOut, toggleAuthModal } = useAuth();
+  const pathname = usePathname();
 
   // 使用 focus trap 和 scroll lock
   const focusTrapRef = useFocusTrap<HTMLDivElement>(isOpen);
@@ -179,10 +182,32 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
                   管理員審核
                 </Link>
               )}
-              <Link href="/submit-event" className={mobileMenuButton} onClick={closeMobileMenu}>
+              <Link
+                href="/submit-event"
+                className={mobileMenuButton}
+                onClick={() => {
+                  sendGAEvent('event', 'nav_submit_event', {
+                    event_page: pathname,
+                    user_id: user?.uid ?? '',
+                    content_id: 'mobile_menu',
+                  });
+                  closeMobileMenu();
+                }}
+              >
                 舉辦生日應援
               </Link>
-              <Link href="/submit-artist" className={mobileMenuButton} onClick={closeMobileMenu}>
+              <Link
+                href="/submit-artist"
+                className={mobileMenuButton}
+                onClick={() => {
+                  sendGAEvent('event', 'nav_submit_artist', {
+                    event_page: pathname,
+                    user_id: user?.uid ?? '',
+                    content_id: 'mobile_menu',
+                  });
+                  closeMobileMenu();
+                }}
+              >
                 新增藝人
               </Link>
               <Link href="/my-submissions" className={mobileMenuButton} onClick={closeMobileMenu}>
@@ -216,10 +241,32 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
                 登入 / 註冊
               </button>
 
-              <Link href="/submit-event" className={mobileMenuButton} onClick={closeMobileMenu}>
+              <Link
+                href="/submit-event"
+                className={mobileMenuButton}
+                onClick={() => {
+                  sendGAEvent('event', 'nav_submit_event', {
+                    event_page: pathname,
+                    user_id: '',
+                    content_id: 'mobile_menu',
+                  });
+                  closeMobileMenu();
+                }}
+              >
                 舉辦生日應援
               </Link>
-              <Link href="/submit-artist" className={mobileMenuButton} onClick={closeMobileMenu}>
+              <Link
+                href="/submit-artist"
+                className={mobileMenuButton}
+                onClick={() => {
+                  sendGAEvent('event', 'nav_submit_artist', {
+                    event_page: pathname,
+                    user_id: '',
+                    content_id: 'mobile_menu',
+                  });
+                  closeMobileMenu();
+                }}
+              >
                 新增藝人
               </Link>
             </>

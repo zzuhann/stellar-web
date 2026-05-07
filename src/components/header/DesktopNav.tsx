@@ -2,8 +2,9 @@ import { useAuth } from '@/lib/auth-context';
 import { css } from '@/styled-system/css';
 import { UserIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { sendGAEvent } from '@next/third-parties/google';
 
 const desktopNav = css({
   display: 'flex',
@@ -91,6 +92,7 @@ const styledLink = css({
 
 const DesktopNav = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, userData, signOut, toggleAuthModal } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userSectionRef = useRef<HTMLDivElement>(null);
@@ -118,10 +120,30 @@ const DesktopNav = () => {
           <Link className={styledLink} href="/admin">
             管理員審核
           </Link>
-          <Link className={styledLink} href="/submit-event">
+          <Link
+            className={styledLink}
+            href="/submit-event"
+            onClick={() =>
+              sendGAEvent('event', 'nav_submit_event', {
+                event_page: pathname,
+                user_id: user?.uid ?? '',
+                content_id: 'desktop_nav',
+              })
+            }
+          >
             舉辦生日應援
           </Link>
-          <Link className={styledLink} href="/submit-artist">
+          <Link
+            className={styledLink}
+            href="/submit-artist"
+            onClick={() =>
+              sendGAEvent('event', 'nav_submit_artist', {
+                event_page: pathname,
+                user_id: user?.uid ?? '',
+                content_id: 'desktop_nav',
+              })
+            }
+          >
             新增藝人
           </Link>
           <Link className={styledLink} href="/my-submissions">

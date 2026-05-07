@@ -25,6 +25,40 @@
 
 ---
 
+## Header Navigation
+
+### nav_submit_event
+
+點擊 Header 中「舉辦生日應援」連結。
+
+| 參數       | 值                             |
+| ---------- | ------------------------------ |
+| event_page | 當前頁面路徑                   |
+| user_id    | 用戶 UID（未登入傳空字串）     |
+| content_id | `mobile_menu` 或 `desktop_nav` |
+
+**實作位置：**
+
+- `src/components/header/MobileMenu.tsx`
+- `src/components/header/DesktopNav.tsx`
+
+### nav_submit_artist
+
+點擊 Header 中「新增藝人」連結。
+
+| 參數       | 值                             |
+| ---------- | ------------------------------ |
+| event_page | 當前頁面路徑                   |
+| user_id    | 用戶 UID（未登入傳空字串）     |
+| content_id | `mobile_menu` 或 `desktop_nav` |
+
+**實作位置：**
+
+- `src/components/header/MobileMenu.tsx`
+- `src/components/header/DesktopNav.tsx`
+
+---
+
 ## Home
 
 ### switch_to_artist_tab
