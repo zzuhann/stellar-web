@@ -103,6 +103,15 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="STELLAR" />
         <meta name="facebook-domain-verification" content="njhhuk1cs84mvg4rhfibcyyx009m3d" />
+        {/* LCP critical: image CDN + API host preconnect to save TLS handshake (~150-300ms on Mobile) */}
+        <link rel="preconnect" href="https://cdn.stellar-zone.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://stellar.zeabur.app" />
+        {/* Secondary origins: DNS resolution only */}
+        <link rel="dns-prefetch" href="https://pub-b7b01bb9cbef44f2bdd3b7b3a5c1b4b7.r2.dev" />
+        <link rel="dns-prefetch" href="https://pub-1ea260dddf7f40e4b473626d08cc1689.r2.dev" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+        <link rel="dns-prefetch" href="https://www.clarity.ms" />
         <link rel="apple-touch-icon" href="/icon.png?v=2" />
         <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png?v=2" />
         <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png?v=2" />
