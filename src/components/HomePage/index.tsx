@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { QueryStateProvider } from '@/hooks/useQueryStateContext';
 import WeekNavigation from '@/components/HomePage/components/WeekNavigation';
@@ -12,8 +11,6 @@ import useTabState from './hook/useTabState';
 import useWeeklyEvents from './hook/useWeeklyEvents';
 import useBirthdayArtists from './hook/useBirthdayArtists';
 import { css } from '@/styled-system/css';
-import CTAButton from '@/components/CTAButton';
-import { useAuth } from '@/lib/auth-context';
 import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
 // import EventCardCarousel from '../EventCardCarousel';
 import TrendingEventsSection from '@/components/HomePage/components/TrendingEventsSection';
@@ -53,8 +50,6 @@ export const contentWrapper = css({
 });
 
 function HomePageContent() {
-  const router = useRouter();
-  const { user, toggleAuthModal } = useAuth();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
 
@@ -73,23 +68,6 @@ function HomePageContent() {
       <div className={mainContainer}>
         <section className={contentWrapper} aria-label="首頁">
           <IOSInstallBanner />
-          <CTAButton
-            onClick={() => {
-              if (!user) {
-                toggleAuthModal('/submit-event');
-              } else {
-                router.push('/submit-event');
-              }
-            }}
-            ariaLabel="前往投稿生日應援"
-          >
-            <span>點擊投稿生日應援 ➡️</span>
-          </CTAButton>
-
-          {/* <section className={latestEventsContainer} aria-label="最新生日應援">
-            <h2 className={heading}>✨ 即將到來的生日應援</h2>
-            <EventCardCarousel events={uniqueEvents ?? []} isLoading={isLatestEventsLoading} />
-          </section> */}
 
           {/* 熱門生咖、生日應援 */}
           <TrendingEventsSection />

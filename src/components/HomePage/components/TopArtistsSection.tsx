@@ -4,7 +4,6 @@ import TopArtistCarousel from './TopArtistCarousel';
 import { useTopArtistsQuery } from '@/hooks/useHomePage';
 import { sendGAEvent } from '@next/third-parties/google';
 import { useAuth } from '@/lib/auth-context';
-import { useRouter } from 'next/navigation';
 import { shouldShowBirthdayHat } from '@/utils/birthdayHelpers';
 import { TopArtist } from '@/lib/api';
 
@@ -34,7 +33,6 @@ export default function TopArtistsSection() {
     });
     return [...today, ...others];
   }, [artists]);
-  const router = useRouter();
 
   const handleCardClick = (artistId: string) => {
     sendGAEvent('event', 'click_top_artist', {
@@ -44,10 +42,6 @@ export default function TopArtistsSection() {
     });
   };
 
-  const handleAddClick = () => {
-    router.push('/submit-event');
-  };
-
   return (
     <section className={container} aria-label="擁有最多即將到來的生咖的藝人或團體">
       <h2 className={heading}>🧚 擁有最多即將到來的生咖</h2>
@@ -55,7 +49,6 @@ export default function TopArtistsSection() {
         artists={sortedArtists}
         isLoading={isLoading}
         onCardClick={handleCardClick}
-        onAddClick={handleAddClick}
       />
     </section>
   );
