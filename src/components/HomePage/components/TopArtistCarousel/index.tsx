@@ -127,21 +127,21 @@ interface TopArtistCarouselProps {
   artists: TopArtist[];
   isLoading: boolean;
   onCardClick?: (artistId: string) => void;
-  onAddClick?: () => void;
 }
 
 export default function TopArtistCarousel({
   artists,
   isLoading,
   onCardClick,
-  onAddClick,
 }: TopArtistCarouselProps) {
   const swiperRef = useRef<SwiperType | null>(null);
   const { user, toggleAuthModal } = useAuth();
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(true);
 
-  const handleAddClick = () => {
+  // 使用 Link + onClick 避免 hydration race 造成的 dead click（issue #25）
+  // 未登入時 preventDefault 改開 modal；已登入時讓 next/link 自然 navigate
+  const handleAddClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     sendGAEvent('event', 'click_add_event_button', {
       event_page: '/',
       user_id: user?.uid ?? '',
@@ -149,9 +149,8 @@ export default function TopArtistCarousel({
     });
 
     if (!user) {
+      e.preventDefault();
       toggleAuthModal('/submit-event');
-    } else {
-      onAddClick?.();
     }
   };
 
@@ -179,43 +178,24 @@ export default function TopArtistCarousel({
         onSlideChange={updateFadeVisibility}
         onProgress={updateFadeVisibility}
       >
-        {/* 新增生咖按鈕 */}
+        {/* 新增生咖按鈕：永遠 render <Link>，未登入時 preventDefault 改開 modal */}
         <SwiperSlide style={{ width: 'auto' }}>
-          {user ? (
-            <Link href="/submit-event" className={addButtonItem} onClick={handleAddClick}>
-              <div className={addButtonWrapper}>
-                <div className={addButtonCircle}>
-                  <Image
-                    src="/icon-new.png"
-                    alt="新增生咖"
-                    width={42}
-                    height={42}
-                    className={iconStyle}
-                  />
-                </div>
-                <div className={addButtonIcon}>+</div>
+          <Link href="/submit-event" className={addButtonItem} onClick={handleAddClick}>
+            <div className={addButtonWrapper}>
+              <div className={addButtonCircle}>
+                <Image
+                  src="/icon-new.png"
+                  alt="新增生咖"
+                  width={42}
+                  height={42}
+                  className={iconStyle}
+                />
               </div>
-              <span className={addButtonText}>新增生咖</span>
-              <span className={addButtonSubtext} />
-            </Link>
-          ) : (
-            <button type="button" className={addButtonItem} onClick={handleAddClick}>
-              <div className={addButtonWrapper}>
-                <div className={addButtonCircle}>
-                  <Image
-                    src="/icon-new.png"
-                    alt="新增生咖"
-                    width={42}
-                    height={42}
-                    className={iconStyle}
-                  />
-                </div>
-                <div className={addButtonIcon}>+</div>
-              </div>
-              <span className={addButtonText}>新增生咖</span>
-              <span className={addButtonSubtext} />
-            </button>
-          )}
+              <div className={addButtonIcon}>+</div>
+            </div>
+            <span className={addButtonText}>新增生咖</span>
+            <span className={addButtonSubtext} />
+          </Link>
         </SwiperSlide>
 
         {/* Loading skeleton */}
