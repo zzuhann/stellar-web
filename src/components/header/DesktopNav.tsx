@@ -1,10 +1,10 @@
 import { useAuth } from '@/lib/auth-context';
 import { css } from '@/styled-system/css';
-import { UserIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
 import { sendGAEvent } from '@next/third-parties/google';
+import UserDropdownMenu from './UserDropdownMenu';
 
 const desktopNav = css({
   display: 'flex',
@@ -14,30 +14,10 @@ const desktopNav = css({
   },
 });
 
-const userSection = css({
-  position: 'relative',
-});
-
 const rightSection = css({
   display: 'flex',
   alignItems: 'center',
   gap: '3',
-});
-
-const userButton = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '2',
-  textStyle: 'bodySmall',
-  background: 'none',
-  border: 'none',
-  color: 'color.text.primary',
-  cursor: 'pointer',
-  borderRadius: 'radius.sm',
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    background: 'color.background.secondary',
-  },
 });
 
 const memberButton = css({
@@ -47,43 +27,6 @@ const memberButton = css({
   transition: 'all 0.2s ease',
 });
 
-const userMenu = css({
-  position: 'absolute',
-  right: '0',
-  top: 'calc(100% + 8px)',
-  width: '100px',
-  zIndex: 10,
-  borderRadius: 'radius.md',
-  background: 'color.background.primary',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  boxShadow: 'shadow.lg',
-  overflow: 'hidden',
-});
-
-const userMenuItem = css({
-  display: 'block',
-  width: '100%',
-  textAlign: 'left',
-  paddingY: '2',
-  paddingX: '4',
-  textStyle: 'bodySmall',
-  color: 'color.text.primary',
-  background: 'none',
-  border: 'none',
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    background: 'color.background.secondary',
-  },
-});
-
-const description = css({
-  textStyle: 'bodySmall',
-  color: 'color.text.primary',
-  cursor: 'pointer',
-});
-
 const styledLink = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
@@ -91,35 +34,19 @@ const styledLink = css({
 });
 
 const DesktopNav = () => {
-  const router = useRouter();
   const pathname = usePathname();
   const { user, userData, signOut, toggleAuthModal } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const userSectionRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (userSectionRef.current && !userSectionRef.current.contains(event.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    };
-
-    if (userMenuOpen) {
-      document.addEventListener('click', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
-  }, [userMenuOpen]);
 
   return (
     <nav className={desktopNav} aria-label="功能選單">
       {user ? (
         <div className={rightSection}>
-          <Link className={styledLink} href="/admin">
-            管理員審核
-          </Link>
+          {userData?.role === 'admin' && (
+            <Link className={styledLink} href="/admin">
+              管理員審核
+            </Link>
+          )}
           <Link
             className={styledLink}
             href="/submit-event"
@@ -146,55 +73,46 @@ const DesktopNav = () => {
           >
             新增藝人
           </Link>
-          <Link className={styledLink} href="/my-submissions">
-            我的投稿
-          </Link>
-          <Link className={styledLink} href="/my-favorite">
-            我的收藏
-          </Link>
-          <div className={userSection} ref={userSectionRef}>
-            <button
-              className={userButton}
-              onClick={() => setUserMenuOpen(!userMenuOpen)}
-              aria-haspopup="menu"
-              aria-expanded={userMenuOpen}
-            >
-              <UserIcon width={16} height={16} aria-hidden="true" />
-              <span className={description}>{userData?.displayName || 'member'}</span>
-            </button>
-
-            {userMenuOpen && (
-              <div className={userMenu} role="menu" aria-label="使用者相關選單">
-                <button
-                  className={userMenuItem}
-                  onClick={() => {
-                    router.push('/settings');
-                    setUserMenuOpen(false);
-                  }}
-                  type="button"
-                  role="menuitem"
-                >
-                  設定
-                </button>
-                <button
-                  className={userMenuItem}
-                  onClick={() => {
-                    signOut();
-                    setUserMenuOpen(false);
-                  }}
-                  type="button"
-                  role="menuitem"
-                >
-                  登出
-                </button>
-              </div>
-            )}
-          </div>
+          <UserDropdownMenu
+            displayNameText={userData?.displayName || 'member'}
+            isOpen={userMenuOpen}
+            onToggle={() => setUserMenuOpen((prev) => !prev)}
+            onClose={() => setUserMenuOpen(false)}
+            onSignOut={signOut}
+          />
         </div>
       ) : (
-        <button className={memberButton} onClick={() => toggleAuthModal()}>
-          登入 / 註冊
-        </button>
+        <div className={rightSection}>
+          <Link
+            className={styledLink}
+            href="/submit-event"
+            onClick={() =>
+              sendGAEvent('event', 'nav_submit_event', {
+                event_page: pathname,
+                user_id: '',
+                content_id: 'desktop_nav',
+              })
+            }
+          >
+            舉辦生日應援
+          </Link>
+          <Link
+            className={styledLink}
+            href="/submit-artist"
+            onClick={() =>
+              sendGAEvent('event', 'nav_submit_artist', {
+                event_page: pathname,
+                user_id: '',
+                content_id: 'desktop_nav',
+              })
+            }
+          >
+            新增藝人
+          </Link>
+          <button className={memberButton} onClick={() => toggleAuthModal()}>
+            登入 / 註冊
+          </button>
+        </div>
       )}
     </nav>
   );

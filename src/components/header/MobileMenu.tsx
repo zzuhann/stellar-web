@@ -95,7 +95,14 @@ const mobileMenuButton = css({
 const description = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  cursor: 'pointer',
+  cursor: 'default',
+  userSelect: 'none',
+});
+
+const menuSeparator = css({
+  borderTop: '1px solid',
+  borderTopColor: 'color.border.light',
+  marginY: '2',
 });
 
 const mobileMenuOverlay = cva({
@@ -175,8 +182,6 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
         <div className={mobileMenuContent}>
           {user ? (
             <>
-              <div className={description}>{userData?.displayName || 'member'}</div>
-
               {userData?.role === 'admin' && (
                 <Link href="/admin" className={mobileMenuButton} onClick={closeMobileMenu}>
                   管理員審核
@@ -210,6 +215,8 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
               >
                 新增藝人
               </Link>
+              <div className={menuSeparator} role="separator" aria-hidden="true" />
+              <div className={description}>{userData?.displayName || 'member'}</div>
               <Link href="/my-submissions" className={mobileMenuButton} onClick={closeMobileMenu}>
                 我的投稿
               </Link>
