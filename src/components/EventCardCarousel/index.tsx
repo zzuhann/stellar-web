@@ -28,6 +28,20 @@ const carouselContainer = css({
   '& .swiper-pagination-bullet': {
     background: 'gray.200 !important',
     opacity: '1 !important',
+    width: '10px !important',
+    height: '10px !important',
+    margin: '0 6px !important',
+    position: 'relative',
+  },
+
+  // 透明擴大 hit area，bullet 視覺不變但點擊容易
+  '& .swiper-pagination-bullet::before': {
+    content: '""',
+    position: 'absolute',
+    top: '-10px',
+    left: '-10px',
+    right: '-10px',
+    bottom: '-10px',
   },
 
   '& .swiper-pagination-bullet-active': {
@@ -79,8 +93,6 @@ export default function EventCardCarousel({
         modules={[Pagination]}
         pagination={{
           clickable: true,
-          dynamicBullets: true,
-          dynamicMainBullets: 3,
         }}
         spaceBetween={6}
         slidesPerView={1.3}
