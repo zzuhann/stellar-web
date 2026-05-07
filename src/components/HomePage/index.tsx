@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { QueryStateProvider } from '@/hooks/useQueryStateContext';
 import WeekNavigation from '@/components/HomePage/components/WeekNavigation';
@@ -53,7 +52,6 @@ export const contentWrapper = css({
 });
 
 function HomePageContent() {
-  const router = useRouter();
   const { user, toggleAuthModal } = useAuth();
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
@@ -74,11 +72,11 @@ function HomePageContent() {
         <section className={contentWrapper} aria-label="首頁">
           <IOSInstallBanner />
           <CTAButton
-            onClick={() => {
+            href="/submit-event"
+            onClick={(e) => {
               if (!user) {
+                e.preventDefault();
                 toggleAuthModal('/submit-event');
-              } else {
-                router.push('/submit-event');
               }
             }}
             ariaLabel="前往投稿生日應援"
