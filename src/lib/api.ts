@@ -452,4 +452,17 @@ export function handleApiError(error: unknown): string {
   return '發生未知錯誤';
 }
 
+export type ContactRequest = {
+  name: string;
+  email: string;
+  message: string;
+};
+
+export const contactApi = {
+  submit: async (data: ContactRequest) => {
+    const response = await api.post<{ success: true }>('/contact', data);
+    return response.data;
+  },
+};
+
 export default api;
