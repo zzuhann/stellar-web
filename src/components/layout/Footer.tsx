@@ -91,9 +91,9 @@ const Footer = () => {
             <Link href="/guide?tab=submit-artist" className={footerLink}>
               投稿藝人
             </Link>
-            {/* <Link href="/faq" className={footerLink}>
+            <Link href="/faq" className={footerLink}>
               常見問與答
-            </Link> */}
+            </Link>
           </div>
 
           <div className={footerCol}>
