@@ -78,9 +78,9 @@ const Footer = () => {
             <Link href="/about" className={footerLink}>
               關於我們
             </Link>
-            {/* <Link href="/about#contact" className={footerLink}>
+            <Link href="/contact" className={footerLink}>
               聯絡我們
-            </Link> */}
+            </Link>
           </div>
 
           <div className={footerCol}>

@@ -2,6 +2,7 @@
 
 import { css } from '@/styled-system/css';
 import { useState } from 'react';
+import Link from 'next/link';
 import { usePageView } from '@/hooks/usePageView';
 import { useContactMutation } from '@/hooks/useContact';
 
@@ -213,6 +214,13 @@ export default function ContactPage() {
           <div className={successSection}>
             <h1 className={pageTitle}>感謝你的訊息</h1>
             <p className={bodyText}>我們已收到你的訊息，會盡快與你聯繫。</p>
+            <Link
+              href="/"
+              className={submitButton}
+              style={{ display: 'inline-block', width: 'fit-content' }}
+            >
+              回首頁
+            </Link>
           </div>
         </div>
       </main>
@@ -225,7 +233,7 @@ export default function ContactPage() {
         <section aria-label="聯絡我們">
           <h1 className={pageTitle}>聯絡我們</h1>
           <p className={bodyText}>
-            若有任何問題或建議，請填寫下方表單，我們將盡快回覆。您所提供之聯絡資訊僅用於必要聯繫，不做其他用途。
+            若有任何問題或建議，請填寫下方表單，我們將盡快回覆。下列提供的聯絡資訊僅用於必要聯繫，不做其他用途。
           </p>
           <p className={bodyText} style={{ marginTop: '12px' }}>
             也可以直接透過 email 聯絡{' '}
