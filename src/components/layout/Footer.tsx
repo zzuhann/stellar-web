@@ -1,4 +1,4 @@
-import { ThreadsIcon } from '@/components/ui/SocialMediaIcons';
+import { InstagramIcon, ThreadsIcon } from '@/components/ui/SocialMediaIcons';
 import { css } from '@/styled-system/css';
 import Link from 'next/link';
 
@@ -6,51 +6,64 @@ const footerContainer = css({
   background: 'color.background.secondary',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
-  paddingY: '3',
-  paddingX: '5',
   marginTop: 'auto',
 });
 
-const footerContent = css({
+const footerInner = css({
+  maxWidth: '900px',
   margin: '0 auto',
-  display: 'flex',
-  justifyContent: 'space-between',
-  gap: '4',
-  maxWidth: '500px',
+  paddingX: '6',
+  paddingTop: '10',
+  paddingBottom: '6',
 });
 
-const copyrightText = css({
+const footerGrid = css({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, 1fr)',
+  gap: '8',
+  marginBottom: '8',
+  '@media (min-width: 640px)': {
+    gridTemplateColumns: 'repeat(4, 1fr)',
+  },
+});
+
+const footerCol = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '3',
+});
+
+const colTitle = css({
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
+  color: 'color.text.primary',
+  margin: '0',
+});
+
+const footerLink = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '1',
-});
-
-const copyrightItem = css({
-  display: 'flex',
-  alignItems: 'center',
-  minHeight: '24px',
-});
-
-const socialLinks = css({
-  display: 'flex',
-  flexDirection: 'column',
-});
-
-const socialLink = css({
+  textDecoration: 'none',
   display: 'flex',
   alignItems: 'center',
   gap: '2',
-  color: 'color.text.secondary',
-  textDecoration: 'none',
-  textStyle: 'caption',
-  borderRadius: 'radius.md',
-  transition: 'all 0.2s ease',
-  '& svg': {
-    width: '16px',
-    height: '16px',
+  transition: 'color 0.15s ease',
+  '&:hover': {
+    color: 'color.text.primary',
   },
+  '& svg': {
+    width: '14px',
+    height: '14px',
+    flexShrink: '0',
+  },
+});
+
+const footerBottom = css({
+  borderTop: '1px solid',
+  borderTopColor: 'color.border.light',
+  paddingTop: '4',
+  textStyle: 'caption',
+  color: 'color.text.secondary',
 });
 
 const Footer = () => {
@@ -58,44 +71,65 @@ const Footer = () => {
 
   return (
     <footer className={footerContainer}>
-      <div className={footerContent}>
-        <div className={copyrightText}>
-          <div className={copyrightItem}>Copyright © {currentYear} _stellar.tw</div>
-          <Link
-            href="/terms"
-            className={css({
-              textDecoration: 'underline',
-              display: 'flex',
-              alignItems: 'center',
-              minHeight: '24px',
-            })}
-          >
-            服務條款
-          </Link>
-          <Link
-            href="/privacy"
-            className={css({
-              textDecoration: 'underline',
-              display: 'flex',
-              alignItems: 'center',
-              minHeight: '24px',
-            })}
-          >
-            隱私權政策
-          </Link>
+      <div className={footerInner}>
+        <div className={footerGrid}>
+          <div className={footerCol}>
+            <p className={colTitle}>關於 STELLAR</p>
+            <Link href="/about" className={footerLink}>
+              關於我們
+            </Link>
+            {/* <Link href="/about#contact" className={footerLink}>
+              聯絡我們
+            </Link> */}
+          </div>
+
+          <div className={footerCol}>
+            <p className={colTitle}>使用指南</p>
+            <Link href="/guide?tab=submit-event" className={footerLink}>
+              投稿活動
+            </Link>
+            <Link href="/guide?tab=submit-artist" className={footerLink}>
+              投稿藝人
+            </Link>
+            {/* <Link href="/faq" className={footerLink}>
+              常見問與答
+            </Link> */}
+          </div>
+
+          <div className={footerCol}>
+            <p className={colTitle}>使用條款</p>
+            <Link href="/terms" className={footerLink}>
+              服務條款
+            </Link>
+            <Link href="/privacy" className={footerLink}>
+              隱私權政策
+            </Link>
+          </div>
+
+          <div className={footerCol}>
+            <p className={colTitle}>社群</p>
+            <a
+              href="https://www.instagram.com/_stellar.tw/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={footerLink}
+            >
+              <InstagramIcon size={14} />
+              _stellar.tw
+            </a>
+            <a
+              href="https://www.threads.net/@_stellar.tw"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={footerLink}
+            >
+              <ThreadsIcon size={14} />
+              _stellar.tw
+            </a>
+          </div>
         </div>
 
-        <div className={socialLinks}>
-          <a
-            href="https://www.threads.net/@_stellar.tw"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={socialLink}
-          >
-            <ThreadsIcon size={16} />
-            _stellar.tw
-          </a>
-        </div>
+        <div className={footerBottom}>Copyright © {currentYear} _stellar.tw</div>
       </div>
     </footer>
   );
