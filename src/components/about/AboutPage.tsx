@@ -172,7 +172,7 @@ export default function AboutPage() {
 
         <FadeIn delay={100}>
           <div className={statsRow} aria-label="平台統計">
-            <StatCounter target={200} suffix="+" label="藝人・團體" />
+            <StatCounter target={300} suffix="+" label="藝人・團體" />
             <StatCounter target={300} suffix="+" label="收錄活動" />
             <div className={staticStat}>
               <span className={staticStatNumber}>2025</span>
