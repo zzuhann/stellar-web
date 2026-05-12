@@ -1,5 +1,6 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 import { Metadata } from 'next';
+import { Artist } from '@/types';
 import { artistsApi } from '@/lib/api';
 import MapClientWrapper from './MapClientWrapper';
 
@@ -12,10 +13,22 @@ interface MapWithArtistPageProps {
   }>;
 }
 
+async function fetchArtistForMetadata(artistId: string): Promise<Artist | null> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/artists/${artistId}`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return null;
+    return res.json() as Promise<Artist>;
+  } catch {
+    return null;
+  }
+}
+
 export async function generateMetadata({ params }: MapWithArtistPageProps): Promise<Metadata> {
   try {
     const { artistId } = await params;
-    const artist = await artistsApi.getById(artistId);
+    const artist = await fetchArtistForMetadata(artistId);
 
     if (!artist) {
       return {
