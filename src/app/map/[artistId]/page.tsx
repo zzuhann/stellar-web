@@ -13,22 +13,10 @@ interface MapWithArtistPageProps {
   }>;
 }
 
-async function fetchArtistForMetadata(artistId: string): Promise<Artist | null> {
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/artists/${artistId}`, {
-      next: { revalidate: 3600 },
-    });
-    if (!res.ok) return null;
-    return res.json() as Promise<Artist>;
-  } catch {
-    return null;
-  }
-}
-
 export async function generateMetadata({ params }: MapWithArtistPageProps): Promise<Metadata> {
   try {
     const { artistId } = await params;
-    const artist = await fetchArtistForMetadata(artistId);
+    const artist: Artist | null = await artistsApi.getById(artistId).catch(() => null);
 
     if (!artist) {
       return {
@@ -39,23 +27,27 @@ export async function generateMetadata({ params }: MapWithArtistPageProps): Prom
 
     const title = `${artist.stageName} 生日應援`;
     const description = `在 STELLAR 尋找在你附近的 ${artist.stageName} 生日應援吧！`;
+    const resolvedArtistId = artist.slug ?? artistId;
+    const ogImageUrl = `https://www.stellar-zone.com/map/${resolvedArtistId}/opengraph-image`;
 
     return {
       title,
       description,
       alternates: {
-        canonical: `https://www.stellar-zone.com/map/${artist.slug ?? artistId}`,
+        canonical: `https://www.stellar-zone.com/map/${resolvedArtistId}`,
       },
       openGraph: {
         title,
         description,
-        images: artist.profileImage ? [artist.profileImage] : [],
+        images: [
+          { url: ogImageUrl, width: 1200, height: 630, alt: `${artist.stageName} 生日應援` },
+        ],
       },
       twitter: {
         card: 'summary_large_image',
         title,
         description,
-        images: artist.profileImage ? [artist.profileImage] : [],
+        images: [ogImageUrl],
       },
     };
   } catch {
