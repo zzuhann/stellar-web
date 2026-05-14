@@ -40,6 +40,8 @@ export interface CoffeeEvent {
       lat: number;
       lng: number;
     };
+    placeId?: string;
+    venueId?: string;
   };
   datetime: {
     start: FirebaseTimestamp;
@@ -175,6 +177,7 @@ export interface CreateEventRequest {
     name: string; // 地點名稱
     address: string;
     city: string;
+    placeId?: string;
     coordinates: {
       lat: number;
       lng: number;
@@ -228,6 +231,7 @@ export interface UpdateEventRequest {
     name: string;
     address: string;
     city: string;
+    placeId?: string;
     coordinates: {
       lat: number;
       lng: number;
@@ -356,6 +360,32 @@ export interface Venue {
   capacity_max: number | null;
   eventCount: number;
   coverPhoto: string | null;
+  status: 'active' | 'inactive';
+  socialMedia?: {
+    threads?: string;
+    instagram?: string;
+  };
+}
+
+export interface PlacePrediction {
+  place_id: string;
+  description: string;
+  structured_formatting?: {
+    main_text: string;
+    secondary_text: string;
+  };
+}
+
+export interface PlaceDetails {
+  geometry: {
+    location: {
+      lat: number;
+      lng: number;
+    };
+  };
+  formatted_address: string;
+  name: string;
+  city: string;
 }
 
 export interface UpdateVenueData {
@@ -376,6 +406,10 @@ export interface UpdateVenueData {
   host_tags?: string[];
   coverPhoto?: string;
   status?: 'active' | 'inactive';
+  socialMedia?: {
+    threads?: string;
+    instagram?: string;
+  };
 }
 
 export interface VenueFilterParams {

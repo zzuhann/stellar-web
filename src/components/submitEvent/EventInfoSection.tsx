@@ -90,9 +90,11 @@ type EventInfoSectionProps = {
   handleChangeStartDate: (date: string) => void;
   handleChangeEndDate: (date: string) => void;
   handlePlaceSelect: (place: {
+    place_id: string;
     address: string;
     coordinates: { lat: number; lng: number };
     name: string;
+    city: string;
   }) => void;
   handleChangeImages: (images: string[]) => void;
   detailImageUrls: string[];

@@ -5,12 +5,15 @@ import { Combobox } from '@headlessui/react';
 import { ChevronUpDownIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/20/solid';
 import { useQuery } from '@tanstack/react-query';
 import { css, cva } from '@/styled-system/css';
-import api from '@/lib/api';
+import { placesApi } from '@/lib/api';
 import { useDebounce } from '@/hooks/useDebounce';
 import showToast from '@/lib/toast';
 
+import type { PlacePrediction } from '@/types';
+
 interface PlaceAutocompleteProps {
   onPlaceSelect: (place: {
+    place_id: string;
     address: string;
     coordinates: { lat: number; lng: number };
     name: string;
@@ -18,15 +21,6 @@ interface PlaceAutocompleteProps {
   }) => void;
   placeholder?: string;
   defaultValue?: string;
-}
-
-interface PlacePrediction {
-  place_id: string;
-  description: string;
-  structured_formatting?: {
-    main_text: string;
-    secondary_text: string;
-  };
 }
 
 const container = css({
@@ -227,15 +221,7 @@ export default function PlaceAutocomplete({
     isError,
   } = useQuery({
     queryKey: ['places-autocomplete', debouncedQuery],
-    queryFn: async () => {
-      if (debouncedQuery.length < 2) return [];
-
-      const response = await api.post(`/places/autocomplete`, {
-        input: debouncedQuery,
-      });
-
-      return response.data.predictions || [];
-    },
+    queryFn: () => placesApi.autocomplete(debouncedQuery),
     enabled: debouncedQuery.length >= 2 && !isSelectedState,
     staleTime: 1000 * 60 * 5,
     retry: 2,
@@ -253,11 +239,11 @@ export default function PlaceAutocomplete({
     setQuery(prediction.structured_formatting?.main_text || prediction.description);
 
     try {
-      const response = await api.get(`/places/details/${prediction.place_id}`);
-      const result = response.data;
+      const result = await placesApi.getDetails(prediction.place_id);
 
       if (result.geometry?.location?.lat && result.geometry?.location?.lng) {
-        const placeData = {
+        onPlaceSelect({
+          place_id: prediction.place_id,
           address: result.formatted_address || prediction.description,
           coordinates: {
             lat: result.geometry.location.lat,
@@ -265,8 +251,7 @@ export default function PlaceAutocomplete({
           },
           name: result.name,
           city: result.city,
-        };
-        onPlaceSelect(placeData);
+        });
       }
     } catch {
       showToast.warning('取得地點詳細資訊失敗');

@@ -24,6 +24,8 @@ import {
   VenuesResponse,
   VenueDetail,
   UpdateVenueData,
+  PlacePrediction,
+  PlaceDetails,
 } from '@/types';
 
 // 建立 Axios 實例
@@ -460,6 +462,20 @@ export type ContactRequest = {
   name: string;
   email: string;
   message: string;
+};
+
+export const placesApi = {
+  autocomplete: async (input: string): Promise<PlacePrediction[]> => {
+    const response = await api.post<{ predictions: PlacePrediction[] }>('/places/autocomplete', {
+      input,
+    });
+    return response.data.predictions ?? [];
+  },
+
+  getDetails: async (placeId: string): Promise<PlaceDetails> => {
+    const response = await api.get<PlaceDetails>(`/places/details/${placeId}`);
+    return response.data;
+  },
 };
 
 export const venueApi = {
