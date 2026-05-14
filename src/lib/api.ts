@@ -20,6 +20,10 @@ import {
   UserSubmissionsArtistsResponse,
   UserSubmissionsEventsResponse,
   TrendingEventsResponse,
+  VenueFilterParams,
+  VenuesResponse,
+  VenueDetail,
+  UpdateVenueData,
 } from '@/types';
 
 // 建立 Axios 實例
@@ -456,6 +460,44 @@ export type ContactRequest = {
   name: string;
   email: string;
   message: string;
+};
+
+export const venueApi = {
+  getVenueById: async (id: string): Promise<VenueDetail> => {
+    const response = await api.get<VenueDetail>(`/venues/${id}`);
+    return response.data;
+  },
+
+  updateVenue: async (id: string, data: UpdateVenueData): Promise<VenueDetail> => {
+    const response = await api.patch<VenueDetail>(`/venues/${id}`, data);
+    return response.data;
+  },
+
+  deleteVenue: async (id: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/venues/${id}`);
+    return response.data;
+  },
+
+  getVenues: async (params: VenueFilterParams = {}): Promise<VenuesResponse> => {
+    const searchParams = new URLSearchParams();
+
+    if (params.region && params.region.length > 0) {
+      params.region.forEach((r) => searchParams.append('region', r));
+    }
+    if (params.capacity_min !== undefined) {
+      searchParams.set('capacity_min', String(params.capacity_min));
+    }
+    if (params.capacity_max !== undefined) {
+      searchParams.set('capacity_max', String(params.capacity_max));
+    }
+    if (params.sort) {
+      searchParams.set('sort', params.sort);
+    }
+
+    const query = searchParams.toString();
+    const response = await api.get<VenuesResponse>(`/venues${query ? `?${query}` : ''}`);
+    return response.data;
+  },
 };
 
 export const contactApi = {

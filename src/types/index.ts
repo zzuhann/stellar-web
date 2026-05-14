@@ -308,3 +308,83 @@ export interface UserSubmissionsArtistsResponse {
   summary: UserSubmissionResourceSummary;
   pagination: UserSubmissionsPagination;
 }
+
+export interface VenueEventCard {
+  id: string;
+  title: string;
+  artistName: string;
+  startDate: string;
+  endDate: string;
+  coverImage: string;
+  slug: string | null;
+}
+
+export interface VenueDetail {
+  id: string;
+  name: string;
+  address: string;
+  region: string;
+  lat: number;
+  lng: number;
+  place_id: string;
+  nearest_mrt: string | null;
+  mrt_walk_minutes: number | null;
+  capacity_max: number | null;
+  eventCount: number;
+  coverPhoto: string | null;
+  equipment: string[];
+  decoration_allowed: string[];
+  custom_items: string[];
+  price_model: string;
+  price_note: string;
+  cancel_policy: string;
+  noise_ok: boolean | null;
+  venue_visit_ok: boolean | null;
+  host_tags: string[];
+  events: VenueEventCard[];
+}
+
+export interface Venue {
+  id: string;
+  name: string;
+  address: string;
+  region: string;
+  lat: number;
+  lng: number;
+  nearest_mrt: string | null;
+  mrt_walk_minutes: number | null;
+  capacity_max: number | null;
+  eventCount: number;
+  coverPhoto: string | null;
+}
+
+export interface UpdateVenueData {
+  name?: string;
+  address?: string;
+  region?: string;
+  nearest_mrt?: string;
+  mrt_walk_minutes?: number | null;
+  capacity_max?: number | null;
+  equipment?: string[];
+  decoration_allowed?: string[];
+  custom_items?: string[];
+  price_model?: string;
+  price_note?: string;
+  venue_visit_ok?: boolean | null;
+  cancel_policy?: string;
+  noise_ok?: boolean | null;
+  host_tags?: string[];
+  coverPhoto?: string;
+  status?: 'active' | 'inactive';
+}
+
+export interface VenueFilterParams {
+  region?: string[];
+  capacity_min?: number;
+  capacity_max?: number;
+  sort?: 'eventCount' | 'name';
+}
+
+export interface VenuesResponse {
+  venues: Venue[];
+}
