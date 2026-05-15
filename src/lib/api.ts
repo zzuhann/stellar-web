@@ -24,6 +24,7 @@ import {
   VenuesResponse,
   VenueDetail,
   UpdateVenueData,
+  CreateVenueData,
   PlacePrediction,
   PlaceDetails,
 } from '@/types';
@@ -479,6 +480,11 @@ export const placesApi = {
 };
 
 export const venueApi = {
+  createVenue: async (data: CreateVenueData): Promise<VenueDetail> => {
+    const response = await api.post<VenueDetail>('/venues', data);
+    return response.data;
+  },
+
   getVenueById: async (id: string): Promise<VenueDetail> => {
     const response = await api.get<VenueDetail>(`/venues/${id}`);
     return response.data;
@@ -508,6 +514,9 @@ export const venueApi = {
     }
     if (params.sort) {
       searchParams.set('sort', params.sort);
+    }
+    if (params.status) {
+      searchParams.set('status', params.status);
     }
 
     const query = searchParams.toString();

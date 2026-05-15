@@ -11,6 +11,8 @@ import {
   EyeIcon,
   ExclamationTriangleIcon,
   PencilSquareIcon,
+  BuildingStorefrontIcon,
+  ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { artistsApi, eventsApi } from '@/lib/api';
@@ -40,6 +42,33 @@ const mainContainer = css({
 
 const tabContainer = css({
   marginBottom: '6',
+});
+
+const venueLink = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '2',
+  paddingY: '2.5',
+  paddingX: '4',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'white',
+  color: 'color.text.secondary',
+  fontSize: '14px',
+  fontWeight: 600,
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  textDecoration: 'none',
+  '&:hover': {
+    background: 'gray.50',
+    color: 'color.text.primary',
+    borderColor: 'gray.300',
+  },
+  '& svg': {
+    width: '16px',
+    height: '16px',
+  },
 });
 
 const tabNav = css({
@@ -702,6 +731,15 @@ export default function AdminPage() {
     <div className={pageContainer}>
       {/* Main Content */}
       <div className={mainContainer}>
+        {/* Venue Link */}
+        <div style={{ marginBottom: '12px' }}>
+          <button className={venueLink} onClick={() => router.push('/admin/venues')}>
+            <BuildingStorefrontIcon />
+            場地管理
+            <ArrowRightIcon />
+          </button>
+        </div>
+
         {/* Tabs */}
         <div className={tabContainer}>
           <nav className={tabNav}>

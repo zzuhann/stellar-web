@@ -336,15 +336,13 @@ export interface VenueDetail {
   capacity_max: number | null;
   eventCount: number;
   coverPhoto: string | null;
-  equipment: string[];
-  decoration_allowed: string[];
-  custom_items: string[];
-  price_model: string;
-  price_note: string;
-  cancel_policy: string;
-  noise_ok: boolean | null;
-  venue_visit_ok: boolean | null;
+  description: string;
+  otherPhotos: string[];
   host_tags: string[];
+  socialMedia?: {
+    threads?: string;
+    instagram?: string;
+  };
   events: VenueEventCard[];
 }
 
@@ -395,17 +393,30 @@ export interface UpdateVenueData {
   nearest_mrt?: string;
   mrt_walk_minutes?: number | null;
   capacity_max?: number | null;
-  equipment?: string[];
-  decoration_allowed?: string[];
-  custom_items?: string[];
-  price_model?: string;
-  price_note?: string;
-  venue_visit_ok?: boolean | null;
-  cancel_policy?: string;
-  noise_ok?: boolean | null;
+  description?: string;
+  otherPhotos?: string[];
   host_tags?: string[];
   coverPhoto?: string;
   status?: 'active' | 'inactive';
+  socialMedia?: {
+    threads?: string;
+    instagram?: string;
+  };
+}
+
+export interface CreateVenueData {
+  name: string;
+  address: string;
+  region: string;
+  capacity_max?: number;
+  description?: string;
+  coverPhoto?: string;
+  otherPhotos?: string[];
+  nearest_mrt?: string;
+  mrt_walk_minutes?: number;
+  lat?: number;
+  lng?: number;
+  place_id?: string;
   socialMedia?: {
     threads?: string;
     instagram?: string;
@@ -417,6 +428,7 @@ export interface VenueFilterParams {
   capacity_min?: number;
   capacity_max?: number;
   sort?: 'eventCount' | 'name';
+  status?: 'active' | 'inactive';
 }
 
 export interface VenuesResponse {
