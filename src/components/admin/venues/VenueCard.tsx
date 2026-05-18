@@ -40,18 +40,26 @@ const coverPlaceholder = css({
   color: 'gray.400',
 });
 
-const inactiveBadge = css({
+const statusBadge = css({
   position: 'absolute',
   top: '8px',
   left: '8px',
-  background: 'gray.700',
-  color: 'white',
   fontSize: '11px',
   fontWeight: 600,
   paddingY: '0.5',
   paddingX: '2',
   borderRadius: 'radius.md',
   zIndex: 1,
+});
+
+const activeBadge = css({
+  background: 'green.500',
+  color: 'white',
+});
+
+const inactiveBadge = css({
+  background: 'gray.500',
+  color: 'white',
 });
 
 const body = css({
@@ -185,7 +193,9 @@ export default function VenueCard({
   return (
     <div className={card}>
       <div className={coverContainer}>
-        {isInactive && <span className={inactiveBadge}>已下架</span>}
+        <span className={`${statusBadge} ${isInactive ? inactiveBadge : activeBadge}`}>
+          {isInactive ? '已下架' : '開放中'}
+        </span>
         {venue.coverPhoto ? (
           <Image
             src={venue.coverPhoto}

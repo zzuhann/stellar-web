@@ -15,9 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Loading from '@/components/Loading';
 import VenueCard from './VenueCard';
-import VenueEditModal from './VenueEditModal';
-import VenueCreateModal from './VenueCreateModal';
-import type { Venue, UpdateVenueData, CreateVenueData } from '@/types';
+import type { Venue } from '@/types';
 
 const REGION_GROUPS = [
   { label: '北部', cities: ['臺北', '新北', '基隆', '桃園', '新竹', '宜蘭'] },
@@ -267,8 +265,6 @@ export default function PageVenues() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const [editingVenueId, setEditingVenueId] = useState<string | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [regionFilter, setRegionFilter] = useState<RegionGroup | ''>('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
@@ -308,26 +304,6 @@ export default function PageVenues() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: editingVenue, isLoading: isLoadingDetail } = useQuery({
-    queryKey: ['venue-detail-edit', editingVenueId],
-    queryFn: () => venueApi.getVenueById(editingVenueId ?? ''),
-    enabled: !!editingVenueId,
-    staleTime: 0,
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateVenueData }) =>
-      venueApi.updateVenue(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-venues'] });
-      setEditingVenueId(null);
-      showToast.success('場地已更新');
-    },
-    onError: () => {
-      showToast.error('更新失敗');
-    },
-  });
-
   const deactivateMutation = useMutation({
     mutationFn: (id: string) => venueApi.deleteVenue(id),
     onSuccess: () => {
@@ -350,18 +326,6 @@ export default function PageVenues() {
     },
   });
 
-  const createMutation = useMutation({
-    mutationFn: (data: CreateVenueData) => venueApi.createVenue(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-venues'] });
-      setShowCreateModal(false);
-      showToast.success('場地已新增');
-    },
-    onError: () => {
-      showToast.error('新增失敗');
-    },
-  });
-
   const allVenues = useMemo(() => venuesData?.venues ?? [], [venuesData]);
 
   const filtered = useMemo(() => {
@@ -377,8 +341,7 @@ export default function PageVenues() {
 
   const inactiveCount = allVenues.filter((v) => v.status === 'inactive').length;
 
-  const isUpdating =
-    updateMutation.isPending || deactivateMutation.isPending || activateMutation.isPending;
+  const isUpdating = deactivateMutation.isPending || activateMutation.isPending;
 
   if (authLoading || isLoading) {
     return <Loading description="載入中..." style={{ height: '100vh', width: '100%' }} />;
@@ -415,7 +378,7 @@ export default function PageVenues() {
                 borderColor: 'stellarBlue.600',
               },
             })}
-            onClick={() => setShowCreateModal(true)}
+            onClick={() => router.push('/admin/venues/new')}
           >
             + 新增場地
           </button>
@@ -557,7 +520,7 @@ export default function PageVenues() {
               <VenueCard
                 key={venue.id}
                 venue={venue}
-                onEdit={(v: Venue) => setEditingVenueId(v.id)}
+                onEdit={(v: Venue) => router.push(`/admin/venues/${v.id}/edit`)}
                 onDeactivate={(v) => deactivateMutation.mutate(v.id)}
                 onActivate={(v) => activateMutation.mutate(v.id)}
                 isUpdating={isUpdating}
@@ -566,23 +529,6 @@ export default function PageVenues() {
           </div>
         )}
       </div>
-
-      {editingVenueId && editingVenue && !isLoadingDetail && (
-        <VenueEditModal
-          venue={editingVenue}
-          isOpen={true}
-          isSaving={updateMutation.isPending}
-          onClose={() => setEditingVenueId(null)}
-          onSave={(id, data) => updateMutation.mutate({ id, data })}
-        />
-      )}
-
-      <VenueCreateModal
-        isOpen={showCreateModal}
-        isSaving={createMutation.isPending}
-        onClose={() => setShowCreateModal(false)}
-        onSave={(data) => createMutation.mutate(data)}
-      />
     </div>
   );
 }

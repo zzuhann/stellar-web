@@ -339,6 +339,7 @@ export interface VenueDetail {
   description: string;
   otherPhotos: string[];
   host_tags: string[];
+  status: 'active' | 'inactive';
   socialMedia?: {
     threads?: string;
     instagram?: string;
