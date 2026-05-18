@@ -131,3 +131,4 @@ NODE_ENV=development
 - `~/.claude/skills/design-token/` — PandaCSS token 系統
 - `.claude/skills/semantic-url/` — STELLAR URL/slug 規格
 - `.claude/skills/color-design-token/` — 顏色 token 套用
+- `.claude/skills/testing/` — 前端測試規範（Vitest + RTL）：component 測試、mock 模式、cleanup 注意事項
