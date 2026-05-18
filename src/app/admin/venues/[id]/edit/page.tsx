@@ -9,12 +9,12 @@ type Props = {
 
 export default async function EditVenuePage({ params }: Props) {
   const { id } = await params;
-  const venue = await venueApi.getVenueById(id).catch(() => notFound());
+  const venue = await venueApi.getAdminVenueById(id).catch(() => notFound());
 
   return (
     <>
       <VenueFormClient mode="edit" venue={venue} />
-      <DeactivateVenueSection venueId={id} currentStatus={venue.status} />
+      <DeactivateVenueSection venueId={id} currentStatus={venue.status} events={venue.events} />
     </>
   );
 }
