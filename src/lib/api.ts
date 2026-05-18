@@ -491,7 +491,7 @@ export const venueApi = {
   },
 
   getAdminVenueById: async (id: string): Promise<VenueDetail> => {
-    const response = await api.get<VenueDetail>(`/admin/venues/${id}`);
+    const response = await api.get<VenueDetail>(`/venues/admin/${id}`);
     return response.data;
   },
 
@@ -506,7 +506,7 @@ export const venueApi = {
   },
 
   permanentDeleteVenue: async (id: string): Promise<{ message: string }> => {
-    const response = await api.delete<{ message: string }>(`/admin/venues/${id}/permanent`);
+    const response = await api.delete<{ message: string }>(`/venues/admin/${id}/permanent`);
     return response.data;
   },
 
