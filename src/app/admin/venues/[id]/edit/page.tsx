@@ -9,13 +9,7 @@ type Props = {
 
 export default async function EditVenuePage({ params }: Props) {
   const { id } = await params;
-
-  let venue;
-  try {
-    venue = await venueApi.getVenueById(id);
-  } catch {
-    notFound();
-  }
+  const venue = await venueApi.getVenueById(id).catch(() => notFound());
 
   return (
     <>

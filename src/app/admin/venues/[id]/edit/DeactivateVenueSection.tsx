@@ -6,6 +6,7 @@ import { css } from '@/styled-system/css';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { venueApi } from '@/lib/api';
 import { showToast } from '@/lib/toast';
+import queryKey from '@/hooks/queryKey';
 
 const section = css({
   maxWidth: '640px',
@@ -137,8 +138,8 @@ export default function DeactivateVenueSection({ venueId, currentStatus }: Props
   const deactivateMutation = useMutation({
     mutationFn: () => venueApi.updateVenue(venueId, { status: 'inactive' }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-venues'] });
-      queryClient.invalidateQueries({ queryKey: ['venue-detail', venueId] });
+      queryClient.invalidateQueries({ queryKey: queryKey.adminVenues() });
+      queryClient.invalidateQueries({ queryKey: queryKey.venueDetail(venueId) });
       showToast.success('場地已下架');
       router.push('/admin/venues');
     },

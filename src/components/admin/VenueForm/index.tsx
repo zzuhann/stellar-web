@@ -38,7 +38,7 @@ const pageContainer = css({
   maxWidth: '640px',
   margin: '0 auto',
   paddingX: '4',
-  paddingTop: '8',
+  paddingTop: '25',
   paddingBottom: '16',
 });
 
