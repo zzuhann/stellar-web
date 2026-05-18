@@ -490,13 +490,23 @@ export const venueApi = {
     return response.data;
   },
 
-  updateVenue: async (id: string, data: UpdateVenueData): Promise<VenueDetail> => {
-    const response = await api.patch<VenueDetail>(`/venues/${id}`, data);
+  getAdminVenueById: async (id: string): Promise<VenueDetail> => {
+    const response = await api.get<VenueDetail>(`/venues/admin/${id}`);
+    return response.data;
+  },
+
+  updateVenue: async (id: string, data: UpdateVenueData): Promise<{ message: string }> => {
+    const response = await api.patch<{ message: string }>(`/venues/${id}`, data);
     return response.data;
   },
 
   deleteVenue: async (id: string): Promise<{ message: string }> => {
     const response = await api.delete<{ message: string }>(`/venues/${id}`);
+    return response.data;
+  },
+
+  permanentDeleteVenue: async (id: string): Promise<{ message: string }> => {
+    const response = await api.delete<{ message: string }>(`/venues/admin/${id}/permanent`);
     return response.data;
   },
 
