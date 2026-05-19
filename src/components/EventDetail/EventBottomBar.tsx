@@ -15,13 +15,18 @@ import { CoffeeEvent } from '@/types';
 const bottomBar = css({
   position: 'fixed',
   bottom: '0',
-  left: '0',
-  right: '0',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  width: '100%',
+  maxWidth: '500px',
   zIndex: '100',
   height: '64px',
   backgroundColor: 'color.background.primary',
   display: 'flex',
   alignItems: 'stretch',
+  '@media (min-width: 640px)': {
+    display: 'none',
+  },
 });
 
 const actionButton = css({

@@ -10,6 +10,7 @@ import ArtistSection from './ArtistSection';
 import BackToMapButton from './BackToMapButton';
 import BackToHomeButton from './BackToHomeButton';
 import ShareHandler from './ShareHandler';
+import DesktopFavoriteButton from './DesktopFavoriteButton';
 import { CoffeeEvent } from '@/types';
 import { formatEventDate, generateGoogleCalendarUrl } from '@/utils';
 import PageViewTracker from '@/components/PageViewTracker';
@@ -57,12 +58,13 @@ const eventTitle = css({
   color: 'color.text.primary',
   marginTop: '0',
   marginX: '0',
-  marginBottom: '4',
+  marginBottom: '0',
   display: 'flex',
   alignItems: 'center',
   gap: '2',
   userSelect: 'text',
   cursor: 'text',
+  flex: '1',
 });
 
 const eventDetailsSection = css({
@@ -233,7 +235,18 @@ const EventDetail = ({ event }: EventDetailProps) => {
 
         {/* 主要內容 */}
         <div className={contentSection}>
-          <h2 className={eventTitle}>{event.title}</h2>
+          <div
+            className={css({
+              display: 'flex',
+              alignItems: 'flex-start',
+              justifyContent: 'space-between',
+              gap: '3',
+              marginBottom: '4',
+            })}
+          >
+            <h2 className={eventTitle}>{event.title}</h2>
+            <DesktopFavoriteButton eventId={event.id} />
+          </div>
 
           {/* 藝人資訊 - Client Component */}
           <ArtistSection artists={event.artists} />
