@@ -1,41 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { css } from '../../../styled-system/css';
-import { ShareIcon } from '@/lib/svg';
+import { ArrowUpOnSquareIcon } from '@heroicons/react/24/outline';
 import { isPWAMode } from '@/utils/pwa';
 
+function checkIfShouldShow() {
+  if (typeof window === 'undefined') return false;
+  if (!/iPad|iPhone|iPod/.test(navigator.userAgent)) return false;
+  if (isPWAMode()) return false;
+
+  const dismissed = localStorage.getItem('ios-install-banner-dismissed');
+  if (dismissed) {
+    const dismissedDate = new Date(parseInt(dismissed));
+    if (dismissedDate.toDateString() === new Date().toDateString()) return false;
+  }
+
+  return true;
+}
+
 export default function IOSInstallBanner() {
-  const [showBanner, setShowBanner] = useState(false);
-
-  useEffect(() => {
-    const checkIfShouldShow = () => {
-      // 檢查是否為 iOS 設備
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-      if (!isIOS) return false;
-
-      // 檢查是否已經在 PWA 模式
-      if (isPWAMode()) return false;
-
-      // 檢查是否已經拒絕過 banner
-      const dismissed = localStorage.getItem('ios-install-banner-dismissed');
-      if (dismissed) {
-        const dismissedDate = new Date(parseInt(dismissed));
-        const today = new Date();
-        // 如果是同一天，不再顯示
-        if (dismissedDate.toDateString() === today.toDateString()) {
-          return false;
-        }
-      }
-
-      return true;
-    };
-
-    if (checkIfShouldShow()) {
-      setShowBanner(true);
-    }
-  }, []);
+  const [showBanner, setShowBanner] = useState(checkIfShouldShow);
 
   const handleDismiss = () => {
     setShowBanner(false);
@@ -99,7 +84,7 @@ export default function IOSInstallBanner() {
             在 Safari 中點擊分享按鈕
             {
               <span className={css({ display: 'inline-block', marginRight: '1' })}>
-                <ShareIcon aria-hidden="true" width={16} height={16} />
+                <ArrowUpOnSquareIcon aria-hidden="true" width={16} height={16} />
               </span>
             }
           </div>
