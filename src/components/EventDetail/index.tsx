@@ -3,7 +3,7 @@ import { parseSocialMediaHandles } from '@/utils/socialMedia';
 import { ArrowTopRightOnSquareIcon, CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon } from '../ui/SocialMediaIcons';
 import ExternalLink from '../ui/ExternalLink';
-import FavoriteButton from './FavoriteButton';
+import EventBottomBar from './EventBottomBar';
 import EventImageGallery from './EventImageGallery';
 import BottomImagesGallery from './BottomImagesGallery';
 import ArtistSection from './ArtistSection';
@@ -223,16 +223,16 @@ const EventDetail = ({ event }: EventDetailProps) => {
     <div className={pageContainer} id="main-content">
       <PageViewTracker eventPage="/event/[id]" contentId={event.id} />
       <EventViewTracker eventId={event.id} />
-      <div className={mainContainer}>
+      <div
+        className={mainContainer}
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)' }}
+      >
         <Breadcrumb items={breadcrumbItems} />
         {/* Banner 區域 + 底部圖片列表 + Lightbox */}
         <EventImageGallery items={bannerItems} />
 
         {/* 主要內容 */}
         <div className={contentSection}>
-          {/* 收藏按鈕 - Client Component */}
-          <FavoriteButton eventId={event.id} eventTitle={event.title} />
-
           <h2 className={eventTitle}>{event.title}</h2>
 
           {/* 藝人資訊 - Client Component */}
@@ -388,6 +388,9 @@ const EventDetail = ({ event }: EventDetailProps) => {
         {/* 分享處理 - Client Component */}
         <ShareHandler title={event.title} />
       </div>
+
+      {/* Sticky Bottom Bar - 收藏 + 分享 CTA */}
+      <EventBottomBar event={event} />
     </div>
   );
 };

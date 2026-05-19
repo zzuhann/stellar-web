@@ -20,18 +20,20 @@ export async function generateMetadata({ params }: MapWithArtistPageProps): Prom
 
     if (!artist) {
       return {
-        title: '藝人不存在',
-        description: '在 STELLAR 尋找在你附近的生日應援吧！',
+        title: { absolute: '生咖、生日應援活動地圖 | STELLAR' },
+        description:
+          '在 STELLAR 尋找台灣各地的生咖（生日應援）活動，透過地圖找到離你最近的活動資訊。',
       };
     }
 
-    const title = `${artist.stageName} 生日應援`;
-    const description = `在 STELLAR 尋找在你附近的 ${artist.stageName} 生日應援吧！`;
+    const displayName = artist.stageNameZh ?? artist.stageName;
+    const title = `${displayName} 生咖、生日應援活動地圖 | STELLAR`;
+    const description = `查看 ${displayName} 在台灣各地的生咖（生日應援）活動，透過地圖找到離你最近的活動資訊。`;
     const resolvedArtistId = artist.slug ?? artistId;
     const ogImageUrl = `https://www.stellar-zone.com/map/${resolvedArtistId}/opengraph-image`;
 
     return {
-      title,
+      title: { absolute: title },
       description,
       alternates: {
         canonical: `https://www.stellar-zone.com/map/${resolvedArtistId}`,
@@ -40,7 +42,12 @@ export async function generateMetadata({ params }: MapWithArtistPageProps): Prom
         title,
         description,
         images: [
-          { url: ogImageUrl, width: 1200, height: 630, alt: `${artist.stageName} 生日應援` },
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: `${displayName} 生咖、生日應援活動地圖`,
+          },
         ],
       },
       twitter: {
@@ -52,8 +59,9 @@ export async function generateMetadata({ params }: MapWithArtistPageProps): Prom
     };
   } catch {
     return {
-      title: 'STELLAR | 台灣生日應援地圖',
-      description: '在 STELLAR 尋找在你附近的生日應援吧！',
+      title: { absolute: '生咖、生日應援活動地圖 | STELLAR' },
+      description:
+        '在 STELLAR 尋找台灣各地的生咖（生日應援）活動，透過地圖找到離你最近的活動資訊。',
     };
   }
 }
@@ -80,7 +88,9 @@ export default async function MapWithArtistPage({ params, searchParams }: MapWit
       {
         '@type': 'ListItem',
         position: 2,
-        name: artist ? `${artist.stageName} 生日應援地圖` : '生日應援地圖',
+        name: artist
+          ? `${artist.stageNameZh ?? artist.stageName} 生咖、生日應援活動地圖`
+          : '生日應援地圖',
       },
     ],
   };

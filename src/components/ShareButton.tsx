@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { css } from '../../styled-system/css';
-import { ShareIcon } from '@/lib/svg';
+import { ArrowUpOnSquareIcon } from '@heroicons/react/24/outline';
 import { useWebShare } from '@/hooks/useWebShare';
 import { useShare } from '@/context/ShareContext';
 import { isPWAMode } from '@/utils/pwa';
@@ -15,25 +14,9 @@ export default function ShareButton() {
   const { shareData } = useShare();
   const pathname = usePathname();
   const { user } = useAuth();
-  const [shouldShow, setShouldShow] = useState(false);
 
-  useEffect(() => {
-    // 檢查是否在允許顯示分享按鈕的頁面
-    const shouldShowShareButton = () => {
-      // 必須在 PWA 模式下
-      if (!isPWAMode()) {
-        return false;
-      }
-
-      // 匹配 /map/{artistId} 和 /event/{eventId} 路由
-      const mapPattern = /^\/map\/[^\/]+$/;
-      const eventPattern = /^\/event\/[^\/]+$/;
-
-      return mapPattern.test(pathname) || eventPattern.test(pathname);
-    };
-
-    setShouldShow(shouldShowShareButton());
-  }, [pathname]);
+  const shouldShow =
+    isPWAMode() && (/^\/map\/[^/]+$/.test(pathname) || /^\/event\/[^/]+$/.test(pathname));
 
   const handleShare = () => {
     // 從 pathname 取得 contentId
@@ -72,7 +55,7 @@ export default function ShareButton() {
         },
       })}
     >
-      <ShareIcon width={20} height={20} color="var(--color-text-primary)" />
+      <ArrowUpOnSquareIcon width={20} height={20} color="var(--color-text-primary)" />
     </button>
   );
 }
