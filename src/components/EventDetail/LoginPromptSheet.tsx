@@ -25,7 +25,6 @@ const sheet = css({
   zIndex: '201',
   paddingX: '4',
   paddingTop: '4',
-  transition: 'transform 280ms ease-out',
 });
 
 const handleBar = css({
@@ -102,6 +101,7 @@ export default function LoginPromptSheet({
   onShare,
 }: LoginPromptSheetProps) {
   const loginButtonRef = useRef<HTMLButtonElement>(null);
+  const shareButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -111,13 +111,36 @@ export default function LoginPromptSheet({
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (!isOpen) return;
+
+      if (e.key === 'Escape') {
         onClose();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        const first = loginButtonRef.current;
+        const last = shareButtonRef.current;
+        if (!first || !last) return;
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  const sheetTransition = isOpen ? 'transform 280ms ease-out' : 'transform 240ms ease-in';
 
   return (
     <>
@@ -131,6 +154,7 @@ export default function LoginPromptSheet({
         className={sheet}
         style={{
           transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
+          transition: sheetTransition,
           paddingBottom: 'max(calc(env(safe-area-inset-bottom) + 24px), 24px)',
         }}
         role="dialog"
@@ -144,7 +168,7 @@ export default function LoginPromptSheet({
         <button ref={loginButtonRef} className={primaryButton} onClick={onLoginToFavorite}>
           登入以收藏
         </button>
-        <button className={secondaryButton} onClick={onShare}>
+        <button ref={shareButtonRef} className={secondaryButton} onClick={onShare}>
           分享此活動
         </button>
       </div>

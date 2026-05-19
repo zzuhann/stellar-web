@@ -23,7 +23,6 @@ const pageContainer = css({
 
 const mainContainer = css({
   paddingTop: '70px',
-  paddingBottom: '80px',
   maxWidth: '500px',
   margin: '0 auto',
   boxShadow: 'shadow.sm',
@@ -224,7 +223,10 @@ const EventDetail = ({ event }: EventDetailProps) => {
     <div className={pageContainer} id="main-content">
       <PageViewTracker eventPage="/event/[id]" contentId={event.id} />
       <EventViewTracker eventId={event.id} />
-      <div className={mainContainer}>
+      <div
+        className={mainContainer}
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)' }}
+      >
         <Breadcrumb items={breadcrumbItems} />
         {/* Banner 區域 + 底部圖片列表 + Lightbox */}
         <EventImageGallery items={bannerItems} />
