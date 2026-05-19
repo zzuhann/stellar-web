@@ -26,17 +26,17 @@ const notoSansTC = Noto_Sans_TC({
 
 export const metadata: Metadata = {
   title: {
-    default: 'STELLAR | 台灣生咖、生日應援地圖',
+    default: '台灣生咖地圖 | 生日應援活動資訊 - STELLAR',
     template: '%s | STELLAR 台灣生咖、生日應援地圖',
   },
   description:
-    'STELLAR 台灣生咖、生日應援地圖平台，透過社群的力量，由主辦、店家自主投稿，讓粉絲們可以透過地圖瀏覽的方式找到附近的生咖與生日應援，找到想參加的生咖是一件更簡單的事！',
+    'STELLAR 收錄台灣各地生咖（生日應援咖啡廳）活動，地圖瀏覽、快速找活動。偶像生日快到了？來 STELLAR 找你附近的生咖！',
   keywords: ['生日應援', 'K-POP', '生日咖啡廳', '應援', 'idol', 'PWA', '生咖', 'STELLAR'],
   openGraph: {
     type: 'website',
-    title: 'STELLAR | 台灣生咖、生日應援地圖',
+    title: '台灣生咖地圖 | 生日應援活動資訊 - STELLAR',
     description:
-      'STELLAR 台灣生咖、生日應援地圖平台，透過社群的力量，由主辦、店家自主投稿，讓粉絲們可以透過地圖瀏覽的方式找到附近的生咖與生日應援，找到想參加的生咖是一件更簡單的事！',
+      'STELLAR 收錄台灣各地生咖（生日應援咖啡廳）活動，地圖瀏覽、快速找活動。偶像生日快到了？來 STELLAR 找你附近的生咖！',
     images: [{ url: 'https://cdn.stellar-zone.com/images/og-image.png' }],
   },
   icons: {
@@ -76,9 +76,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'STELLAR | 台灣生咖、生日應援地圖',
+    title: '台灣生咖地圖 | 生日應援活動資訊 - STELLAR',
     description:
-      'STELLAR 台灣生咖、生日應援地圖平台，透過社群的力量，由主辦、店家自主投稿，讓粉絲們可以透過地圖瀏覽的方式找到附近的生咖與生日應援，找到想參加的生咖是一件更簡單的事！',
+      'STELLAR 收錄台灣各地生咖（生日應援咖啡廳）活動，地圖瀏覽、快速找活動。偶像生日快到了？來 STELLAR 找你附近的生咖！',
     images: [{ url: 'https://cdn.stellar-zone.com/images/og-image.png' }],
     creator: '@STELLAR_TW',
   },
