@@ -321,7 +321,7 @@ const EventInfoSection = ({
       {/* 聯絡資訊 */}
       <div className={sectionDivider} role="group" aria-labelledby="social-media-title">
         <h3 id="social-media-title" className={sectionTitle}>
-          社群媒體
+          社群媒體（請填寫 ID 即可，而非完整網址）
         </h3>
         <p id="social-media-hint" className={helperText}>
           請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗
