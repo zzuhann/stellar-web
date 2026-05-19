@@ -98,7 +98,7 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
   const handleShare = () => {
     share({
       title: event.title,
-      text: '在 STELLAR 看到這個生咖活動',
+      text: '我在 STELLAR 看到這個生日應援！',
       url: typeof window !== 'undefined' ? window.location.href : '',
     });
   };

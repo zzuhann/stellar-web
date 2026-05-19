@@ -45,7 +45,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { eventId } = await params;
   try {
     const event = await eventsApi.getById(eventId);
-    const title = event?.title;
+    const eventTitle = event?.title;
+    const artistName = event?.artists?.[0]?.name;
+    const title = artistName ? `${eventTitle} | ${artistName} 生咖、生日應援活動` : eventTitle;
     const description = event?.description;
     return {
       title,
