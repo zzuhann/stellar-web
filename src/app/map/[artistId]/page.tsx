@@ -20,8 +20,9 @@ export async function generateMetadata({ params }: MapWithArtistPageProps): Prom
 
     if (!artist) {
       return {
-        title: '藝人不存在',
-        description: '在 STELLAR 尋找在你附近的生日應援吧！',
+        title: { absolute: '生咖、生日應援活動地圖 | STELLAR' },
+        description:
+          '在 STELLAR 尋找台灣各地的生咖（生日應援）活動，透過地圖找到離你最近的活動資訊。',
       };
     }
 
@@ -58,8 +59,9 @@ export async function generateMetadata({ params }: MapWithArtistPageProps): Prom
     };
   } catch {
     return {
-      title: 'STELLAR | 台灣生日應援地圖',
-      description: '在 STELLAR 尋找在你附近的生日應援吧！',
+      title: { absolute: '生咖、生日應援活動地圖 | STELLAR' },
+      description:
+        '在 STELLAR 尋找台灣各地的生咖（生日應援）活動，透過地圖找到離你最近的活動資訊。',
     };
   }
 }
