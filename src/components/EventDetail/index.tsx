@@ -3,7 +3,7 @@ import { parseSocialMediaHandles } from '@/utils/socialMedia';
 import { ArrowTopRightOnSquareIcon, CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon } from '../ui/SocialMediaIcons';
 import ExternalLink from '../ui/ExternalLink';
-import FavoriteButton from './FavoriteButton';
+import EventBottomBar from './EventBottomBar';
 import EventImageGallery from './EventImageGallery';
 import BottomImagesGallery from './BottomImagesGallery';
 import ArtistSection from './ArtistSection';
@@ -23,6 +23,7 @@ const pageContainer = css({
 
 const mainContainer = css({
   paddingTop: '70px',
+  paddingBottom: '80px',
   maxWidth: '500px',
   margin: '0 auto',
   boxShadow: 'shadow.sm',
@@ -230,9 +231,6 @@ const EventDetail = ({ event }: EventDetailProps) => {
 
         {/* 主要內容 */}
         <div className={contentSection}>
-          {/* 收藏按鈕 - Client Component */}
-          <FavoriteButton eventId={event.id} eventTitle={event.title} />
-
           <h2 className={eventTitle}>{event.title}</h2>
 
           {/* 藝人資訊 - Client Component */}
@@ -388,6 +386,9 @@ const EventDetail = ({ event }: EventDetailProps) => {
         {/* 分享處理 - Client Component */}
         <ShareHandler title={event.title} />
       </div>
+
+      {/* Sticky Bottom Bar - 收藏 + 分享 CTA */}
+      <EventBottomBar event={event} />
     </div>
   );
 };
