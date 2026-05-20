@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
-import { QueueListIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
+import { QueueListIcon, CalendarDaysIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import EventCarousel from './EventCarousel';
 import { useBottomSheet } from './hooks/useBottomSheet';
 
@@ -57,14 +57,37 @@ const countText = css({
   marginTop: '3',
 });
 
-const clearFilterButton = css({
+const locationChip = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1',
+  paddingX: '3',
+  paddingY: '1.5',
+  borderRadius: '9999px',
+  background: 'color.background.tertiary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  maxWidth: '200px',
+});
+
+const locationChipText = css({
   textStyle: 'bodySmall',
+  color: 'color.text.primary',
+  overflow: 'hidden',
+  whiteSpace: 'nowrap',
+  textOverflow: 'ellipsis',
+});
+
+const locationChipClose = css({
+  display: 'flex',
+  alignItems: 'center',
+  flexShrink: 0,
   color: 'color.text.secondary',
   background: 'none',
   border: 'none',
+  padding: '0',
   cursor: 'pointer',
   lineHeight: '1',
-  padding: '0',
 });
 
 const sideSlot = css({
@@ -201,19 +224,28 @@ const MapBottomSheet = ({
           <div className={sideSlot} />
 
           <div className={handleBarCenter}>
-            <div className={handleBar} />
-            <span className={countText}>{events.length} 場生日應援</span>
-            {isLocationFiltered && onClearLocationFilter && (
-              <button
-                type="button"
-                className={clearFilterButton}
+            {isLocationFiltered && onClearLocationFilter ? (
+              <div
+                className={locationChip}
                 onMouseDown={(e) => e.stopPropagation()}
                 onTouchStart={(e) => e.stopPropagation()}
-                onClick={onClearLocationFilter}
               >
-                ← 看全部活動
-              </button>
+                <span className={locationChipText}>
+                  {events[0]?.location?.name ?? events[0]?.location?.city ?? ''}
+                </span>
+                <button
+                  type="button"
+                  className={locationChipClose}
+                  aria-label="清除地點篩選"
+                  onClick={onClearLocationFilter}
+                >
+                  <XMarkIcon width={14} height={14} />
+                </button>
+              </div>
+            ) : (
+              <div className={handleBar} />
             )}
+            <span className={countText}>{events.length} 場生日應援</span>
           </div>
 
           {isHalfOpen ? (
