@@ -40,7 +40,7 @@ const loadingContainer = css({
 });
 
 const locateButton = css({
-  position: 'absolute',
+  position: 'fixed',
   right: '4',
   width: '44px',
   height: '44px',

@@ -140,7 +140,7 @@ const MarkerLayer = ({
         const eventsAtLocation = groupedEvents.get(locationKey) ?? [];
         onMultiMarkerClick(eventsAtLocation);
       } else {
-        map.fitBounds(cluster.getBounds(), { animate: true });
+        map.fitBounds(cluster.getBounds(), { animate: true, maxZoom: 16, padding: [20, 20] });
         onClearSelection();
       }
     },
@@ -159,6 +159,7 @@ const MarkerLayer = ({
       maxClusterRadius={80}
       disableClusteringAtZoom={20}
       spiderfyOnMaxZoom={false}
+      zoomToBoundsOnClick={false}
       eventHandlers={{
         clusterclick: handleClusterClick,
       }}
