@@ -22,6 +22,7 @@ export interface UseBottomSheetReturn {
     onTouchStart: (e: React.TouchEvent) => void;
   };
   onTransitionEnd: () => void;
+  snapToHalf: () => void;
 }
 
 export function useBottomSheet({
@@ -165,6 +166,10 @@ export function useBottomSheet({
     [getListTriggerHeight, handleDragEnd]
   );
 
+  const snapToHalf = useCallback(() => {
+    snapTo(getHalfHeight());
+  }, [snapTo, getHalfHeight]);
+
   const isHalfOpen = height > PEEK_HEIGHT;
 
   return {
@@ -173,5 +178,6 @@ export function useBottomSheet({
     isHalfOpen,
     handleBarBind: { onMouseDown, onTouchStart },
     onTransitionEnd,
+    snapToHalf,
   };
 }

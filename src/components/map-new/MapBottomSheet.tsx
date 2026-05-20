@@ -191,10 +191,18 @@ const MapBottomSheet = ({
   }, []);
 
   // Hook must be called unconditionally (React rules); empty state ignores height/drag values
-  const { height, isAnimating, isHalfOpen, handleBarBind, onTransitionEnd } = useBottomSheet({
-    onRequestListMode,
-    halfHeight: measuredHeight,
-  });
+  const { height, isAnimating, isHalfOpen, handleBarBind, onTransitionEnd, snapToHalf } =
+    useBottomSheet({
+      onRequestListMode,
+      halfHeight: measuredHeight,
+    });
+
+  // Auto-open to half when a location filter is applied
+  useEffect(() => {
+    if (isLocationFiltered) {
+      snapToHalf();
+    }
+  }, [isLocationFiltered, snapToHalf]);
 
   if (events.length === 0) {
     return (
