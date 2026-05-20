@@ -497,6 +497,7 @@ export default function AdminPage() {
     mutationFn: (id: string) => eventsApi.admin.approve(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-pending-events'] });
+      queryClient.invalidateQueries({ queryKey: ['top-artists'] });
       showToast.success('審核成功');
     },
     onError: () => {
@@ -509,6 +510,7 @@ export default function AdminPage() {
       eventsApi.admin.reject(id, { reason }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-pending-events'] });
+      queryClient.invalidateQueries({ queryKey: ['top-artists'] });
       showToast.success('已拒絕此投稿');
     },
     onError: () => {
@@ -527,6 +529,7 @@ export default function AdminPage() {
     ) => eventsApi.admin.batchReview(updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-pending-events'] });
+      queryClient.invalidateQueries({ queryKey: ['top-artists'] });
       setSelectedEvents(new Set());
       showToast.success('批次審核成功');
     },
