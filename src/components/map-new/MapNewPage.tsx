@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import L from 'leaflet';
 import { css } from '@/styled-system/css';
 import useMapPageData from '@/components/map/hook/useMapPageData';
 import useMapNewLocation from './hooks/useMapNewLocation';
+import { useMapNewState } from './hooks/useMapNewState';
 import Loading from '@/components/Loading';
 import MapNewHeader from './MapNewHeader';
 import { MapEvent } from '@/types';
@@ -46,8 +47,7 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
 
   const { latitude, longitude } = useMapNewLocation();
 
-  const [selectedEvent, setSelectedEvent] = useState<MapEvent | null>(null);
-  const [_selectedLocationEvents, setSelectedLocationEvents] = useState<MapEvent[] | null>(null);
+  const { selectedEvent, selectEvent, selectLocation } = useMapNewState();
   const mapRef = useRef<L.Map | null>(null);
   const hasAutoCenteredRef = useRef(false);
 
@@ -57,12 +57,12 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
 
   // TODO: wire up to bottom sheet UI in next phase
   const handleSingleMarkerClick = (event: MapEvent) => {
-    setSelectedEvent(event);
+    selectEvent(event);
   };
 
   // TODO: wire up to bottom sheet UI in next phase
   const handleMultiMarkerClick = (events: MapEvent[]) => {
-    setSelectedLocationEvents(events);
+    selectLocation(events);
   };
 
   // Prevent body scroll so global Footer doesn't appear below the map

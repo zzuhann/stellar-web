@@ -114,6 +114,7 @@ export interface MapEvent {
     coordinates: { lat: number; lng: number };
     name: string; // 店家名稱
   };
+  city?: string;
   title: string;
   mainImage: string;
   datetime: {
