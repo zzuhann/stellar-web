@@ -35,8 +35,14 @@ export function useMapNewState(): MapNewState {
     router.replace(`${pathname}${query ? `?${query}` : ''}`);
   };
 
-  const selectEvent = (event: MapEvent | null) => setSelectedEvent(event);
-  const selectLocation = (events: MapEvent[] | null) => setSelectedLocationEvents(events);
+  const selectEvent = (event: MapEvent | null) => {
+    setSelectedEvent(event);
+    setSelectedLocationEvents(null);
+  };
+  const selectLocation = (events: MapEvent[] | null) => {
+    setSelectedLocationEvents(events);
+    setSelectedEvent(null);
+  };
   const clearSelection = () => {
     setSelectedEvent(null);
     setSelectedLocationEvents(null);

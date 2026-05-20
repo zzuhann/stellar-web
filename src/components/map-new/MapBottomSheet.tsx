@@ -57,6 +57,16 @@ const countText = css({
   marginTop: '3',
 });
 
+const clearFilterButton = css({
+  textStyle: 'bodySmall',
+  color: 'color.text.secondary',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  lineHeight: '1',
+  padding: '0',
+});
+
 const sideSlot = css({
   width: '32px',
   flexShrink: 0,
@@ -134,9 +144,16 @@ const emptyDesc = css({
 export interface MapBottomSheetProps {
   events: MapEvent[];
   onRequestListMode: () => void;
+  isLocationFiltered?: boolean;
+  onClearLocationFilter?: () => void;
 }
 
-const MapBottomSheet = ({ events, onRequestListMode }: MapBottomSheetProps) => {
+const MapBottomSheet = ({
+  events,
+  onRequestListMode,
+  isLocationFiltered,
+  onClearLocationFilter,
+}: MapBottomSheetProps) => {
   const innerRef = useRef<HTMLDivElement>(null);
   const [measuredHeight, setMeasuredHeight] = useState<number | undefined>(undefined);
 
@@ -186,6 +203,17 @@ const MapBottomSheet = ({ events, onRequestListMode }: MapBottomSheetProps) => {
           <div className={handleBarCenter}>
             <div className={handleBar} />
             <span className={countText}>{events.length} 場生日應援</span>
+            {isLocationFiltered && onClearLocationFilter && (
+              <button
+                type="button"
+                className={clearFilterButton}
+                onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                onClick={onClearLocationFilter}
+              >
+                ← 看全部活動
+              </button>
+            )}
           </div>
 
           {isHalfOpen ? (

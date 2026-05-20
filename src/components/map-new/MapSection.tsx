@@ -29,6 +29,7 @@ interface MapSectionProps {
   onSingleMarkerClick: (event: MapEvent) => void;
   onMultiMarkerClick: (events: MapEvent[]) => void;
   onMapReady: (map: L.Map) => void;
+  onClearSelection: () => void;
 }
 
 // Internal component: captures map instance and signals when panes are ready
@@ -59,6 +60,7 @@ export default function MapSection({
   onSingleMarkerClick,
   onMultiMarkerClick,
   onMapReady,
+  onClearSelection,
 }: MapSectionProps) {
   const [isMapReady, setIsMapReady] = useState(false);
   const userLocationIcon = createUserLocationIcon();
@@ -96,6 +98,7 @@ export default function MapSection({
               selectedEventId={selectedEventId}
               onSingleMarkerClick={onSingleMarkerClick}
               onMultiMarkerClick={onMultiMarkerClick}
+              onClearSelection={onClearSelection}
             />
           </>
         )}

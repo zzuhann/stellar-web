@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import L from 'leaflet';
 import { css } from '@/styled-system/css';
+import { MapPinIcon } from '@heroicons/react/24/outline';
 import useMapPageData from '@/components/map/hook/useMapPageData';
 import useMapNewLocation from './hooks/useMapNewLocation';
 import { useMapNewState } from './hooks/useMapNewState';
@@ -38,6 +39,24 @@ const loadingContainer = css({
   mx: 'auto',
 });
 
+const locateButton = css({
+  position: 'absolute',
+  right: '4',
+  width: '44px',
+  height: '44px',
+  borderRadius: 'radius.circle',
+  background: 'color.background.secondary',
+  boxShadow: 'shadow.md',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  cursor: 'pointer',
+  color: 'color.text.secondary',
+  zIndex: '10',
+});
+
 interface MapNewPageProps {
   artistId: string;
 }
@@ -49,8 +68,15 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
 
   const { latitude, longitude } = useMapNewLocation();
 
-  const { mode, selectedEvent, selectedLocationEvents, selectEvent, selectLocation, setMode } =
-    useMapNewState();
+  const {
+    mode,
+    selectedEvent,
+    selectedLocationEvents,
+    selectEvent,
+    selectLocation,
+    clearSelection,
+    setMode,
+  } = useMapNewState();
   const mapRef = useRef<L.Map | null>(null);
   const hasAutoCenteredRef = useRef(false);
 
@@ -58,12 +84,10 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
     mapRef.current = map;
   };
 
-  // TODO: wire up to bottom sheet UI in next phase
   const handleSingleMarkerClick = (event: MapEvent) => {
     selectEvent(event);
   };
 
-  // TODO: wire up to bottom sheet UI in next phase
   const handleMultiMarkerClick = (events: MapEvent[]) => {
     selectLocation(events);
   };
@@ -111,13 +135,32 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
             onSingleMarkerClick={handleSingleMarkerClick}
             onMultiMarkerClick={handleMultiMarkerClick}
             onMapReady={handleMapReady}
+            onClearSelection={clearSelection}
           />
         </div>
+        {latitude && longitude && (
+          <button
+            type="button"
+            className={locateButton}
+            style={{ bottom: '148px' }}
+            aria-label="回到我的位置"
+            onClick={() => {
+              mapRef.current?.setView([latitude, longitude], 14, { animate: true });
+            }}
+          >
+            <MapPinIcon width={20} height={20} />
+          </button>
+        )}
         {mode === 'map' && selectedEvent && (
           <MapSingleEventCard event={selectedEvent} onDismiss={() => selectEvent(null)} />
         )}
         {mode === 'map' && !selectedEvent && (
-          <MapBottomSheet events={displayEvents} onRequestListMode={() => setMode('list')} />
+          <MapBottomSheet
+            events={displayEvents}
+            onRequestListMode={() => setMode('list')}
+            isLocationFiltered={!!selectedLocationEvents}
+            onClearLocationFilter={clearSelection}
+          />
         )}
       </div>
     </>

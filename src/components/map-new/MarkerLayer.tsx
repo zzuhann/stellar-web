@@ -12,6 +12,7 @@ interface MarkerLayerProps {
   selectedEventId: string | null;
   onSingleMarkerClick: (event: MapEvent) => void;
   onMultiMarkerClick: (events: MapEvent[]) => void;
+  onClearSelection: () => void;
 }
 
 const MarkerLayer = ({
@@ -20,6 +21,7 @@ const MarkerLayer = ({
   selectedEventId,
   onSingleMarkerClick,
   onMultiMarkerClick,
+  onClearSelection,
 }: MarkerLayerProps) => {
   const map = useMap();
   const profileImage = artistData?.profileImage;
@@ -139,9 +141,10 @@ const MarkerLayer = ({
         onMultiMarkerClick(eventsAtLocation);
       } else {
         map.fitBounds(cluster.getBounds(), { animate: true });
+        onClearSelection();
       }
     },
-    [map, groupedEvents, onMultiMarkerClick]
+    [map, groupedEvents, onMultiMarkerClick, onClearSelection]
   );
 
   const handleMarkerClick = useCallback(
