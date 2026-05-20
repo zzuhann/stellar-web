@@ -36,10 +36,7 @@ export function useGeolocation(options: GeolocationOptions = {}) {
   };
 
   const getCurrentPosition = useCallback(() => {
-    if (!state.isSupported) {
-      setState((prev) => ({ ...prev, error: '無法取得你的位置' }));
-      return;
-    }
+    if (!state.isSupported) return;
 
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 

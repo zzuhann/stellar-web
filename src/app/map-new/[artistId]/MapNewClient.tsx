@@ -1,11 +1,5 @@
 'use client';
-
-import dynamic from 'next/dynamic';
-
-// MapNewPage uses Leaflet which requires client-side only rendering
-const MapNewPage = dynamic(() => import('@/components/map-new/MapNewPage'), {
-  ssr: false,
-});
+import MapNewPage from '@/components/map-new/MapNewPage';
 
 interface MapNewClientProps {
   artistId: string;
