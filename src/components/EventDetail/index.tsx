@@ -1,6 +1,11 @@
 import { css } from '@/styled-system/css';
 import { parseSocialMediaHandles } from '@/utils/socialMedia';
-import { ArrowTopRightOnSquareIcon, CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowTopRightOnSquareIcon,
+  CalendarIcon,
+  InformationCircleIcon,
+  MapPinIcon,
+} from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon } from '../ui/SocialMediaIcons';
 import ExternalLink from '../ui/ExternalLink';
 import EventBottomBar from './EventBottomBar';
@@ -148,6 +153,15 @@ const descriptionContent = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
   whiteSpace: 'pre-wrap',
+});
+
+const socialMediaNotice = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+  marginTop: '2',
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '1',
 });
 
 const buttonGroup = css({
@@ -311,6 +325,13 @@ const EventDetail = ({ event }: EventDetailProps) => {
               </div>
             )}
           </div>
+          <p className={socialMediaNotice}>
+            <InformationCircleIcon
+              style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }}
+              aria-hidden="true"
+            />
+            活動資訊可能隨時更新，出發前建議至主辦社群帳號確認最新消息。
+          </p>
 
           {/* 活動詳情 */}
           <div className={descriptionSection}>

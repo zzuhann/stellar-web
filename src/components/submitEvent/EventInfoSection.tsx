@@ -261,6 +261,9 @@ const EventInfoSection = ({
         <label className={label} htmlFor="description">
           詳細說明
         </label>
+        <p className={helperText}>
+          可填入應援禮說明、預約/號碼牌規則、場地注意事項等。活動資訊若有變動，請記得同步更新。
+        </p>
         <textarea
           className={textarea}
           id="description"
@@ -362,7 +365,7 @@ const EventInfoSection = ({
               className={input}
               id="threads"
               type="text"
-              placeholder="填寫 id 例如: _muri.ri"
+              placeholder="填寫 id 例如: _stellar.tw"
               {...register('threads')}
               aria-describedby="social-media-hint"
             />
