@@ -1,0 +1,179 @@
+'use client';
+
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { css } from '@/styled-system/css';
+import { MapEvent } from '@/types';
+import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
+
+function formatDateRange(start: string, end: string): string {
+  const s = new Date(start);
+  const e = new Date(end);
+  const fmt = (d: Date) => `${d.getMonth() + 1}/${String(d.getDate()).padStart(2, '0')}`;
+  return s.toDateString() === e.toDateString() ? fmt(s) : `${fmt(s)} - ${fmt(e)}`;
+}
+
+const cardContainer = css({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '230px',
+  flexShrink: 0,
+  scrollSnapAlign: 'start',
+  cursor: 'pointer',
+  borderRadius: 'radius.xl',
+  overflow: 'hidden',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'color.background.primary',
+  boxShadow: 'shadow.sm',
+  padding: '2',
+});
+
+const imageArea = css({
+  position: 'relative',
+  aspectRatio: '3 / 4',
+  width: '100%',
+  flexShrink: 0,
+  background: 'color.background.secondary',
+});
+
+const image = css({
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  borderRadius: 'radius.lg',
+});
+
+const placeholderBg = css({
+  position: 'absolute',
+  inset: '0',
+  background: 'linear-gradient(135deg, {colors.stellarBlue.500} 0%, {colors.stellarBlue.200} 100%)',
+});
+
+const cityBadge = css({
+  position: 'absolute',
+  top: '2',
+  left: '2',
+  background: 'white',
+  color: 'color.text.primary',
+  textStyle: 'bodyStrong',
+  paddingX: '2',
+  paddingY: '0.5',
+  borderRadius: '9999px',
+  lineHeight: '1.4',
+  zIndex: '1',
+});
+
+const infoArea = css({
+  padding: '2',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.5',
+});
+
+const dateRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5',
+});
+
+const dateText = css({
+  textStyle: 'bodySmall',
+  color: 'color.text.secondary',
+  lineHeight: '1.4',
+});
+
+const titleText = css({
+  textStyle: 'bodyStrong',
+  color: 'color.text.primary',
+  lineHeight: '1.3',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+});
+
+const venueRow = css({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '0.5',
+  overflow: 'hidden',
+});
+
+const venueText = css({
+  textStyle: 'bodySmall',
+  color: 'color.text.secondary',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  display: '-webkit-box',
+  WebkitLineClamp: 2,
+  lineClamp: 2,
+  whiteSpace: 'normal',
+});
+
+export interface EventCarouselCardProps {
+  event: MapEvent;
+}
+
+const EventCarouselCard = ({ event }: EventCarouselCardProps) => {
+  const router = useRouter();
+  const dateRange = event.datetime?.start
+    ? formatDateRange(event.datetime.start, event.datetime.end)
+    : '';
+
+  const handleCardClick = () => {
+    const href = event.slug ? `/event/${event.slug}` : `/event/${event.id}`;
+    router.push(href);
+  };
+
+  return (
+    <div
+      className={cardContainer}
+      onClick={handleCardClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
+    >
+      {/* Image area */}
+      <div className={imageArea}>
+        {event.mainImage ? (
+          <Image src={event.mainImage} alt={event.title} fill sizes="160px" className={image} />
+        ) : (
+          <div className={placeholderBg} />
+        )}
+        {event.location?.city && <span className={cityBadge}>{event.location.city}</span>}
+      </div>
+
+      {/* Info area */}
+      <div className={infoArea}>
+        <p
+          className={titleText}
+          style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+        >
+          {event.title}
+        </p>
+        {dateRange && (
+          <div className={dateRow}>
+            <CalendarIcon
+              width={16}
+              height={16}
+              className={css({ flexShrink: 0, color: 'color.text.secondary', marginTop: '1' })}
+            />{' '}
+            <p className={dateText}>{dateRange}</p>
+          </div>
+        )}
+        {event.location?.name && (
+          <div className={venueRow}>
+            <MapPinIcon
+              width={16}
+              height={16}
+              className={css({ flexShrink: 0, color: 'color.text.secondary', marginTop: '1' })}
+            />
+            <span className={venueText}>{event.location.name}</span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default EventCarouselCard;

@@ -113,8 +113,8 @@ export interface MapEvent {
     address: string; // 地址
     coordinates: { lat: number; lng: number };
     name: string; // 店家名稱
+    city?: string;
   };
-  city?: string;
   title: string;
   mainImage: string;
   datetime: {

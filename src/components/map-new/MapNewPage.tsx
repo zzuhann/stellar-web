@@ -9,6 +9,7 @@ import useMapNewLocation from './hooks/useMapNewLocation';
 import { useMapNewState } from './hooks/useMapNewState';
 import Loading from '@/components/Loading';
 import MapNewHeader from './MapNewHeader';
+import MapBottomSheet from './MapBottomSheet';
 import { MapEvent } from '@/types';
 
 // Leaflet requires client-side only rendering
@@ -47,7 +48,8 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
 
   const { latitude, longitude } = useMapNewLocation();
 
-  const { selectedEvent, selectEvent, selectLocation } = useMapNewState();
+  const { mode, selectedEvent, selectedLocationEvents, selectEvent, selectLocation, setMode } =
+    useMapNewState();
   const mapRef = useRef<L.Map | null>(null);
   const hasAutoCenteredRef = useRef(false);
 
@@ -92,6 +94,8 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
 
   const artistName = artistData?.stageNameZh ?? artistData?.stageName ?? '';
 
+  const displayEvents = selectedLocationEvents ?? mapEvents;
+
   return (
     <>
       <MapNewHeader artistName={artistName} />
@@ -108,6 +112,9 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
             onMapReady={handleMapReady}
           />
         </div>
+        {mode === 'map' && !selectedEvent && (
+          <MapBottomSheet events={displayEvents} onRequestListMode={() => setMode('list')} />
+        )}
       </div>
     </>
   );
