@@ -90,18 +90,16 @@ const titleText = css({
   lineHeight: '1.3',
   overflow: 'hidden',
   marginTop: '0.5',
-  whiteSpace: 'nowrap',
-  textOverflow: 'ellipsis',
 });
 
-const DateRow = css({
+const dateRow = css({
   display: 'flex',
   alignItems: 'center',
   gap: '1',
   marginTop: '0.5',
 });
 
-const VenueRow = css({
+const venueRow = css({
   display: 'flex',
   alignItems: 'flex-start',
   gap: '1',
@@ -112,19 +110,14 @@ const metaText = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
   overflow: 'hidden',
-  display: '-webkit-box',
-  WebkitLineClamp: 2,
-  lineClamp: 2,
-  whiteSpace: 'normal',
-  textOverflow: 'ellipsis',
 });
 
 const closeButton = css({
   position: 'absolute',
   top: '2',
   right: '2',
-  width: '28px',
-  height: '28px',
+  width: '44px',
+  height: '44px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -168,7 +161,13 @@ const MapSingleEventCard = ({ event, onDismiss }: MapSingleEventCardProps) => {
       >
         <div className={imageArea}>
           {event.mainImage ? (
-            <Image src={event.mainImage} alt={event.title} fill sizes="100%" className={imageCss} />
+            <Image
+              src={event.mainImage}
+              alt={event.title}
+              fill
+              sizes="100px"
+              className={imageCss}
+            />
           ) : (
             <div className={placeholderBg} />
           )}
@@ -183,23 +182,33 @@ const MapSingleEventCard = ({ event, onDismiss }: MapSingleEventCardProps) => {
             {event.title}
           </p>
           {dateRange && (
-            <div className={DateRow}>
+            <div className={dateRow}>
               <CalendarIcon
                 width={14}
                 height={14}
                 className={css({ flexShrink: 0, color: 'color.text.secondary' })}
               />
-              <p className={metaText}>{dateRange}</p>
+              <p
+                className={metaText}
+                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+              >
+                {dateRange}
+              </p>
             </div>
           )}
           {event.location?.name && (
-            <div className={VenueRow}>
+            <div className={venueRow}>
               <MapPinIcon
                 width={14}
                 height={14}
                 className={css({ flexShrink: 0, color: 'color.text.secondary', marginTop: '1' })}
               />
-              <span className={metaText}>{event.location.name}</span>
+              <span
+                className={metaText}
+                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+              >
+                {event.location.name}
+              </span>
             </div>
           )}
         </div>
