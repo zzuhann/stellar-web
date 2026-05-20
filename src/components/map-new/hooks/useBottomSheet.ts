@@ -41,7 +41,7 @@ export function useBottomSheet({
   }, []);
 
   const getHalfHeight = useCallback(() => {
-    if (typeof window === 'undefined') return 450;
+    if (typeof window === 'undefined') return 400; // SSR placeholder, never reached in practice ('use client')
     if (halfHeightProp !== undefined) {
       const maxHalf = Math.round(window.innerHeight * 0.85);
       return Math.min(halfHeightProp, maxHalf);

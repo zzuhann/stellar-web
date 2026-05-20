@@ -101,7 +101,6 @@ const venueText = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
   overflow: 'hidden',
-  textOverflow: 'ellipsis',
   whiteSpace: 'normal',
 });
 

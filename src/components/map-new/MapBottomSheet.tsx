@@ -144,12 +144,13 @@ const MapBottomSheet = ({ events, onRequestListMode }: MapBottomSheetProps) => {
     const el = innerRef.current;
     if (!el) return;
     const ro = new ResizeObserver(() => {
-      setMeasuredHeight(el.scrollHeight + 16);
+      setMeasuredHeight(el.scrollHeight);
     });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
+  // Hook must be called unconditionally (React rules); empty state ignores height/drag values
   const { height, isAnimating, isHalfOpen, handleBarBind, onTransitionEnd } = useBottomSheet({
     onRequestListMode,
     halfHeight: measuredHeight,
@@ -177,7 +178,8 @@ const MapBottomSheet = ({ events, onRequestListMode }: MapBottomSheetProps) => {
       }}
       onTransitionEnd={onTransitionEnd}
     >
-      <div ref={innerRef}>
+      {/* paddingBottom ensures scrollHeight naturally includes bottom spacing */}
+      <div ref={innerRef} style={{ paddingBottom: '16px' }}>
         <div className={handleBarArea} {...handleBarBind}>
           <div className={sideSlot} />
 
