@@ -67,7 +67,7 @@ const locationChip = css({
   background: 'color.background.tertiary',
   border: '1px solid',
   borderColor: 'color.border.light',
-  maxWidth: '200px',
+  maxWidth: '250px',
 });
 
 const locationChipText = css({
@@ -85,7 +85,8 @@ const locationChipClose = css({
   color: 'color.text.secondary',
   background: 'none',
   border: 'none',
-  padding: '0',
+  padding: '2',
+  margin: '-2',
   cursor: 'pointer',
   lineHeight: '1',
 });

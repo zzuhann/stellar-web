@@ -9,11 +9,9 @@ import { Artist, MapEvent } from '@/types';
 import { initializeLeafletIcons } from '@/components/map/utils/leaflet-icons';
 import { createUserLocationIcon } from '@/components/map/utils/userLocationIcon';
 import MarkerLayer from './MarkerLayer';
+import { DEFAULT_CENTER, DEFAULT_ZOOM } from './constants';
 
 initializeLeafletIcons();
-
-const DEFAULT_CENTER: [number, number] = [23.5, 121.0];
-const DEFAULT_ZOOM = 8;
 
 const mapWrapper = css({
   width: '100%',

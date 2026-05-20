@@ -14,11 +14,10 @@ import MapBottomSheet from './MapBottomSheet';
 import MapSingleEventCard from './MapSingleEventCard';
 import { MapEvent } from '@/types';
 
+import { DEFAULT_CENTER, DEFAULT_ZOOM } from './constants';
+
 // Leaflet requires client-side only rendering
 const MapSection = dynamic(() => import('./MapSection'), { ssr: false });
-
-const DEFAULT_CENTER: [number, number] = [23.5, 121.0];
-const DEFAULT_ZOOM = 8;
 
 const pageContainer = css({
   maxWidth: '600px',
