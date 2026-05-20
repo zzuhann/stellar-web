@@ -88,8 +88,6 @@ const titleText = css({
   color: 'color.text.primary',
   lineHeight: '1.3',
   overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
 });
 
 const venueRow = css({
@@ -104,9 +102,6 @@ const venueText = css({
   color: 'color.text.secondary',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
-  display: '-webkit-box',
-  WebkitLineClamp: 2,
-  lineClamp: 2,
   whiteSpace: 'normal',
 });
 
@@ -116,9 +111,10 @@ export interface EventCarouselCardProps {
 
 const EventCarouselCard = ({ event }: EventCarouselCardProps) => {
   const router = useRouter();
-  const dateRange = event.datetime?.start
-    ? formatDateRange(event.datetime.start, event.datetime.end)
-    : '';
+  const dateRange =
+    event.datetime?.start && event.datetime?.end
+      ? formatDateRange(event.datetime.start, event.datetime.end)
+      : '';
 
   const handleCardClick = () => {
     const href = event.slug ? `/event/${event.slug}` : `/event/${event.id}`;
@@ -168,7 +164,12 @@ const EventCarouselCard = ({ event }: EventCarouselCardProps) => {
               height={16}
               className={css({ flexShrink: 0, color: 'color.text.secondary', marginTop: '1' })}
             />
-            <span className={venueText}>{event.location.name}</span>
+            <span
+              className={venueText}
+              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+            >
+              {event.location.name}
+            </span>
           </div>
         )}
       </div>

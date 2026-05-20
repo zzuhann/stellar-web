@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useState, useEffect } from 'react';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
 import { QueueListIcon, CalendarDaysIcon } from '@heroicons/react/24/outline';
@@ -127,6 +128,7 @@ const emptyDesc = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
   textAlign: 'center',
+  whiteSpace: 'pre-line',
 });
 
 export interface MapBottomSheetProps {
@@ -135,7 +137,23 @@ export interface MapBottomSheetProps {
 }
 
 const MapBottomSheet = ({ events, onRequestListMode }: MapBottomSheetProps) => {
-  const { height, isAnimating, isHalfOpen, handleBarBind } = useBottomSheet({ onRequestListMode });
+  const innerRef = useRef<HTMLDivElement>(null);
+  const [measuredHeight, setMeasuredHeight] = useState<number | undefined>(undefined);
+
+  useEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      setMeasuredHeight(el.scrollHeight + 16);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const { height, isAnimating, isHalfOpen, handleBarBind, onTransitionEnd } = useBottomSheet({
+    onRequestListMode,
+    halfHeight: measuredHeight,
+  });
 
   if (events.length === 0) {
     return (
@@ -157,35 +175,38 @@ const MapBottomSheet = ({ events, onRequestListMode }: MapBottomSheetProps) => {
         height: `${height}px`,
         transition: isAnimating ? 'height 0.3s ease-out' : 'none',
       }}
+      onTransitionEnd={onTransitionEnd}
     >
-      <div className={handleBarArea} {...handleBarBind}>
-        <div className={sideSlot} />
+      <div ref={innerRef}>
+        <div className={handleBarArea} {...handleBarBind}>
+          <div className={sideSlot} />
 
-        <div className={handleBarCenter}>
-          <div className={handleBar} />
-          <span className={countText}>{events.length} 場生日應援</span>
+          <div className={handleBarCenter}>
+            <div className={handleBar} />
+            <span className={countText}>{events.length} 場生日應援</span>
+          </div>
+
+          {isHalfOpen ? (
+            <button
+              className={listButton}
+              type="button"
+              aria-label="切換列表模式"
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                onRequestListMode();
+              }}
+            >
+              <QueueListIcon width={20} height={20} />
+            </button>
+          ) : (
+            <div className={sideSlot} />
+          )}
         </div>
 
-        {isHalfOpen ? (
-          <button
-            className={listButton}
-            type="button"
-            aria-label="切換列表模式"
-            onMouseDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-            onClick={(e) => {
-              e.stopPropagation();
-              onRequestListMode();
-            }}
-          >
-            <QueueListIcon width={20} height={20} />
-          </button>
-        ) : (
-          <div className={sideSlot} />
-        )}
+        <EventCarousel events={events} />
       </div>
-
-      <EventCarousel events={events} />
     </div>
   );
 };

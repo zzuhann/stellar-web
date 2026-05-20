@@ -10,6 +10,7 @@ const LIST_TRIGGER_FRACTION = 0.72;
 
 export interface UseBottomSheetOptions {
   onRequestListMode: () => void;
+  halfHeight?: number;
 }
 
 export interface UseBottomSheetReturn {
@@ -20,9 +21,13 @@ export interface UseBottomSheetReturn {
     onMouseDown: (e: React.MouseEvent) => void;
     onTouchStart: (e: React.TouchEvent) => void;
   };
+  onTransitionEnd: () => void;
 }
 
-export function useBottomSheet({ onRequestListMode }: UseBottomSheetOptions): UseBottomSheetReturn {
+export function useBottomSheet({
+  onRequestListMode,
+  halfHeight: halfHeightProp,
+}: UseBottomSheetOptions): UseBottomSheetReturn {
   const [height, setHeight] = useState(PEEK_HEIGHT);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -31,10 +36,18 @@ export function useBottomSheet({ onRequestListMode }: UseBottomSheetOptions): Us
     heightRef.current = height;
   }, [height]);
 
+  const onTransitionEnd = useCallback(() => {
+    setIsAnimating(false);
+  }, []);
+
   const getHalfHeight = useCallback(() => {
     if (typeof window === 'undefined') return 450;
+    if (halfHeightProp !== undefined) {
+      const maxHalf = Math.round(window.innerHeight * 0.85);
+      return Math.min(halfHeightProp, maxHalf);
+    }
     return Math.round(window.innerHeight * HALF_FRACTION);
-  }, []);
+  }, [halfHeightProp]);
 
   const getListTriggerHeight = useCallback(() => {
     if (typeof window === 'undefined') return 600;
@@ -159,5 +172,6 @@ export function useBottomSheet({ onRequestListMode }: UseBottomSheetOptions): Us
     isAnimating,
     isHalfOpen,
     handleBarBind: { onMouseDown, onTouchStart },
+    onTransitionEnd,
   };
 }
