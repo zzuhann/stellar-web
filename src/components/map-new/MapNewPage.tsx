@@ -12,6 +12,7 @@ import Loading from '@/components/Loading';
 import MapNewHeader from './MapNewHeader';
 import MapBottomSheet from './MapBottomSheet';
 import MapSingleEventCard from './MapSingleEventCard';
+import EventList from './EventList';
 import { MapEvent } from '@/types';
 
 import { DEFAULT_CENTER, DEFAULT_ZOOM } from './constants';
@@ -158,6 +159,14 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
           <MapBottomSheet
             events={displayEvents}
             onRequestListMode={() => setMode('list')}
+            isLocationFiltered={!!selectedLocationEvents}
+            onClearLocationFilter={clearSelection}
+          />
+        )}
+        {mode === 'list' && (
+          <EventList
+            events={displayEvents}
+            onBackToMap={() => setMode('map')}
             isLocationFiltered={!!selectedLocationEvents}
             onClearLocationFilter={clearSelection}
           />
