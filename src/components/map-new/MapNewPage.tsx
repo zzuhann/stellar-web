@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import L from 'leaflet';
 import { css } from '@/styled-system/css';
-import { MapPinIcon } from '@heroicons/react/24/outline';
+import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
 import useMapPageData from '@/components/map/hook/useMapPageData';
 import useMapNewLocation from './hooks/useMapNewLocation';
 import { useMapNewState } from './hooks/useMapNewState';
@@ -150,7 +150,7 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
             mapRef.current?.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true });
           }}
         >
-          <MapPinIcon width={20} height={20} />
+          <ArrowsPointingOutIcon width={20} height={20} />
         </button>
         {mode === 'map' && selectedEvent && (
           <MapSingleEventCard event={selectedEvent} onDismiss={() => selectEvent(null)} />
