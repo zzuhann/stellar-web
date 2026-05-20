@@ -85,26 +85,31 @@ const cityChipsRow = css({
   _scrollbar: { display: 'none' },
 });
 
-const cityChipBase = css({
+const cityChipInactive = css({
   flexShrink: 0,
   paddingX: '3',
   paddingY: '1.5',
   borderRadius: '9999px',
   border: '1px solid',
+  borderColor: 'color.border.light',
   textStyle: 'bodySmall',
   cursor: 'pointer',
   whiteSpace: 'nowrap',
-});
-
-const cityChipInactive = css({
   background: 'none',
-  borderColor: 'color.border.light',
   color: 'color.text.secondary',
 });
 
 const cityChipActive = css({
-  background: 'color.text.primary',
+  flexShrink: 0,
+  paddingX: '3',
+  paddingY: '1.5',
+  borderRadius: '9999px',
+  border: '1px solid',
   borderColor: 'color.text.primary',
+  textStyle: 'bodySmall',
+  cursor: 'pointer',
+  whiteSpace: 'nowrap',
+  background: 'color.text.primary',
   color: 'color.background.primary',
 });
 
@@ -226,6 +231,9 @@ const backButton = css({
   cursor: 'pointer',
 });
 
+const calendarIconCss = css({ flexShrink: 0, color: 'color.text.secondary' });
+const pinIconCss = css({ flexShrink: 0, color: 'color.text.secondary', marginTop: '1' });
+
 export interface EventListProps {
   events: MapEvent[];
   onBackToMap: () => void;
@@ -256,45 +264,48 @@ const EventList = ({
   };
 
   const locationName = events[0]?.location?.name ?? events[0]?.location?.city ?? '';
+  const showFilterBar = (isLocationFiltered && !!onClearLocationFilter) || cities.length > 1;
 
   return (
     <div className={container}>
-      <div className={filterBar}>
-        {isLocationFiltered && onClearLocationFilter && (
-          <div className={locationChip}>
-            <span className={locationChipText}>{locationName}</span>
-            <button
-              type="button"
-              className={locationChipClose}
-              aria-label="清除地點篩選"
-              onClick={onClearLocationFilter}
-            >
-              <XMarkIcon width={14} height={14} />
-            </button>
-          </div>
-        )}
-        {cities.length > 1 && (
-          <div className={cityChipsRow}>
-            <button
-              type="button"
-              className={`${cityChipBase} ${activeCity === null ? cityChipActive : cityChipInactive}`}
-              onClick={() => setSelectedCity(null)}
-            >
-              全部
-            </button>
-            {cities.map((city) => (
+      {showFilterBar && (
+        <div className={filterBar}>
+          {isLocationFiltered && onClearLocationFilter && (
+            <div className={locationChip}>
+              <span className={locationChipText}>{locationName}</span>
               <button
-                key={city}
                 type="button"
-                className={`${cityChipBase} ${activeCity === city ? cityChipActive : cityChipInactive}`}
-                onClick={() => setSelectedCity(city)}
+                className={locationChipClose}
+                aria-label="清除地點篩選"
+                onClick={onClearLocationFilter}
               >
-                {city}
+                <XMarkIcon width={14} height={14} />
               </button>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+          {cities.length > 1 && (
+            <div className={cityChipsRow}>
+              <button
+                type="button"
+                className={activeCity === null ? cityChipActive : cityChipInactive}
+                onClick={() => setSelectedCity(null)}
+              >
+                全部
+              </button>
+              {cities.map((city) => (
+                <button
+                  key={city}
+                  type="button"
+                  className={activeCity === city ? cityChipActive : cityChipInactive}
+                  onClick={() => setSelectedCity(city)}
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className={listArea}>
         {filteredEvents.map((event) => {
@@ -340,34 +351,13 @@ const EventList = ({
                 </p>
                 {dateRange && (
                   <div className={dateRow}>
-                    <CalendarIcon
-                      width={14}
-                      height={14}
-                      className={css({ flexShrink: 0, color: 'color.text.secondary' })}
-                    />
-                    <p
-                      className={metaText}
-                      style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                      }}
-                    >
-                      {dateRange}
-                    </p>
+                    <CalendarIcon width={14} height={14} className={calendarIconCss} />
+                    <p className={metaText}>{dateRange}</p>
                   </div>
                 )}
                 {event.location?.name && (
                   <div className={venueRow}>
-                    <MapPinIcon
-                      width={14}
-                      height={14}
-                      className={css({
-                        flexShrink: 0,
-                        color: 'color.text.secondary',
-                        marginTop: '1',
-                      })}
-                    />
+                    <MapPinIcon width={14} height={14} className={pinIconCss} />
                     <span
                       className={metaText}
                       style={{
