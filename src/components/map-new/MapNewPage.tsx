@@ -10,6 +10,7 @@ import { useMapNewState } from './hooks/useMapNewState';
 import Loading from '@/components/Loading';
 import MapNewHeader from './MapNewHeader';
 import MapBottomSheet from './MapBottomSheet';
+import MapSingleEventCard from './MapSingleEventCard';
 import { MapEvent } from '@/types';
 
 // Leaflet requires client-side only rendering
@@ -112,6 +113,9 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
             onMapReady={handleMapReady}
           />
         </div>
+        {mode === 'map' && selectedEvent && (
+          <MapSingleEventCard event={selectedEvent} onDismiss={() => selectEvent(null)} />
+        )}
         {mode === 'map' && !selectedEvent && (
           <MapBottomSheet events={displayEvents} onRequestListMode={() => setMode('list')} />
         )}

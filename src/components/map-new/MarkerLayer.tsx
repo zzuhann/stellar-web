@@ -146,13 +146,9 @@ const MarkerLayer = ({
 
   const handleMarkerClick = useCallback(
     (event: MapEvent) => {
-      map.setView([event.location.coordinates.lat, event.location.coordinates.lng], 16, {
-        animate: true,
-        duration: 0.5,
-      });
       onSingleMarkerClick(event);
     },
-    [map, onSingleMarkerClick]
+    [onSingleMarkerClick]
   );
 
   return (
