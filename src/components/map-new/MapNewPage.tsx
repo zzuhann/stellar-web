@@ -65,6 +65,14 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
     setSelectedLocationEvents(events);
   };
 
+  // Prevent body scroll so global Footer doesn't appear below the map
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
   // Auto-center map to user GPS position on first acquisition
   useEffect(() => {
     if (hasAutoCenteredRef.current) return;

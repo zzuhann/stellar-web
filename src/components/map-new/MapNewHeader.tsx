@@ -59,6 +59,7 @@ const titleText = css({
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
   display: 'block',
+  fontSize: 'clamp(12px, 3.8vw, 15px)',
 });
 
 const burgerButton = css({
@@ -95,9 +96,7 @@ export default function MapNewHeader({ artistName }: MapNewHeaderProps) {
           </Link>
 
           <div className={titleContainer}>
-            <span className={titleText} style={{ fontSize: 'clamp(12px, 3.8vw, 15px)' }}>
-              {artistName}的生日應援地圖
-            </span>
+            <span className={titleText}>{artistName}的生日應援地圖</span>
           </div>
 
           <button

@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { Artist } from '@/types';
 import { artistsApi } from '@/lib/api';
-import MapNewClient from './MapNewClient';
+import MapNewPageClient from '@/components/map-new/MapNewPage';
 
 interface MapNewPageProps {
   params: Promise<{
@@ -47,5 +47,5 @@ export default async function MapNewPage({ params }: MapNewPageProps) {
     notFound();
   }
 
-  return <MapNewClient artistId={artistId} />;
+  return <MapNewPageClient artistId={artistId} />;
 }

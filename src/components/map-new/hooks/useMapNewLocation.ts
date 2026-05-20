@@ -1,11 +1,12 @@
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useIsInAppBrowser } from '@/hooks/useIsInAppBrowser';
-import { useEffect } from 'react';
-
-// module-level flag to survive Strict Mode unmount/remount (ref would reset)
-let hasAttemptedAutoGet = false;
+import { useEffect, useRef } from 'react';
 
 const useMapNewLocation = () => {
+  // useRef resets on unmount, so each map-new page visit triggers a fresh GPS attempt.
+  // This differs from the old useMapLocation which used a module-level flag that
+  // persisted across page navigations and prevented GPS on subsequent visits.
+  const hasAttemptedAutoGetRef = useRef(false);
   const { loading: isInAppBrowserLoading } = useIsInAppBrowser();
 
   const {
@@ -19,11 +20,11 @@ const useMapNewLocation = () => {
 
   // Auto-attempt to get GPS position once after IAB detection completes
   useEffect(() => {
-    if (hasAttemptedAutoGet) return;
+    if (hasAttemptedAutoGetRef.current) return;
     if (isInAppBrowserLoading) return;
     if (!isSupported || latitude || locationError || locationLoading) return;
 
-    hasAttemptedAutoGet = true;
+    hasAttemptedAutoGetRef.current = true;
     getCurrentPosition();
   }, [
     isInAppBrowserLoading,
