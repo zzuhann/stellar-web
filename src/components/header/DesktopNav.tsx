@@ -101,26 +101,30 @@ const DesktopNav = () => {
           <Link
             className={styledLink}
             href="/submit-event"
-            onClick={() =>
+            onClick={(e) => {
               sendGAEvent('event', 'nav_submit_event', {
                 event_page: pathname,
                 user_id: '',
                 content_id: 'desktop_nav',
-              })
-            }
+              });
+              e.preventDefault();
+              toggleAuthModal('/submit-event');
+            }}
           >
             舉辦生日應援
           </Link>
           <Link
             className={styledLink}
             href="/submit-artist"
-            onClick={() =>
+            onClick={(e) => {
               sendGAEvent('event', 'nav_submit_artist', {
                 event_page: pathname,
                 user_id: '',
                 content_id: 'desktop_nav',
-              })
-            }
+              });
+              e.preventDefault();
+              toggleAuthModal('/submit-artist');
+            }}
           >
             新增藝人
           </Link>

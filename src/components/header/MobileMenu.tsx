@@ -189,12 +189,16 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
           <Link
             href="/submit-event"
             className={mobileMenuButton}
-            onClick={() => {
+            onClick={(e) => {
               sendGAEvent('event', 'nav_submit_event', {
                 event_page: pathname,
                 user_id: user?.uid ?? '',
                 content_id: 'mobile_menu',
               });
+              if (!user) {
+                e.preventDefault();
+                toggleAuthModal('/submit-event');
+              }
               closeMobileMenu();
             }}
           >
@@ -203,12 +207,16 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
           <Link
             href="/submit-artist"
             className={mobileMenuButton}
-            onClick={() => {
+            onClick={(e) => {
               sendGAEvent('event', 'nav_submit_artist', {
                 event_page: pathname,
                 user_id: user?.uid ?? '',
                 content_id: 'mobile_menu',
               });
+              if (!user) {
+                e.preventDefault();
+                toggleAuthModal('/submit-artist');
+              }
               closeMobileMenu();
             }}
           >
