@@ -17,6 +17,9 @@ import { MapEvent } from '@/types';
 // Leaflet requires client-side only rendering
 const MapSection = dynamic(() => import('./MapSection'), { ssr: false });
 
+const DEFAULT_CENTER: [number, number] = [23.5, 121.0];
+const DEFAULT_ZOOM = 8;
+
 const pageContainer = css({
   maxWidth: '600px',
   mx: 'auto',
@@ -138,19 +141,17 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
             onClearSelection={clearSelection}
           />
         </div>
-        {latitude && longitude && (
-          <button
-            type="button"
-            className={locateButton}
-            style={{ bottom: '148px' }}
-            aria-label="回到我的位置"
-            onClick={() => {
-              mapRef.current?.setView([latitude, longitude], 14, { animate: true });
-            }}
-          >
-            <MapPinIcon width={20} height={20} />
-          </button>
-        )}
+        <button
+          type="button"
+          className={locateButton}
+          style={{ bottom: '148px' }}
+          aria-label="查看全部活動"
+          onClick={() => {
+            mapRef.current?.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true });
+          }}
+        >
+          <MapPinIcon width={20} height={20} />
+        </button>
         {mode === 'map' && selectedEvent && (
           <MapSingleEventCard event={selectedEvent} onDismiss={() => selectEvent(null)} />
         )}
