@@ -95,17 +95,17 @@ describe('TC-033：零活動防禦性空狀態', () => {
     expect(screen.getByText(/等活動上架後再來看看吧/)).toBeTruthy();
   });
 
-  it('零活動空狀態仍顯示「回到地圖」按鈕', () => {
+  it('零活動空狀態仍顯示「地圖」按鈕', () => {
     render(<EventList events={[]} {...defaultProps} />);
 
-    expect(screen.getByRole('button', { name: '回到地圖' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '地圖' })).toBeTruthy();
   });
 
-  it('點擊「回到地圖」應呼叫 onBackToMap', () => {
+  it('點擊「地圖」應呼叫 onBackToMap', () => {
     const onBackToMap = vi.fn();
     render(<EventList events={[]} artistId="test-artist" onBackToMap={onBackToMap} />);
 
-    fireEvent.click(screen.getByRole('button', { name: '回到地圖' }));
+    fireEvent.click(screen.getByRole('button', { name: '地圖' }));
     expect(onBackToMap).toHaveBeenCalledOnce();
   });
 });

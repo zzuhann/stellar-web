@@ -15,7 +15,7 @@ async function waitForMapReady(page: Page) {
     page
       .locator('[data-testid="bottom-sheet"]')
       .or(page.getByText('目前沒有生日應援活動'))
-      .or(page.getByRole('button', { name: '回到地圖' }))
+      .or(page.getByRole('button', { name: '地圖' }))
   ).toBeVisible({ timeout: 15_000 });
 }
 
@@ -86,6 +86,25 @@ test.describe('TC-030：零活動空狀態', () => {
     await page.waitForSelector('.leaflet-container', { timeout: 15_000 });
 
     await expect(page.getByText('目前沒有生日應援活動')).toBeVisible({ timeout: 10_000 });
+
+    // TC-030 補充：emptyPanel 是獨立元件，MapBottomSheet 與 handleBar 完全不存在
+    await expect(page.locator('[data-testid="bottom-sheet"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="handle-bar-area"]')).toHaveCount(0);
+
+    // TC-030 補充：拖曳無效 — emptyPanel 無拖曳互動，drag 不會改變任何狀態
+    const emptyText = page.getByText('目前沒有生日應援活動');
+    const box = await emptyText.boundingBox();
+    if (box) {
+      const cx = box.x + box.width / 2;
+      const cy = box.y + box.height / 2;
+      await page.mouse.move(cx, cy);
+      await page.mouse.down();
+      await page.mouse.move(cx, cy - 200, { steps: 10 }); // drag upward
+      await page.mouse.up();
+      // After drag: empty state text still visible, no bottom-sheet appeared
+      await expect(page.getByText('目前沒有生日應援活動')).toBeVisible();
+      await expect(page.locator('[data-testid="bottom-sheet"]')).toHaveCount(0);
+    }
   });
 });
 
@@ -241,8 +260,10 @@ test.describe('Map New Page — 地圖已載入', () => {
 
     await dragHandleBar(page, -dragDistance);
 
-    // List mode: "回到地圖" button should appear
-    await expect(page.getByRole('button', { name: '回到地圖' })).toBeVisible({ timeout: 5_000 });
+    // List mode: "地圖" 按鈕應顯示
+    await expect(page.getByRole('button', { name: '地圖' })).toBeVisible({ timeout: 5_000 });
+    // MapBottomSheet must be completely unmounted (not just hidden behind EventList)
+    await expect(page.locator('[data-testid="bottom-sheet"]')).toHaveCount(0);
   });
 
   // ── TC-006：點擊列表按鈕進入列表模式 ──────────────────────
@@ -255,23 +276,23 @@ test.describe('Map New Page — 地圖已載入', () => {
 
     await page.getByRole('button', { name: '切換列表模式' }).click();
 
-    await expect(page.getByRole('button', { name: '回到地圖' })).toBeVisible({ timeout: 3_000 });
-    // Bottom sheet should be hidden (replaced by EventList)
-    await expect(page.locator('[data-testid="bottom-sheet"]')).not.toBeVisible();
+    await expect(page.getByRole('button', { name: '地圖' })).toBeVisible({ timeout: 3_000 });
+    // MapBottomSheet must be completely unmounted from DOM (not just hidden behind EventList)
+    await expect(page.locator('[data-testid="bottom-sheet"]')).toHaveCount(0);
   });
 
-  // ── TC-007：列表模式點擊「回到地圖」返回 ─────────────────
-  test('TC-007：列表模式點擊「回到地圖」，回到地圖 + peek 狀態', async ({ page }) => {
+  // ── TC-007：列表模式點擊「地圖」返回 ─────────────────
+  test('TC-007：列表模式點擊「地圖」，回到地圖 + peek 狀態', async ({ page }) => {
     // Enter list mode via QueueListIcon
     await tapHandleBar(page);
     await page.getByRole('button', { name: '切換列表模式' }).click({ timeout: 3_000 });
-    await expect(page.getByRole('button', { name: '回到地圖' })).toBeVisible({ timeout: 3_000 });
+    await expect(page.getByRole('button', { name: '地圖' })).toBeVisible({ timeout: 3_000 });
 
-    await page.getByRole('button', { name: '回到地圖' }).click();
+    await page.getByRole('button', { name: '地圖' }).click();
 
     // Back to map mode: bottom sheet visible again
     await expect(page.locator('[data-testid="bottom-sheet"]')).toBeVisible({ timeout: 3_000 });
-    await expect(page.getByRole('button', { name: '回到地圖' })).not.toBeVisible();
+    await expect(page.getByRole('button', { name: '地圖' })).not.toBeVisible();
   });
 
   // ── TC-017：重置視角按鈕 ──────────────────────────────────
@@ -295,10 +316,10 @@ test.describe('Map New Page — 地圖已載入', () => {
     // Enter list mode
     await tapHandleBar(page);
     await page.getByRole('button', { name: '切換列表模式' }).click({ timeout: 3_000 });
-    await expect(page.getByRole('button', { name: '回到地圖' })).toBeVisible({ timeout: 3_000 });
+    await expect(page.getByRole('button', { name: '地圖' })).toBeVisible({ timeout: 3_000 });
 
     // Go back to map mode first (clears ?mode=list from the URL)
-    await page.getByRole('button', { name: '回到地圖' }).click();
+    await page.getByRole('button', { name: '地圖' }).click();
     await expect(page.locator('[data-testid="bottom-sheet"]')).toBeVisible({ timeout: 3_000 });
     await expect(page).not.toHaveURL(/mode=list/);
 
@@ -308,7 +329,7 @@ test.describe('Map New Page — 地圖已載入', () => {
 
     // Should stay in map mode + peek
     await expect(page.locator('[data-testid="bottom-sheet"]')).toBeVisible({ timeout: 10_000 });
-    await expect(page.getByRole('button', { name: '回到地圖' })).not.toBeVisible();
+    await expect(page.getByRole('button', { name: '地圖' })).not.toBeVisible();
   });
 
   // ── TC-021：handleBar tap 不觸發 EventCarousel 導航 ───────
@@ -340,7 +361,7 @@ test.describe('Map New Page — 地圖已載入', () => {
     // Enter list mode
     await tapHandleBar(page);
     await page.getByRole('button', { name: '切換列表模式' }).click({ timeout: 3_000 });
-    await expect(page.getByRole('button', { name: '回到地圖' })).toBeVisible({ timeout: 3_000 });
+    await expect(page.getByRole('button', { name: '地圖' })).toBeVisible({ timeout: 3_000 });
 
     // Click first event card in list (use data-testid to avoid matching Leaflet markers)
     const firstCard = page.locator('[data-testid="event-card"]').first();
@@ -387,8 +408,20 @@ test.describe('Map New Page — 地圖已載入', () => {
       // TC-009: Click X to dismiss
       await page.getByRole('button', { name: '關閉' }).click();
       await expect(page.getByRole('button', { name: '關閉' })).not.toBeVisible({ timeout: 3_000 });
-      // Bottom sheet returns
+
+      // Bottom sheet remounts (was unmounted while selectedEvent existed)
       await expect(page.locator('[data-testid="bottom-sheet"]')).toBeVisible({ timeout: 3_000 });
+
+      // TC-009 補充：Bottom Sheet 固定回到 peek（不記憶點擊 marker 前的狀態）
+      // MapBottomSheet unmounts when selectedEvent is set and remounts fresh → initial state is always peek
+      await page.waitForTimeout(400); // wait for snap animation
+      const bottomSheetAfterClose = page.locator('[data-testid="bottom-sheet"]');
+      const heightAfterClose = await bottomSheetAfterClose.evaluate(
+        (el) => el.getBoundingClientRect().height
+      );
+      expect(heightAfterClose).toBeCloseTo(120, -1); // ±5px tolerance for peek height
+      // Confirm peek state: QueueListIcon is NOT visible in peek
+      await expect(page.getByRole('button', { name: '切換列表模式' })).not.toBeVisible();
     });
 
     test('TC-010：點擊 SingleEventCard 本體，導航至活動詳情頁', async ({ page }) => {
@@ -448,7 +481,7 @@ test.describe('Map New Page — 地圖已載入', () => {
     // Enter list mode
     await tapHandleBar(page);
     await page.getByRole('button', { name: '切換列表模式' }).click({ timeout: 3_000 });
-    await expect(page.getByRole('button', { name: '回到地圖' })).toBeVisible({ timeout: 3_000 });
+    await expect(page.getByRole('button', { name: '地圖' })).toBeVisible({ timeout: 3_000 });
 
     // Check if city chips are present (only when > 1 city)
     // Use exact:true to avoid matching "查看全部活動" reset view button
@@ -459,10 +492,10 @@ test.describe('Map New Page — 地圖已載入', () => {
       test.skip(true, 'kyujin events are all in the same city; skipping city filter test');
     }
 
-    // Click a city chip (skip "全部" and "回到地圖")
+    // Click a city chip (skip "全部" and "地圖")
     const allCityButtons = page.getByRole('button');
     const cityChips = allCityButtons.filter({
-      hasNot: page.getByRole('button', { name: /全部|回到地圖/ }),
+      hasNot: page.getByRole('button', { name: /全部|地圖/ }),
     });
     const firstCityChip = cityChips.first();
     const cityName = await firstCityChip.textContent();
