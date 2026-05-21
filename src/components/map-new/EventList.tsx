@@ -13,6 +13,7 @@ import {
   FunnelIcon,
   MapPinIcon,
   XMarkIcon,
+  MapIcon,
 } from '@heroicons/react/24/outline';
 
 function formatDateRange(start: string, end: string): string {
@@ -233,10 +234,14 @@ const backButton = css({
   borderRadius: '9999px',
   background: 'color.text.primary',
   color: 'color.background.primary',
-  textStyle: 'bodyStrong',
+  textStyle: 'bodySmall',
   boxShadow: 'shadow.md',
   border: 'none',
   cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '1',
 });
 
 const calendarIconCss = css({ flexShrink: 0, color: 'color.text.secondary' });
@@ -346,7 +351,8 @@ const EventList = ({
         </div>
         <div className={backButtonArea}>
           <button type="button" className={backButton} onClick={handleBackToMap}>
-            回到地圖
+            <MapIcon width={14} height={14} color="color.text.primary" />
+            地圖
           </button>
         </div>
       </div>
@@ -434,6 +440,7 @@ const EventList = ({
               <div
                 key={event.id}
                 className={card}
+                data-testid="event-card"
                 onClick={() => handleCardClick(event)}
                 role="button"
                 tabIndex={0}
@@ -495,7 +502,8 @@ const EventList = ({
 
       <div className={backButtonArea}>
         <button type="button" className={backButton} onClick={handleBackToMap}>
-          回到地圖
+          <MapIcon width={14} height={14} color="color.text.primary" />
+          地圖
         </button>
       </div>
     </div>
