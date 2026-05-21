@@ -4,8 +4,10 @@ import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import L from 'leaflet';
+import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/lib/auth-context';
 import useMapPageData from '@/components/map/hook/useMapPageData';
 import useMapNewLocation from './hooks/useMapNewLocation';
 import { useMapNewState } from './hooks/useMapNewState';
@@ -67,6 +69,7 @@ interface MapNewPageProps {
 
 export default function MapNewPage({ artistId }: MapNewPageProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const { mapEvents, isMapLoading, artistData, isArtistLoading } = useMapPageData({
     propsArtistId: artistId,
   });
@@ -90,11 +93,33 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
   };
 
   const handleSingleMarkerClick = (event: MapEvent) => {
+    sendGAEvent('event', 'click_map_marker', {
+      event_page: '/map-new/[artistId]',
+      user_id: user?.uid ?? '',
+      content_id: event.id,
+      artist_id: artistId,
+    });
     selectEvent(event);
   };
 
   const handleMultiMarkerClick = (events: MapEvent[]) => {
+    sendGAEvent('event', 'map_location_filter_apply', {
+      event_page: '/map-new/[artistId]',
+      user_id: user?.uid ?? '',
+      content_id: artistId,
+      location_name: events[0]?.location?.name ?? events[0]?.location?.city ?? '',
+    });
     selectLocation(events);
+  };
+
+  const handleRequestListMode = (triggerMethod: 'drag' | 'list_button') => {
+    sendGAEvent('event', 'map_list_mode_enter', {
+      event_page: '/map-new/[artistId]',
+      user_id: user?.uid ?? '',
+      content_id: artistId,
+      trigger_method: triggerMethod,
+    });
+    setMode('list');
   };
 
   // Prevent body scroll so global Footer doesn't appear below the map
@@ -140,6 +165,7 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
       <div className={pageContainer} id="main-content">
         <div className={mapArea}>
           <MapSection
+            artistId={artistId}
             mapEvents={mapEvents}
             artistData={artistData ?? null}
             latitude={latitude}
@@ -157,24 +183,35 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
           style={{ bottom: '148px' }}
           aria-label="查看全部活動"
           onClick={() => {
+            sendGAEvent('event', 'map_reset_view', {
+              event_page: '/map-new/[artistId]',
+              user_id: user?.uid ?? '',
+              content_id: artistId,
+            });
             mapRef.current?.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true });
           }}
         >
           <ArrowsPointingOutIcon width={20} height={20} />
         </button>
         {mode === 'map' && selectedEvent && (
-          <MapSingleEventCard event={selectedEvent} onDismiss={() => selectEvent(null)} />
+          <MapSingleEventCard
+            event={selectedEvent}
+            artistId={artistId}
+            onDismiss={() => selectEvent(null)}
+          />
         )}
         {mode === 'map' && !selectedEvent && (
           <MapBottomSheet
+            artistId={artistId}
             events={displayEvents}
-            onRequestListMode={() => setMode('list')}
+            onRequestListMode={handleRequestListMode}
             isLocationFiltered={!!selectedLocationEvents}
             onClearLocationFilter={clearSelection}
           />
         )}
         {mode === 'list' && (
           <EventList
+            artistId={artistId}
             events={displayEvents}
             onBackToMap={() => setMode('map')}
             isLocationFiltered={!!selectedLocationEvents}

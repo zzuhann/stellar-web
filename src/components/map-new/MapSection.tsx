@@ -19,6 +19,7 @@ const mapWrapper = css({
 });
 
 interface MapSectionProps {
+  artistId: string;
   mapEvents: MapEvent[];
   artistData: Artist | null;
   latitude: number | null;
@@ -50,6 +51,7 @@ const MapReadyCapture = ({
 };
 
 export default function MapSection({
+  artistId,
   mapEvents,
   artistData,
   latitude,
@@ -91,6 +93,7 @@ export default function MapSection({
             )}
 
             <MarkerLayer
+              artistId={artistId}
               mapEvents={mapEvents}
               artistData={artistData}
               selectedEventId={selectedEventId}

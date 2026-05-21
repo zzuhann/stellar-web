@@ -2,9 +2,11 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
 import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/lib/auth-context';
 
 function formatDateRange(start: string, end: string): string {
   const s = new Date(start);
@@ -134,11 +136,13 @@ const closeButton = css({
 
 export interface MapSingleEventCardProps {
   event: MapEvent;
+  artistId: string;
   onDismiss: () => void;
 }
 
-const MapSingleEventCard = ({ event, onDismiss }: MapSingleEventCardProps) => {
+const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardProps) => {
   const router = useRouter();
+  const { user } = useAuth();
 
   const dateRange =
     event.datetime?.start && event.datetime?.end
@@ -146,6 +150,13 @@ const MapSingleEventCard = ({ event, onDismiss }: MapSingleEventCardProps) => {
       : '';
 
   const handleCardClick = () => {
+    sendGAEvent('event', 'click_event_detail', {
+      event_page: '/map-new/[artistId]',
+      user_id: user?.uid ?? '',
+      content_id: event.id,
+      artist_id: artistId,
+      source: 'map_single_card',
+    });
     const href = event.slug ? `/event/${event.slug}` : `/event/${event.id}`;
     router.push(href);
   };
@@ -219,6 +230,12 @@ const MapSingleEventCard = ({ event, onDismiss }: MapSingleEventCardProps) => {
           aria-label="關閉"
           onClick={(e) => {
             e.stopPropagation();
+            sendGAEvent('event', 'map_single_card_close', {
+              event_page: '/map-new/[artistId]',
+              user_id: user?.uid ?? '',
+              content_id: event.id,
+              artist_id: artistId,
+            });
             onDismiss();
           }}
         >

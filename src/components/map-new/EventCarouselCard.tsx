@@ -2,9 +2,11 @@
 
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/lib/auth-context';
 
 function formatDateRange(start: string, end: string): string {
   const s = new Date(start);
@@ -107,16 +109,25 @@ const venueText = css({
 
 export interface EventCarouselCardProps {
   event: MapEvent;
+  artistId: string;
 }
 
-const EventCarouselCard = ({ event }: EventCarouselCardProps) => {
+const EventCarouselCard = ({ event, artistId }: EventCarouselCardProps) => {
   const router = useRouter();
+  const { user } = useAuth();
   const dateRange =
     event.datetime?.start && event.datetime?.end
       ? formatDateRange(event.datetime.start, event.datetime.end)
       : '';
 
   const handleCardClick = () => {
+    sendGAEvent('event', 'click_event_detail', {
+      event_page: '/map-new/[artistId]',
+      user_id: user?.uid ?? '',
+      content_id: event.id,
+      artist_id: artistId,
+      source: 'carousel',
+    });
     const href = event.slug ? `/event/${event.slug}` : `/event/${event.id}`;
     router.push(href);
   };

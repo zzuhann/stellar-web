@@ -9,7 +9,8 @@ const HALF_FRACTION = 0.55;
 const LIST_TRIGGER_FRACTION = 0.72;
 
 export interface UseBottomSheetOptions {
-  onRequestListMode: () => void;
+  onRequestListMode: (triggerMethod: 'drag' | 'list_button') => void;
+  onExpandToHalf?: (triggerMethod: 'drag' | 'tap_handle') => void;
   halfHeight?: number;
 }
 
@@ -27,6 +28,7 @@ export interface UseBottomSheetReturn {
 
 export function useBottomSheet({
   onRequestListMode,
+  onExpandToHalf,
   halfHeight: halfHeightProp,
 }: UseBottomSheetOptions): UseBottomSheetReturn {
   const [height, setHeight] = useState(PEEK_HEIGHT);
@@ -82,6 +84,7 @@ export function useBottomSheet({
     // Tap (no drag movement) → toggle peek/half
     if (dragDistance < 10) {
       const isPeek = startHeight <= PEEK_HEIGHT;
+      if (isPeek) onExpandToHalf?.('tap_handle');
       snapTo(isPeek ? halfHeight : PEEK_HEIGHT);
       return;
     }
@@ -89,14 +92,15 @@ export function useBottomSheet({
     // Dragged past list trigger threshold
     if (currentHeight >= listTrigger) {
       snapTo(PEEK_HEIGHT);
-      onRequestListMode();
+      onRequestListMode('drag');
       return;
     }
 
     // Snap to nearest: half or peek
     const midPoint = PEEK_HEIGHT + (halfHeight - PEEK_HEIGHT) * 0.5;
+    if (currentHeight > midPoint) onExpandToHalf?.('drag');
     snapTo(currentHeight > midPoint ? halfHeight : PEEK_HEIGHT);
-  }, [getHalfHeight, getListTriggerHeight, snapTo, onRequestListMode]);
+  }, [getHalfHeight, getListTriggerHeight, snapTo, onRequestListMode, onExpandToHalf]);
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {

@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
+import { useAuth } from '@/lib/auth-context';
 import {
   CalendarIcon,
   CalendarDaysIcon,
@@ -280,6 +282,7 @@ const emptyStateClearButton = css({
 });
 
 export interface EventListProps {
+  artistId: string;
   events: MapEvent[];
   onBackToMap: () => void;
   isLocationFiltered?: boolean;
@@ -287,12 +290,14 @@ export interface EventListProps {
 }
 
 const EventList = ({
+  artistId,
   events,
   onBackToMap,
   isLocationFiltered,
   onClearLocationFilter,
 }: EventListProps) => {
   const router = useRouter();
+  const { user } = useAuth();
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
   const cities = [...new Set(events.map((e) => e.location?.city).filter(Boolean))] as string[];
@@ -304,12 +309,28 @@ const EventList = ({
     : events;
 
   const handleCardClick = (event: MapEvent) => {
+    sendGAEvent('event', 'click_event_detail', {
+      event_page: '/map-new/[artistId]',
+      user_id: user?.uid ?? '',
+      content_id: event.id,
+      artist_id: artistId,
+      source: 'list_mode',
+    });
     const href = event.slug ? `/event/${event.slug}` : `/event/${event.id}`;
     router.push(href);
   };
 
   const locationName = events[0]?.location?.name ?? events[0]?.location?.city ?? '';
   const showFilterBar = (isLocationFiltered && !!onClearLocationFilter) || cities.length > 1;
+
+  const handleBackToMap = () => {
+    sendGAEvent('event', 'map_list_mode_exit', {
+      event_page: '/map-new/[artistId]',
+      user_id: user?.uid ?? '',
+      content_id: artistId,
+    });
+    onBackToMap();
+  };
 
   if (events.length === 0) {
     return (
@@ -324,7 +345,7 @@ const EventList = ({
           </div>
         </div>
         <div className={backButtonArea}>
-          <button type="button" className={backButton} onClick={onBackToMap}>
+          <button type="button" className={backButton} onClick={handleBackToMap}>
             回到地圖
           </button>
         </div>
@@ -343,7 +364,14 @@ const EventList = ({
                 type="button"
                 className={locationChipClose}
                 aria-label="清除地點篩選"
-                onClick={onClearLocationFilter}
+                onClick={() => {
+                  sendGAEvent('event', 'map_location_filter_clear', {
+                    event_page: '/map-new/[artistId]',
+                    user_id: user?.uid ?? '',
+                    content_id: artistId,
+                  });
+                  onClearLocationFilter();
+                }}
               >
                 <XMarkIcon width={14} height={14} />
               </button>
@@ -363,7 +391,15 @@ const EventList = ({
                   key={city}
                   type="button"
                   className={activeCity === city ? cityChipActive : cityChipInactive}
-                  onClick={() => setSelectedCity(city)}
+                  onClick={() => {
+                    sendGAEvent('event', 'map_city_filter_select', {
+                      event_page: '/map-new/[artistId]',
+                      user_id: user?.uid ?? '',
+                      content_id: artistId,
+                      city,
+                    });
+                    setSelectedCity(city);
+                  }}
                 >
                   {city}
                 </button>
@@ -458,7 +494,7 @@ const EventList = ({
       </div>
 
       <div className={backButtonArea}>
-        <button type="button" className={backButton} onClick={onBackToMap}>
+        <button type="button" className={backButton} onClick={handleBackToMap}>
           回到地圖
         </button>
       </div>

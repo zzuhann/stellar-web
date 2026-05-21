@@ -1,9 +1,11 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
+import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
 import { QueueListIcon, CalendarDaysIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/lib/auth-context';
 import EventCarousel from './EventCarousel';
 import { useBottomSheet } from './hooks/useBottomSheet';
 
@@ -166,18 +168,21 @@ const emptyDesc = css({
 });
 
 export interface MapBottomSheetProps {
+  artistId: string;
   events: MapEvent[];
-  onRequestListMode: () => void;
+  onRequestListMode: (triggerMethod: 'drag' | 'list_button') => void;
   isLocationFiltered?: boolean;
   onClearLocationFilter?: () => void;
 }
 
 const MapBottomSheet = ({
+  artistId,
   events,
   onRequestListMode,
   isLocationFiltered,
   onClearLocationFilter,
 }: MapBottomSheetProps) => {
+  const { user } = useAuth();
   const innerRef = useRef<HTMLDivElement>(null);
   const [measuredHeight, setMeasuredHeight] = useState<number | undefined>(undefined);
 
@@ -191,19 +196,40 @@ const MapBottomSheet = ({
     return () => ro.disconnect();
   }, []);
 
+  const handleExpandToHalf = useCallback(
+    (triggerMethod: 'drag' | 'tap_handle') => {
+      sendGAEvent('event', 'map_bottom_sheet_expand', {
+        event_page: '/map-new/[artistId]',
+        user_id: user?.uid ?? '',
+        content_id: artistId,
+        trigger_method: triggerMethod,
+      });
+    },
+    [user, artistId]
+  );
+
   // Hook must be called unconditionally (React rules); empty state ignores height/drag values
   const { height, isAnimating, isHalfOpen, handleBarBind, onTransitionEnd, snapToHalf } =
     useBottomSheet({
       onRequestListMode,
+      onExpandToHalf: handleExpandToHalf,
       halfHeight: measuredHeight,
     });
 
   // Auto-open to half when a location filter is applied
+  const isLocationFilteredRef = useRef(false);
   useEffect(() => {
-    if (isLocationFiltered) {
+    if (isLocationFiltered && !isLocationFilteredRef.current) {
       snapToHalf();
+      sendGAEvent('event', 'map_bottom_sheet_expand', {
+        event_page: '/map-new/[artistId]',
+        user_id: user?.uid ?? '',
+        content_id: artistId,
+        trigger_method: 'location_filter',
+      });
     }
-  }, [isLocationFiltered, snapToHalf]);
+    isLocationFilteredRef.current = !!isLocationFiltered;
+  }, [isLocationFiltered, snapToHalf, user, artistId]);
 
   if (events.length === 0) {
     return (
@@ -221,6 +247,7 @@ const MapBottomSheet = ({
   return (
     <div
       className={drawerContainer}
+      data-testid="bottom-sheet"
       style={{
         height: `${height}px`,
         transition: isAnimating ? 'height 0.3s ease-out' : 'none',
@@ -229,7 +256,7 @@ const MapBottomSheet = ({
     >
       {/* paddingBottom ensures scrollHeight naturally includes bottom spacing */}
       <div ref={innerRef} style={{ paddingBottom: '16px' }}>
-        <div className={handleBarArea} {...handleBarBind}>
+        <div className={handleBarArea} data-testid="handle-bar-area" {...handleBarBind}>
           <div className={sideSlot} />
 
           <div className={handleBarCenter}>
@@ -246,7 +273,14 @@ const MapBottomSheet = ({
                   type="button"
                   className={locationChipClose}
                   aria-label="清除地點篩選"
-                  onClick={onClearLocationFilter}
+                  onClick={() => {
+                    sendGAEvent('event', 'map_location_filter_clear', {
+                      event_page: '/map-new/[artistId]',
+                      user_id: user?.uid ?? '',
+                      content_id: artistId,
+                    });
+                    onClearLocationFilter?.();
+                  }}
                 >
                   <XMarkIcon width={14} height={14} />
                 </button>
@@ -266,7 +300,7 @@ const MapBottomSheet = ({
               onTouchStart={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
-                onRequestListMode();
+                onRequestListMode('list_button');
               }}
             >
               <QueueListIcon width={20} height={20} />
@@ -276,7 +310,7 @@ const MapBottomSheet = ({
           )}
         </div>
 
-        <EventCarousel events={events} />
+        <EventCarousel events={events} artistId={artistId} />
       </div>
     </div>
   );

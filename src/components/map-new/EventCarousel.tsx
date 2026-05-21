@@ -25,14 +25,15 @@ const scrollContainer = css({
 
 export interface EventCarouselProps {
   events: MapEvent[];
+  artistId: string;
 }
 
-const EventCarousel = ({ events }: EventCarouselProps) => {
+const EventCarousel = ({ events, artistId }: EventCarouselProps) => {
   return (
     <div className={carouselWrapper}>
       <div className={scrollContainer}>
         {events.map((event) => (
-          <EventCarouselCard key={event.id} event={event} />
+          <EventCarouselCard key={event.id} event={event} artistId={artistId} />
         ))}
       </div>
     </div>
