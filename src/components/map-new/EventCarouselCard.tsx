@@ -151,7 +151,7 @@ const EventCarouselCard = ({ event }: EventCarouselCardProps) => {
             <CalendarIcon
               width={16}
               height={16}
-              className={css({ flexShrink: 0, color: 'color.text.secondary', marginTop: '1' })}
+              className={css({ flexShrink: 0, color: 'color.text.secondary' })}
             />{' '}
             <p className={dateText}>{dateRange}</p>
           </div>
