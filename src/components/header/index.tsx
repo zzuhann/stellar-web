@@ -61,7 +61,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
 
-  if (pathname?.startsWith('/map')) return null;
+  if (pathname?.startsWith('/map-new')) return null;
 
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
