@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import showToast from '@/lib/toast';
 
 interface GeolocationState {
   latitude: number | null;
@@ -53,13 +52,10 @@ export function useGeolocation(options: GeolocationOptions = {}) {
         });
       },
       (error) => {
-        let errorMessage = '無法取得你的位置';
-
-        if (error.code === error.PERMISSION_DENIED) {
-          errorMessage = '因為你拒絕了位置權限請求，可以在瀏覽器設定中重新打開';
-        }
-
-        showToast.error(errorMessage);
+        const errorMessage =
+          error.code === error.PERMISSION_DENIED
+            ? '因為你拒絕了位置權限請求，可以在瀏覽器設定中重新打開'
+            : '無法取得你的位置';
 
         setState((prev) => ({
           ...prev,

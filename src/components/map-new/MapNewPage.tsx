@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import L from 'leaflet';
 import { css } from '@/styled-system/css';
@@ -65,6 +66,7 @@ interface MapNewPageProps {
 }
 
 export default function MapNewPage({ artistId }: MapNewPageProps) {
+  const router = useRouter();
   const { mapEvents, isMapLoading, artistData, isArtistLoading } = useMapPageData({
     propsArtistId: artistId,
   });
@@ -112,6 +114,12 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
     }
   }, [latitude, longitude]);
 
+  useEffect(() => {
+    if (!isMapLoading && !isArtistLoading && !artistData) {
+      router.replace('/');
+    }
+  }, [isMapLoading, isArtistLoading, artistData, router]);
+
   if (isMapLoading || isArtistLoading) {
     return (
       <div className={loadingContainer}>
@@ -120,7 +128,9 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
     );
   }
 
-  const artistName = artistData?.stageNameZh ?? artistData?.stageName ?? '';
+  if (!artistData) return null;
+
+  const artistName = artistData.stageNameZh ?? artistData.stageName ?? '';
 
   const displayEvents = selectedLocationEvents ?? mapEvents;
 
