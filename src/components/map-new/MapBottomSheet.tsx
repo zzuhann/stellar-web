@@ -51,7 +51,7 @@ const handleBar = css({
 });
 
 const countText = css({
-  textStyle: 'bodyStrong',
+  textStyle: 'bodySmall',
   color: 'color.text.primary',
   lineHeight: '1',
   marginTop: '3',
@@ -254,7 +254,7 @@ const MapBottomSheet = ({
             ) : (
               <div className={handleBar} />
             )}
-            <span className={countText}>{events.length} 場生日應援</span>
+            <span className={countText}>{events.length} 個生日應援</span>
           </div>
 
           {isHalfOpen ? (
