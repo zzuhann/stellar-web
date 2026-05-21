@@ -91,6 +91,7 @@ const titleText = css({
   color: 'color.text.primary',
   lineHeight: '1.3',
   overflow: 'hidden',
+  marginBottom: '1.5',
 });
 
 const venueRow = css({
