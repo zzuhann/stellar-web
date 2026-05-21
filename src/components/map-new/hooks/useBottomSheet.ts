@@ -134,6 +134,7 @@ export function useBottomSheet({
 
   const onTouchStart = useCallback(
     (e: React.TouchEvent) => {
+      e.preventDefault(); // suppress synthesized click after touchend
       setIsAnimating(false);
       dragStateRef.current = {
         isDragging: true,

@@ -5,7 +5,13 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
-import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  CalendarIcon,
+  CalendarDaysIcon,
+  FunnelIcon,
+  MapPinIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 
 function formatDateRange(start: string, end: string): string {
   const s = new Date(start);
@@ -234,6 +240,45 @@ const backButton = css({
 const calendarIconCss = css({ flexShrink: 0, color: 'color.text.secondary' });
 const pinIconCss = css({ flexShrink: 0, color: 'color.text.secondary', marginTop: '1' });
 
+const emptyState = css({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '3',
+  flex: '1',
+  justifyContent: 'center',
+});
+
+const emptyStateIcon = css({
+  color: 'color.text.disabled',
+});
+
+const emptyStateTitle = css({
+  textStyle: 'bodyStrong',
+  color: 'color.text.primary',
+});
+
+const emptyStateDesc = css({
+  textStyle: 'bodySmall',
+  color: 'color.text.secondary',
+  textAlign: 'center',
+});
+
+const emptyStateClearButton = css({
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  color: 'color.text.link',
+  textStyle: 'bodySmall',
+  paddingX: '4',
+  paddingY: '3',
+  minWidth: '44px',
+  minHeight: '44px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+});
+
 export interface EventListProps {
   events: MapEvent[];
   onBackToMap: () => void;
@@ -265,6 +310,27 @@ const EventList = ({
 
   const locationName = events[0]?.location?.name ?? events[0]?.location?.city ?? '';
   const showFilterBar = (isLocationFiltered && !!onClearLocationFilter) || cities.length > 1;
+
+  if (events.length === 0) {
+    return (
+      <div className={container}>
+        <div className={listArea}>
+          <div className={emptyState}>
+            <CalendarDaysIcon width={32} height={32} className={emptyStateIcon} />
+            <p className={emptyStateTitle}>目前沒有生日應援活動</p>
+            <p className={emptyStateDesc}>
+              這位藝人目前還沒有生日應援，{'\n'}等活動上架後再來看看吧！
+            </p>
+          </div>
+        </div>
+        <div className={backButtonArea}>
+          <button type="button" className={backButton} onClick={onBackToMap}>
+            回到地圖
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={container}>
@@ -308,72 +374,87 @@ const EventList = ({
       )}
 
       <div className={listArea}>
-        {filteredEvents.map((event) => {
-          const dateRange =
-            event.datetime?.start && event.datetime?.end
-              ? formatDateRange(event.datetime.start, event.datetime.end)
-              : '';
-
-          return (
-            <div
-              key={event.id}
-              className={card}
-              onClick={() => handleCardClick(event)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && handleCardClick(event)}
+        {filteredEvents.length === 0 && activeCity !== null ? (
+          <div className={emptyState} role="status">
+            <FunnelIcon width={32} height={32} className={emptyStateIcon} />
+            <p className={emptyStateTitle}>這個地區目前沒有生日應援活動</p>
+            <p className={emptyStateDesc}>試試看其他地區，或清除篩選查看全部活動</p>
+            <button
+              type="button"
+              className={emptyStateClearButton}
+              onClick={() => setSelectedCity(null)}
             >
-              <div className={imageArea}>
-                {event.mainImage ? (
-                  <Image
-                    src={event.mainImage}
-                    alt={event.title}
-                    fill
-                    sizes="100px"
-                    className={imageCss}
-                  />
-                ) : (
-                  <div className={placeholderBg} />
-                )}
-              </div>
+              清除地區篩選
+            </button>
+          </div>
+        ) : (
+          filteredEvents.map((event) => {
+            const dateRange =
+              event.datetime?.start && event.datetime?.end
+                ? formatDateRange(event.datetime.start, event.datetime.end)
+                : '';
 
-              <div className={infoArea}>
-                {event.location?.city && <span className={cityText}>{event.location.city}</span>}
-                <p
-                  className={titleText}
-                  style={{
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                  }}
-                >
-                  {event.title}
-                </p>
-                {dateRange && (
-                  <div className={dateRow}>
-                    <CalendarIcon width={14} height={14} className={calendarIconCss} />
-                    <p className={metaText}>{dateRange}</p>
-                  </div>
-                )}
-                {event.location?.name && (
-                  <div className={venueRow}>
-                    <MapPinIcon width={14} height={14} className={pinIconCss} />
-                    <span
-                      className={metaText}
-                      style={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                      }}
-                    >
-                      {event.location.name}
-                    </span>
-                  </div>
-                )}
+            return (
+              <div
+                key={event.id}
+                className={card}
+                onClick={() => handleCardClick(event)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && handleCardClick(event)}
+              >
+                <div className={imageArea}>
+                  {event.mainImage ? (
+                    <Image
+                      src={event.mainImage}
+                      alt={event.title}
+                      fill
+                      sizes="100px"
+                      className={imageCss}
+                    />
+                  ) : (
+                    <div className={placeholderBg} />
+                  )}
+                </div>
+
+                <div className={infoArea}>
+                  {event.location?.city && <span className={cityText}>{event.location.city}</span>}
+                  <p
+                    className={titleText}
+                    style={{
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
+                  >
+                    {event.title}
+                  </p>
+                  {dateRange && (
+                    <div className={dateRow}>
+                      <CalendarIcon width={14} height={14} className={calendarIconCss} />
+                      <p className={metaText}>{dateRange}</p>
+                    </div>
+                  )}
+                  {event.location?.name && (
+                    <div className={venueRow}>
+                      <MapPinIcon width={14} height={14} className={pinIconCss} />
+                      <span
+                        className={metaText}
+                        style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                        }}
+                      >
+                        {event.location.name}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
 
       <div className={backButtonArea}>
