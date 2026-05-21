@@ -56,12 +56,13 @@ const cityBadge = css({
   left: '2',
   background: 'white',
   color: 'color.text.primary',
-  textStyle: 'bodyStrong',
+  textStyle: 'bodySmall',
   paddingX: '2',
   paddingY: '0.5',
   borderRadius: '9999px',
   lineHeight: '1.4',
   zIndex: '1',
+  boxShadow: 'shadow.md',
 });
 
 const infoArea = css({
