@@ -81,8 +81,11 @@ type DrawerHandleBarProps = {
 const DrawerHandleBar = ({ bind, artistData, mapEvents }: DrawerHandleBarProps) => {
   const { selectedEventId, isDrawerExpanded, setIsDrawerExpanded } = useMapStore();
   const handleRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
 
   const { selectedLocationEvents, isLocationSelected, handleCloseButtonClick } = useMapSelection();
+
+  const showCloseButton = !!(selectedEventId || isLocationSelected);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowUp') {
@@ -99,17 +102,27 @@ const DrawerHandleBar = ({ bind, artistData, mapEvents }: DrawerHandleBarProps) 
 
   // React 19 的 onTouchStart 是 passive listener，無法呼叫 preventDefault()
   // 手動以 { passive: false } 掛載，防止 touchend 後 browser 補發合成 mouse events
+  const { handleTouchStart } = bind;
   useEffect(() => {
     const el = handleRef.current;
     if (!el) return;
 
-    const onTouchStart = (e: TouchEvent) => bind.handleTouchStart(e as unknown as React.TouchEvent);
+    const onTouchStart = (e: TouchEvent) => handleTouchStart(e as unknown as React.TouchEvent);
 
     el.addEventListener('touchstart', onTouchStart, { passive: false });
     return () => {
       el.removeEventListener('touchstart', onTouchStart);
     };
-  }, [bind.handleTouchStart]);
+  }, [handleTouchStart]);
+
+  // 在 close button 上攔截 touchstart，阻止 bubble 到 handlebar 的 drag listener
+  useEffect(() => {
+    const btn = closeBtnRef.current;
+    if (!btn) return;
+    const stop = (e: TouchEvent) => e.stopPropagation();
+    btn.addEventListener('touchstart', stop, { passive: true });
+    return () => btn.removeEventListener('touchstart', stop);
+  }, [showCloseButton]);
 
   return (
     <div
@@ -141,8 +154,9 @@ const DrawerHandleBar = ({ bind, artistData, mapEvents }: DrawerHandleBarProps) 
           )}
         </p>
       </div>
-      {(selectedEventId || isLocationSelected) && (
+      {showCloseButton && (
         <button
+          ref={closeBtnRef}
           className={closeButton}
           onClick={handleCloseButtonClick}
           type="button"

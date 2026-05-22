@@ -157,70 +157,73 @@ const useDrawer = ({ eventsCount }: UseDrawerOptions) => {
     document.addEventListener('mouseup', onEnd, { passive: false });
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    e.preventDefault();
-    // 停止動畫，進入拖曳模式
-    setIsAnimating(false);
-    const maxHeight = getMaxHeight();
-    const currentHeight = heightRef.current;
-
-    dragStateRef.current = {
-      isDragging: true,
-      startY: e.touches[0].clientY,
-      startHeight: currentHeight,
-      maxHeight,
-    };
-
-    const onMove = (moveEvent: TouchEvent) => {
-      const { isDragging, startY, startHeight, maxHeight } = dragStateRef.current;
-      if (!isDragging) return;
-      moveEvent.preventDefault();
-
-      const deltaY = startY - moveEvent.touches[0].clientY;
-      const newHeight = Math.max(COLLAPSED_HEIGHT, Math.min(maxHeight, startHeight + deltaY));
-      setHeight(newHeight);
-    };
-
-    const onEnd = () => {
-      const { isDragging, startHeight, maxHeight } = dragStateRef.current;
-      if (!isDragging) return;
-      dragStateRef.current.isDragging = false;
-
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend', onEnd);
-
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      e.preventDefault();
+      // 停止動畫，進入拖曳模式
+      setIsAnimating(false);
+      const maxHeight = getMaxHeight();
       const currentHeight = heightRef.current;
-      const dragDistance = Math.abs(currentHeight - startHeight);
 
-      // 點擊 toggle
-      if (dragDistance < 10) {
+      dragStateRef.current = {
+        isDragging: true,
+        startY: e.touches[0].clientY,
+        startHeight: currentHeight,
+        maxHeight,
+      };
+
+      const onMove = (moveEvent: TouchEvent) => {
+        const { isDragging, startY, startHeight, maxHeight } = dragStateRef.current;
+        if (!isDragging) return;
+        moveEvent.preventDefault();
+
+        const deltaY = startY - moveEvent.touches[0].clientY;
+        const newHeight = Math.max(COLLAPSED_HEIGHT, Math.min(maxHeight, startHeight + deltaY));
+        setHeight(newHeight);
+      };
+
+      const onEnd = () => {
+        const { isDragging, startHeight, maxHeight } = dragStateRef.current;
+        if (!isDragging) return;
+        dragStateRef.current.isDragging = false;
+
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onEnd);
+
+        const currentHeight = heightRef.current;
+        const dragDistance = Math.abs(currentHeight - startHeight);
+
+        // 點擊 toggle
+        if (dragDistance < 10) {
+          const expanded = useMapStore.getState().isDrawerExpanded;
+          isInternalChangeRef.current = true;
+          setIsDrawerExpanded(!expanded);
+          setIsAnimating(true);
+          setHeight(!expanded ? maxHeight : COLLAPSED_HEIGHT);
+          return;
+        }
+
+        // 決定展開或收合
+        const midPoint = COLLAPSED_HEIGHT + (maxHeight - COLLAPSED_HEIGHT) * 0.5;
         const expanded = useMapStore.getState().isDrawerExpanded;
+
         isInternalChangeRef.current = true;
-        setIsDrawerExpanded(!expanded);
         setIsAnimating(true);
-        setHeight(!expanded ? maxHeight : COLLAPSED_HEIGHT);
-        return;
-      }
 
-      // 決定展開或收合
-      const midPoint = COLLAPSED_HEIGHT + (maxHeight - COLLAPSED_HEIGHT) * 0.5;
-      const expanded = useMapStore.getState().isDrawerExpanded;
+        if (currentHeight > midPoint) {
+          if (!expanded) setIsDrawerExpanded(true);
+          setHeight(maxHeight);
+        } else {
+          if (expanded) setIsDrawerExpanded(false);
+          setHeight(COLLAPSED_HEIGHT);
+        }
+      };
 
-      isInternalChangeRef.current = true;
-      setIsAnimating(true);
-
-      if (currentHeight > midPoint) {
-        if (!expanded) setIsDrawerExpanded(true);
-        setHeight(maxHeight);
-      } else {
-        if (expanded) setIsDrawerExpanded(false);
-        setHeight(COLLAPSED_HEIGHT);
-      }
-    };
-
-    document.addEventListener('touchmove', onMove, { passive: false });
-    document.addEventListener('touchend', onEnd);
-  };
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onEnd);
+    },
+    [getMaxHeight, setIsDrawerExpanded]
+  );
 
   const bind = { handleMouseDown, handleTouchStart };
 

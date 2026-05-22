@@ -75,9 +75,6 @@ const useMapSelection = () => {
   const handleCloseButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // 阻止事件冒泡到 drawer
 
-    // 先關閉 drawer，再清除選擇狀態
-    setIsDrawerExpanded(false);
-
     if (selectedEventId) {
       setSelectedEventId(null);
     }
