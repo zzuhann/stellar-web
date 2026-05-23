@@ -86,7 +86,6 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
     setMode,
   } = useMapNewState();
   const mapRef = useRef<L.Map | null>(null);
-  const hasAutoCenteredRef = useRef(false);
 
   const handleMapReady = (map: L.Map) => {
     mapRef.current = map;
@@ -129,15 +128,6 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
       document.body.style.overflow = '';
     };
   }, []);
-
-  // Auto-center map to user GPS position on first acquisition
-  useEffect(() => {
-    if (hasAutoCenteredRef.current) return;
-    if (latitude && longitude && mapRef.current) {
-      hasAutoCenteredRef.current = true;
-      mapRef.current.setView([latitude, longitude], 8);
-    }
-  }, [latitude, longitude]);
 
   useEffect(() => {
     if (!isMapLoading && !isArtistLoading && !artistData) {

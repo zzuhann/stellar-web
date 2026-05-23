@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import MobileMenu from '@/components/header/MobileMenu';
@@ -41,8 +41,16 @@ const backButton = css({
   color: 'color.text.primary',
   borderRadius: 'radius.sm',
   transition: 'background 0.2s ease',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
   '&:hover': {
     background: 'color.background.secondary',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.text.primary',
+    outlineOffset: '2px',
   },
 });
 
@@ -86,14 +94,23 @@ interface MapNewHeaderProps {
 
 export default function MapNewHeader({ artistName }: MapNewHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const router = useRouter();
+
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/');
+    }
+  };
 
   return (
     <>
       <header className={headerContainer}>
         <div className={innerContainer}>
-          <Link href="/" className={backButton} aria-label="返回首頁">
+          <button type="button" className={backButton} aria-label="返回上一頁" onClick={handleBack}>
             <ArrowLeftIcon width={22} height={22} aria-hidden="true" />
-          </Link>
+          </button>
 
           <div className={titleContainer}>
             <span className={titleText}>{artistName}的生日應援地圖</span>

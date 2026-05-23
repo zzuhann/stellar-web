@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
@@ -127,7 +127,7 @@ const listArea = css({
   overflowY: 'auto',
   paddingX: '4',
   paddingTop: '3',
-  paddingBottom: '3',
+  paddingBottom: '80px',
   display: 'flex',
   flexDirection: 'column',
   gap: '3',
@@ -144,6 +144,8 @@ const card = css({
   cursor: 'pointer',
   border: '1px solid',
   borderColor: 'color.border.light',
+  textDecoration: 'none',
+  color: 'inherit',
 });
 
 const imageArea = css({
@@ -219,13 +221,20 @@ const metaText = css({
 });
 
 const backButtonArea = css({
-  flexShrink: 0,
+  position: 'fixed',
+  bottom: '0',
+  left: '0',
+  right: '0',
+  maxWidth: '600px',
+  margin: '0 auto',
   display: 'flex',
   justifyContent: 'center',
   paddingY: '4',
+  paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
   background: 'color.background.primary',
+  zIndex: '20',
 });
 
 const backButton = css({
@@ -301,7 +310,6 @@ const EventList = ({
   isLocationFiltered,
   onClearLocationFilter,
 }: EventListProps) => {
-  const router = useRouter();
   const { user } = useAuth();
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
@@ -312,18 +320,6 @@ const EventList = ({
   const filteredEvents = activeCity
     ? events.filter((e) => e.location?.city === activeCity)
     : events;
-
-  const handleCardClick = (event: MapEvent) => {
-    sendGAEvent('event', 'click_event_detail', {
-      event_page: '/map-new/[artistId]',
-      user_id: user?.uid ?? '',
-      content_id: event.id,
-      artist_id: artistId,
-      source: 'list_mode',
-    });
-    const href = event.slug ? `/event/${event.slug}` : `/event/${event.id}`;
-    router.push(href);
-  };
 
   const locationName = events[0]?.location?.name ?? events[0]?.location?.city ?? '';
   const showFilterBar = (isLocationFiltered && !!onClearLocationFilter) || cities.length > 1;
@@ -365,7 +361,9 @@ const EventList = ({
         <div className={filterBar}>
           {isLocationFiltered && onClearLocationFilter && (
             <div className={locationChip}>
-              <span className={locationChipText}>{locationName}</span>
+              <span className={locationChipText} title={locationName}>
+                {locationName}
+              </span>
               <button
                 type="button"
                 className={locationChipClose}
@@ -435,16 +433,25 @@ const EventList = ({
               event.datetime?.start && event.datetime?.end
                 ? formatDateRange(event.datetime.start, event.datetime.end)
                 : '';
+            const eventSlug = event.slug || event.id;
+            const href = eventSlug ? `/event/${eventSlug}` : '#';
 
             return (
-              <div
+              <Link
                 key={event.id}
+                href={href}
                 className={card}
                 data-testid="event-card"
-                onClick={() => handleCardClick(event)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => e.key === 'Enter' && handleCardClick(event)}
+                aria-label={`前往 ${event.title} 活動詳情`}
+                onClick={() => {
+                  sendGAEvent('event', 'click_event_detail', {
+                    event_page: '/map-new/[artistId]',
+                    user_id: user?.uid ?? '',
+                    content_id: event.id,
+                    artist_id: artistId,
+                    source: 'list_mode',
+                  });
+                }}
               >
                 <div className={imageArea}>
                   {event.mainImage ? (
@@ -494,7 +501,7 @@ const EventList = ({
                     </div>
                   )}
                 </div>
-              </div>
+              </Link>
             );
           })
         )}

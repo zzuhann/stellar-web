@@ -16,14 +16,19 @@ const drawerContainer = css({
   right: '0',
   maxWidth: '600px',
   mx: 'auto',
+  overflow: 'hidden',
+  zIndex: '10',
+  pointerEvents: 'none',
+});
+
+const drawerInner = css({
   background: 'color.background.secondary',
   borderRadius: '16px 16px 0 0',
   boxShadow: '0 -4px 20px var(--colors-alpha-black-15)',
-  overflow: 'hidden',
-  zIndex: '10',
   display: 'flex',
   flexDirection: 'column',
   paddingX: '4',
+  pointerEvents: 'auto',
 });
 
 const handleBarArea = css({
@@ -173,6 +178,7 @@ export interface MapBottomSheetProps {
   onRequestListMode: (triggerMethod: 'drag' | 'list_button') => void;
   isLocationFiltered?: boolean;
   onClearLocationFilter?: () => void;
+  onHeightChange?: (h: number) => void;
 }
 
 const MapBottomSheet = ({
@@ -181,10 +187,29 @@ const MapBottomSheet = ({
   onRequestListMode,
   isLocationFiltered,
   onClearLocationFilter,
+  onHeightChange,
 }: MapBottomSheetProps) => {
   const { user } = useAuth();
   const innerRef = useRef<HTMLDivElement>(null);
+  const locationChipRef = useRef<HTMLDivElement>(null);
   const [measuredHeight, setMeasuredHeight] = useState<number | undefined>(undefined);
+  // Lazy-init from window to avoid SSR mismatch; this component is 'use client' so window is available
+  const [maxHeight] = useState<number>(() =>
+    typeof window !== 'undefined' ? Math.round(window.innerHeight * 0.9) : 0
+  );
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : false
+  );
+
+  // Subscribe to prefers-reduced-motion changes
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   useEffect(() => {
     const el = innerRef.current;
@@ -214,7 +239,12 @@ const MapBottomSheet = ({
       onRequestListMode,
       onExpandToHalf: handleExpandToHalf,
       halfHeight: measuredHeight,
+      excludeRef: locationChipRef,
     });
+
+  useEffect(() => {
+    onHeightChange?.(height);
+  }, [height, onHeightChange]);
 
   // Auto-open to half when a location filter is applied
   const isLocationFilteredRef = useRef(false);
@@ -244,73 +274,90 @@ const MapBottomSheet = ({
     );
   }
 
+  const translateY = maxHeight > 0 ? maxHeight - height : 0;
+  const transitionDuration = prefersReducedMotion ? 0 : isAnimating ? 250 : 200;
+  const transitionEasing = isAnimating ? 'ease-out' : 'ease-in';
+  const transitionStyle =
+    isAnimating || !prefersReducedMotion
+      ? `transform ${transitionDuration}ms ${transitionEasing}`
+      : 'none';
+
   return (
     <div
       className={drawerContainer}
       data-testid="bottom-sheet"
-      style={{
-        height: `${height}px`,
-        transition: isAnimating ? 'height 0.3s ease-out' : 'none',
-      }}
-      onTransitionEnd={onTransitionEnd}
+      style={{ height: maxHeight > 0 ? `${maxHeight}px` : undefined }}
     >
-      {/* paddingBottom ensures scrollHeight naturally includes bottom spacing */}
-      <div ref={innerRef} style={{ paddingBottom: '16px' }}>
-        <div className={handleBarArea} data-testid="handle-bar-area" {...handleBarBind}>
-          <div className={sideSlot} />
+      {/* Inner sheet slides up/down via translateY; transition removed during drag */}
+      <div
+        className={drawerInner}
+        style={{
+          transform: `translateY(${translateY}px)`,
+          transition: isAnimating ? transitionStyle : 'none',
+        }}
+        onTransitionEnd={onTransitionEnd}
+      >
+        {/* paddingBottom ensures scrollHeight naturally includes bottom spacing */}
+        <div ref={innerRef} style={{ paddingBottom: '16px' }}>
+          <div className={handleBarArea} data-testid="handle-bar-area" {...handleBarBind}>
+            <div className={sideSlot} />
 
-          <div className={handleBarCenter}>
-            {isLocationFiltered && onClearLocationFilter ? (
-              <div
-                className={locationChip}
+            <div className={handleBarCenter}>
+              {isLocationFiltered && onClearLocationFilter ? (
+                <div
+                  ref={locationChipRef}
+                  className={locationChip}
+                  onMouseDown={(e) => e.stopPropagation()}
+                >
+                  <span
+                    className={locationChipText}
+                    title={events[0]?.location?.name ?? events[0]?.location?.city ?? ''}
+                  >
+                    {events[0]?.location?.name ?? events[0]?.location?.city ?? ''}
+                  </span>
+                  <button
+                    type="button"
+                    className={locationChipClose}
+                    aria-label="清除地點篩選"
+                    onClick={() => {
+                      sendGAEvent('event', 'map_location_filter_clear', {
+                        event_page: '/map-new/[artistId]',
+                        user_id: user?.uid ?? '',
+                        content_id: artistId,
+                      });
+                      onClearLocationFilter?.();
+                    }}
+                  >
+                    <XMarkIcon width={14} height={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className={handleBar} />
+              )}
+              <span className={countText}>{events.length} 個生日應援</span>
+            </div>
+
+            {isHalfOpen ? (
+              <button
+                className={listButton}
+                type="button"
+                aria-label="切換列表模式"
                 onMouseDown={(e) => e.stopPropagation()}
                 onTouchStart={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRequestListMode('list_button');
+                }}
               >
-                <span className={locationChipText}>
-                  {events[0]?.location?.name ?? events[0]?.location?.city ?? ''}
-                </span>
-                <button
-                  type="button"
-                  className={locationChipClose}
-                  aria-label="清除地點篩選"
-                  onClick={() => {
-                    sendGAEvent('event', 'map_location_filter_clear', {
-                      event_page: '/map-new/[artistId]',
-                      user_id: user?.uid ?? '',
-                      content_id: artistId,
-                    });
-                    onClearLocationFilter?.();
-                  }}
-                >
-                  <XMarkIcon width={14} height={14} />
-                </button>
-              </div>
+                <QueueListIcon width={20} height={20} />
+              </button>
             ) : (
-              <div className={handleBar} />
+              <div className={sideSlot} />
             )}
-            <span className={countText}>{events.length} 個生日應援</span>
           </div>
 
-          {isHalfOpen ? (
-            <button
-              className={listButton}
-              type="button"
-              aria-label="切換列表模式"
-              onMouseDown={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                onRequestListMode('list_button');
-              }}
-            >
-              <QueueListIcon width={20} height={20} />
-            </button>
-          ) : (
-            <div className={sideSlot} />
-          )}
+          <EventCarousel events={events} artistId={artistId} />
         </div>
-
-        <EventCarousel events={events} artistId={artistId} />
       </div>
     </div>
   );

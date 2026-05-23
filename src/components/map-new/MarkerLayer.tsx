@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { DivIcon, Point } from 'leaflet';
@@ -29,6 +29,8 @@ const MarkerLayer = ({
 }: MarkerLayerProps) => {
   const map = useMap();
   const { user } = useAuth();
+  // Tracks the pending moveend listener so we can remove it before rebinding
+  const pendingMoveEndRef = useRef<(() => void) | null>(null);
   const profileImage = artistData?.profileImage;
 
   // Group events by location
@@ -143,7 +145,24 @@ const MarkerLayer = ({
       if (positions.size === 1) {
         const [locationKey] = positions;
         const eventsAtLocation = groupedEvents.get(locationKey) ?? [];
-        onMultiMarkerClick(eventsAtLocation);
+
+        // Remove any stale moveend listener before binding a new one
+        if (pendingMoveEndRef.current) {
+          map.off('moveend', pendingMoveEndRef.current);
+          pendingMoveEndRef.current = null;
+        }
+
+        const clusterCenter = cluster.getAllChildMarkers()[0].getLatLng();
+        const currentZoom = map.getZoom();
+
+        const onMoveEnd = () => {
+          pendingMoveEndRef.current = null;
+          onMultiMarkerClick(eventsAtLocation);
+        };
+
+        pendingMoveEndRef.current = onMoveEnd;
+        map.once('moveend', onMoveEnd);
+        map.flyTo(clusterCenter, currentZoom);
       } else {
         sendGAEvent('event', 'map_cluster_zoom_in', {
           event_page: '/map-new/[artistId]',

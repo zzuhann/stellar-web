@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect, RefCallback } from 'react';
+import { useState, useRef, useCallback, useEffect, RefCallback, RefObject } from 'react';
 
 const PEEK_HEIGHT = 120;
 // Fraction of window height for half-open state
@@ -12,6 +12,8 @@ export interface UseBottomSheetOptions {
   onRequestListMode: (triggerMethod: 'drag' | 'list_button') => void;
   onExpandToHalf?: (triggerMethod: 'drag' | 'tap_handle') => void;
   halfHeight?: number;
+  /** Touch/mouse events targeting this element (or its descendants) will not start a drag */
+  excludeRef?: RefObject<HTMLElement | null>;
 }
 
 export interface UseBottomSheetReturn {
@@ -30,6 +32,7 @@ export function useBottomSheet({
   onRequestListMode,
   onExpandToHalf,
   halfHeight: halfHeightProp,
+  excludeRef,
 }: UseBottomSheetOptions): UseBottomSheetReturn {
   const [height, setHeight] = useState(PEEK_HEIGHT);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -104,6 +107,7 @@ export function useBottomSheet({
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {
+      if (excludeRef?.current?.contains(e.target as Node)) return;
       if (Date.now() - lastTouchEndTimeRef.current < 500) return;
       setIsAnimating(false);
       dragStateRef.current = {
@@ -165,6 +169,7 @@ export function useBottomSheet({
     }
 
     const handler = (e: TouchEvent) => {
+      if (excludeRef?.current?.contains(e.target as Node)) return;
       e.preventDefault();
       setIsAnimating(false);
       dragStateRef.current = {

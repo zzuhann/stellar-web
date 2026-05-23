@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
@@ -39,6 +39,8 @@ const card = css({
   cursor: 'pointer',
   border: '1px solid',
   borderColor: 'color.border.light',
+  textDecoration: 'none',
+  color: 'inherit',
 });
 
 const imageArea = css({
@@ -141,13 +143,15 @@ export interface MapSingleEventCardProps {
 }
 
 const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardProps) => {
-  const router = useRouter();
   const { user } = useAuth();
 
   const dateRange =
     event.datetime?.start && event.datetime?.end
       ? formatDateRange(event.datetime.start, event.datetime.end)
       : '';
+
+  const eventSlug = event.slug || event.id;
+  const href = eventSlug ? `/event/${eventSlug}` : '#';
 
   const handleCardClick = () => {
     sendGAEvent('event', 'click_event_detail', {
@@ -157,18 +161,15 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
       artist_id: artistId,
       source: 'map_single_card',
     });
-    const href = event.slug ? `/event/${event.slug}` : `/event/${event.id}`;
-    router.push(href);
   };
 
   return (
     <div className={wrapper}>
-      <div
+      <Link
+        href={href}
         className={card}
+        aria-label={`前往 ${event.title} 活動詳情`}
         onClick={handleCardClick}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
       >
         <div className={imageArea}>
           {event.mainImage ? (
@@ -241,7 +242,7 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
         >
           <XMarkIcon width={16} height={16} />
         </button>
-      </div>
+      </Link>
     </div>
   );
 };

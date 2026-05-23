@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { Metadata } from 'next';
 import { Artist } from '@/types';
 import { artistsApi } from '@/lib/api';
@@ -26,10 +26,35 @@ export async function generateMetadata({ params }: MapNewPageProps): Promise<Met
     const displayName = artist.stageNameZh ?? artist.stageName;
     const title = `${displayName} 生咖、生日應援活動地圖 | STELLAR`;
     const description = `查看 ${displayName} 在台灣各地的生咖（生日應援）活動，透過地圖找到離你最近的活動資訊。`;
+    const resolvedArtistId = artist.slug ?? artistId;
+    const ogImageUrl = `https://www.stellar-zone.com/map-new/${resolvedArtistId}/opengraph-image`;
+    const canonicalUrl = `https://www.stellar-zone.com/map-new/${resolvedArtistId}`;
 
     return {
       title: { absolute: title },
       description,
+      alternates: {
+        canonical: canonicalUrl,
+      },
+      openGraph: {
+        title,
+        description,
+        url: canonicalUrl,
+        images: [
+          {
+            url: ogImageUrl,
+            width: 1200,
+            height: 630,
+            alt: `${displayName} 生咖、生日應援活動地圖`,
+          },
+        ],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: [ogImageUrl],
+      },
     };
   } catch {
     return {
@@ -47,5 +72,34 @@ export default async function MapNewPage({ params }: MapNewPageProps) {
     notFound();
   }
 
-  return <MapNewPageClient artistId={artistId} />;
+  const artist = await artistsApi.getById(artistId).catch(() => null);
+
+  if (artist?.slug && artistId !== artist.slug) {
+    permanentRedirect(`/map-new/${artist.slug}`);
+  }
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: '首頁', item: 'https://www.stellar-zone.com/' },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: artist
+          ? `${artist.stageNameZh ?? artist.stageName} 生咖、生日應援活動地圖`
+          : '生日應援地圖',
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <MapNewPageClient artistId={artistId} />
+    </>
+  );
 }
