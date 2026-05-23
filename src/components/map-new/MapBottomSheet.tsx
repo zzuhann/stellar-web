@@ -275,12 +275,10 @@ const MapBottomSheet = ({
   }
 
   const translateY = maxHeight > 0 ? maxHeight - height : 0;
-  const transitionDuration = prefersReducedMotion ? 0 : isAnimating ? 250 : 200;
   const transitionEasing = isAnimating ? 'ease-out' : 'ease-in';
-  const transitionStyle =
-    isAnimating || !prefersReducedMotion
-      ? `transform ${transitionDuration}ms ${transitionEasing}`
-      : 'none';
+  const transitionStyle = prefersReducedMotion
+    ? 'none'
+    : `transform ${isAnimating ? 250 : 200}ms ${transitionEasing}`;
 
   return (
     <div
