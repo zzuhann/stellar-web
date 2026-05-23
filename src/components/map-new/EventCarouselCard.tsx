@@ -113,9 +113,10 @@ const venueText = css({
 export interface EventCarouselCardProps {
   event: MapEvent;
   artistId: string;
+  onBeforeNavigate?: () => void;
 }
 
-const EventCarouselCard = ({ event, artistId }: EventCarouselCardProps) => {
+const EventCarouselCard = ({ event, artistId, onBeforeNavigate }: EventCarouselCardProps) => {
   const { user } = useAuth();
   const dateRange =
     event.datetime?.start && event.datetime?.end
@@ -126,6 +127,7 @@ const EventCarouselCard = ({ event, artistId }: EventCarouselCardProps) => {
   const href = eventSlug ? `/event/${eventSlug}` : '#';
 
   const handleCardClick = () => {
+    onBeforeNavigate?.();
     sendGAEvent('event', 'click_event_detail', {
       event_page: '/map-new/[artistId]',
       user_id: user?.uid ?? '',

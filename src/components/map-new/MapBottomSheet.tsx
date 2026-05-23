@@ -195,6 +195,9 @@ export interface MapBottomSheetProps {
   onClearLocationFilter?: () => void;
   onHeightChange?: (h: number) => void;
   isLoading?: boolean;
+  initialHeight?: number;
+  initialCarouselScrollLeft?: number;
+  onBeforeNavigate?: (sheetHeight: number, carouselScrollLeft: number) => void;
 }
 
 const MapBottomSheet = ({
@@ -205,10 +208,14 @@ const MapBottomSheet = ({
   onClearLocationFilter,
   onHeightChange,
   isLoading,
+  initialHeight,
+  initialCarouselScrollLeft,
+  onBeforeNavigate,
 }: MapBottomSheetProps) => {
   const { user } = useAuth();
   const innerRef = useRef<HTMLDivElement>(null);
   const locationChipRef = useRef<HTMLDivElement>(null);
+  const carouselContainerRef = useRef<HTMLDivElement>(null);
   const [measuredHeight, setMeasuredHeight] = useState<number | undefined>(undefined);
   const [maxHeight, setMaxHeight] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -217,6 +224,9 @@ const MapBottomSheet = ({
   useClientLayoutEffect(() => {
     setMaxHeight(Math.round(window.innerHeight * 0.9));
     setPrefersReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (initialCarouselScrollLeft && carouselContainerRef.current) {
+      carouselContainerRef.current.scrollLeft = initialCarouselScrollLeft;
+    }
   }, []);
 
   useEffect(() => {
@@ -255,7 +265,18 @@ const MapBottomSheet = ({
       onExpandToHalf: handleExpandToHalf,
       halfHeight: measuredHeight,
       excludeRef: locationChipRef,
+      initialHeight,
     });
+
+  // Stable ref so onBeforeNavigate callback doesn't go stale when height updates
+  const heightRef = useRef(height);
+  useEffect(() => {
+    heightRef.current = height;
+  }, [height]);
+
+  const handleCarouselBeforeNavigate = useCallback(() => {
+    onBeforeNavigate?.(heightRef.current, carouselContainerRef.current?.scrollLeft ?? 0);
+  }, [onBeforeNavigate]);
 
   useEffect(() => {
     onHeightChange?.(height);
@@ -416,7 +437,12 @@ const MapBottomSheet = ({
             )}
           </div>
 
-          <EventCarousel events={events} artistId={artistId} />
+          <EventCarousel
+            events={events}
+            artistId={artistId}
+            containerRef={carouselContainerRef}
+            onBeforeNavigate={handleCarouselBeforeNavigate}
+          />
         </div>
       </div>
     </div>

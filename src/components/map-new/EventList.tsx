@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
+
+const useClientLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 import Image from 'next/image';
 import Link from 'next/link';
 import { sendGAEvent } from '@next/third-parties/google';
@@ -313,6 +315,8 @@ export interface EventListProps {
   isLocationFiltered?: boolean;
   onClearLocationFilter?: () => void;
   isLoading?: boolean;
+  initialScrollTop?: number;
+  onBeforeNavigate?: (listScrollTop: number) => void;
 }
 
 const EventList = ({
@@ -322,9 +326,18 @@ const EventList = ({
   isLocationFiltered,
   onClearLocationFilter,
   isLoading,
+  initialScrollTop,
+  onBeforeNavigate,
 }: EventListProps) => {
   const { user } = useAuth();
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const listAreaRef = useRef<HTMLDivElement>(null);
+
+  useClientLayoutEffect(() => {
+    if (initialScrollTop && listAreaRef.current) {
+      listAreaRef.current.scrollTop = initialScrollTop;
+    }
+  }, []);
 
   const cities = [...new Set(events.map((e) => e.location?.city).filter(Boolean))] as string[];
 
@@ -465,7 +478,7 @@ const EventList = ({
         </div>
       )}
 
-      <div className={listArea}>
+      <div className={listArea} ref={listAreaRef}>
         {filteredEvents.length === 0 && activeCity !== null ? (
           <div className={emptyState} role="status">
             <FunnelIcon width={32} height={32} className={emptyStateIcon} />
@@ -496,6 +509,7 @@ const EventList = ({
                 data-testid="event-card"
                 aria-label={`前往 ${event.title} 活動詳情`}
                 onClick={() => {
+                  onBeforeNavigate?.(listAreaRef.current?.scrollTop ?? 0);
                   sendGAEvent('event', 'click_event_detail', {
                     event_page: '/map-new/[artistId]',
                     user_id: user?.uid ?? '',

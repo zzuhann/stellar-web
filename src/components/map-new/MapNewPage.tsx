@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import L from 'leaflet';
@@ -11,6 +11,7 @@ import { useAuth } from '@/lib/auth-context';
 import useMapPageData from '@/components/map/hook/useMapPageData';
 import useMapNewLocation from './hooks/useMapNewLocation';
 import { useMapNewState } from './hooks/useMapNewState';
+import { useMapStateStorage } from './hooks/useMapStateStorage';
 import MapNewHeader from './MapNewHeader';
 import MapBottomSheet from './MapBottomSheet';
 import MapSingleEventCard from './MapSingleEventCard';
@@ -67,6 +68,23 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
   });
 
   const { latitude, longitude } = useMapNewLocation();
+
+  const { saveState, consumeRestoredState } = useMapStateStorage(artistId);
+  const [restoredState] = useState(() => consumeRestoredState());
+
+  const handleMapBeforeNavigate = useCallback(
+    (sheetHeight: number, carouselScrollLeft: number) => {
+      saveState({ mode: 'map', sheetHeight, carouselScrollLeft, listScrollTop: 0 });
+    },
+    [saveState]
+  );
+
+  const handleListBeforeNavigate = useCallback(
+    (listScrollTop: number) => {
+      saveState({ mode: 'list', sheetHeight: 0, carouselScrollLeft: 0, listScrollTop });
+    },
+    [saveState]
+  );
 
   const {
     mode,
@@ -183,6 +201,11 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
             isLocationFiltered={!!selectedLocationEvents}
             onClearLocationFilter={clearSelection}
             isLoading={isLoading}
+            initialHeight={restoredState?.mode === 'map' ? restoredState.sheetHeight : undefined}
+            initialCarouselScrollLeft={
+              restoredState?.mode === 'map' ? restoredState.carouselScrollLeft : undefined
+            }
+            onBeforeNavigate={handleMapBeforeNavigate}
           />
         )}
         {mode === 'list' && (
@@ -193,6 +216,10 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
             isLocationFiltered={!!selectedLocationEvents}
             onClearLocationFilter={clearSelection}
             isLoading={isLoading}
+            initialScrollTop={
+              restoredState?.mode === 'list' ? restoredState.listScrollTop : undefined
+            }
+            onBeforeNavigate={handleListBeforeNavigate}
           />
         )}
       </div>

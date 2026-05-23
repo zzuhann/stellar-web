@@ -14,6 +14,7 @@ export interface UseBottomSheetOptions {
   halfHeight?: number;
   /** Touch/mouse events targeting this element (or its descendants) will not start a drag */
   excludeRef?: RefObject<HTMLElement | null>;
+  initialHeight?: number;
 }
 
 export interface UseBottomSheetReturn {
@@ -33,11 +34,12 @@ export function useBottomSheet({
   onExpandToHalf,
   halfHeight: halfHeightProp,
   excludeRef,
+  initialHeight,
 }: UseBottomSheetOptions): UseBottomSheetReturn {
-  const [height, setHeight] = useState(PEEK_HEIGHT);
+  const [height, setHeight] = useState(initialHeight ?? PEEK_HEIGHT);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const heightRef = useRef(PEEK_HEIGHT);
+  const heightRef = useRef(initialHeight ?? PEEK_HEIGHT);
   useEffect(() => {
     heightRef.current = height;
   }, [height]);
