@@ -216,11 +216,11 @@ const MapBottomSheet = ({
   // Runs before first paint on client; initializing in useState would cause SSR/client mismatch
   useClientLayoutEffect(() => {
     setMaxHeight(Math.round(window.innerHeight * 0.9));
+    setPrefersReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   }, []);
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mq.matches);
     const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);
