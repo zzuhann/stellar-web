@@ -3,10 +3,8 @@
 import { useCallback } from 'react';
 
 interface MapRestoreState {
-  mode: 'map' | 'list';
   sheetHeight: number;
   carouselScrollLeft: number;
-  listScrollTop: number;
   savedAt: number;
 }
 

@@ -15,7 +15,6 @@ import { useMapStateStorage } from './hooks/useMapStateStorage';
 import MapNewHeader from './MapNewHeader';
 import MapBottomSheet from './MapBottomSheet';
 import MapSingleEventCard from './MapSingleEventCard';
-import EventList from './EventList';
 import { MapEvent } from '@/types';
 
 import { DEFAULT_CENTER, DEFAULT_ZOOM } from './constants';
@@ -74,27 +73,13 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
 
   const handleMapBeforeNavigate = useCallback(
     (sheetHeight: number, carouselScrollLeft: number) => {
-      saveState({ mode: 'map', sheetHeight, carouselScrollLeft, listScrollTop: 0 });
+      saveState({ sheetHeight, carouselScrollLeft });
     },
     [saveState]
   );
 
-  const handleListBeforeNavigate = useCallback(
-    (listScrollTop: number) => {
-      saveState({ mode: 'list', sheetHeight: 0, carouselScrollLeft: 0, listScrollTop });
-    },
-    [saveState]
-  );
-
-  const {
-    mode,
-    selectedEvent,
-    selectedLocationEvents,
-    selectEvent,
-    selectLocation,
-    clearSelection,
-    setMode,
-  } = useMapNewState();
+  const { selectedEvent, selectedLocationEvents, selectEvent, selectLocation, clearSelection } =
+    useMapNewState();
   const mapRef = useRef<L.Map | null>(null);
 
   const handleMapReady = (map: L.Map) => {
@@ -119,16 +104,6 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
       location_name: events[0]?.location?.name ?? events[0]?.location?.city ?? '',
     });
     selectLocation(events);
-  };
-
-  const handleRequestListMode = (triggerMethod: 'drag' | 'list_button') => {
-    sendGAEvent('event', 'map_list_mode_enter', {
-      event_page: '/map-new/[artistId]',
-      user_id: user?.uid ?? '',
-      content_id: artistId,
-      trigger_method: triggerMethod,
-    });
-    setMode('list');
   };
 
   // Prevent body scroll so global Footer doesn't appear below the map
@@ -186,40 +161,23 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
         >
           <ArrowsPointingOutIcon width={20} height={20} />
         </button>
-        {mode === 'map' && selectedEvent && (
+        {selectedEvent && (
           <MapSingleEventCard
             event={selectedEvent}
             artistId={artistId}
             onDismiss={() => selectEvent(null)}
           />
         )}
-        {mode === 'map' && !selectedEvent && (
+        {!selectedEvent && (
           <MapBottomSheet
             artistId={artistId}
             events={displayEvents}
-            onRequestListMode={handleRequestListMode}
             isLocationFiltered={!!selectedLocationEvents}
             onClearLocationFilter={clearSelection}
             isLoading={isLoading}
-            initialHeight={restoredState?.mode === 'map' ? restoredState.sheetHeight : undefined}
-            initialCarouselScrollLeft={
-              restoredState?.mode === 'map' ? restoredState.carouselScrollLeft : undefined
-            }
+            initialHeight={restoredState?.sheetHeight}
+            initialCarouselScrollLeft={restoredState?.carouselScrollLeft}
             onBeforeNavigate={handleMapBeforeNavigate}
-          />
-        )}
-        {mode === 'list' && (
-          <EventList
-            artistId={artistId}
-            events={displayEvents}
-            onBackToMap={() => setMode('map')}
-            isLocationFiltered={!!selectedLocationEvents}
-            onClearLocationFilter={clearSelection}
-            isLoading={isLoading}
-            initialScrollTop={
-              restoredState?.mode === 'list' ? restoredState.listScrollTop : undefined
-            }
-            onBeforeNavigate={handleListBeforeNavigate}
           />
         )}
       </div>

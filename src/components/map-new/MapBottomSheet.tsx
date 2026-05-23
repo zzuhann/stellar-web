@@ -6,7 +6,7 @@ const useClientLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : 
 import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
-import { QueueListIcon, CalendarDaysIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CalendarDaysIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
 import EventCarousel from './EventCarousel';
 import { useBottomSheet } from './hooks/useBottomSheet';
@@ -106,24 +106,6 @@ const sideSlot = css({
   flexShrink: 0,
 });
 
-const listButton = css({
-  width: '32px',
-  height: '32px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: 'none',
-  border: 'none',
-  borderRadius: 'radius.md',
-  cursor: 'pointer',
-  color: 'color.text.secondary',
-  flexShrink: 0,
-  _hover: {
-    background: 'color.background.hover',
-    color: 'color.text.primary',
-  },
-});
-
 // Empty state
 const emptyPanel = css({
   position: 'fixed',
@@ -190,7 +172,6 @@ const skeletonCarouselCard = css({
 export interface MapBottomSheetProps {
   artistId: string;
   events: MapEvent[];
-  onRequestListMode: (triggerMethod: 'drag' | 'list_button') => void;
   isLocationFiltered?: boolean;
   onClearLocationFilter?: () => void;
   onHeightChange?: (h: number) => void;
@@ -203,7 +184,6 @@ export interface MapBottomSheetProps {
 const MapBottomSheet = ({
   artistId,
   events,
-  onRequestListMode,
   isLocationFiltered,
   onClearLocationFilter,
   onHeightChange,
@@ -259,14 +239,12 @@ const MapBottomSheet = ({
   );
 
   // Hook must be called unconditionally (React rules); empty state ignores height/drag values
-  const { height, isAnimating, isHalfOpen, handleBarBind, onTransitionEnd, snapToHalf } =
-    useBottomSheet({
-      onRequestListMode,
-      onExpandToHalf: handleExpandToHalf,
-      halfHeight: measuredHeight,
-      excludeRef: locationChipRef,
-      initialHeight,
-    });
+  const { height, isAnimating, handleBarBind, onTransitionEnd, snapToHalf } = useBottomSheet({
+    onExpandToHalf: handleExpandToHalf,
+    halfHeight: measuredHeight,
+    excludeRef: locationChipRef,
+    initialHeight,
+  });
 
   // Stable ref so onBeforeNavigate callback doesn't go stale when height updates
   const heightRef = useRef(height);
@@ -418,23 +396,7 @@ const MapBottomSheet = ({
               <span className={countText}>{events.length} 個生日應援</span>
             </div>
 
-            {isHalfOpen ? (
-              <button
-                className={listButton}
-                type="button"
-                aria-label="切換列表模式"
-                onMouseDown={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onRequestListMode('list_button');
-                }}
-              >
-                <QueueListIcon width={20} height={20} />
-              </button>
-            ) : (
-              <div className={sideSlot} />
-            )}
+            <div className={sideSlot} />
           </div>
 
           <EventCarousel
