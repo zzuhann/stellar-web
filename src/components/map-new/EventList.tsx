@@ -15,6 +15,7 @@ import {
   XMarkIcon,
   MapIcon,
 } from '@heroicons/react/24/outline';
+import Skeleton from '@/components/ui/Skeleton';
 
 function formatDateRange(start: string, end: string): string {
   const s = new Date(start);
@@ -295,12 +296,23 @@ const emptyStateClearButton = css({
   justifyContent: 'center',
 });
 
+const skeletonCard = css({
+  display: 'flex',
+  flexDirection: 'row',
+  gap: '3',
+  padding: '3',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.xl',
+});
+
 export interface EventListProps {
   artistId: string;
   events: MapEvent[];
   onBackToMap: () => void;
   isLocationFiltered?: boolean;
   onClearLocationFilter?: () => void;
+  isLoading?: boolean;
 }
 
 const EventList = ({
@@ -309,6 +321,7 @@ const EventList = ({
   onBackToMap,
   isLocationFiltered,
   onClearLocationFilter,
+  isLoading,
 }: EventListProps) => {
   const { user } = useAuth();
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -332,6 +345,45 @@ const EventList = ({
     });
     onBackToMap();
   };
+
+  if (isLoading) {
+    return (
+      <div className={container}>
+        <div className={listArea}>
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className={skeletonCard}>
+              <Skeleton
+                width="100px"
+                height="auto"
+                style={{ aspectRatio: '3/4', flexShrink: 0 }}
+                borderRadius="8px"
+              />
+              <div
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px',
+                  paddingTop: '4px',
+                }}
+              >
+                <Skeleton width="50%" height="12px" borderRadius="9999px" />
+                <Skeleton width="90%" height="16px" borderRadius="4px" />
+                <Skeleton width="75%" height="16px" borderRadius="4px" />
+                <Skeleton width="60%" height="12px" borderRadius="4px" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className={backButtonArea}>
+          <button type="button" className={backButton} onClick={handleBackToMap}>
+            <MapIcon width={14} height={14} color="color.text.primary" />
+            地圖
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (events.length === 0) {
     return (

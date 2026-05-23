@@ -8,6 +8,7 @@ import { QueueListIcon, CalendarDaysIcon, XMarkIcon } from '@heroicons/react/24/
 import { useAuth } from '@/lib/auth-context';
 import EventCarousel from './EventCarousel';
 import { useBottomSheet } from './hooks/useBottomSheet';
+import Skeleton from '@/components/ui/Skeleton';
 
 const drawerContainer = css({
   position: 'fixed',
@@ -172,6 +173,18 @@ const emptyDesc = css({
   whiteSpace: 'pre-line',
 });
 
+const skeletonCarouselCard = css({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '230px',
+  flexShrink: 0,
+  gap: '2',
+  padding: '2',
+  borderRadius: 'radius.xl',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+});
+
 export interface MapBottomSheetProps {
   artistId: string;
   events: MapEvent[];
@@ -179,6 +192,7 @@ export interface MapBottomSheetProps {
   isLocationFiltered?: boolean;
   onClearLocationFilter?: () => void;
   onHeightChange?: (h: number) => void;
+  isLoading?: boolean;
 }
 
 const MapBottomSheet = ({
@@ -188,6 +202,7 @@ const MapBottomSheet = ({
   isLocationFiltered,
   onClearLocationFilter,
   onHeightChange,
+  isLoading,
 }: MapBottomSheetProps) => {
   const { user } = useAuth();
   const innerRef = useRef<HTMLDivElement>(null);
@@ -260,6 +275,53 @@ const MapBottomSheet = ({
     }
     isLocationFilteredRef.current = !!isLocationFiltered;
   }, [isLocationFiltered, snapToHalf, user, artistId]);
+
+  if (isLoading) {
+    return (
+      <div
+        className={drawerContainer}
+        style={{ height: maxHeight > 0 ? `${maxHeight}px` : undefined }}
+      >
+        <div
+          className={drawerInner}
+          style={{ transform: `translateY(${maxHeight > 0 ? maxHeight - 120 : 0}px)` }}
+        >
+          <div ref={innerRef} style={{ paddingBottom: '16px' }}>
+            <div className={handleBarArea} {...handleBarBind}>
+              <div className={sideSlot} />
+              <div className={handleBarCenter}>
+                <div className={handleBar} />
+                <Skeleton width="80px" height="14px" borderRadius="4px" />
+              </div>
+              <div className={sideSlot} />
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '12px',
+                overflowX: 'hidden',
+                paddingInline: '16px',
+                paddingBottom: '8px',
+              }}
+            >
+              {[0, 1, 2].map((i) => (
+                <div key={i} className={skeletonCarouselCard}>
+                  <Skeleton
+                    width="100%"
+                    height="auto"
+                    style={{ aspectRatio: '3/4' }}
+                    borderRadius="8px"
+                  />
+                  <Skeleton width="90%" height="14px" borderRadius="4px" />
+                  <Skeleton width="60%" height="12px" borderRadius="4px" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (events.length === 0) {
     return (

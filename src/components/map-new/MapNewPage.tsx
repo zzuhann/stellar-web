@@ -11,7 +11,6 @@ import { useAuth } from '@/lib/auth-context';
 import useMapPageData from '@/components/map/hook/useMapPageData';
 import useMapNewLocation from './hooks/useMapNewLocation';
 import { useMapNewState } from './hooks/useMapNewState';
-import Loading from '@/components/Loading';
 import MapNewHeader from './MapNewHeader';
 import MapBottomSheet from './MapBottomSheet';
 import MapSingleEventCard from './MapSingleEventCard';
@@ -36,13 +35,6 @@ const mapArea = css({
   position: 'absolute',
   inset: '0',
   top: '70px',
-});
-
-const loadingContainer = css({
-  height: '100dvh',
-  width: '100%',
-  maxWidth: '600px',
-  mx: 'auto',
 });
 
 const locateButton = css({
@@ -135,17 +127,10 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
     }
   }, [isMapLoading, isArtistLoading, artistData, router]);
 
-  if (isMapLoading || isArtistLoading) {
-    return (
-      <div className={loadingContainer}>
-        <Loading description="載入中..." style={{ width: '100%' }} />
-      </div>
-    );
-  }
+  if (!isMapLoading && !isArtistLoading && !artistData) return null;
 
-  if (!artistData) return null;
-
-  const artistName = artistData.stageNameZh ?? artistData.stageName ?? '';
+  const isLoading = isMapLoading || isArtistLoading;
+  const artistName = artistData?.stageNameZh ?? artistData?.stageName ?? '';
 
   const displayEvents = selectedLocationEvents ?? mapEvents;
 
@@ -197,6 +182,7 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
             onRequestListMode={handleRequestListMode}
             isLocationFiltered={!!selectedLocationEvents}
             onClearLocationFilter={clearSelection}
+            isLoading={isLoading}
           />
         )}
         {mode === 'list' && (
@@ -206,6 +192,7 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
             onBackToMap={() => setMode('map')}
             isLocationFiltered={!!selectedLocationEvents}
             onClearLocationFilter={clearSelection}
+            isLoading={isLoading}
           />
         )}
       </div>
