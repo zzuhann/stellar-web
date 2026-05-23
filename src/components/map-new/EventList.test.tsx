@@ -17,10 +17,8 @@ vi.mock('@next/third-parties/google', () => ({
   sendGAEvent: vi.fn(),
 }));
 
-const mockPush = vi.fn();
-
 vi.mock('next/navigation', () => ({
-  useRouter: () => ({ push: mockPush }),
+  useRouter: () => ({ push: vi.fn() }),
 }));
 
 vi.mock('next/image', () => ({
@@ -256,24 +254,18 @@ describe('TC-019：列表模式 location chip', () => {
 // 卡片點擊導航
 // ─────────────────────────────────────────────────────────────
 describe('卡片點擊導航', () => {
-  it('點擊含 slug 的卡片應導航至 /event/[slug]', () => {
+  it('含 slug 的卡片 href 應為 /event/[slug]', () => {
     render(<EventList events={[makeEvent()]} {...defaultProps} />);
 
-    const buttons = screen.getAllByRole('button');
-    const eventCard = buttons.find((btn) => btn.textContent?.includes('台北測試活動'));
-    if (eventCard) fireEvent.click(eventCard);
-
-    expect(mockPush).toHaveBeenCalledWith('/event/test-taipei-event');
+    const card = screen.getByTestId('event-card');
+    expect(card.getAttribute('href')).toBe('/event/test-taipei-event');
   });
 
-  it('slug 不存在時，應導航至 /event/[id]', () => {
+  it('slug 不存在時，卡片 href 應為 /event/[id]', () => {
     const event = makeEvent({ slug: undefined, id: 'fallback-id' });
     render(<EventList events={[event]} {...defaultProps} />);
 
-    const buttons = screen.getAllByRole('button');
-    const eventCard = buttons.find((btn) => btn.textContent?.includes('台北測試活動'));
-    if (eventCard) fireEvent.click(eventCard);
-
-    expect(mockPush).toHaveBeenCalledWith('/event/fallback-id');
+    const card = screen.getByTestId('event-card');
+    expect(card.getAttribute('href')).toBe('/event/fallback-id');
   });
 });

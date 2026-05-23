@@ -21,7 +21,7 @@ export function useMapStateStorage(artistId: string) {
     (state: Omit<MapRestoreState, 'savedAt'>) => {
       try {
         sessionStorage.setItem(getKey(artistId), JSON.stringify({ ...state, savedAt: Date.now() }));
-      } catch {}
+      } catch (_e) {}
     },
     [artistId]
   );
