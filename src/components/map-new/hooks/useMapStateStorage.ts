@@ -21,7 +21,9 @@ export function useMapStateStorage(artistId: string) {
     (state: Omit<MapRestoreState, 'savedAt'>) => {
       try {
         sessionStorage.setItem(getKey(artistId), JSON.stringify({ ...state, savedAt: Date.now() }));
-      } catch (_e) {}
+      } catch {
+        // sessionStorage may throw in private mode or when storage is full
+      }
     },
     [artistId]
   );
