@@ -1,6 +1,8 @@
 'use client';
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
+
+const useClientLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
@@ -208,19 +210,17 @@ const MapBottomSheet = ({
   const innerRef = useRef<HTMLDivElement>(null);
   const locationChipRef = useRef<HTMLDivElement>(null);
   const [measuredHeight, setMeasuredHeight] = useState<number | undefined>(undefined);
-  // Lazy-init from window to avoid SSR mismatch; this component is 'use client' so window is available
-  const [maxHeight] = useState<number>(() =>
-    typeof window !== 'undefined' ? Math.round(window.innerHeight * 0.9) : 0
-  );
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(() =>
-    typeof window !== 'undefined'
-      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      : false
-  );
+  const [maxHeight, setMaxHeight] = useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  // Subscribe to prefers-reduced-motion changes
+  // Runs before first paint on client; initializing in useState would cause SSR/client mismatch
+  useClientLayoutEffect(() => {
+    setMaxHeight(Math.round(window.innerHeight * 0.9));
+  }, []);
+
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mq.matches);
     const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);

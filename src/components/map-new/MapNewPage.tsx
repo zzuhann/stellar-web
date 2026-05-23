@@ -136,7 +136,7 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
 
   return (
     <>
-      <MapNewHeader artistName={artistName} />
+      <MapNewHeader artistName={artistName} isLoading={isLoading} />
       <div className={pageContainer} id="main-content">
         <div className={mapArea}>
           <MapSection

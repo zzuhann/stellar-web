@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeftIcon, Bars3Icon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import MobileMenu from '@/components/header/MobileMenu';
+import Skeleton from '@/components/ui/Skeleton';
 
 const headerContainer = css({
   position: 'fixed',
@@ -90,9 +91,10 @@ const burgerButton = css({
 
 interface MapNewHeaderProps {
   artistName: string;
+  isLoading?: boolean;
 }
 
-export default function MapNewHeader({ artistName }: MapNewHeaderProps) {
+export default function MapNewHeader({ artistName, isLoading }: MapNewHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
@@ -113,7 +115,11 @@ export default function MapNewHeader({ artistName }: MapNewHeaderProps) {
           </button>
 
           <div className={titleContainer}>
-            <span className={titleText}>{artistName}的生日應援地圖</span>
+            {isLoading ? (
+              <Skeleton width="140px" height="16px" borderRadius="4px" style={{ margin: '0 auto' }} />
+            ) : (
+              <span className={titleText}>{artistName}的生日應援地圖</span>
+            )}
           </div>
 
           <button
