@@ -140,6 +140,7 @@ const EventCarouselCard = ({ event, artistId, onBeforeNavigate }: EventCarouselC
   return (
     <Link
       href={href}
+      prefetch={false}
       className={cardContainer}
       aria-label={`前往 ${event.title} 活動詳情`}
       onClick={handleCardClick}

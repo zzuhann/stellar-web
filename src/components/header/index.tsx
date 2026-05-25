@@ -1,10 +1,8 @@
 'use client';
 
 import { useAuth } from '@/lib/auth-context';
-import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import { usePathname } from 'next/navigation';
 import AuthModal from '../auth/AuthModal';
 import { css } from '@/styled-system/css';
 import DesktopNav from './DesktopNav';
@@ -59,10 +57,6 @@ const logoImage = css({
 const Header = () => {
   const { authModalOpen, toggleAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
-
-  if (pathname?.startsWith('/map-new')) return null;
-
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
@@ -70,13 +64,15 @@ const Header = () => {
       <header className={headerContainer}>
         <h1 className={srOnly}>STELLAR | 台灣生日應援地圖平台</h1>
         <Link href="/" className={logoLink} aria-label="STELLAR 首頁">
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/icon-with-text.png"
             alt="STELLAR"
             width={120}
             height={120}
             className={logoImage}
-            priority
+            loading="eager"
+            decoding="async"
           />
         </Link>
 
@@ -102,9 +98,7 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Mobile Menu */}
       <MobileMenu isOpen={mobileMenuOpen} closeMobileMenu={closeMobileMenu} />
-
       <AuthModal isOpen={authModalOpen} onClose={toggleAuthModal} initialMode="signin" />
     </>
   );

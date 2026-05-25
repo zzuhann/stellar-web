@@ -168,6 +168,7 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
       <div className={css({ position: 'relative' })}>
         <Link
           href={href}
+          prefetch={false}
           className={card}
           aria-label={`前往 ${event.title} 活動詳情`}
           onClick={handleCardClick}

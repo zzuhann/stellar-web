@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
 
@@ -22,57 +22,49 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
   const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    // 監聽路由變化
     const originalPush = router.push;
     const originalReplace = router.replace;
-
-    router.push = (href, options) => {
-      // 解析當前 URL 和目標 URL
-      const currentUrl = new URL(pathname, window.location.origin);
-      const targetUrl = new URL(href, window.location.origin);
-
-      // 只有當路徑不同時才顯示 loading（忽略 query 參數的變化）
-      if (targetUrl.pathname !== currentUrl.pathname) {
+    const getPathnameFromHref = (href: string) => {
+      try {
+        return new URL(href, window.location.origin).pathname;
+      } catch {
+        return href;
+      }
+    };
+    const startLoadingIfPathChanged = (href: string) => {
+      const targetPathname = getPathnameFromHref(href);
+      if (targetPathname !== window.location.pathname) {
         setIsLoading(true);
-        // 設定一個最大超時時間，防止 loading 卡住
-        timeoutId = setTimeout(() => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => {
           setIsLoading(false);
         }, 5000);
       }
+    };
+
+    router.push = (href, options) => {
+      startLoadingIfPathChanged(String(href));
       return originalPush(href, options);
     };
 
     router.replace = (href, options) => {
-      // 解析當前 URL 和目標 URL
-      const currentUrl = new URL(pathname, window.location.origin);
-      const targetUrl = new URL(href, window.location.origin);
-
-      // 只有當路徑不同時才顯示 loading（忽略 query 參數的變化）
-      if (targetUrl.pathname !== currentUrl.pathname) {
-        setIsLoading(true);
-        // 設定一個最大超時時間，防止 loading 卡住
-        timeoutId = setTimeout(() => {
-          setIsLoading(false);
-        }, 5000);
-      }
+      startLoadingIfPathChanged(String(href));
       return originalReplace(href, options);
     };
 
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       router.push = originalPush;
       router.replace = originalReplace;
     };
-  }, [router, pathname]);
+  }, [router]);
 
   // 當 pathname 改變時停止 loading
   useEffect(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsLoading(false);
   }, [pathname]);
 
