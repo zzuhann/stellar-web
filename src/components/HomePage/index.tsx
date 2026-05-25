@@ -49,9 +49,12 @@ export const contentWrapper = css({
   gap: '4',
 });
 
+const HEADER_HEIGHT = 70;
+
 function HomePageContent() {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const searchTriggerRef = useRef<HTMLButtonElement>(null);
+  const weekSectionRef = useRef<HTMLElement>(null);
 
   usePageView({ eventPage: '/' });
 
@@ -59,6 +62,22 @@ function HomePageContent() {
     useWeekNavigation();
 
   const { activeTab, handleTabChange } = useTabState();
+
+  const scrollToWeekSection = () => {
+    if (!weekSectionRef.current) return;
+    const top = weekSectionRef.current.getBoundingClientRect().top + window.scrollY - HEADER_HEIGHT;
+    window.scrollTo({ top, behavior: 'smooth' });
+  };
+
+  const handlePreviousWeek = (tab: 'birthday' | 'events') => {
+    goToPreviousWeek(tab);
+    scrollToWeekSection();
+  };
+
+  const handleNextWeek = () => {
+    goToNextWeek();
+    scrollToWeekSection();
+  };
 
   const { weekBirthdayArtists, isLoading: isArtistsLoading } = useBirthdayArtists();
   const { weeklyEvents, isLoading: isEventsLoading } = useWeeklyEvents();
@@ -75,14 +94,14 @@ function HomePageContent() {
           {/* 擁有最多生咖的藝人 */}
           <TopArtistsSection />
 
-          <section aria-label="每週壽星與生日應援">
+          <section aria-label="每週壽星與生日應援" ref={weekSectionRef}>
             <WeekNavigation
               currentWeekStart={currentWeekStart}
               currentWeekEnd={currentWeekEnd}
               isCurrentWeek={isCurrentWeek}
               activeTab={activeTab}
-              onPreviousWeek={goToPreviousWeek}
-              onNextWeek={goToNextWeek}
+              onPreviousWeek={handlePreviousWeek}
+              onNextWeek={handleNextWeek}
               onTabChange={handleTabChange}
             />
 
