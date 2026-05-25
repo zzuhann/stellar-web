@@ -179,6 +179,7 @@ export interface MapBottomSheetProps {
   initialHeight?: number;
   initialCarouselScrollLeft?: number;
   onBeforeNavigate?: (sheetHeight: number, carouselScrollLeft: number) => void;
+  onRestoredStateConsumed?: () => void;
 }
 
 const MapBottomSheet = ({
@@ -191,6 +192,7 @@ const MapBottomSheet = ({
   initialHeight,
   initialCarouselScrollLeft,
   onBeforeNavigate,
+  onRestoredStateConsumed,
 }: MapBottomSheetProps) => {
   const { user } = useAuth();
   const innerRef = useRef<HTMLDivElement>(null);
@@ -207,6 +209,7 @@ const MapBottomSheet = ({
     if (initialCarouselScrollLeft && carouselContainerRef.current) {
       carouselContainerRef.current.scrollLeft = initialCarouselScrollLeft;
     }
+    onRestoredStateConsumed?.();
   }, []);
 
   useEffect(() => {

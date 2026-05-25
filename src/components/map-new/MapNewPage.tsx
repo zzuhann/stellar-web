@@ -69,7 +69,7 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
   const { latitude, longitude } = useMapNewLocation();
 
   const { saveState, consumeRestoredState } = useMapStateStorage(artistId);
-  const [restoredState] = useState(() => consumeRestoredState());
+  const [restoredState, setRestoredState] = useState(() => consumeRestoredState());
 
   const handleMapBeforeNavigate = useCallback(
     (sheetHeight: number, carouselScrollLeft: number) => {
@@ -178,6 +178,7 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
             initialHeight={restoredState?.sheetHeight}
             initialCarouselScrollLeft={restoredState?.carouselScrollLeft}
             onBeforeNavigate={handleMapBeforeNavigate}
+            onRestoredStateConsumed={() => setRestoredState(null)}
           />
         )}
       </div>
