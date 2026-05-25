@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
@@ -39,6 +39,8 @@ const card = css({
   cursor: 'pointer',
   border: '1px solid',
   borderColor: 'color.border.light',
+  textDecoration: 'none',
+  color: 'inherit',
 });
 
 const imageArea = css({
@@ -141,13 +143,15 @@ export interface MapSingleEventCardProps {
 }
 
 const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardProps) => {
-  const router = useRouter();
   const { user } = useAuth();
 
   const dateRange =
     event.datetime?.start && event.datetime?.end
       ? formatDateRange(event.datetime.start, event.datetime.end)
       : '';
+
+  const eventSlug = event.slug || event.id;
+  const href = eventSlug ? `/event/${eventSlug}` : '#';
 
   const handleCardClick = () => {
     sendGAEvent('event', 'click_event_detail', {
@@ -157,79 +161,86 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
       artist_id: artistId,
       source: 'map_single_card',
     });
-    const href = event.slug ? `/event/${event.slug}` : `/event/${event.id}`;
-    router.push(href);
   };
 
   return (
     <div className={wrapper}>
-      <div
-        className={card}
-        onClick={handleCardClick}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
-      >
-        <div className={imageArea}>
-          {event.mainImage ? (
-            <Image
-              src={event.mainImage}
-              alt={event.title}
-              fill
-              sizes="100px"
-              className={imageCss}
-            />
-          ) : (
-            <div className={placeholderBg} />
-          )}
-        </div>
+      <div className={css({ position: 'relative' })}>
+        <Link
+          href={href}
+          prefetch={false}
+          className={card}
+          aria-label={`前往 ${event.title} 活動詳情`}
+          onClick={handleCardClick}
+        >
+          <div className={imageArea}>
+            {event.mainImage ? (
+              <Image
+                src={event.mainImage}
+                alt={event.title}
+                fill
+                sizes="100px"
+                className={imageCss}
+              />
+            ) : (
+              <div className={placeholderBg} />
+            )}
+          </div>
 
-        <div className={infoArea}>
-          {event.location?.city && <span className={cityText}>{event.location.city}</span>}
-          <p
-            className={titleText}
-            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-          >
-            {event.title}
-          </p>
-          {dateRange && (
-            <div className={dateRow}>
-              <CalendarIcon
-                width={14}
-                height={14}
-                className={css({ flexShrink: 0, color: 'color.text.secondary' })}
-              />
-              <p
-                className={metaText}
-                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-              >
-                {dateRange}
-              </p>
-            </div>
-          )}
-          {event.location?.name && (
-            <div className={venueRow}>
-              <MapPinIcon
-                width={14}
-                height={14}
-                className={css({ flexShrink: 0, color: 'color.text.secondary', marginTop: '1' })}
-              />
-              <span
-                className={metaText}
-                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-              >
-                {event.location.name}
-              </span>
-            </div>
-          )}
-        </div>
+          <div className={infoArea}>
+            {event.location?.city && <span className={cityText}>{event.location.city}</span>}
+            <p
+              className={titleText}
+              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+            >
+              {event.title}
+            </p>
+            {dateRange && (
+              <div className={dateRow}>
+                <CalendarIcon
+                  width={14}
+                  height={14}
+                  className={css({ flexShrink: 0, color: 'color.text.secondary' })}
+                />
+                <p
+                  className={metaText}
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {dateRange}
+                </p>
+              </div>
+            )}
+            {event.location?.name && (
+              <div className={venueRow}>
+                <MapPinIcon
+                  width={14}
+                  height={14}
+                  className={css({ flexShrink: 0, color: 'color.text.secondary', marginTop: '1' })}
+                />
+                <span
+                  className={metaText}
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {event.location.name}
+                </span>
+              </div>
+            )}
+          </div>
+        </Link>
 
         <button
           className={closeButton}
           type="button"
           aria-label="關閉"
-          onClick={(e) => {
-            e.stopPropagation();
+          onClick={() => {
             sendGAEvent('event', 'map_single_card_close', {
               event_page: '/map-new/[artistId]',
               user_id: user?.uid ?? '',

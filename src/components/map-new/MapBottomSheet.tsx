@@ -1,13 +1,16 @@
 'use client';
 
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
+
+const useClientLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
-import { QueueListIcon, CalendarDaysIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CalendarDaysIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
 import EventCarousel from './EventCarousel';
 import { useBottomSheet } from './hooks/useBottomSheet';
+import Skeleton from '@/components/ui/Skeleton';
 
 const drawerContainer = css({
   position: 'fixed',
@@ -16,14 +19,19 @@ const drawerContainer = css({
   right: '0',
   maxWidth: '600px',
   mx: 'auto',
+  overflow: 'hidden',
+  zIndex: '10',
+  pointerEvents: 'none',
+});
+
+const drawerInner = css({
   background: 'color.background.secondary',
   borderRadius: '16px 16px 0 0',
   boxShadow: '0 -4px 20px var(--colors-alpha-black-15)',
-  overflow: 'hidden',
-  zIndex: '10',
   display: 'flex',
   flexDirection: 'column',
   paddingX: '4',
+  pointerEvents: 'auto',
 });
 
 const handleBarArea = css({
@@ -98,24 +106,6 @@ const sideSlot = css({
   flexShrink: 0,
 });
 
-const listButton = css({
-  width: '32px',
-  height: '32px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  background: 'none',
-  border: 'none',
-  borderRadius: 'radius.md',
-  cursor: 'pointer',
-  color: 'color.text.secondary',
-  flexShrink: 0,
-  _hover: {
-    background: 'color.background.hover',
-    color: 'color.text.primary',
-  },
-});
-
 // Empty state
 const emptyPanel = css({
   position: 'fixed',
@@ -167,24 +157,68 @@ const emptyDesc = css({
   whiteSpace: 'pre-line',
 });
 
+const skeletonCarouselCard = css({
+  display: 'flex',
+  flexDirection: 'column',
+  width: '230px',
+  flexShrink: 0,
+  gap: '2',
+  padding: '2',
+  borderRadius: 'radius.xl',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+});
+
 export interface MapBottomSheetProps {
   artistId: string;
   events: MapEvent[];
-  onRequestListMode: (triggerMethod: 'drag' | 'list_button') => void;
   isLocationFiltered?: boolean;
   onClearLocationFilter?: () => void;
+  onHeightChange?: (h: number) => void;
+  isLoading?: boolean;
+  initialHeight?: number;
+  initialCarouselScrollLeft?: number;
+  onBeforeNavigate?: (sheetHeight: number, carouselScrollLeft: number) => void;
+  onRestoredStateConsumed?: () => void;
 }
 
 const MapBottomSheet = ({
   artistId,
   events,
-  onRequestListMode,
   isLocationFiltered,
   onClearLocationFilter,
+  onHeightChange,
+  isLoading,
+  initialHeight,
+  initialCarouselScrollLeft,
+  onBeforeNavigate,
+  onRestoredStateConsumed,
 }: MapBottomSheetProps) => {
   const { user } = useAuth();
   const innerRef = useRef<HTMLDivElement>(null);
+  const locationChipRef = useRef<HTMLDivElement>(null);
+  const carouselContainerRef = useRef<HTMLDivElement>(null);
   const [measuredHeight, setMeasuredHeight] = useState<number | undefined>(undefined);
+  const [maxHeight, setMaxHeight] = useState(0);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  // Runs before first paint on client; initializing in useState would cause SSR/client mismatch.
+  // Intentionally run once to consume restored state exactly once on initial mount.
+  useClientLayoutEffect(() => {
+    setMaxHeight(Math.round(window.innerHeight * 0.9));
+    setPrefersReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    if (initialCarouselScrollLeft && carouselContainerRef.current) {
+      carouselContainerRef.current.scrollLeft = initialCarouselScrollLeft;
+    }
+    onRestoredStateConsumed?.();
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handler = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   useEffect(() => {
     const el = innerRef.current;
@@ -209,12 +243,26 @@ const MapBottomSheet = ({
   );
 
   // Hook must be called unconditionally (React rules); empty state ignores height/drag values
-  const { height, isAnimating, isHalfOpen, handleBarBind, onTransitionEnd, snapToHalf } =
-    useBottomSheet({
-      onRequestListMode,
-      onExpandToHalf: handleExpandToHalf,
-      halfHeight: measuredHeight,
-    });
+  const { height, isAnimating, handleBarBind, onTransitionEnd, snapToHalf } = useBottomSheet({
+    onExpandToHalf: handleExpandToHalf,
+    halfHeight: measuredHeight,
+    excludeRef: locationChipRef,
+    initialHeight,
+  });
+
+  // Stable ref so onBeforeNavigate callback doesn't go stale when height updates
+  const heightRef = useRef(height);
+  useEffect(() => {
+    heightRef.current = height;
+  }, [height]);
+
+  const handleCarouselBeforeNavigate = useCallback(() => {
+    onBeforeNavigate?.(heightRef.current, carouselContainerRef.current?.scrollLeft ?? 0);
+  }, [onBeforeNavigate]);
+
+  useEffect(() => {
+    onHeightChange?.(height);
+  }, [height, onHeightChange]);
 
   // Auto-open to half when a location filter is applied
   const isLocationFilteredRef = useRef(false);
@@ -231,6 +279,53 @@ const MapBottomSheet = ({
     isLocationFilteredRef.current = !!isLocationFiltered;
   }, [isLocationFiltered, snapToHalf, user, artistId]);
 
+  if (isLoading) {
+    return (
+      <div
+        className={drawerContainer}
+        style={{ height: maxHeight > 0 ? `${maxHeight}px` : undefined }}
+      >
+        <div
+          className={drawerInner}
+          style={{ transform: `translateY(${maxHeight > 0 ? maxHeight - 120 : 0}px)` }}
+        >
+          <div ref={innerRef} style={{ paddingBottom: '16px' }}>
+            <div className={handleBarArea} {...handleBarBind}>
+              <div className={sideSlot} />
+              <div className={handleBarCenter}>
+                <div className={handleBar} />
+                <Skeleton width="80px" height="14px" borderRadius="4px" />
+              </div>
+              <div className={sideSlot} />
+            </div>
+            <div
+              style={{
+                display: 'flex',
+                gap: '12px',
+                overflowX: 'hidden',
+                paddingInline: '16px',
+                paddingBottom: '8px',
+              }}
+            >
+              {[0, 1, 2].map((i) => (
+                <div key={i} className={skeletonCarouselCard}>
+                  <Skeleton
+                    width="100%"
+                    height="auto"
+                    style={{ aspectRatio: '3/4' }}
+                    borderRadius="8px"
+                  />
+                  <Skeleton width="90%" height="14px" borderRadius="4px" />
+                  <Skeleton width="60%" height="12px" borderRadius="4px" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (events.length === 0) {
     return (
       <div className={emptyPanel}>
@@ -244,73 +339,77 @@ const MapBottomSheet = ({
     );
   }
 
+  const translateY = maxHeight > 0 ? maxHeight - height : 0;
+  const transitionEasing = isAnimating ? 'ease-out' : 'ease-in';
+  const transitionStyle = prefersReducedMotion
+    ? 'none'
+    : `transform ${isAnimating ? 250 : 200}ms ${transitionEasing}`;
+
   return (
     <div
       className={drawerContainer}
       data-testid="bottom-sheet"
-      style={{
-        height: `${height}px`,
-        transition: isAnimating ? 'height 0.3s ease-out' : 'none',
-      }}
-      onTransitionEnd={onTransitionEnd}
+      style={{ height: maxHeight > 0 ? `${maxHeight}px` : undefined }}
     >
-      {/* paddingBottom ensures scrollHeight naturally includes bottom spacing */}
-      <div ref={innerRef} style={{ paddingBottom: '16px' }}>
-        <div className={handleBarArea} data-testid="handle-bar-area" {...handleBarBind}>
-          <div className={sideSlot} />
+      {/* Inner sheet slides up/down via translateY; transition removed during drag */}
+      <div
+        className={drawerInner}
+        style={{
+          transform: `translateY(${translateY}px)`,
+          transition: isAnimating ? transitionStyle : 'none',
+        }}
+        onTransitionEnd={onTransitionEnd}
+      >
+        {/* paddingBottom ensures scrollHeight naturally includes bottom spacing */}
+        <div ref={innerRef} style={{ paddingBottom: '16px' }}>
+          <div className={handleBarArea} data-testid="handle-bar-area" {...handleBarBind}>
+            <div className={sideSlot} />
 
-          <div className={handleBarCenter}>
-            {isLocationFiltered && onClearLocationFilter ? (
-              <div
-                className={locationChip}
-                onMouseDown={(e) => e.stopPropagation()}
-                onTouchStart={(e) => e.stopPropagation()}
-              >
-                <span className={locationChipText}>
-                  {events[0]?.location?.name ?? events[0]?.location?.city ?? ''}
-                </span>
-                <button
-                  type="button"
-                  className={locationChipClose}
-                  aria-label="清除地點篩選"
-                  onClick={() => {
-                    sendGAEvent('event', 'map_location_filter_clear', {
-                      event_page: '/map-new/[artistId]',
-                      user_id: user?.uid ?? '',
-                      content_id: artistId,
-                    });
-                    onClearLocationFilter?.();
-                  }}
+            <div className={handleBarCenter}>
+              {isLocationFiltered && onClearLocationFilter ? (
+                <div
+                  ref={locationChipRef}
+                  className={locationChip}
+                  onMouseDown={(e) => e.stopPropagation()}
                 >
-                  <XMarkIcon width={14} height={14} />
-                </button>
-              </div>
-            ) : (
-              <div className={handleBar} />
-            )}
-            <span className={countText}>{events.length} 個生日應援</span>
+                  <span
+                    className={locationChipText}
+                    title={events[0]?.location?.name ?? events[0]?.location?.city ?? ''}
+                  >
+                    {events[0]?.location?.name ?? events[0]?.location?.city ?? ''}
+                  </span>
+                  <button
+                    type="button"
+                    className={locationChipClose}
+                    aria-label="清除地點篩選"
+                    onClick={() => {
+                      sendGAEvent('event', 'map_location_filter_clear', {
+                        event_page: '/map-new/[artistId]',
+                        user_id: user?.uid ?? '',
+                        content_id: artistId,
+                      });
+                      onClearLocationFilter?.();
+                    }}
+                  >
+                    <XMarkIcon width={14} height={14} />
+                  </button>
+                </div>
+              ) : (
+                <div className={handleBar} />
+              )}
+              <span className={countText}>{events.length} 個生日應援</span>
+            </div>
+
+            <div className={sideSlot} />
           </div>
 
-          {isHalfOpen ? (
-            <button
-              className={listButton}
-              type="button"
-              aria-label="切換列表模式"
-              onMouseDown={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                onRequestListMode('list_button');
-              }}
-            >
-              <QueueListIcon width={20} height={20} />
-            </button>
-          ) : (
-            <div className={sideSlot} />
-          )}
+          <EventCarousel
+            events={events}
+            artistId={artistId}
+            containerRef={carouselContainerRef}
+            onBeforeNavigate={handleCarouselBeforeNavigate}
+          />
         </div>
-
-        <EventCarousel events={events} artistId={artistId} />
       </div>
     </div>
   );

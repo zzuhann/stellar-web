@@ -7,8 +7,15 @@ let swRegistrationPromise: Promise<ServiceWorkerRegistration> | null = null;
 
 export default function ServiceWorkerRegistration() {
   useEffect(() => {
-    // 在開發環境中不註冊 service worker
+    // 在開發環境中主動移除舊的 service worker，避免殘留快取干擾調試
     if (process.env.NODE_ENV === 'development') {
+      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          registrations.forEach((registration) => {
+            void registration.unregister();
+          });
+        });
+      }
       return;
     }
 

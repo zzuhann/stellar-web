@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
@@ -29,6 +29,8 @@ const cardContainer = css({
   background: 'color.background.primary',
   boxShadow: 'shadow.sm',
   padding: '2',
+  textDecoration: 'none',
+  color: 'inherit',
 });
 
 const imageArea = css({
@@ -111,17 +113,21 @@ const venueText = css({
 export interface EventCarouselCardProps {
   event: MapEvent;
   artistId: string;
+  onBeforeNavigate?: () => void;
 }
 
-const EventCarouselCard = ({ event, artistId }: EventCarouselCardProps) => {
-  const router = useRouter();
+const EventCarouselCard = ({ event, artistId, onBeforeNavigate }: EventCarouselCardProps) => {
   const { user } = useAuth();
   const dateRange =
     event.datetime?.start && event.datetime?.end
       ? formatDateRange(event.datetime.start, event.datetime.end)
       : '';
 
+  const eventSlug = event.slug || event.id;
+  const href = eventSlug ? `/event/${eventSlug}` : '#';
+
   const handleCardClick = () => {
+    onBeforeNavigate?.();
     sendGAEvent('event', 'click_event_detail', {
       event_page: '/map-new/[artistId]',
       user_id: user?.uid ?? '',
@@ -129,17 +135,15 @@ const EventCarouselCard = ({ event, artistId }: EventCarouselCardProps) => {
       artist_id: artistId,
       source: 'carousel',
     });
-    const href = event.slug ? `/event/${event.slug}` : `/event/${event.id}`;
-    router.push(href);
   };
 
   return (
-    <div
+    <Link
+      href={href}
+      prefetch={false}
       className={cardContainer}
+      aria-label={`前往 ${event.title} 活動詳情`}
       onClick={handleCardClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => e.key === 'Enter' && handleCardClick()}
     >
       {/* Image area */}
       <div className={imageArea}>
@@ -185,7 +189,7 @@ const EventCarouselCard = ({ event, artistId }: EventCarouselCardProps) => {
           </div>
         )}
       </div>
-    </div>
+    </Link>
   );
 };
 

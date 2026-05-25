@@ -1,11 +1,15 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 
 interface LoadingContextType {
   isLoading: boolean;
+}
+
+interface PendingNavigation {
+  fromPathname: string;
+  toPathname: string;
 }
 
 const LoadingContext = createContext<LoadingContextType>({
@@ -19,62 +23,69 @@ interface LoadingProviderProps {
 }
 
 export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) => {
-  const [isLoading, setIsLoading] = useState(false);
   const pathname = usePathname();
-  const router = useRouter();
+  const [pendingNavigation, setPendingNavigation] = useState<PendingNavigation | null>(null);
+  const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-
-    // 監聽路由變化
-    const originalPush = router.push;
-    const originalReplace = router.replace;
-
-    router.push = (href, options) => {
-      // 解析當前 URL 和目標 URL
-      const currentUrl = new URL(pathname, window.location.origin);
-      const targetUrl = new URL(href, window.location.origin);
-
-      // 只有當路徑不同時才顯示 loading（忽略 query 參數的變化）
-      if (targetUrl.pathname !== currentUrl.pathname) {
-        setIsLoading(true);
-        // 設定一個最大超時時間，防止 loading 卡住
-        timeoutId = setTimeout(() => {
-          setIsLoading(false);
-        }, 5000);
+    const clearPendingTimeout = () => {
+      if (timeoutRef.current) {
+        window.clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
-      return originalPush(href, options);
     };
 
-    router.replace = (href, options) => {
-      // 解析當前 URL 和目標 URL
-      const currentUrl = new URL(pathname, window.location.origin);
-      const targetUrl = new URL(href, window.location.origin);
-
-      // 只有當路徑不同時才顯示 loading（忽略 query 參數的變化）
-      if (targetUrl.pathname !== currentUrl.pathname) {
-        setIsLoading(true);
-        // 設定一個最大超時時間，防止 loading 卡住
-        timeoutId = setTimeout(() => {
-          setIsLoading(false);
-        }, 5000);
-      }
-      return originalReplace(href, options);
+    const handlePopState = () => {
+      clearPendingTimeout();
+      setPendingNavigation(null);
     };
+
+    const handleDocumentClick = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+      const target = event.target as Element | null;
+      const anchor = target?.closest('a[href]') as HTMLAnchorElement | null;
+      if (!anchor) return;
+      if (anchor.target && anchor.target !== '_self') return;
+      if (anchor.hasAttribute('download')) return;
+
+      const href = anchor.getAttribute('href');
+      if (!href || href.startsWith('#')) return;
+
+      try {
+        const url = new URL(href, window.location.href);
+        if (url.origin !== window.location.origin) return;
+        if (url.pathname === window.location.pathname) return;
+
+        setPendingNavigation({
+          fromPathname: window.location.pathname,
+          toPathname: url.pathname,
+        });
+        clearPendingTimeout();
+        timeoutRef.current = window.setTimeout(() => {
+          setPendingNavigation(null);
+          timeoutRef.current = null;
+        }, 5000);
+      } catch {
+        // Ignore malformed href
+      }
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+    window.addEventListener('popstate', handlePopState);
 
     return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-      router.push = originalPush;
-      router.replace = originalReplace;
+      document.removeEventListener('click', handleDocumentClick);
+      window.removeEventListener('popstate', handlePopState);
+      clearPendingTimeout();
     };
-  }, [router, pathname]);
+  }, []);
 
-  // 當 pathname 改變時停止 loading
-  useEffect(() => {
-    setIsLoading(false);
-  }, [pathname]);
+  const isLoading =
+    pendingNavigation !== null &&
+    pathname === pendingNavigation.fromPathname &&
+    pathname !== pendingNavigation.toPathname;
 
   return (
     <LoadingContext.Provider value={{ isLoading }}>

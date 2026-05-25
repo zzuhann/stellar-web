@@ -1,5 +1,6 @@
 'use client';
 
+import { RefObject } from 'react';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
 import EventCarouselCard from './EventCarouselCard';
@@ -26,14 +27,26 @@ const scrollContainer = css({
 export interface EventCarouselProps {
   events: MapEvent[];
   artistId: string;
+  containerRef?: RefObject<HTMLDivElement | null>;
+  onBeforeNavigate?: () => void;
 }
 
-const EventCarousel = ({ events, artistId }: EventCarouselProps) => {
+const EventCarousel = ({
+  events,
+  artistId,
+  containerRef,
+  onBeforeNavigate,
+}: EventCarouselProps) => {
   return (
     <div className={carouselWrapper}>
-      <div className={scrollContainer}>
+      <div className={scrollContainer} ref={containerRef}>
         {events.map((event) => (
-          <EventCarouselCard key={event.id} event={event} artistId={artistId} />
+          <EventCarouselCard
+            key={event.id}
+            event={event}
+            artistId={artistId}
+            onBeforeNavigate={onBeforeNavigate}
+          />
         ))}
       </div>
     </div>

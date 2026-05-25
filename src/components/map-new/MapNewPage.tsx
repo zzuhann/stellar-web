@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import L from 'leaflet';
@@ -11,11 +11,10 @@ import { useAuth } from '@/lib/auth-context';
 import useMapPageData from '@/components/map/hook/useMapPageData';
 import useMapNewLocation from './hooks/useMapNewLocation';
 import { useMapNewState } from './hooks/useMapNewState';
-import Loading from '@/components/Loading';
+import { useMapStateStorage } from './hooks/useMapStateStorage';
 import MapNewHeader from './MapNewHeader';
 import MapBottomSheet from './MapBottomSheet';
 import MapSingleEventCard from './MapSingleEventCard';
-import EventList from './EventList';
 import { MapEvent } from '@/types';
 
 import { DEFAULT_CENTER, DEFAULT_ZOOM } from './constants';
@@ -36,13 +35,6 @@ const mapArea = css({
   position: 'absolute',
   inset: '0',
   top: '70px',
-});
-
-const loadingContainer = css({
-  height: '100dvh',
-  width: '100%',
-  maxWidth: '600px',
-  mx: 'auto',
 });
 
 const locateButton = css({
@@ -76,17 +68,19 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
 
   const { latitude, longitude } = useMapNewLocation();
 
-  const {
-    mode,
-    selectedEvent,
-    selectedLocationEvents,
-    selectEvent,
-    selectLocation,
-    clearSelection,
-    setMode,
-  } = useMapNewState();
+  const { saveState, consumeRestoredState } = useMapStateStorage(artistId);
+  const [restoredState, setRestoredState] = useState(() => consumeRestoredState());
+
+  const handleMapBeforeNavigate = useCallback(
+    (sheetHeight: number, carouselScrollLeft: number) => {
+      saveState({ sheetHeight, carouselScrollLeft });
+    },
+    [saveState]
+  );
+
+  const { selectedEvent, selectedLocationEvents, selectEvent, selectLocation, clearSelection } =
+    useMapNewState();
   const mapRef = useRef<L.Map | null>(null);
-  const hasAutoCenteredRef = useRef(false);
 
   const handleMapReady = (map: L.Map) => {
     mapRef.current = map;
@@ -112,16 +106,6 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
     selectLocation(events);
   };
 
-  const handleRequestListMode = (triggerMethod: 'drag' | 'list_button') => {
-    sendGAEvent('event', 'map_list_mode_enter', {
-      event_page: '/map-new/[artistId]',
-      user_id: user?.uid ?? '',
-      content_id: artistId,
-      trigger_method: triggerMethod,
-    });
-    setMode('list');
-  };
-
   // Prevent body scroll so global Footer doesn't appear below the map
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -130,38 +114,22 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
     };
   }, []);
 
-  // Auto-center map to user GPS position on first acquisition
-  useEffect(() => {
-    if (hasAutoCenteredRef.current) return;
-    if (latitude && longitude && mapRef.current) {
-      hasAutoCenteredRef.current = true;
-      mapRef.current.setView([latitude, longitude], 8);
-    }
-  }, [latitude, longitude]);
-
   useEffect(() => {
     if (!isMapLoading && !isArtistLoading && !artistData) {
       router.replace('/');
     }
   }, [isMapLoading, isArtistLoading, artistData, router]);
 
-  if (isMapLoading || isArtistLoading) {
-    return (
-      <div className={loadingContainer}>
-        <Loading description="載入中..." style={{ width: '100%' }} />
-      </div>
-    );
-  }
+  if (!isMapLoading && !isArtistLoading && !artistData) return null;
 
-  if (!artistData) return null;
-
-  const artistName = artistData.stageNameZh ?? artistData.stageName ?? '';
+  const isLoading = isMapLoading || isArtistLoading;
+  const artistName = artistData?.stageNameZh ?? artistData?.stageName ?? '';
 
   const displayEvents = selectedLocationEvents ?? mapEvents;
 
   return (
     <>
-      <MapNewHeader artistName={artistName} />
+      <MapNewHeader artistName={artistName} isLoading={isLoading} />
       <div className={pageContainer} id="main-content">
         <div className={mapArea}>
           <MapSection
@@ -193,29 +161,24 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
         >
           <ArrowsPointingOutIcon width={20} height={20} />
         </button>
-        {mode === 'map' && selectedEvent && (
+        {selectedEvent && (
           <MapSingleEventCard
             event={selectedEvent}
             artistId={artistId}
             onDismiss={() => selectEvent(null)}
           />
         )}
-        {mode === 'map' && !selectedEvent && (
+        {!selectedEvent && (
           <MapBottomSheet
             artistId={artistId}
             events={displayEvents}
-            onRequestListMode={handleRequestListMode}
             isLocationFiltered={!!selectedLocationEvents}
             onClearLocationFilter={clearSelection}
-          />
-        )}
-        {mode === 'list' && (
-          <EventList
-            artistId={artistId}
-            events={displayEvents}
-            onBackToMap={() => setMode('map')}
-            isLocationFiltered={!!selectedLocationEvents}
-            onClearLocationFilter={clearSelection}
+            isLoading={isLoading}
+            initialHeight={restoredState?.sheetHeight}
+            initialCarouselScrollLeft={restoredState?.carouselScrollLeft}
+            onBeforeNavigate={handleMapBeforeNavigate}
+            onRestoredStateConsumed={() => setRestoredState(null)}
           />
         )}
       </div>

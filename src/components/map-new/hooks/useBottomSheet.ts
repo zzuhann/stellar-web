@@ -1,17 +1,17 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect, RefCallback } from 'react';
+import { useState, useRef, useCallback, useEffect, RefCallback, RefObject } from 'react';
 
 const PEEK_HEIGHT = 120;
 // Fraction of window height for half-open state
 const HALF_FRACTION = 0.55;
-// Dragging past this fraction triggers list mode
-const LIST_TRIGGER_FRACTION = 0.72;
 
 export interface UseBottomSheetOptions {
-  onRequestListMode: (triggerMethod: 'drag' | 'list_button') => void;
   onExpandToHalf?: (triggerMethod: 'drag' | 'tap_handle') => void;
   halfHeight?: number;
+  /** Touch/mouse events targeting this element (or its descendants) will not start a drag */
+  excludeRef?: RefObject<HTMLElement | null>;
+  initialHeight?: number;
 }
 
 export interface UseBottomSheetReturn {
@@ -27,14 +27,15 @@ export interface UseBottomSheetReturn {
 }
 
 export function useBottomSheet({
-  onRequestListMode,
   onExpandToHalf,
   halfHeight: halfHeightProp,
+  excludeRef,
+  initialHeight,
 }: UseBottomSheetOptions): UseBottomSheetReturn {
-  const [height, setHeight] = useState(PEEK_HEIGHT);
+  const [height, setHeight] = useState(initialHeight ?? PEEK_HEIGHT);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  const heightRef = useRef(PEEK_HEIGHT);
+  const heightRef = useRef(initialHeight ?? PEEK_HEIGHT);
   useEffect(() => {
     heightRef.current = height;
   }, [height]);
@@ -51,11 +52,6 @@ export function useBottomSheet({
     }
     return Math.round(window.innerHeight * HALF_FRACTION);
   }, [halfHeightProp]);
-
-  const getListTriggerHeight = useCallback(() => {
-    if (typeof window === 'undefined') return 600;
-    return Math.round(window.innerHeight * LIST_TRIGGER_FRACTION);
-  }, []);
 
   const snapTo = useCallback((targetHeight: number) => {
     setIsAnimating(true);
@@ -77,7 +73,6 @@ export function useBottomSheet({
     dragStateRef.current.isDragging = false;
 
     const currentHeight = heightRef.current;
-    const listTrigger = getListTriggerHeight();
     const halfHeight = getHalfHeight();
     const dragDistance = Math.abs(currentHeight - startHeight);
 
@@ -89,21 +84,15 @@ export function useBottomSheet({
       return;
     }
 
-    // Dragged past list trigger threshold
-    if (currentHeight >= listTrigger) {
-      snapTo(PEEK_HEIGHT);
-      onRequestListMode('drag');
-      return;
-    }
-
     // Snap to nearest: half or peek
     const midPoint = PEEK_HEIGHT + (halfHeight - PEEK_HEIGHT) * 0.5;
     if (currentHeight > midPoint) onExpandToHalf?.('drag');
     snapTo(currentHeight > midPoint ? halfHeight : PEEK_HEIGHT);
-  }, [getHalfHeight, getListTriggerHeight, snapTo, onRequestListMode, onExpandToHalf]);
+  }, [getHalfHeight, snapTo, onExpandToHalf]);
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {
+      if (excludeRef?.current?.contains(e.target as Node)) return;
       if (Date.now() - lastTouchEndTimeRef.current < 500) return;
       setIsAnimating(false);
       dragStateRef.current = {
@@ -118,7 +107,7 @@ export function useBottomSheet({
         const deltaY = dragStateRef.current.startY - moveEvent.clientY;
         const newHeight = Math.max(
           PEEK_HEIGHT,
-          Math.min(getListTriggerHeight() + 20, dragStateRef.current.startHeight + deltaY)
+          Math.min(getHalfHeight(), dragStateRef.current.startHeight + deltaY)
         );
         setHeight(newHeight);
         heightRef.current = newHeight;
@@ -133,7 +122,7 @@ export function useBottomSheet({
       document.addEventListener('mousemove', onMove, { passive: false });
       document.addEventListener('mouseup', onEnd);
     },
-    [getListTriggerHeight, handleDragEnd]
+    [excludeRef, getHalfHeight, handleDragEnd]
   );
 
   // Keep stable refs so the native listener closure doesn't go stale
@@ -142,66 +131,62 @@ export function useBottomSheet({
     handleDragEndRef.current = handleDragEnd;
   }, [handleDragEnd]);
 
-  const getListTriggerHeightRef = useRef(getListTriggerHeight);
-  useEffect(() => {
-    getListTriggerHeightRef.current = getListTriggerHeight;
-  }, [getListTriggerHeight]);
-
   const handleBarElementRef = useRef<HTMLElement | null>(null);
   const touchStartHandlerRef = useRef<((e: TouchEvent) => void) | null>(null);
 
   // Callback ref: attach native touchstart (passive:false) when element mounts, detach on unmount.
   // Using a callback ref instead of useEffect because ref mutation doesn't trigger re-render.
-  const handleBarRef: RefCallback<HTMLElement> = useCallback((el) => {
-    if (handleBarElementRef.current && touchStartHandlerRef.current) {
-      handleBarElementRef.current.removeEventListener('touchstart', touchStartHandlerRef.current);
-    }
+  const handleBarRef: RefCallback<HTMLElement> = useCallback(
+    (el) => {
+      if (handleBarElementRef.current && touchStartHandlerRef.current) {
+        handleBarElementRef.current.removeEventListener('touchstart', touchStartHandlerRef.current);
+      }
 
-    handleBarElementRef.current = el;
+      handleBarElementRef.current = el;
 
-    if (!el) {
-      touchStartHandlerRef.current = null;
-      return;
-    }
+      if (!el) {
+        touchStartHandlerRef.current = null;
+        return;
+      }
 
-    const handler = (e: TouchEvent) => {
-      e.preventDefault();
-      setIsAnimating(false);
-      dragStateRef.current = {
-        isDragging: true,
-        startY: e.touches[0].clientY,
-        startHeight: heightRef.current,
+      const handler = (e: TouchEvent) => {
+        if (excludeRef?.current?.contains(e.target as Node)) return;
+        e.preventDefault();
+        setIsAnimating(false);
+        dragStateRef.current = {
+          isDragging: true,
+          startY: e.touches[0].clientY,
+          startHeight: heightRef.current,
+        };
+
+        const onMove = (moveEvent: TouchEvent) => {
+          if (!dragStateRef.current.isDragging) return;
+          moveEvent.preventDefault();
+          const deltaY = dragStateRef.current.startY - moveEvent.touches[0].clientY;
+          const newHeight = Math.max(
+            PEEK_HEIGHT,
+            Math.min(getHalfHeight(), dragStateRef.current.startHeight + deltaY)
+          );
+          setHeight(newHeight);
+          heightRef.current = newHeight;
+        };
+
+        const onEnd = () => {
+          lastTouchEndTimeRef.current = Date.now();
+          document.removeEventListener('touchmove', onMove);
+          document.removeEventListener('touchend', onEnd);
+          if (dragStateRef.current.isDragging) handleDragEndRef.current();
+        };
+
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('touchend', onEnd);
       };
 
-      const onMove = (moveEvent: TouchEvent) => {
-        if (!dragStateRef.current.isDragging) return;
-        moveEvent.preventDefault();
-        const deltaY = dragStateRef.current.startY - moveEvent.touches[0].clientY;
-        const newHeight = Math.max(
-          PEEK_HEIGHT,
-          Math.min(
-            getListTriggerHeightRef.current() + 20,
-            dragStateRef.current.startHeight + deltaY
-          )
-        );
-        setHeight(newHeight);
-        heightRef.current = newHeight;
-      };
-
-      const onEnd = () => {
-        lastTouchEndTimeRef.current = Date.now();
-        document.removeEventListener('touchmove', onMove);
-        document.removeEventListener('touchend', onEnd);
-        if (dragStateRef.current.isDragging) handleDragEndRef.current();
-      };
-
-      document.addEventListener('touchmove', onMove, { passive: false });
-      document.addEventListener('touchend', onEnd);
-    };
-
-    touchStartHandlerRef.current = handler;
-    el.addEventListener('touchstart', handler, { passive: false });
-  }, []);
+      touchStartHandlerRef.current = handler;
+      el.addEventListener('touchstart', handler, { passive: false });
+    },
+    [excludeRef, getHalfHeight]
+  );
 
   const snapToHalf = useCallback(() => {
     snapTo(getHalfHeight());
