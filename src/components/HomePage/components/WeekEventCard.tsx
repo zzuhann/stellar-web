@@ -1,0 +1,137 @@
+'use client';
+
+import Image from 'next/image';
+import Link from 'next/link';
+import { css } from '@/styled-system/css';
+import { CoffeeEvent, FirebaseTimestamp } from '@/types';
+import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { firebaseTimestampToDate } from '@/utils';
+
+function formatDateRange(start: FirebaseTimestamp, end: FirebaseTimestamp): string {
+  const s = firebaseTimestampToDate(start);
+  const e = firebaseTimestampToDate(end);
+  const fmt = (d: Date) => `${d.getMonth() + 1}/${String(d.getDate()).padStart(2, '0')}`;
+  return s.toDateString() === e.toDateString() ? fmt(s) : `${fmt(s)} - ${fmt(e)}`;
+}
+
+const cardContainer = css({
+  display: 'flex',
+  flexDirection: 'column',
+  borderRadius: 'radius.lg',
+  overflow: 'hidden',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'color.background.primary',
+  boxShadow: 'shadow.sm',
+  textDecoration: 'none',
+  color: 'inherit',
+  padding: '1',
+  transition: 'box-shadow 0.2s ease',
+  '&:hover': {
+    boxShadow: 'shadow.md',
+  },
+});
+
+const imageArea = css({
+  position: 'relative',
+  aspectRatio: '3 / 4',
+  width: '100%',
+  background: 'color.background.secondary',
+  borderRadius: 'radius.md',
+  overflow: 'hidden',
+  flexShrink: 0,
+});
+
+const infoArea = css({
+  paddingX: '1',
+  paddingTop: '2',
+  paddingBottom: '1',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1',
+});
+
+const titleText = css({
+  textStyle: 'caption',
+  fontWeight: 'semibold',
+  color: 'color.text.primary',
+  lineHeight: '1.3',
+  overflow: 'hidden',
+  marginBottom: '1',
+  lineClamp: 2,
+});
+
+const metaRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1',
+});
+
+const metaText = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+  lineHeight: '1.4',
+  overflow: 'hidden',
+  whiteSpace: 'nowrap',
+  textOverflow: 'ellipsis',
+});
+
+const iconStyle = css({
+  flexShrink: 0,
+  color: 'color.text.secondary',
+});
+
+interface WeekEventCardProps {
+  event: CoffeeEvent;
+}
+
+export default function WeekEventCard({ event }: WeekEventCardProps) {
+  const dateRange = formatDateRange(
+    event.datetime.start as FirebaseTimestamp,
+    event.datetime.end as FirebaseTimestamp
+  );
+  const href = `/event/${event.slug ?? event.id}`;
+
+  return (
+    <Link
+      href={href}
+      prefetch={false}
+      className={cardContainer}
+      aria-label={`前往 ${event.title} 活動詳情`}
+    >
+      <div className={imageArea}>
+        {event.mainImage ? (
+          <Image
+            src={event.mainImage}
+            alt={event.title}
+            fill
+            sizes="(max-width: 600px) 45vw, 200px"
+            style={{ objectFit: 'cover' }}
+          />
+        ) : (
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(135deg, #CDE6F4 0%, #3F5A72 100%)',
+            }}
+          />
+        )}
+      </div>
+
+      <div className={infoArea}>
+        <p className={titleText}>{event.title}</p>
+        <div className={metaRow}>
+          <CalendarIcon width={14} height={14} className={iconStyle} aria-hidden="true" />
+          <span className={metaText}>{dateRange}</span>
+        </div>
+        {event.location?.name && (
+          <div className={metaRow}>
+            <MapPinIcon width={14} height={14} className={iconStyle} aria-hidden="true" />
+            <span className={metaText}>{event.location.name}</span>
+          </div>
+        )}
+      </div>
+    </Link>
+  );
+}
