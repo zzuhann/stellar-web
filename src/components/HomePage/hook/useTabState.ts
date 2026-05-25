@@ -11,9 +11,9 @@ const useTabState = () => {
   const { user } = useAuth();
 
   const [activeTab, setActiveTab] = useQueryState('tab', {
-    defaultValue: 'birthday' as 'birthday' | 'events',
+    defaultValue: 'events' as 'birthday' | 'events',
     parse: (value) => {
-      return value === 'birthday' || value === 'events' ? value : 'birthday';
+      return value === 'birthday' || value === 'events' ? value : 'events';
     },
   });
 
