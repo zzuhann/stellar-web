@@ -1,9 +1,13 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { css } from '@/styled-system/css';
 import { CoffeeEvent, FirebaseTimestamp } from '@/types';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { firebaseTimestampToDate } from '@/utils';
+import { sendGAEvent } from '@next/third-parties/google';
+import { useAuth } from '@/lib/auth-context';
 
 function formatDateRange(start: FirebaseTimestamp, end: FirebaseTimestamp): string {
   const s = firebaseTimestampToDate(start);
@@ -90,11 +94,20 @@ interface WeekEventCardProps {
 }
 
 export default function WeekEventCard({ event }: WeekEventCardProps) {
+  const { user } = useAuth();
   const dateRange = formatDateRange(
     event.datetime.start as FirebaseTimestamp,
     event.datetime.end as FirebaseTimestamp
   );
   const href = `/event/${event.slug ?? event.id}`;
+
+  const handleClick = () => {
+    sendGAEvent('event', 'click_event_card', {
+      event_page: '/',
+      user_id: user?.uid ?? '',
+      content_id: event.id,
+    });
+  };
 
   return (
     <Link
@@ -102,6 +115,7 @@ export default function WeekEventCard({ event }: WeekEventCardProps) {
       prefetch={false}
       className={cardContainer}
       aria-label={`前往 ${event.title} 活動詳情`}
+      onClick={handleClick}
     >
       <div className={imageArea}>
         {event.mainImage ? (

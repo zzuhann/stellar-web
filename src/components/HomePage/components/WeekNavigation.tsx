@@ -122,6 +122,15 @@ export default function WeekNavigation({
     onNextWeek();
   };
 
+  const handleTabChange = (tab: 'birthday' | 'events') => {
+    sendGAEvent('event', 'click_tab', {
+      event_page: '/',
+      user_id: user?.uid ?? '',
+      content_id: tab,
+    });
+    onTabChange(tab);
+  };
+
   return (
     <div className={stickyWrapper}>
       <div className={weekNavigationRow}>
@@ -152,7 +161,7 @@ export default function WeekNavigation({
         </div>
       </div>
 
-      <TabNavigation activeTab={activeTab} onTabChange={onTabChange} />
+      <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
 }

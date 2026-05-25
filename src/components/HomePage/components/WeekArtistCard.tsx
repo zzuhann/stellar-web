@@ -1,8 +1,12 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { css } from '@/styled-system/css';
 import { Artist } from '@/types';
 import CakeIcon from '@heroicons/react/24/outline/CakeIcon';
+import { sendGAEvent } from '@next/third-parties/google';
+import { useAuth } from '@/lib/auth-context';
 
 function formatBirthdayShort(birthday: string): string {
   const [, month, day] = birthday.split('-').map(Number);
@@ -96,15 +100,25 @@ interface WeekArtistCardProps {
 }
 
 export default function WeekArtistCard({ artist }: WeekArtistCardProps) {
+  const { user } = useAuth();
   const href = `/map/${artist.slug ?? artist.id}`;
   const birthday = formatBirthdayShort(artist.birthday ?? '');
   const count = artist.coffeeEventCount ?? 0;
+
+  const handleClick = () => {
+    sendGAEvent('event', 'click_artist_card', {
+      event_page: '/',
+      user_id: user?.uid ?? '',
+      content_id: artist.id,
+    });
+  };
 
   return (
     <Link
       href={href}
       className={cardLink}
       aria-label={`前往 ${artist.stageName} 的生日應援地圖頁面`}
+      onClick={handleClick}
     >
       <div className={avatarWrapper}>
         <Image
