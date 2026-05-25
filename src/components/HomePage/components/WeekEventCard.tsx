@@ -82,6 +82,21 @@ const imagePlaceholder = css({
   background: 'linear-gradient(135deg, {colors.stellarBlue.50} 0%, {colors.stellarBlue.500} 100%)',
 });
 
+const cityBadge = css({
+  position: 'absolute',
+  top: '2',
+  left: '2',
+  background: 'white',
+  color: 'color.text.primary',
+  textStyle: 'caption',
+  paddingX: '2',
+  paddingY: '0.5',
+  borderRadius: '9999px',
+  // lineHeight: '1.4',
+  zIndex: '1',
+  boxShadow: 'shadow.md',
+});
+
 interface WeekEventCardProps {
   event: CoffeeEvent;
 }
@@ -122,6 +137,7 @@ export default function WeekEventCard({ event }: WeekEventCardProps) {
         ) : (
           <div className={imagePlaceholder} />
         )}
+        {event.location?.city && <span className={cityBadge}>{event.location.city}</span>}
       </div>
 
       <div className={infoArea}>
