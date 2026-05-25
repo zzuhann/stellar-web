@@ -165,72 +165,81 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
 
   return (
     <div className={wrapper}>
-      <Link
-        href={href}
-        className={card}
-        aria-label={`前往 ${event.title} 活動詳情`}
-        onClick={handleCardClick}
-      >
-        <div className={imageArea}>
-          {event.mainImage ? (
-            <Image
-              src={event.mainImage}
-              alt={event.title}
-              fill
-              sizes="100px"
-              className={imageCss}
-            />
-          ) : (
-            <div className={placeholderBg} />
-          )}
-        </div>
+      <div className={css({ position: 'relative' })}>
+        <Link
+          href={href}
+          className={card}
+          aria-label={`前往 ${event.title} 活動詳情`}
+          onClick={handleCardClick}
+        >
+          <div className={imageArea}>
+            {event.mainImage ? (
+              <Image
+                src={event.mainImage}
+                alt={event.title}
+                fill
+                sizes="100px"
+                className={imageCss}
+              />
+            ) : (
+              <div className={placeholderBg} />
+            )}
+          </div>
 
-        <div className={infoArea}>
-          {event.location?.city && <span className={cityText}>{event.location.city}</span>}
-          <p
-            className={titleText}
-            style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-          >
-            {event.title}
-          </p>
-          {dateRange && (
-            <div className={dateRow}>
-              <CalendarIcon
-                width={14}
-                height={14}
-                className={css({ flexShrink: 0, color: 'color.text.secondary' })}
-              />
-              <p
-                className={metaText}
-                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-              >
-                {dateRange}
-              </p>
-            </div>
-          )}
-          {event.location?.name && (
-            <div className={venueRow}>
-              <MapPinIcon
-                width={14}
-                height={14}
-                className={css({ flexShrink: 0, color: 'color.text.secondary', marginTop: '1' })}
-              />
-              <span
-                className={metaText}
-                style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-              >
-                {event.location.name}
-              </span>
-            </div>
-          )}
-        </div>
+          <div className={infoArea}>
+            {event.location?.city && <span className={cityText}>{event.location.city}</span>}
+            <p
+              className={titleText}
+              style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+            >
+              {event.title}
+            </p>
+            {dateRange && (
+              <div className={dateRow}>
+                <CalendarIcon
+                  width={14}
+                  height={14}
+                  className={css({ flexShrink: 0, color: 'color.text.secondary' })}
+                />
+                <p
+                  className={metaText}
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {dateRange}
+                </p>
+              </div>
+            )}
+            {event.location?.name && (
+              <div className={venueRow}>
+                <MapPinIcon
+                  width={14}
+                  height={14}
+                  className={css({ flexShrink: 0, color: 'color.text.secondary', marginTop: '1' })}
+                />
+                <span
+                  className={metaText}
+                  style={{
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                  }}
+                >
+                  {event.location.name}
+                </span>
+              </div>
+            )}
+          </div>
+        </Link>
 
         <button
           className={closeButton}
           type="button"
           aria-label="關閉"
-          onClick={(e) => {
-            e.stopPropagation();
+          onClick={() => {
             sendGAEvent('event', 'map_single_card_close', {
               event_page: '/map-new/[artistId]',
               user_id: user?.uid ?? '',
@@ -242,7 +251,7 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
         >
           <XMarkIcon width={16} height={16} />
         </button>
-      </Link>
+      </div>
     </div>
   );
 };
