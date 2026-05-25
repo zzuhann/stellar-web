@@ -69,6 +69,11 @@ function HomePageContent() {
     window.scrollTo({ top, behavior: 'smooth' });
   };
 
+  const onTabChange = (tab: 'birthday' | 'events') => {
+    handleTabChange(tab);
+    scrollToWeekSection();
+  };
+
   const handlePreviousWeek = (tab: 'birthday' | 'events') => {
     goToPreviousWeek(tab);
     scrollToWeekSection();
@@ -102,7 +107,7 @@ function HomePageContent() {
               activeTab={activeTab}
               onPreviousWeek={handlePreviousWeek}
               onNextWeek={handleNextWeek}
-              onTabChange={handleTabChange}
+              onTabChange={onTabChange}
             />
 
             {activeTab === 'birthday' && (
