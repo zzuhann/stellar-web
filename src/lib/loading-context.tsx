@@ -72,11 +72,11 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({ children }) =>
       }
     };
 
-    document.addEventListener('click', handleDocumentClick, true);
+    document.addEventListener('click', handleDocumentClick);
     window.addEventListener('popstate', handlePopState);
 
     return () => {
-      document.removeEventListener('click', handleDocumentClick, true);
+      document.removeEventListener('click', handleDocumentClick);
       window.removeEventListener('popstate', handlePopState);
       clearPendingTimeout();
     };

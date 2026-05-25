@@ -202,7 +202,8 @@ const MapBottomSheet = ({
   const [maxHeight, setMaxHeight] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
-  // Runs before first paint on client; initializing in useState would cause SSR/client mismatch
+  // Runs before first paint on client; initializing in useState would cause SSR/client mismatch.
+  // Intentionally run once to consume restored state exactly once on initial mount.
   useClientLayoutEffect(() => {
     setMaxHeight(Math.round(window.innerHeight * 0.9));
     setPrefersReducedMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
