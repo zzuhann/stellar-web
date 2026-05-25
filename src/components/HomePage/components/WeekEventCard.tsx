@@ -1,5 +1,3 @@
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
 import { css } from '@/styled-system/css';
@@ -81,6 +79,12 @@ const iconStyle = css({
   color: 'color.text.secondary',
 });
 
+const imagePlaceholder = css({
+  width: '100%',
+  height: '100%',
+  background: 'linear-gradient(135deg, {colors.stellarBlue.50} 0%, {colors.stellarBlue.500} 100%)',
+});
+
 interface WeekEventCardProps {
   event: CoffeeEvent;
 }
@@ -109,13 +113,7 @@ export default function WeekEventCard({ event }: WeekEventCardProps) {
             style={{ objectFit: 'cover' }}
           />
         ) : (
-          <div
-            style={{
-              width: '100%',
-              height: '100%',
-              background: 'linear-gradient(135deg, #CDE6F4 0%, #3F5A72 100%)',
-            }}
-          />
+          <div className={imagePlaceholder} />
         )}
       </div>
 

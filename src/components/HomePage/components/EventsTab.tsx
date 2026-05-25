@@ -21,11 +21,25 @@ const skeletonCard = css({
   gap: '2',
 });
 
+const skeletonImageArea = css({
+  width: '100%',
+  aspectRatio: '3 / 4',
+  borderRadius: 'radius.md',
+});
+
+const skeletonInfoArea = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1.5',
+  paddingX: '1',
+  paddingBottom: '1',
+});
+
 function EventCardSkeleton() {
   return (
     <div className={skeletonCard}>
-      <Skeleton width="100%" height="auto" style={{ aspectRatio: '3/4', borderRadius: '8px' }} />
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', padding: '0 4px 4px' }}>
+      <Skeleton width="100%" height="auto" className={skeletonImageArea} />
+      <div className={skeletonInfoArea}>
         <Skeleton width="90%" height={14} />
         <Skeleton width="60%" height={14} />
         <Skeleton width="70%" height={12} />

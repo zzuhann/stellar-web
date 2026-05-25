@@ -11,7 +11,7 @@ const stickyWrapper = css({
   top: '70px',
   zIndex: 20,
   backdropFilter: 'blur(10px)',
-  background: 'rgba(255, 255, 255, 0.96)',
+  background: 'white',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   marginX: '-8',

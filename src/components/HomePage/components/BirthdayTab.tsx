@@ -23,14 +23,20 @@ const skeletonCard = css({
   gap: '2',
 });
 
+const skeletonFooterRow = css({
+  display: 'flex',
+  justifyContent: 'space-between',
+  width: '100%',
+});
+
 function ArtistCardSkeleton() {
   return (
     <div className={skeletonCard}>
       <Skeleton width={56} height={56} borderRadius="50%" />
       <Skeleton width="70%" height={14} />
       <Skeleton width="45%" height={12} />
-      <Skeleton width="100%" height={1} style={{ margin: '4px 0' }} />
-      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+      <Skeleton width="100%" height={1} />
+      <div className={skeletonFooterRow}>
         <Skeleton width="40%" height={12} />
         <Skeleton width="25%" height={12} />
       </div>
