@@ -7,12 +7,7 @@ import { Artist } from '@/types';
 import CakeIcon from '@heroicons/react/24/outline/CakeIcon';
 import { sendGAEvent } from '@next/third-parties/google';
 import { useAuth } from '@/lib/auth-context';
-
-function formatBirthdayShort(birthday: string): string {
-  const [, month, day] = birthday.split('-').map(Number);
-  if (isNaN(month) || isNaN(day)) return '';
-  return `${month}/${day}`;
-}
+import { formatBirthdayShort } from '@/utils/birthdayHelpers';
 
 const cardLink = css({
   display: 'flex',

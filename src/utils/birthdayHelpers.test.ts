@@ -3,6 +3,7 @@ import {
   shouldShowBirthdayHat,
   formatBirthdayMonthDay,
   formatBirthdayFull,
+  formatBirthdayShort,
 } from './birthdayHelpers';
 
 describe('shouldShowBirthdayHat', () => {
@@ -51,6 +52,28 @@ describe('shouldShowBirthdayHat', () => {
       vi.setSystemTime(new Date(2025, 3, 16, 17, 0, 0)); // April 16 5pm local
       expect(shouldShowBirthdayHat('2001-04-17')).toBe(false);
     });
+  });
+});
+
+describe('formatBirthdayShort', () => {
+  it('應該格式化為「M/D」短格式', () => {
+    expect(formatBirthdayShort('2001-04-17')).toBe('4/17');
+  });
+
+  it('個位數月份不補零', () => {
+    expect(formatBirthdayShort('2001-01-05')).toBe('1/5');
+  });
+
+  it('雙位數月份和日期', () => {
+    expect(formatBirthdayShort('2001-12-31')).toBe('12/31');
+  });
+
+  it('空字串應該回傳空字串', () => {
+    expect(formatBirthdayShort('')).toBe('');
+  });
+
+  it('無效格式應該回傳空字串', () => {
+    expect(formatBirthdayShort('invalid')).toBe('');
   });
 });
 

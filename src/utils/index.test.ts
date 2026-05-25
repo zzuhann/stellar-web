@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   formatEventDate,
   formatDateRange,
+  formatEventDateShort,
   firebaseTimestampToDate,
   dateToLocalDateString,
 } from './index';
@@ -79,6 +80,34 @@ describe('formatDateRange', () => {
     const end = new Date(2027, 0, 3);
     const result = formatDateRange(start, end);
     expect(result).toBe('2026/12/28 - 2027/1/3');
+  });
+});
+
+describe('formatEventDateShort', () => {
+  // noon UTC 確保在任何時區都落在同一個本地日期
+  const ts = (year: number, month: number, day: number) => ({
+    _seconds: Math.floor(Date.UTC(year, month - 1, day, 12, 0, 0) / 1000),
+    _nanoseconds: 0,
+  });
+
+  it('單日活動只顯示一次，格式 M/D', () => {
+    const result = formatEventDateShort(ts(2026, 5, 3), ts(2026, 5, 3));
+    expect(result).toBe('5/3');
+  });
+
+  it('跨日活動顯示範圍', () => {
+    const result = formatEventDateShort(ts(2026, 5, 3), ts(2026, 5, 10));
+    expect(result).toBe('5/3 - 5/10');
+  });
+
+  it('跨月活動', () => {
+    const result = formatEventDateShort(ts(2026, 5, 30), ts(2026, 6, 5));
+    expect(result).toBe('5/30 - 6/5');
+  });
+
+  it('個位數日期不補零：1月1日', () => {
+    const result = formatEventDateShort(ts(2026, 1, 1), ts(2026, 1, 1));
+    expect(result).toBe('1/1');
   });
 });
 

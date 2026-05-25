@@ -5,16 +5,9 @@ import Link from 'next/link';
 import { css } from '@/styled-system/css';
 import { CoffeeEvent, FirebaseTimestamp } from '@/types';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
-import { firebaseTimestampToDate } from '@/utils';
+import { formatEventDateShort } from '@/utils';
 import { sendGAEvent } from '@next/third-parties/google';
 import { useAuth } from '@/lib/auth-context';
-
-function formatDateRange(start: FirebaseTimestamp, end: FirebaseTimestamp): string {
-  const s = firebaseTimestampToDate(start);
-  const e = firebaseTimestampToDate(end);
-  const fmt = (d: Date) => `${d.getMonth() + 1}/${String(d.getDate()).padStart(2, '0')}`;
-  return s.toDateString() === e.toDateString() ? fmt(s) : `${fmt(s)} - ${fmt(e)}`;
-}
 
 const cardContainer = css({
   display: 'flex',
@@ -95,7 +88,7 @@ interface WeekEventCardProps {
 
 export default function WeekEventCard({ event }: WeekEventCardProps) {
   const { user } = useAuth();
-  const dateRange = formatDateRange(
+  const dateRange = formatEventDateShort(
     event.datetime.start as FirebaseTimestamp,
     event.datetime.end as FirebaseTimestamp
   );
