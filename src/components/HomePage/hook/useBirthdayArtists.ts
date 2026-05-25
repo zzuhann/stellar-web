@@ -1,9 +1,12 @@
 import { useBirthdayArtistsQuery } from '@/hooks/useHomePage';
 import useWeekData from './useWeekData';
 import useTabState from './useTabState';
-import { Artist } from '@/types';
 import { useMemo } from 'react';
-import { shouldShowBirthdayHat } from '@/utils/birthdayHelpers';
+
+function birthdayMonthDay(birthday: string): number {
+  const [, month, day] = birthday.split('-').map(Number);
+  return month * 100 + day;
+}
 
 const useBirthdayArtists = () => {
   const { startDate, endDate } = useWeekData();
@@ -14,19 +17,14 @@ const useBirthdayArtists = () => {
   });
 
   const weekBirthdayArtists = useMemo(() => {
-    const todayArtists: Artist[] = [];
-    const otherArtists: Artist[] = [];
-
-    artists.forEach((artist) => {
-      if (shouldShowBirthdayHat(artist.birthday ?? '')) {
-        todayArtists.push(artist);
-      } else {
-        otherArtists.push(artist);
-      }
+    return [...artists].sort((a, b) => {
+      const aCount = a.coffeeEventCount ?? 0;
+      const bCount = b.coffeeEventCount ?? 0;
+      if (bCount !== aCount) return bCount - aCount;
+      if (!a.birthday) return 1;
+      if (!b.birthday) return -1;
+      return birthdayMonthDay(a.birthday) - birthdayMonthDay(b.birthday);
     });
-
-    // 當日壽星在前，其他按 API 原本的順序（已按生咖數量排序）
-    return [...todayArtists, ...otherArtists];
   }, [artists]);
 
   return {

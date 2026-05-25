@@ -52,6 +52,14 @@ export const formatEventDate = (startDate: FirebaseTimestamp, endDate: FirebaseT
   return startStr === endStr ? startStr : `${startStr} - ${endStr}`;
 };
 
+// 簡短日期範圍，格式為「M/DD」或「M/DD - M/DD」，使用本地時區
+export const formatEventDateShort = (start: FirebaseTimestamp, end: FirebaseTimestamp): string => {
+  const s = firebaseTimestampToDate(start);
+  const e = firebaseTimestampToDate(end);
+  const fmt = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
+  return s.toDateString() === e.toDateString() ? fmt(s) : `${fmt(s)} - ${fmt(e)}`;
+};
+
 // 生成 Google Calendar 加入行事曆 URL（All Day Event）
 export const generateGoogleCalendarUrl = ({
   title,

@@ -6,16 +6,28 @@ import { cva } from '@/styled-system/css';
 import { sendGAEvent } from '@next/third-parties/google';
 import { useAuth } from '@/lib/auth-context';
 
-const weekNavigationContainer = css({
+const stickyWrapper = css({
+  position: 'sticky',
+  top: '70px',
+  zIndex: 20,
+  backdropFilter: 'blur(10px)',
+  background: 'white',
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+  marginX: '-8',
+  paddingX: '8',
+  paddingBottom: '3',
+  '@media (min-width: 768px)': {
+    marginX: '-6',
+    paddingX: '6',
+  },
+});
+
+const weekNavigationRow = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  paddingX: '4',
-  paddingY: '2',
-  background: 'color.background.secondary',
-  borderRadius: 'radius.lg',
-  border: '1px solid',
-  borderColor: 'color.border.light',
+  paddingY: '3',
 });
 
 const weekNavigationButton = cva({
@@ -48,24 +60,25 @@ const weekNavigationButton = cva({
 });
 
 const weekInfoContainer = css({
-  textAlign: 'center',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
   flex: 1,
-  marginX: '4',
-  marginY: '0',
 });
 
-const weekInfoTitle = css({
+const weekLabel = css({
   textStyle: 'bodyStrong',
   color: 'color.text.primary',
-  marginTop: '0',
-  marginX: '0',
-  marginBottom: '1',
 });
 
-const weekInfoDateRange = css({
+const weekDateRange = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  margin: '0',
+});
+
+const navButtonGroup = css({
+  display: 'flex',
+  gap: '1',
 });
 
 interface WeekNavigationProps {
@@ -89,7 +102,6 @@ export default function WeekNavigation({
 }: WeekNavigationProps) {
   const { user } = useAuth();
 
-  // 計算本週開始時間，用於限制生咖tab的導航
   const thisWeekStart = getWeekStart(new Date());
   const canGoToPrevious =
     activeTab === 'birthday' || currentWeekStart.getTime() > thisWeekStart.getTime();
@@ -110,43 +122,46 @@ export default function WeekNavigation({
     onNextWeek();
   };
 
-  return (
-    <div>
-      <TabNavigation activeTab={activeTab} onTabChange={onTabChange} />
-      <div className={weekNavigationContainer}>
-        <button
-          className={weekNavigationButton({ disabled: !canGoToPrevious })}
-          onClick={handlePreviousWeek}
-          disabled={!canGoToPrevious}
-          aria-label="前往上一週"
-          aria-disabled={!canGoToPrevious}
-        >
-          <ChevronLeftIcon width={20} height={20} aria-hidden="true" />
-        </button>
+  const handleTabChange = (tab: 'birthday' | 'events') => {
+    sendGAEvent('event', 'click_tab', {
+      event_page: '/',
+      user_id: user?.uid ?? '',
+      content_id: tab,
+    });
+    onTabChange(tab);
+  };
 
+  return (
+    <div className={stickyWrapper}>
+      <div className={weekNavigationRow}>
         <div className={weekInfoContainer}>
-          <h2 className={weekInfoTitle}>
-            {activeTab === 'birthday'
-              ? isCurrentWeek
-                ? '本週壽星'
-                : '當週壽星'
-              : isCurrentWeek
-                ? '本週生日應援'
-                : '當週生日應援'}
-          </h2>
-          <p className={weekInfoDateRange}>
+          <span className={weekLabel}>{isCurrentWeek ? '本週' : '當週'}</span>
+          <span className={weekDateRange}>
             {formatDate(currentWeekStart)} - {formatDate(currentWeekEnd)}
-          </p>
+          </span>
         </div>
 
-        <button
-          className={weekNavigationButton({ disabled: false })}
-          onClick={handleNextWeek}
-          aria-label="前往下一週"
-        >
-          <ChevronRightIcon width={20} height={20} aria-hidden="true" />
-        </button>
+        <div className={navButtonGroup}>
+          <button
+            className={weekNavigationButton({ disabled: !canGoToPrevious })}
+            onClick={handlePreviousWeek}
+            disabled={!canGoToPrevious}
+            aria-label="前往上一週"
+            aria-disabled={!canGoToPrevious}
+          >
+            <ChevronLeftIcon width={20} height={20} aria-hidden="true" />
+          </button>
+          <button
+            className={weekNavigationButton({ disabled: false })}
+            onClick={handleNextWeek}
+            aria-label="前往下一週"
+          >
+            <ChevronRightIcon width={20} height={20} aria-hidden="true" />
+          </button>
+        </div>
       </div>
+
+      <TabNavigation activeTab={activeTab} onTabChange={handleTabChange} />
     </div>
   );
 }

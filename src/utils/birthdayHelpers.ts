@@ -26,6 +26,20 @@ export const formatBirthdayMonthDay = (birthday: string): string => {
 };
 
 /**
+ * 格式化生日為「M/D」短格式，例如 4/17
+ * 直接解析字串，不受時區影響
+ * @param birthday - 生日字串，格式為 YYYY-MM-DD
+ */
+export const formatBirthdayShort = (birthday: string): string => {
+  if (!birthday) return '';
+
+  const [, month, day] = birthday.split('-').map(Number);
+  if (isNaN(month) || isNaN(day)) return '';
+
+  return `${month}/${day}`;
+};
+
+/**
  * 格式化生日為「YYYY/M/D」格式
  * 直接解析字串，不受時區影響
  * @param birthday - 生日字串，格式為 YYYY-MM-DD
