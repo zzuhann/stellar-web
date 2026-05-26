@@ -6,6 +6,7 @@ import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
 import { useAuth } from '@/lib/auth-context';
+import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
 const fmt = (d: Date) => `${d.getMonth() + 1}/${String(d.getDate()).padStart(2, '0')}`;
 
@@ -18,12 +19,18 @@ function formatDateRange(start: string, end: string): string {
 const cardContainer = css({
   display: 'flex',
   flexDirection: 'column',
-  width: '180px',
+  width: '200px',
   flexShrink: 0,
   scrollSnapAlign: 'start',
   cursor: 'pointer',
   textDecoration: 'none',
   color: 'inherit',
+  padding: '2',
+  backgroundColor: 'color.background.primary',
+  borderRadius: 'radius.lg',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  boxShadow: 'shadow.sm',
 });
 
 const imageArea = css({
@@ -56,12 +63,28 @@ const titleText = css({
   overflow: 'hidden',
 });
 
-const dateText = css({
+const cityBadge = css({
+  position: 'absolute',
+  top: '2',
+  left: '2',
+  background: 'white',
+  color: 'color.text.primary',
   textStyle: 'bodySmall',
-  color: 'color.text.secondary',
+  paddingX: '2',
+  paddingY: '0.5',
+  borderRadius: '9999px',
+  lineHeight: '1.4',
+  zIndex: '1',
+  boxShadow: 'shadow.md',
 });
 
-const venueText = css({
+const metaRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.5',
+});
+
+const metaText = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
   overflow: 'hidden',
@@ -106,12 +129,13 @@ const RelatedEventCard = ({ event, eventPage, contentId }: RelatedEventCardProps
             src={event.mainImage}
             alt={event.title}
             fill
-            sizes="180px"
+            sizes="200px"
             style={{ objectFit: 'cover' }}
           />
         ) : (
           <div className={placeholderBg} />
         )}
+        {event.location?.city && <span className={cityBadge}>{event.location.city}</span>}
       </div>
 
       {/* Info area */}
@@ -122,8 +146,18 @@ const RelatedEventCard = ({ event, eventPage, contentId }: RelatedEventCardProps
         >
           {event.title}
         </p>
-        {dateRange && <p className={dateText}>{dateRange}</p>}
-        {event.location?.name && <p className={venueText}>{event.location.name}</p>}
+        {dateRange && (
+          <div className={metaRow}>
+            <CalendarIcon width={14} height={14} className={metaText} style={{ flexShrink: 0 }} />
+            <p className={metaText}>{dateRange}</p>
+          </div>
+        )}
+        {event.location?.name && (
+          <div className={metaRow}>
+            <MapPinIcon width={14} height={14} className={metaText} style={{ flexShrink: 0 }} />
+            <p className={metaText}>{event.location.name}</p>
+          </div>
+        )}
       </div>
     </Link>
   );
