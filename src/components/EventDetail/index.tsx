@@ -21,6 +21,7 @@ import { formatEventDate, generateGoogleCalendarUrl } from '@/utils';
 import PageViewTracker from '@/components/PageViewTracker';
 import EventViewTracker from '@/components/EventViewTracker';
 import Breadcrumb from '@/components/ui/Breadcrumb';
+import MoreEventsCarousel from './MoreEventsCarousel';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -411,6 +412,14 @@ const EventDetail = ({ event }: EventDetailProps) => {
           )}
 
           <BottomImagesGallery items={bannerItems} />
+
+          {primaryArtist && (
+            <MoreEventsCarousel
+              artistId={primaryArtist.id}
+              artistName={primaryArtist.name}
+              currentEventId={event.id}
+            />
+          )}
 
           {/* 底部按鈕群組 */}
           <div className={buttonGroup}>
