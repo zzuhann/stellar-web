@@ -92,6 +92,11 @@ const metaText = css({
   textOverflow: 'ellipsis',
 });
 
+const metaIcon = css({
+  flexShrink: 0,
+  color: 'color.text.secondary',
+});
+
 interface RelatedEventCardProps {
   event: MapEvent;
   eventPage: string;
@@ -148,13 +153,13 @@ const RelatedEventCard = ({ event, eventPage, contentId }: RelatedEventCardProps
         </p>
         {dateRange && (
           <div className={metaRow}>
-            <CalendarIcon width={14} height={14} className={metaText} style={{ flexShrink: 0 }} />
+            <CalendarIcon width={14} height={14} className={metaIcon} />
             <p className={metaText}>{dateRange}</p>
           </div>
         )}
         {event.location?.name && (
           <div className={metaRow}>
-            <MapPinIcon width={14} height={14} className={metaText} style={{ flexShrink: 0 }} />
+            <MapPinIcon width={14} height={14} className={metaIcon} />
             <p className={metaText}>{event.location.name}</p>
           </div>
         )}
