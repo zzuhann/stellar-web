@@ -38,7 +38,7 @@ const statsRow = css({
 export default function VenueCardSkeleton() {
   return (
     <div className={card}>
-      <Skeleton height="148px" borderRadius="0" />
+      <Skeleton height="180px" borderRadius="0" />
       <div className={body}>
         <div className={nameRow}>
           <Skeleton width="55%" height="16px" borderRadius="4px" />

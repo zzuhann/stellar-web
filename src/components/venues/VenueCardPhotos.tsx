@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { css } from '@/styled-system/css';
 
 const photoStrip = css({
-  height: '148px',
+  height: '180px',
   overflow: 'hidden',
   position: 'relative',
   flexShrink: 0,
@@ -10,7 +10,7 @@ const photoStrip = css({
 });
 
 const placeholder = css({
-  height: '148px',
+  height: '180px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -27,7 +27,7 @@ const grid2col = css({
   display: 'grid',
   gridTemplateColumns: '2fr 1fr',
   gap: '2px',
-  height: '148px',
+  height: '180px',
   background: 'gray.200',
   overflow: 'hidden',
 });
@@ -134,9 +134,9 @@ export default function VenueCardPhotos({ photos, venueName }: VenueCardPhotosPr
     <div className={grid2col}>
       <PhotoSlot src={photos[0]} alt={`${venueName} 1`} fill />
       <div className={thumbStack}>
-        <PhotoSlot src={photos[1]} alt={`${venueName} 2`} height={73} />
-        <div style={{ position: 'relative', overflow: 'hidden', height: 73 }}>
-          <PhotoSlot src={photos[2]} alt={`${venueName} 3`} height={73} />
+        <PhotoSlot src={photos[1]} alt={`${venueName} 2`} fill />
+        <div style={{ position: 'relative', overflow: 'hidden', height: '100%' }}>
+          <PhotoSlot src={photos[2]} alt={`${venueName} 3`} fill />
           {extras > 0 && <div className={overlay}>+{extras}</div>}
         </div>
       </div>
