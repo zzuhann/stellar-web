@@ -176,6 +176,7 @@ export default function VenueFilters({
             <button
               key={r}
               type="button"
+              aria-pressed={region === r}
               className={`${regionChip} ${region === r ? regionChipActive : ''}`}
               onClick={() => onRegionChange(r)}
             >
@@ -192,12 +193,15 @@ export default function VenueFilters({
       </div>
 
       <div className={capacityRow}>
-        <span className={capacityLabel}>空間人數</span>
-        <div className={segmented}>
+        <span id="capacity-label" className={capacityLabel}>
+          空間人數
+        </span>
+        <div className={segmented} role="group" aria-labelledby="capacity-label">
           {CAPACITY_OPTIONS.map((opt) => (
             <button
               key={opt.id}
               type="button"
+              aria-pressed={capacity === opt.id}
               className={`${segItem} ${capacity === opt.id ? segItemActive : ''}`}
               onClick={() => onCapacityChange(opt.id)}
             >

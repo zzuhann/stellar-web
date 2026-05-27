@@ -127,6 +127,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
         <div className={locationRow}>
           <span className={pinIcon}>
             <svg
+              aria-hidden="true"
               width="14"
               height="14"
               viewBox="0 0 24 24"
@@ -155,6 +156,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
           {venue.capacityRange && (
             <span className={statItem}>
               <svg
+                aria-hidden="true"
                 width="14"
                 height="14"
                 viewBox="0 0 24 24"
@@ -178,6 +180,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
           )}
           <span className={eventCount}>
             <svg
+              aria-hidden="true"
               width="14"
               height="14"
               viewBox="0 0 24 24"

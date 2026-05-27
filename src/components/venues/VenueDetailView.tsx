@@ -227,6 +227,7 @@ const secondaryBtn = css({
 function PinIcon() {
   return (
     <svg
+      aria-hidden="true"
       width="16"
       height="16"
       viewBox="0 0 24 24"
@@ -267,6 +268,7 @@ function MrtIcon() {
 function InstagramIcon() {
   return (
     <svg
+      aria-hidden="true"
       width="16"
       height="16"
       viewBox="0 0 24 24"
@@ -285,6 +287,7 @@ function InstagramIcon() {
 function LinkIcon() {
   return (
     <svg
+      aria-hidden="true"
       width="16"
       height="16"
       viewBox="0 0 24 24"
@@ -333,6 +336,7 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
         <div className={backBar}>
           <button type="button" className={backBtn} onClick={() => router.back()}>
             <svg
+              aria-hidden="true"
               width="18"
               height="18"
               viewBox="0 0 24 24"
@@ -355,6 +359,7 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
             <span className={typeTag}>{venue.region}</span>
             <span className={countBadge}>
               <svg
+                aria-hidden="true"
                 width="12"
                 height="12"
                 viewBox="0 0 24 24"

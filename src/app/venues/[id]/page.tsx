@@ -14,14 +14,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const description =
       venue.description ||
       `${venue.name}，位於 ${venue.region}。辦過 ${venue.eventCount} 場生咖活動。`;
+    const url = `https://www.stellar-zone.com/venues/${id}`;
     return {
       title,
       description,
       openGraph: {
         title,
         description,
+        url,
         images: venue.coverPhoto ? [venue.coverPhoto] : [],
       },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: venue.coverPhoto ? [venue.coverPhoto] : [],
+      },
+      alternates: { canonical: url },
     };
   } catch {
     return { title: '場地詳情 | STELLAR' };

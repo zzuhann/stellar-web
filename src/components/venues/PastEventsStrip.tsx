@@ -198,7 +198,9 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
         </div>
       </div>
 
-      <p className={hint}>← 左右滑動瀏覽全部 →</p>
+      <p className={hint} aria-hidden="true">
+        ← 左右滑動瀏覽全部 →
+      </p>
 
       <div className={trackWrap}>
         <div ref={trackRef} role="list" className={track} onScroll={onScroll}>

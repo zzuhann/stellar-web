@@ -126,6 +126,10 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
           onCapacityChange={setCapacity}
         />
 
+        <div aria-live="polite" aria-atomic="true" className="sr-only">
+          {isLoading ? '載入中' : `找到 ${filtered.length} 個場地`}
+        </div>
+
         <section aria-label="場地列表" className={listSection}>
           {isLoading ? (
             <div className={loadingState}>載入中…</div>
