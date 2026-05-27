@@ -47,7 +47,9 @@ api.interceptors.request.use(
         const token = await user.getIdToken();
         config.headers.Authorization = `Bearer ${token}`;
       }
-    } catch {}
+    } catch {
+      // ignore token fetch errors
+    }
     return config;
   },
   (error) => {
@@ -516,11 +518,8 @@ export const venueApi = {
     if (params.region && params.region.length > 0) {
       params.region.forEach((r) => searchParams.append('region', r));
     }
-    if (params.capacity_min !== undefined) {
-      searchParams.set('capacity_min', String(params.capacity_min));
-    }
-    if (params.capacity_max !== undefined) {
-      searchParams.set('capacity_max', String(params.capacity_max));
+    if (params.capacityRange !== undefined) {
+      searchParams.set('capacityRange', params.capacityRange);
     }
     if (params.sort) {
       searchParams.set('sort', params.sort);
@@ -531,6 +530,20 @@ export const venueApi = {
 
     const query = searchParams.toString();
     const response = await api.get<VenuesResponse>(`/venues${query ? `?${query}` : ''}`);
+    return response.data;
+  },
+
+  batchReviewVenues: async (
+    updates: Array<{ venueId: string; status: 'active' | 'rejected' }>
+  ): Promise<{ message: string }> => {
+    const response = await api.patch<{ message: string }>('/venues/batch-review', { updates });
+    return response.data;
+  },
+
+  batchStatusVenues: async (
+    updates: Array<{ venueId: string; status: 'active' | 'inactive' }>
+  ): Promise<{ message: string }> => {
+    const response = await api.patch<{ message: string }>('/venues/batch-status', { updates });
     return response.data;
   },
 };

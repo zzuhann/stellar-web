@@ -14,10 +14,16 @@ const card = css({
   overflow: 'hidden',
   display: 'flex',
   flexDirection: 'column',
-  transition: 'box-shadow 0.2s ease',
+  transition: 'box-shadow 0.2s ease, border-color 0.2s ease',
+  position: 'relative',
   '&:hover': {
     boxShadow: 'var(--shadow-md)',
   },
+});
+
+const cardSelected = css({
+  borderColor: 'color.primary',
+  boxShadow: '0 0 0 2px var(--colors-stellar-blue-100)',
 });
 
 const coverContainer = css({
@@ -60,6 +66,28 @@ const activeBadge = css({
 const inactiveBadge = css({
   background: 'gray.500',
   color: 'white',
+});
+
+const pendingBadge = css({
+  background: 'orange.400',
+  color: 'white',
+});
+
+const rejectedBadge = css({
+  background: 'red.500',
+  color: 'white',
+});
+
+const checkboxInput = css({
+  position: 'absolute',
+  top: '8px',
+  left: '8px',
+  zIndex: 10,
+  width: '18px',
+  height: '18px',
+  cursor: 'pointer',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+  accentColor: 'var(--colors-stellar-blue-500)',
 });
 
 const body = css({
@@ -173,12 +201,25 @@ const activateBtn = css({
   },
 });
 
+const STATUS_BADGE_MAP: Record<
+  Venue['status'],
+  { badgeClass: string; label: string }
+> = {
+  active: { badgeClass: activeBadge, label: '開放中' },
+  inactive: { badgeClass: inactiveBadge, label: '已下架' },
+  pending: { badgeClass: pendingBadge, label: '待審核' },
+  rejected: { badgeClass: rejectedBadge, label: '已拒絕' },
+};
+
 type VenueCardProps = {
   venue: Venue;
   onEdit: (venue: Venue) => void;
   onDeactivate: (venue: Venue) => void;
   onActivate: (venue: Venue) => void;
   isUpdating?: boolean;
+  isSelectMode?: boolean;
+  isSelected?: boolean;
+  onSelect?: (venueId: string) => void;
 };
 
 export default function VenueCard({
@@ -187,15 +228,38 @@ export default function VenueCard({
   onDeactivate,
   onActivate,
   isUpdating,
+  isSelectMode = false,
+  isSelected = false,
+  onSelect,
 }: VenueCardProps) {
   const isInactive = venue.status === 'inactive';
+  const { badgeClass, label } = STATUS_BADGE_MAP[venue.status] ?? STATUS_BADGE_MAP.active;
+
+  const handleCardClick = () => {
+    if (isSelectMode && onSelect) {
+      onSelect(venue.id);
+    }
+  };
 
   return (
-    <div className={card}>
+    <div
+      className={`${card} ${isSelected ? cardSelected : ''}`}
+      onClick={handleCardClick}
+      style={isSelectMode ? { cursor: 'pointer' } : undefined}
+    >
       <div className={coverContainer}>
-        <span className={`${statusBadge} ${isInactive ? inactiveBadge : activeBadge}`}>
-          {isInactive ? '已下架' : '開放中'}
-        </span>
+        {isSelectMode ? (
+          <input
+            type="checkbox"
+            className={checkboxInput}
+            checked={isSelected}
+            onChange={() => onSelect?.(venue.id)}
+            onClick={(e) => e.stopPropagation()}
+            aria-label={`選取 ${venue.name}`}
+          />
+        ) : (
+          <span className={`${statusBadge} ${badgeClass}`}>{label}</span>
+        )}
         {venue.coverPhoto ? (
           <Image
             src={venue.coverPhoto}
@@ -220,10 +284,10 @@ export default function VenueCard({
         </div>
 
         <div className={statsRow}>
-          {venue.capacity_max !== null && (
+          {venue.capacityRange !== null && (
             <div className={statItem}>
               <UserGroupIcon />
-              <span>最多 {venue.capacity_max} 人</span>
+              <span>{venue.capacityRange} 人</span>
             </div>
           )}
           <div className={statItem}>
@@ -236,30 +300,42 @@ export default function VenueCard({
       <div className={actions}>
         <button
           className={`${actionBtn} ${editBtn}`}
-          onClick={() => onEdit(venue)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit(venue);
+          }}
           disabled={isUpdating}
         >
           <PencilSquareIcon />
           編輯
         </button>
-        {isInactive ? (
-          <button
-            className={`${actionBtn} ${activateBtn}`}
-            onClick={() => onActivate(venue)}
-            disabled={isUpdating}
-          >
-            <ArrowPathIcon />
-            上架
-          </button>
-        ) : (
-          <button
-            className={`${actionBtn} ${deactivateBtn}`}
-            onClick={() => onDeactivate(venue)}
-            disabled={isUpdating}
-          >
-            <TrashIcon />
-            下架
-          </button>
+        {/* Only show activate/deactivate for active/inactive venues; pending/rejected handled via batch */}
+        {(venue.status === 'active' || venue.status === 'inactive') && (
+          isInactive ? (
+            <button
+              className={`${actionBtn} ${activateBtn}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onActivate(venue);
+              }}
+              disabled={isUpdating}
+            >
+              <ArrowPathIcon />
+              上架
+            </button>
+          ) : (
+            <button
+              className={`${actionBtn} ${deactivateBtn}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeactivate(venue);
+              }}
+              disabled={isUpdating}
+            >
+              <TrashIcon />
+              下架
+            </button>
+          )
         )}
       </div>
     </div>

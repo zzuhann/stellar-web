@@ -26,6 +26,8 @@ const REGION_GROUPS = [
 ] as const;
 
 type RegionGroup = (typeof REGION_GROUPS)[number]['label'];
+type ActiveTab = 'pending' | 'management';
+type ManagementStatusFilter = 'all' | 'active' | 'inactive';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -79,6 +81,65 @@ const pageTitle = css({
   textStyle: 'heading',
   color: 'color.text.primary',
   margin: 0,
+});
+
+const tabBar = css({
+  display: 'flex',
+  borderBottom: '2px solid',
+  borderBottomColor: 'color.border.light',
+  marginBottom: '5',
+  gap: '0',
+});
+
+const tabButton = css({
+  position: 'relative',
+  paddingY: '3',
+  paddingX: '5',
+  fontSize: '14px',
+  fontWeight: 600,
+  cursor: 'pointer',
+  background: 'transparent',
+  border: 'none',
+  color: 'color.text.secondary',
+  transition: 'color 0.2s ease',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+  '&:hover': {
+    color: 'color.text.primary',
+  },
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: '-2px',
+    left: 0,
+    right: 0,
+    height: '2px',
+    background: 'transparent',
+    transition: 'background 0.2s ease',
+  },
+});
+
+const tabButtonActive = css({
+  color: 'color.primary',
+  '&::after': {
+    background: 'color.primary',
+  },
+});
+
+const pendingBadge = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minWidth: '18px',
+  height: '18px',
+  paddingX: '1.5',
+  borderRadius: 'full',
+  background: 'orange.400',
+  color: 'white',
+  fontSize: '11px',
+  fontWeight: 700,
+  lineHeight: 1,
 });
 
 const filterBar = css({
@@ -217,6 +278,25 @@ const statsBar = css({
   alignItems: 'center',
 });
 
+const selectAllBtn = css({
+  marginLeft: 'auto',
+  paddingY: '1.5',
+  paddingX: '3',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'white',
+  color: 'color.text.secondary',
+  fontSize: '13px',
+  fontWeight: 600,
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    borderColor: 'color.primary',
+    color: 'color.primary',
+  },
+});
+
 const statText = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
@@ -260,16 +340,156 @@ const emptyState = css({
   },
 });
 
+const actionBar = css({
+  position: 'fixed',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  background: 'white',
+  borderTop: '1px solid',
+  borderTopColor: 'color.border.light',
+  boxShadow: '0 -4px 12px rgba(0,0,0,0.08)',
+  paddingY: '4',
+  paddingX: '6',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '3',
+  zIndex: 50,
+});
+
+const actionBarCount = css({
+  textStyle: 'bodySmall',
+  color: 'color.text.secondary',
+  flexShrink: 0,
+});
+
+const actionBarSpacer = css({
+  flex: 1,
+});
+
+const actionBarBtn = css({
+  paddingY: '2.5',
+  paddingX: '4',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  fontSize: '13px',
+  fontWeight: 600,
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:disabled': {
+    opacity: 0.4,
+    cursor: 'not-allowed',
+  },
+});
+
+const actionBarBtnApprove = css({
+  background: 'green.500',
+  borderColor: 'green.500',
+  color: 'white',
+  '&:hover:not(:disabled)': {
+    background: 'green.600',
+    borderColor: 'green.600',
+  },
+});
+
+const actionBarBtnReject = css({
+  background: 'white',
+  borderColor: 'red.300',
+  color: 'red.700',
+  '&:hover:not(:disabled)': {
+    background: 'red.50',
+    borderColor: 'red.400',
+  },
+});
+
+const actionBarBtnActivate = css({
+  background: 'color.primary',
+  borderColor: 'color.primary',
+  color: 'white',
+  '&:hover:not(:disabled)': {
+    background: 'stellarBlue.600',
+    borderColor: 'stellarBlue.600',
+  },
+});
+
+const actionBarBtnDeactivate = css({
+  background: 'white',
+  borderColor: 'gray.300',
+  color: 'color.text.secondary',
+  '&:hover:not(:disabled)': {
+    background: 'gray.50',
+    borderColor: 'gray.400',
+  },
+});
+
+const actionBarBtnCancel = css({
+  background: 'white',
+  borderColor: 'color.border.light',
+  color: 'color.text.secondary',
+  '&:hover:not(:disabled)': {
+    background: 'gray.50',
+    color: 'color.text.primary',
+  },
+});
+
+const topBarActions = css({
+  marginLeft: 'auto',
+  display: 'flex',
+  gap: '2',
+  alignItems: 'center',
+});
+
+const headerSecondaryBtn = css({
+  paddingY: '2.5',
+  paddingX: '4',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'white',
+  color: 'color.text.secondary',
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: 'gray.50',
+    color: 'color.text.primary',
+  },
+});
+
+const headerPrimaryBtn = css({
+  paddingY: '2.5',
+  paddingX: '4',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.primary',
+  background: 'color.primary',
+  color: 'white',
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: 'stellarBlue.600',
+    borderColor: 'stellarBlue.600',
+  },
+});
+
 export default function PageVenues() {
   const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
   const queryClient = useQueryClient();
 
+  const [activeTab, setActiveTab] = useState<ActiveTab>('pending');
   const [searchQuery, setSearchQuery] = useState('');
   const [regionFilter, setRegionFilter] = useState<RegionGroup | ''>('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  // Status filter only used in management tab (active/inactive)
+  const [managementStatusFilter, setManagementStatusFilter] =
+    useState<ManagementStatusFilter>('all');
   const [regionOpen, setRegionOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const regionRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
 
@@ -293,12 +513,25 @@ export default function PageVenues() {
     ? REGION_GROUPS.find((g) => g.label === regionFilter)?.cities
     : undefined;
 
-  const { data: venuesData, isLoading } = useQuery({
-    queryKey: ['admin-venues', regionFilter, statusFilter],
+  // Tab 1: pending venues
+  const { data: pendingData, isLoading: isPendingLoading } = useQuery({
+    queryKey: ['admin-venues', 'pending', regionFilter],
     queryFn: () =>
       venueApi.getVenues({
         region: regionCities ? [...regionCities] : undefined,
-        status: statusFilter !== 'all' ? statusFilter : undefined,
+        status: 'pending',
+      }),
+    enabled: !!user && userData?.role === 'admin',
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Tab 2: management venues (active + inactive via status=all)
+  const { data: managementData, isLoading: isManagementLoading } = useQuery({
+    queryKey: ['admin-venues', 'management', regionFilter, managementStatusFilter],
+    queryFn: () =>
+      venueApi.getVenues({
+        region: regionCities ? [...regionCities] : undefined,
+        status: managementStatusFilter !== 'all' ? managementStatusFilter : 'all',
       }),
     enabled: !!user && userData?.role === 'admin',
     staleTime: 5 * 60 * 1000,
@@ -326,24 +559,113 @@ export default function PageVenues() {
     },
   });
 
-  const allVenues = useMemo(() => venuesData?.venues ?? [], [venuesData]);
+  const exitSelectMode = () => {
+    setIsSelectMode(false);
+    setSelectedIds(new Set());
+  };
 
-  const filtered = useMemo(() => {
-    if (!searchQuery) return allVenues;
-    const q = searchQuery.toLowerCase();
-    return allVenues.filter(
-      (v) =>
-        v.name.toLowerCase().includes(q) ||
-        v.address.toLowerCase().includes(q) ||
-        v.region.includes(q)
-    );
-  }, [allVenues, searchQuery]);
+  const handleTabChange = (tab: ActiveTab) => {
+    setActiveTab(tab);
+    // Exit select mode and clear selection on tab switch
+    exitSelectMode();
+    setSearchQuery('');
+    setRegionFilter('');
+  };
 
-  const inactiveCount = allVenues.filter((v) => v.status === 'inactive').length;
+  const handleSelectAll = () => {
+    if (selectedIds.size === filtered.length && filtered.length > 0) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filtered.map((v) => v.id)));
+    }
+  };
+
+  const batchReviewMutation = useMutation({
+    mutationFn: (updates: Array<{ venueId: string; status: 'active' | 'rejected' }>) =>
+      venueApi.batchReviewVenues(updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-venues'] });
+      showToast.success('批次審核完成');
+      exitSelectMode();
+    },
+    onError: () => {
+      showToast.error('批次操作失敗');
+    },
+  });
+
+  const batchStatusMutation = useMutation({
+    mutationFn: (updates: Array<{ venueId: string; status: 'active' | 'inactive' }>) =>
+      venueApi.batchStatusVenues(updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-venues'] });
+      showToast.success('批次狀態更新完成');
+      exitSelectMode();
+    },
+    onError: () => {
+      showToast.error('批次操作失敗');
+    },
+  });
+
+  const pendingVenues = useMemo(() => pendingData?.venues ?? [], [pendingData]);
+  const managementVenues = useMemo(() => managementData?.venues ?? [], [managementData]);
+
+  const allVenues = activeTab === 'pending' ? pendingVenues : managementVenues;
+
+  const filtered = searchQuery
+    ? allVenues.filter((v) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          v.name.toLowerCase().includes(q) ||
+          v.address.toLowerCase().includes(q) ||
+          v.region.includes(q)
+        );
+      })
+    : allVenues;
+
+  const pendingCount = pendingVenues.length;
+  const inactiveCount = managementVenues.filter((v) => v.status === 'inactive').length;
 
   const isUpdating = deactivateMutation.isPending || activateMutation.isPending;
+  const isBatchUpdating = batchReviewMutation.isPending || batchStatusMutation.isPending;
+  const isLoading = activeTab === 'pending' ? isPendingLoading : isManagementLoading;
 
-  if (authLoading || isLoading) {
+  const handleSelect = (venueId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(venueId)) {
+        next.delete(venueId);
+      } else {
+        next.add(venueId);
+      }
+      return next;
+    });
+  };
+
+  const handleBatchApprove = () => {
+    const count = selectedIds.size;
+    if (!window.confirm(`確認要審核通過 ${count} 個場地嗎？`)) return;
+    batchReviewMutation.mutate([...selectedIds].map((id) => ({ venueId: id, status: 'active' })));
+  };
+
+  const handleBatchReject = () => {
+    const count = selectedIds.size;
+    if (!window.confirm(`確認要拒絕 ${count} 個場地嗎？`)) return;
+    batchReviewMutation.mutate([...selectedIds].map((id) => ({ venueId: id, status: 'rejected' })));
+  };
+
+  const handleBatchActivate = () => {
+    const count = selectedIds.size;
+    if (!window.confirm(`確認要上架 ${count} 個場地嗎？`)) return;
+    batchStatusMutation.mutate([...selectedIds].map((id) => ({ venueId: id, status: 'active' })));
+  };
+
+  const handleBatchDeactivate = () => {
+    const count = selectedIds.size;
+    if (!window.confirm(`確認要下架 ${count} 個場地嗎？`)) return;
+    batchStatusMutation.mutate([...selectedIds].map((id) => ({ venueId: id, status: 'inactive' })));
+  };
+
+  if (authLoading || (isPendingLoading && isManagementLoading)) {
     return <Loading description="載入中..." style={{ height: '100vh', width: '100%' }} />;
   }
 
@@ -358,29 +680,47 @@ export default function PageVenues() {
             審核後台
           </button>
           <h1 className={pageTitle}>場地管理</h1>
+          <div className={topBarActions}>
+            {!isSelectMode && (
+              <button
+                type="button"
+                className={headerSecondaryBtn}
+                onClick={() => setIsSelectMode(true)}
+              >
+                批次操作
+              </button>
+            )}
+            {isSelectMode && (
+              <button type="button" className={headerSecondaryBtn} onClick={exitSelectMode}>
+                取消選取
+              </button>
+            )}
+            <button
+              type="button"
+              className={headerPrimaryBtn}
+              onClick={() => router.push('/admin/venues/new')}
+            >
+              + 新增場地
+            </button>
+          </div>
+        </div>
+
+        {/* Tab navigation */}
+        <div className={tabBar}>
           <button
             type="button"
-            className={css({
-              marginLeft: 'auto',
-              paddingY: '2.5',
-              paddingX: '4',
-              borderRadius: 'radius.md',
-              border: '1px solid',
-              borderColor: 'color.primary',
-              background: 'color.primary',
-              color: 'white',
-              textStyle: 'bodySmall',
-              fontWeight: 'semibold',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                background: 'stellarBlue.600',
-                borderColor: 'stellarBlue.600',
-              },
-            })}
-            onClick={() => router.push('/admin/venues/new')}
+            className={`${tabButton} ${activeTab === 'pending' ? tabButtonActive : ''}`}
+            onClick={() => handleTabChange('pending')}
           >
-            + 新增場地
+            待審核
+            {pendingCount > 0 && <span className={pendingBadge}>{pendingCount}</span>}
+          </button>
+          <button
+            type="button"
+            className={`${tabButton} ${activeTab === 'management' ? tabButtonActive : ''}`}
+            onClick={() => handleTabChange('management')}
+          >
+            上線管理
           </button>
         </div>
 
@@ -396,7 +736,7 @@ export default function PageVenues() {
             />
           </div>
 
-          {/* 地區 dropdown */}
+          {/* Region dropdown — shown in both tabs */}
           <div className={dropdownContainer} ref={regionRef}>
             <button
               type="button"
@@ -441,59 +781,63 @@ export default function PageVenues() {
             )}
           </div>
 
-          {/* 狀態 dropdown */}
-          <div className={dropdownContainer} ref={statusRef}>
-            <button
-              type="button"
-              className={`${dropdownButton} ${statusFilter !== 'all' ? dropdownButtonActive : ''}`}
-              onClick={() => {
-                setStatusOpen((o) => !o);
-                setRegionOpen(false);
-              }}
-              aria-haspopup="listbox"
-              aria-expanded={statusOpen}
-            >
-              <span>
-                {statusFilter === 'all'
-                  ? '全部狀態'
-                  : statusFilter === 'active'
-                    ? '開放中'
-                    : '已下架'}
-              </span>
-              <ChevronDownIcon
-                className={`${dropdownArrow} ${statusOpen ? dropdownArrowOpen : ''}`}
-              />
-            </button>
-            {statusOpen && (
-              <div className={dropdownMenu} role="listbox">
-                {(
-                  [
-                    { value: 'all', label: '全部狀態' },
-                    { value: 'active', label: '開放中' },
-                    { value: 'inactive', label: '已下架' },
-                  ] as const
-                ).map((opt) => {
-                  const isSelected = statusFilter === opt.value;
-                  return (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      className={`${dropdownOption} ${isSelected ? dropdownOptionSelected : ''}`}
-                      onClick={() => {
-                        setStatusFilter(opt.value);
-                        setStatusOpen(false);
-                      }}
-                      role="option"
-                      aria-selected={isSelected}
-                    >
-                      <span>{opt.label}</span>
-                      {isSelected && <span>✓</span>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          {/* Status dropdown — only shown in management tab */}
+          {activeTab === 'management' && (
+            <div className={dropdownContainer} ref={statusRef}>
+              <button
+                type="button"
+                className={`${dropdownButton} ${managementStatusFilter !== 'all' ? dropdownButtonActive : ''}`}
+                onClick={() => {
+                  setStatusOpen((o) => !o);
+                  setRegionOpen(false);
+                }}
+                aria-haspopup="listbox"
+                aria-expanded={statusOpen}
+              >
+                <span>
+                  {
+                    {
+                      all: '全部狀態',
+                      active: '開放中',
+                      inactive: '已下架',
+                    }[managementStatusFilter]
+                  }
+                </span>
+                <ChevronDownIcon
+                  className={`${dropdownArrow} ${statusOpen ? dropdownArrowOpen : ''}`}
+                />
+              </button>
+              {statusOpen && (
+                <div className={dropdownMenu} role="listbox">
+                  {(
+                    [
+                      { value: 'all', label: '全部狀態' },
+                      { value: 'active', label: '開放中' },
+                      { value: 'inactive', label: '已下架' },
+                    ] as const
+                  ).map((opt) => {
+                    const isSelected = managementStatusFilter === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        className={`${dropdownOption} ${isSelected ? dropdownOptionSelected : ''}`}
+                        onClick={() => {
+                          setManagementStatusFilter(opt.value);
+                          setStatusOpen(false);
+                        }}
+                        role="option"
+                        aria-selected={isSelected}
+                      >
+                        <span>{opt.label}</span>
+                        {isSelected && <span>✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className={statsBar}>
@@ -501,15 +845,22 @@ export default function PageVenues() {
             <FunnelIcon />
             顯示 {filtered.length} / {allVenues.length} 個場地
           </span>
-          {inactiveCount > 0 && (
+          {activeTab === 'management' && inactiveCount > 0 && (
             <span className={statText}>
               <span className={inactiveDot} />
               {inactiveCount} 個已下架
             </span>
           )}
+          {isSelectMode && filtered.length > 0 && (
+            <button type="button" className={selectAllBtn} onClick={handleSelectAll}>
+              {selectedIds.size === filtered.length ? '取消全選' : `全選 (${filtered.length})`}
+            </button>
+          )}
         </div>
 
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <Loading description="載入中..." style={{ width: '100%' }} />
+        ) : filtered.length === 0 ? (
           <div className={emptyState}>
             <h3>沒有符合條件的場地</h3>
             <p>試試調整篩選條件</p>
@@ -524,11 +875,74 @@ export default function PageVenues() {
                 onDeactivate={(v) => deactivateMutation.mutate(v.id)}
                 onActivate={(v) => activateMutation.mutate(v.id)}
                 isUpdating={isUpdating}
+                isSelectMode={isSelectMode}
+                isSelected={selectedIds.has(venue.id)}
+                onSelect={handleSelect}
               />
             ))}
           </div>
         )}
       </div>
+
+      {/* Batch action bar — visible only in select mode */}
+      {isSelectMode && (
+        <div className={actionBar}>
+          <span className={actionBarCount}>已選 {selectedIds.size} 個場地</span>
+
+          <div className={actionBarSpacer} />
+
+          {activeTab === 'pending' && (
+            <>
+              <button
+                type="button"
+                className={`${actionBarBtn} ${actionBarBtnApprove}`}
+                onClick={handleBatchApprove}
+                disabled={selectedIds.size === 0 || isBatchUpdating}
+              >
+                批次審核通過
+              </button>
+              <button
+                type="button"
+                className={`${actionBarBtn} ${actionBarBtnReject}`}
+                onClick={handleBatchReject}
+                disabled={selectedIds.size === 0 || isBatchUpdating}
+              >
+                批次拒絕
+              </button>
+            </>
+          )}
+
+          {activeTab === 'management' && (
+            <>
+              <button
+                type="button"
+                className={`${actionBarBtn} ${actionBarBtnActivate}`}
+                onClick={handleBatchActivate}
+                disabled={selectedIds.size === 0 || isBatchUpdating}
+              >
+                批次上架
+              </button>
+              <button
+                type="button"
+                className={`${actionBarBtn} ${actionBarBtnDeactivate}`}
+                onClick={handleBatchDeactivate}
+                disabled={selectedIds.size === 0 || isBatchUpdating}
+              >
+                批次下架
+              </button>
+            </>
+          )}
+
+          <button
+            type="button"
+            className={`${actionBarBtn} ${actionBarBtnCancel}`}
+            onClick={exitSelectMode}
+            disabled={isBatchUpdating}
+          >
+            取消
+          </button>
+        </div>
+      )}
     </div>
   );
 }

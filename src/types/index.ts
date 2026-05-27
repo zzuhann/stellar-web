@@ -324,6 +324,8 @@ export interface VenueEventCard {
   slug: string | null;
 }
 
+export type CapacityRange = '20以下' | '20-40' | '40-60' | '60以上';
+
 export interface VenueDetail {
   id: string;
   name: string;
@@ -331,20 +333,23 @@ export interface VenueDetail {
   region: string;
   lat: number;
   lng: number;
-  place_id: string;
-  nearest_mrt: string | null;
-  mrt_walk_minutes: number | null;
-  capacity_max: number | null;
+  placeId: string;
+  nearestMrt: string | null;
+  mrtWalkMinutes: number | null;
+  capacityRange: CapacityRange | null;
   eventCount: number;
   coverPhoto: string | null;
   description: string;
   otherPhotos: string[];
-  host_tags: string[];
-  status: 'active' | 'inactive';
+  hostTags: string[];
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
   socialMedia?: {
     threads?: string;
     instagram?: string;
+    line?: string;
   };
+  preferredContact?: 'instagram' | 'threads' | 'line' | 'form' | 'other';
+  contactUrl?: string;
   events: VenueEventCard[];
 }
 
@@ -355,15 +360,16 @@ export interface Venue {
   region: string;
   lat: number;
   lng: number;
-  nearest_mrt: string | null;
-  mrt_walk_minutes: number | null;
-  capacity_max: number | null;
+  nearestMrt: string | null;
+  mrtWalkMinutes: number | null;
+  capacityRange: CapacityRange | null;
   eventCount: number;
   coverPhoto: string | null;
-  status: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'pending' | 'rejected';
   socialMedia?: {
     threads?: string;
     instagram?: string;
+    line?: string;
   };
 }
 
@@ -392,45 +398,50 @@ export interface UpdateVenueData {
   name?: string;
   address?: string;
   region?: string;
-  nearest_mrt?: string;
-  mrt_walk_minutes?: number | null;
-  capacity_max?: number | null;
+  nearestMrt?: string;
+  mrtWalkMinutes?: number | null;
+  capacityRange?: CapacityRange | null;
   description?: string;
   otherPhotos?: string[];
-  host_tags?: string[];
+  hostTags?: string[];
   coverPhoto?: string;
-  status?: 'active' | 'inactive';
+  status?: 'active' | 'inactive' | 'pending' | 'rejected';
   socialMedia?: {
     threads?: string;
     instagram?: string;
+    line?: string;
   };
+  preferredContact?: 'instagram' | 'threads' | 'line' | 'form' | 'other';
+  contactUrl?: string;
 }
 
 export interface CreateVenueData {
   name: string;
   address: string;
   region: string;
-  capacity_max?: number;
+  capacityRange?: CapacityRange;
   description?: string;
   coverPhoto?: string;
   otherPhotos?: string[];
-  nearest_mrt?: string;
-  mrt_walk_minutes?: number;
+  nearestMrt?: string;
+  mrtWalkMinutes?: number;
   lat?: number;
   lng?: number;
-  place_id?: string;
+  placeId?: string;
   socialMedia?: {
     threads?: string;
     instagram?: string;
+    line?: string;
   };
+  preferredContact?: 'instagram' | 'threads' | 'line' | 'form' | 'other';
+  contactUrl?: string;
 }
 
 export interface VenueFilterParams {
   region?: string[];
-  capacity_min?: number;
-  capacity_max?: number;
+  capacityRange?: CapacityRange;
   sort?: 'eventCount' | 'name';
-  status?: 'active' | 'inactive';
+  status?: 'active' | 'inactive' | 'pending' | 'rejected' | 'all';
 }
 
 export interface VenuesResponse {
