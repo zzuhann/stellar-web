@@ -128,7 +128,7 @@ const confirmBtn = css({
 
 type Props = {
   venueId: string;
-  currentStatus: 'active' | 'inactive';
+  currentStatus: 'active' | 'inactive' | 'pending' | 'rejected';
   events: VenueEventCard[];
 };
 

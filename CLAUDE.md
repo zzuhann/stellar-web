@@ -113,6 +113,73 @@ NODE_ENV=development
 
 ---
 
+## UI 元件規範
+
+### 選單（Dropdown）
+
+**不使用原生 `<select>`**，一律用 custom dropdown button + 浮動選單實作，視覺風格才能統一控制。
+
+標準 pattern（參考 `src/components/admin/venues/PageVenues.tsx`、`src/components/admin/VenueForm/index.tsx`）：
+
+```typescript
+// CSS
+const dropdownContainer = css({ position: 'relative' });
+
+const dropdownTrigger = css({
+  width: '100%',
+  paddingY: '2.5', paddingX: '3',
+  borderRadius: 'radius.md',
+  border: '1px solid', borderColor: 'color.border.light',
+  background: 'white', color: 'color.text.primary',
+  cursor: 'pointer', textAlign: 'left',
+  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+  '&[data-empty="true"]': { color: 'color.text.tertiary' },  // placeholder 色
+  '&:hover': { borderColor: 'color.primary' },
+});
+
+const dropdownMenu = css({
+  position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
+  maxHeight: '240px', overflowY: 'auto',
+  background: 'white', border: '1px solid', borderColor: 'color.border.light',
+  borderRadius: 'radius.md', boxShadow: 'shadow.md', zIndex: 20,
+});
+```
+
+```tsx
+// Component
+const [open, setOpen] = useState(false);
+const ref = useRef<HTMLDivElement>(null);
+useEffect(() => {
+  const handler = (e: MouseEvent) => {
+    if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+  };
+  document.addEventListener('mousedown', handler);
+  return () => document.removeEventListener('mousedown', handler);
+}, []);
+
+// JSX
+<div ref={ref} className={dropdownContainer}>
+  <button type="button" className={dropdownTrigger} data-empty={!value ? 'true' : undefined}
+    onClick={() => setOpen(o => !o)} aria-haspopup="listbox" aria-expanded={open}>
+    <span>{value || '請選擇'}</span>
+    <ChevronDownIcon className={css({ width: '14px', height: '14px', ...(open && { transform: 'rotate(180deg)' }) })} />
+  </button>
+  {open && (
+    <div className={dropdownMenu} role="listbox">
+      {options.map(opt => (
+        <button key={opt.value} type="button" role="option" aria-selected={value === opt.value}
+          onClick={() => { onChange(opt.value); setOpen(false); }}>
+          <span>{opt.label}</span>
+          {value === opt.value && <span>✓</span>}
+        </button>
+      ))}
+    </div>
+  )}
+</div>
+```
+
+---
+
 ## 規格文件
 
 功能設計規格在 `specs/features/` 下：

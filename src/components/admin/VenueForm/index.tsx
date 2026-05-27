@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { css } from '@/styled-system/css';
+import { ChevronDownIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import type { CreateVenueData, UpdateVenueData, VenueDetail } from '@/types';
+import type { CapacityRange, CreateVenueData, UpdateVenueData, VenueDetail } from '@/types';
 import ImageUpload from '@/components/images/ImageUpload';
 import MultiImageUpload from '@/components/images/MultiImageUpload';
 import PlaceAutocomplete from '@/components/forms/PlaceAutocomplete';
@@ -40,6 +41,32 @@ const pageContainer = css({
   paddingX: '4',
   paddingTop: '25',
   paddingBottom: '16',
+});
+
+const backBtn = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1.5',
+  marginBottom: '4',
+  paddingY: '2',
+  paddingX: '3',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'white',
+  color: 'color.text.secondary',
+  fontSize: '13px',
+  fontWeight: 600,
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: 'gray.50',
+    color: 'color.text.primary',
+  },
+  '& svg': {
+    width: '14px',
+    height: '14px',
+  },
 });
 
 const sectionTitle = css({
@@ -107,7 +134,11 @@ const input = css({
   },
 });
 
-const select = css({
+const formDropdownContainer = css({
+  position: 'relative',
+});
+
+const formDropdownTrigger = css({
   width: '100%',
   paddingY: '2.5',
   paddingX: '3',
@@ -117,12 +148,70 @@ const select = css({
   textStyle: 'body',
   color: 'color.text.primary',
   background: 'white',
-  outline: 'none',
   cursor: 'pointer',
-  '&:focus': {
+  textAlign: 'left',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: '2',
+  transition: 'all 0.2s',
+  '&[data-empty="true"]': {
+    color: 'color.text.tertiary',
+  },
+  '&:hover': {
+    borderColor: 'color.primary',
+  },
+  '&:focus-visible': {
+    outline: 'none',
     borderColor: 'color.primary',
     boxShadow: '0 0 0 2px var(--colors-stellar-blue-100)',
   },
+});
+
+const formDropdownArrow = css({
+  width: '14px',
+  height: '14px',
+  flexShrink: 0,
+  transition: 'transform 0.2s ease',
+});
+
+const formDropdownArrowOpen = css({
+  transform: 'rotate(180deg)',
+});
+
+const formDropdownMenu = css({
+  position: 'absolute',
+  top: 'calc(100% + 4px)',
+  left: 0,
+  right: 0,
+  maxHeight: '240px',
+  overflowY: 'auto',
+  background: 'white',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.md',
+  boxShadow: 'shadow.md',
+  zIndex: 20,
+});
+
+const formDropdownOption = css({
+  textStyle: 'body',
+  paddingY: '2.5',
+  paddingX: '3',
+  cursor: 'pointer',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  width: '100%',
+  transition: 'background 0.15s',
+  '&:hover': {
+    background: 'gray.50',
+  },
+});
+
+const formDropdownOptionSelected = css({
+  color: 'color.primary',
+  fontWeight: 'medium',
 });
 
 const textarea = css({
@@ -263,20 +352,25 @@ type VenueFormMode = { mode: 'create' } | { mode: 'edit'; venue: VenueDetail };
 
 type Props = VenueFormMode;
 
+type PreferredContact = 'instagram' | 'threads' | 'line' | 'form' | 'other';
+
 type FormState = {
   name: string;
   address: string;
   region: string;
   lat: number | null;
   lng: number | null;
-  place_id: string;
-  nearest_mrt: string;
-  mrt_walk_minutes: string;
-  capacity_max: string;
+  placeId: string;
+  nearestMrt: string;
+  mrtWalkMinutes: string;
+  capacityRange: CapacityRange | '';
   coverPhoto: string;
   otherPhotos: string[];
   threads: string;
   instagram: string;
+  line: string;
+  preferredContact: PreferredContact | '';
+  contactUrl: string;
   description: string;
   status: 'active' | 'inactive';
 };
@@ -290,16 +384,20 @@ function buildInitialForm(props: Props): FormState {
       region: v.region,
       lat: v.lat ?? null,
       lng: v.lng ?? null,
-      place_id: v.place_id ?? '',
-      nearest_mrt: v.nearest_mrt ?? '',
-      mrt_walk_minutes: v.mrt_walk_minutes !== null ? String(v.mrt_walk_minutes) : '',
-      capacity_max: v.capacity_max !== null ? String(v.capacity_max) : '',
+      placeId: v.placeId ?? '',
+      nearestMrt: v.nearestMrt ?? '',
+      mrtWalkMinutes: v.mrtWalkMinutes !== null ? String(v.mrtWalkMinutes) : '',
+      capacityRange: v.capacityRange ?? '',
       coverPhoto: v.coverPhoto ?? '',
       otherPhotos: v.otherPhotos ?? [],
       threads: v.socialMedia?.threads ?? '',
       instagram: v.socialMedia?.instagram ?? '',
+      line: v.socialMedia?.line ?? '',
+      preferredContact: v.preferredContact ?? '',
+      contactUrl: v.contactUrl ?? '',
       description: v.description ?? '',
-      status: v.status ?? 'active',
+      // pending/rejected venues default to inactive in the form toggle
+      status: (v.status === 'active' || v.status === 'inactive') ? v.status : 'inactive',
     };
   }
   return {
@@ -308,14 +406,17 @@ function buildInitialForm(props: Props): FormState {
     region: '',
     lat: null,
     lng: null,
-    place_id: '',
-    nearest_mrt: '',
-    mrt_walk_minutes: '',
-    capacity_max: '',
+    placeId: '',
+    nearestMrt: '',
+    mrtWalkMinutes: '',
+    capacityRange: '',
     coverPhoto: '',
     otherPhotos: [],
     threads: '',
     instagram: '',
+    line: '',
+    preferredContact: '',
+    contactUrl: '',
     description: '',
     status: 'active',
   };
@@ -331,6 +432,26 @@ export default function VenueFormClient(props: Props) {
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
+  const [regionOpen, setRegionOpen] = useState(false);
+  const [capacityOpen, setCapacityOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const regionDropdownRef = useRef<HTMLDivElement>(null);
+  const capacityDropdownRef = useRef<HTMLDivElement>(null);
+  const contactDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (regionDropdownRef.current && !regionDropdownRef.current.contains(e.target as Node))
+        setRegionOpen(false);
+      if (capacityDropdownRef.current && !capacityDropdownRef.current.contains(e.target as Node))
+        setCapacityOpen(false);
+      if (contactDropdownRef.current && !contactDropdownRef.current.contains(e.target as Node))
+        setContactOpen(false);
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handlePlaceSelect = (place: {
     place_id: string;
     address: string;
@@ -344,7 +465,7 @@ export default function VenueFormClient(props: Props) {
       address: place.address,
       lat: place.coordinates.lat,
       lng: place.coordinates.lng,
-      place_id: place.place_id,
+      placeId: place.place_id,
     }));
   };
 
@@ -359,20 +480,23 @@ export default function VenueFormClient(props: Props) {
       };
       if (formState.lat !== null) data.lat = formState.lat;
       if (formState.lng !== null) data.lng = formState.lng;
-      if (formState.place_id) data.place_id = formState.place_id;
-      if (formState.nearest_mrt) data.nearest_mrt = formState.nearest_mrt;
-      if (formState.mrt_walk_minutes)
-        data.mrt_walk_minutes = parseInt(formState.mrt_walk_minutes, 10);
-      if (formState.capacity_max) data.capacity_max = parseInt(formState.capacity_max, 10);
+      if (formState.placeId) data.placeId = formState.placeId;
+      if (formState.nearestMrt) data.nearestMrt = formState.nearestMrt;
+      if (formState.mrtWalkMinutes)
+        data.mrtWalkMinutes = parseInt(formState.mrtWalkMinutes, 10);
+      if (formState.capacityRange) data.capacityRange = formState.capacityRange;
       if (formState.coverPhoto) data.coverPhoto = formState.coverPhoto;
       if (formState.otherPhotos.length > 0) data.otherPhotos = formState.otherPhotos;
       if (formState.description.trim()) data.description = formState.description.trim();
-      if (formState.threads || formState.instagram) {
+      if (formState.threads || formState.instagram || formState.line) {
         data.socialMedia = {
           threads: formState.threads || undefined,
           instagram: formState.instagram || undefined,
+          line: formState.line || undefined,
         };
       }
+      if (formState.preferredContact) data.preferredContact = formState.preferredContact;
+      if (formState.contactUrl) data.contactUrl = formState.contactUrl;
       createMutation.mutate(data);
     } else {
       const v = props.venue;
@@ -381,23 +505,24 @@ export default function VenueFormClient(props: Props) {
       if (formState.name !== v.name) data.name = formState.name;
       if (formState.address !== v.address) data.address = formState.address;
       if (formState.region !== v.region) data.region = formState.region;
-      if (formState.nearest_mrt !== (v.nearest_mrt ?? '')) data.nearest_mrt = formState.nearest_mrt;
+      if (formState.nearestMrt !== (v.nearestMrt ?? '')) data.nearestMrt = formState.nearestMrt;
       if (formState.coverPhoto !== (v.coverPhoto ?? '')) data.coverPhoto = formState.coverPhoto;
 
       const parsedMinutes =
-        formState.mrt_walk_minutes === '' ? null : parseInt(formState.mrt_walk_minutes, 10);
-      if (parsedMinutes !== v.mrt_walk_minutes) data.mrt_walk_minutes = parsedMinutes;
+        formState.mrtWalkMinutes === '' ? null : parseInt(formState.mrtWalkMinutes, 10);
+      if (parsedMinutes !== v.mrtWalkMinutes) data.mrtWalkMinutes = parsedMinutes;
 
-      const parsedCapacity =
-        formState.capacity_max === '' ? null : parseInt(formState.capacity_max, 10);
-      if (parsedCapacity !== v.capacity_max) data.capacity_max = parsedCapacity;
+      const newCapacityRange = formState.capacityRange || null;
+      if (newCapacityRange !== v.capacityRange) data.capacityRange = newCapacityRange;
 
       const threadsChanged = formState.threads !== (v.socialMedia?.threads ?? '');
       const instagramChanged = formState.instagram !== (v.socialMedia?.instagram ?? '');
-      if (threadsChanged || instagramChanged) {
+      const lineChanged = formState.line !== (v.socialMedia?.line ?? '');
+      if (threadsChanged || instagramChanged || lineChanged) {
         data.socialMedia = {
           threads: formState.threads || undefined,
           instagram: formState.instagram || undefined,
+          line: formState.line || undefined,
         };
       }
 
@@ -408,6 +533,11 @@ export default function VenueFormClient(props: Props) {
       if (formState.description !== (v.description ?? '')) data.description = formState.description;
 
       if (formState.status !== (v.status ?? 'active')) data.status = formState.status;
+
+      const newPreferredContact = formState.preferredContact || undefined;
+      if (newPreferredContact !== v.preferredContact) data.preferredContact = newPreferredContact;
+
+      if (formState.contactUrl !== (v.contactUrl ?? '')) data.contactUrl = formState.contactUrl;
 
       if (Object.keys(data).length === 0) {
         router.push('/admin/venues');
@@ -420,7 +550,7 @@ export default function VenueFormClient(props: Props) {
 
   const set =
     (field: keyof FormState) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setFormState((prev) => ({ ...prev, [field]: e.target.value }));
 
   const hasLocation = formState.lat !== null && formState.lng !== null;
@@ -428,6 +558,10 @@ export default function VenueFormClient(props: Props) {
 
   return (
     <div className={pageContainer}>
+      <button type="button" className={backBtn} onClick={() => router.push('/admin/venues')}>
+        <ArrowLeftIcon />
+        場地管理
+      </button>
       <h1 className={sectionTitle}>{isEdit ? '編輯場地' : '新增場地'}</h1>
 
       <form className={form} onSubmit={handleSubmit}>
@@ -481,14 +615,45 @@ export default function VenueFormClient(props: Props) {
           <label className={labelStyle}>
             地區<span className={required}>*</span>
           </label>
-          <select className={select} value={formState.region} onChange={set('region')} required>
-            <option value="">請選擇</option>
-            {REGIONS.map((r) => (
-              <option key={r} value={r}>
-                {r}
-              </option>
-            ))}
-          </select>
+          <div className={formDropdownContainer} ref={regionDropdownRef}>
+            <button
+              type="button"
+              className={formDropdownTrigger}
+              data-empty={!formState.region ? 'true' : undefined}
+              onClick={() => {
+                setRegionOpen((o) => !o);
+                setCapacityOpen(false);
+                setContactOpen(false);
+              }}
+              aria-haspopup="listbox"
+              aria-expanded={regionOpen}
+            >
+              <span>{formState.region || '請選擇'}</span>
+              <ChevronDownIcon
+                className={`${formDropdownArrow} ${regionOpen ? formDropdownArrowOpen : ''}`}
+              />
+            </button>
+            {regionOpen && (
+              <div className={formDropdownMenu} role="listbox">
+                {REGIONS.map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    className={`${formDropdownOption} ${formState.region === r ? formDropdownOptionSelected : ''}`}
+                    onClick={() => {
+                      setFormState((prev) => ({ ...prev, region: r }));
+                      setRegionOpen(false);
+                    }}
+                    role="option"
+                    aria-selected={formState.region === r}
+                  >
+                    <span>{r}</span>
+                    {formState.region === r && <span>✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className={divider} />
@@ -499,8 +664,8 @@ export default function VenueFormClient(props: Props) {
             <label className={labelStyle}>最近捷運站</label>
             <input
               className={input}
-              value={formState.nearest_mrt}
-              onChange={set('nearest_mrt')}
+              value={formState.nearestMrt}
+              onChange={set('nearestMrt')}
               placeholder="例：忠孝復興"
             />
           </div>
@@ -510,23 +675,54 @@ export default function VenueFormClient(props: Props) {
               className={input}
               type="number"
               min={0}
-              value={formState.mrt_walk_minutes}
-              onChange={set('mrt_walk_minutes')}
+              value={formState.mrtWalkMinutes}
+              onChange={set('mrtWalkMinutes')}
               placeholder="分鐘"
             />
           </div>
         </div>
 
         <div className={fieldGroup}>
-          <label className={labelStyle}>最大容納人數</label>
-          <input
-            className={input}
-            type="number"
-            min={0}
-            value={formState.capacity_max}
-            onChange={set('capacity_max')}
-            placeholder="人"
-          />
+          <label className={labelStyle}>容納人數區間</label>
+          <div className={formDropdownContainer} ref={capacityDropdownRef}>
+            <button
+              type="button"
+              className={formDropdownTrigger}
+              data-empty={!formState.capacityRange ? 'true' : undefined}
+              onClick={() => {
+                setCapacityOpen((o) => !o);
+                setRegionOpen(false);
+                setContactOpen(false);
+              }}
+              aria-haspopup="listbox"
+              aria-expanded={capacityOpen}
+            >
+              <span>{formState.capacityRange || '不填寫'}</span>
+              <ChevronDownIcon
+                className={`${formDropdownArrow} ${capacityOpen ? formDropdownArrowOpen : ''}`}
+              />
+            </button>
+            {capacityOpen && (
+              <div className={formDropdownMenu} role="listbox">
+                {(['20以下', '20-40', '40-60', '60以上'] as const).map((range) => (
+                  <button
+                    key={range}
+                    type="button"
+                    className={`${formDropdownOption} ${formState.capacityRange === range ? formDropdownOptionSelected : ''}`}
+                    onClick={() => {
+                      setFormState((prev) => ({ ...prev, capacityRange: range }));
+                      setCapacityOpen(false);
+                    }}
+                    role="option"
+                    aria-selected={formState.capacityRange === range}
+                  >
+                    <span>{range}</span>
+                    {formState.capacityRange === range && <span>✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className={fieldGroup}>
@@ -551,7 +747,94 @@ export default function VenueFormClient(props: Props) {
               />
             </div>
           </div>
+          <div className={fieldGroup}>
+            <label className={labelSub}>Line</label>
+            <input
+              className={input}
+              value={formState.line}
+              onChange={set('line')}
+              placeholder="Line ID 或連結"
+            />
+          </div>
         </div>
+
+        <div className={fieldGroup}>
+          <label className={labelStyle}>偏好聯絡方式</label>
+          <div className={formDropdownContainer} ref={contactDropdownRef}>
+            <button
+              type="button"
+              className={formDropdownTrigger}
+              data-empty={!formState.preferredContact ? 'true' : undefined}
+              onClick={() => {
+                setContactOpen((o) => !o);
+                setRegionOpen(false);
+                setCapacityOpen(false);
+              }}
+              aria-haspopup="listbox"
+              aria-expanded={contactOpen}
+            >
+              <span>
+                {formState.preferredContact
+                  ? (
+                      {
+                        instagram: 'IG 私訊',
+                        threads: 'Threads 私訊',
+                        line: 'Line',
+                        form: '表單／連結',
+                        other: '其他',
+                      } as Record<string, string>
+                    )[formState.preferredContact]
+                  : '不填寫'}
+              </span>
+              <ChevronDownIcon
+                className={`${formDropdownArrow} ${contactOpen ? formDropdownArrowOpen : ''}`}
+              />
+            </button>
+            {contactOpen && (
+              <div className={formDropdownMenu} role="listbox">
+                {(
+                  [
+                    { value: '' as const, label: '不填寫' },
+                    { value: 'instagram' as const, label: 'IG 私訊' },
+                    { value: 'threads' as const, label: 'Threads 私訊' },
+                    { value: 'line' as const, label: 'Line' },
+                    { value: 'form' as const, label: '表單／連結' },
+                    { value: 'other' as const, label: '其他' },
+                  ] as const
+                ).map(({ value, label }) => (
+                  <button
+                    key={value || 'empty'}
+                    type="button"
+                    className={`${formDropdownOption} ${formState.preferredContact === value ? formDropdownOptionSelected : ''}`}
+                    onClick={() => {
+                      setFormState((prev) => ({ ...prev, preferredContact: value }));
+                      setContactOpen(false);
+                    }}
+                    role="option"
+                    aria-selected={formState.preferredContact === value}
+                  >
+                    <span>{label}</span>
+                    {formState.preferredContact === value && <span>✓</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {(formState.preferredContact === 'line' ||
+          formState.preferredContact === 'form' ||
+          formState.preferredContact === 'other') && (
+          <div className={fieldGroup}>
+            <label className={labelStyle}>聯絡連結或 ID</label>
+            <input
+              className={input}
+              value={formState.contactUrl}
+              onChange={set('contactUrl')}
+              placeholder="https://... 或 Line ID"
+            />
+          </div>
+        )}
 
         <div className={fieldGroup}>
           <label className={labelStyle}>封面圖片</label>
@@ -571,7 +854,7 @@ export default function VenueFormClient(props: Props) {
             currentImages={formState.otherPhotos}
             onImagesChange={(urls) => setFormState((prev) => ({ ...prev, otherPhotos: urls }))}
             authToken={token || undefined}
-            maxImages={8}
+            maxImages={9}
             placeholder="新增照片"
             compressionParams={{ maxWidth: 1200, maxHeight: 900, quality: 0.85 }}
           />
