@@ -47,7 +47,9 @@ api.interceptors.request.use(
         const token = await user.getIdToken();
         config.headers.Authorization = `Bearer ${token}`;
       }
-    } catch {}
+    } catch {
+      // ignore token fetch errors
+    }
     return config;
   },
   (error) => {

@@ -441,7 +441,8 @@ export default function PageVenues() {
   const [searchQuery, setSearchQuery] = useState('');
   const [regionFilter, setRegionFilter] = useState<RegionGroup | ''>('');
   // Status filter only used in management tab (active/inactive)
-  const [managementStatusFilter, setManagementStatusFilter] = useState<ManagementStatusFilter>('all');
+  const [managementStatusFilter, setManagementStatusFilter] =
+    useState<ManagementStatusFilter>('all');
   const [regionOpen, setRegionOpen] = useState(false);
   const [statusOpen, setStatusOpen] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -567,16 +568,16 @@ export default function PageVenues() {
 
   const allVenues = activeTab === 'pending' ? pendingVenues : managementVenues;
 
-  const filtered = useMemo(() => {
-    if (!searchQuery) return allVenues;
-    const q = searchQuery.toLowerCase();
-    return allVenues.filter(
-      (v) =>
-        v.name.toLowerCase().includes(q) ||
-        v.address.toLowerCase().includes(q) ||
-        v.region.includes(q)
-    );
-  }, [allVenues, searchQuery]);
+  const filtered = searchQuery
+    ? allVenues.filter((v) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          v.name.toLowerCase().includes(q) ||
+          v.address.toLowerCase().includes(q) ||
+          v.region.includes(q)
+        );
+      })
+    : allVenues;
 
   const pendingCount = pendingVenues.length;
   const inactiveCount = managementVenues.filter((v) => v.status === 'inactive').length;
@@ -600,33 +601,25 @@ export default function PageVenues() {
   const handleBatchApprove = () => {
     const count = selectedIds.size;
     if (!window.confirm(`確認要審核通過 ${count} 個場地嗎？`)) return;
-    batchReviewMutation.mutate(
-      [...selectedIds].map((id) => ({ venueId: id, status: 'active' }))
-    );
+    batchReviewMutation.mutate([...selectedIds].map((id) => ({ venueId: id, status: 'active' })));
   };
 
   const handleBatchReject = () => {
     const count = selectedIds.size;
     if (!window.confirm(`確認要拒絕 ${count} 個場地嗎？`)) return;
-    batchReviewMutation.mutate(
-      [...selectedIds].map((id) => ({ venueId: id, status: 'rejected' }))
-    );
+    batchReviewMutation.mutate([...selectedIds].map((id) => ({ venueId: id, status: 'rejected' })));
   };
 
   const handleBatchActivate = () => {
     const count = selectedIds.size;
     if (!window.confirm(`確認要上架 ${count} 個場地嗎？`)) return;
-    batchStatusMutation.mutate(
-      [...selectedIds].map((id) => ({ venueId: id, status: 'active' }))
-    );
+    batchStatusMutation.mutate([...selectedIds].map((id) => ({ venueId: id, status: 'active' })));
   };
 
   const handleBatchDeactivate = () => {
     const count = selectedIds.size;
     if (!window.confirm(`確認要下架 ${count} 個場地嗎？`)) return;
-    batchStatusMutation.mutate(
-      [...selectedIds].map((id) => ({ venueId: id, status: 'inactive' }))
-    );
+    batchStatusMutation.mutate([...selectedIds].map((id) => ({ venueId: id, status: 'inactive' })));
   };
 
   if (authLoading || (isPendingLoading && isManagementLoading)) {
@@ -736,9 +729,7 @@ export default function PageVenues() {
             onClick={() => handleTabChange('pending')}
           >
             待審核
-            {pendingCount > 0 && (
-              <span className={pendingBadge}>{pendingCount}</span>
-            )}
+            {pendingCount > 0 && <span className={pendingBadge}>{pendingCount}</span>}
           </button>
           <button
             type="button"
@@ -877,11 +868,7 @@ export default function PageVenues() {
             </span>
           )}
           {isSelectMode && filtered.length > 0 && (
-            <button
-              type="button"
-              className={selectAllBtn}
-              onClick={handleSelectAll}
-            >
+            <button type="button" className={selectAllBtn} onClick={handleSelectAll}>
               {selectedIds.size === filtered.length ? '取消全選' : `全選 (${filtered.length})`}
             </button>
           )}
