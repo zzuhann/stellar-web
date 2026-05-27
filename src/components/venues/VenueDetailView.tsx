@@ -3,10 +3,11 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { css } from '@/styled-system/css';
-import type { VenueDetail } from '@/types';
+import type { Venue, VenueDetail } from '@/types';
 import VenueGallery from './VenueGallery';
 import InfoRow from './InfoRow';
 import PastEventsStrip from './PastEventsStrip';
+import RelatedVenuesStrip from './RelatedVenuesStrip';
 
 const pageOuter = css({
   minHeight: '100vh',
@@ -193,8 +194,7 @@ const bookingSection = css({
 });
 
 const primaryBtn = css({
-  width: '100%',
-  padding: '13px',
+  padding: '11px 20px',
   borderRadius: 'radius.md',
   border: 'none',
   background: 'color.primary',
@@ -203,7 +203,7 @@ const primaryBtn = css({
   fontSize: '14px',
   fontWeight: 500,
   letterSpacing: '0.04em',
-  display: 'block',
+  display: 'inline-block',
   textDecoration: 'none',
   textAlign: 'center',
   transition: 'background 0.15s ease',
@@ -212,11 +212,11 @@ const primaryBtn = css({
   },
 });
 
-const submitSection = css({
-  padding: '20px 16px 0',
+const venueListSection = css({
+  padding: '16px 16px 40px',
 });
 
-const submitBtn = css({
+const venueListBtn = css({
   width: '100%',
   padding: '13px',
   borderRadius: 'radius.md',
@@ -235,6 +235,34 @@ const submitBtn = css({
     borderColor: 'color.primary',
     color: 'color.primary',
   },
+});
+
+const mrtIconCls = css({
+  width: '18px',
+  height: '18px',
+  borderRadius: 'radius.sm',
+  background: 'stellarBlue.500',
+  color: 'white',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '11px',
+  fontWeight: 700,
+  flexShrink: 0,
+});
+
+const pinIconWrapper = css({
+  color: 'stellarBlue.500',
+  display: 'inline-flex',
+});
+
+const starIconCls = css({
+  color: 'amber.500',
+});
+
+const mapIconWrapper = css({
+  color: 'gray.400',
+  flexShrink: 0,
 });
 
 function PinIcon() {
@@ -257,25 +285,7 @@ function PinIcon() {
 }
 
 function MrtIcon() {
-  return (
-    <span
-      style={{
-        width: 18,
-        height: 18,
-        borderRadius: 4,
-        background: 'var(--colors-stellar-blue-500)',
-        color: '#fff',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 11,
-        fontWeight: 700,
-        flexShrink: 0,
-      }}
-    >
-      M
-    </span>
-  );
+  return <span className={mrtIconCls}>M</span>;
 }
 
 function InstagramIcon() {
@@ -328,15 +338,15 @@ function buildBookingChannel(venue: VenueDetail): BookingChannel | null {
       if (venue.contactUrl) return { label: '查看預約資訊', url: venue.contactUrl };
       break;
     case 'line':
-      if (venue.contactUrl) return { label: 'LINE 聯絡', url: venue.contactUrl };
+      if (venue.contactUrl) return { label: 'LINE 聯繫', url: venue.contactUrl };
       break;
     case 'instagram':
       if (venue.socialMedia?.instagram)
-        return { label: '前往 Instagram 主頁', url: venue.socialMedia.instagram };
+        return { label: '前往 Instagram 主頁', url: `https://www.instagram.com/${venue.socialMedia.instagram}` };
       break;
     case 'threads':
       if (venue.socialMedia?.threads)
-        return { label: '前往 Threads 主頁', url: venue.socialMedia.threads };
+        return { label: '前往 Threads 主頁', url: `https://www.threads.com/@${venue.socialMedia.threads}` };
       break;
     case 'other':
       if (venue.contactUrl) return { label: '查看聯絡資訊', url: venue.contactUrl };
@@ -345,20 +355,24 @@ function buildBookingChannel(venue: VenueDetail): BookingChannel | null {
   return null;
 }
 
-function buildSocialText(venue: VenueDetail): string | null {
+function buildSocialLink(venue: VenueDetail): { text: string; url: string } | null {
   const sm = venue.socialMedia;
   if (!sm) return null;
-  return sm.instagram || sm.threads || sm.line || null;
+  if (sm.instagram) return { text: sm.instagram, url: `https://www.instagram.com/${sm.instagram}` };
+  if (sm.threads) return { text: sm.threads, url: `https://www.threads.com/@${sm.threads}` };
+  if (sm.line) return { text: sm.line, url: sm.line };
+  return null;
 }
 
 interface VenueDetailViewProps {
   venue: VenueDetail;
+  relatedVenues: Venue[];
 }
 
-export default function VenueDetailView({ venue }: VenueDetailViewProps) {
+export default function VenueDetailView({ venue, relatedVenues }: VenueDetailViewProps) {
   const router = useRouter();
   const photos = [venue.coverPhoto, ...(venue.otherPhotos ?? [])].filter(Boolean) as string[];
-  const socialText = buildSocialText(venue);
+  const socialLink = buildSocialLink(venue);
   const bookingChannel = buildBookingChannel(venue);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${venue.lat},${venue.lng}&query_place_id=${venue.placeId}`;
 
@@ -380,7 +394,7 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
             >
               <path d="m15 6-6 6 6 6" />
             </svg>
-            場地
+            場地列表
           </button>
         </div>
 
@@ -396,20 +410,14 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
                 height="12"
                 viewBox="0 0 24 24"
                 fill="currentColor"
-                style={{ color: 'var(--colors-amber-500)' }}
+                className={starIconCls}
               >
                 <path d="M12 3 14.5 9 21 10l-5 4.5 1.5 6.5L12 17.5 6.5 21 8 14.5 3 10l6.5-1z" />
               </svg>
-              辦過 {venue.eventCount} 場生咖
+              收錄 {venue.eventCount} 場生咖
             </span>
           </div>
           <h1 className={venueName}>{venue.name}</h1>
-          <div className={regionRow}>
-            <span style={{ color: 'var(--colors-stellar-blue-500)', display: 'inline-flex' }}>
-              <PinIcon />
-            </span>
-            {venue.region}
-          </div>
 
           <div className={statsGrid}>
             <div className={statBox}>
@@ -425,7 +433,7 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
               </div>
             </div>
             <div className={statBox}>
-              <div className={statLabel}>過往生咖</div>
+              <div className={statLabel}>平台生咖</div>
               <div className={statValue}>
                 {venue.eventCount} <span className={statUnit}>場</span>
               </div>
@@ -453,7 +461,7 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
                   }}
                 >
                   {venue.address}
-                  <span style={{ color: 'var(--colors-gray-400)', flexShrink: 0 }}>
+                  <span className={mapIconWrapper}>
                     <MapExternalIcon />
                   </span>
                   <span className="sr-only">在 Google Maps 開啟（開新分頁）</span>
@@ -467,7 +475,32 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
                 value={`${venue.nearestMrt}${venue.mrtWalkMinutes ? ` · 步行 ${venue.mrtWalkMinutes} 分鐘` : ''}`}
               />
             )}
-            {socialText && <InfoRow icon={<InstagramIcon />} label="社群" value={socialText} />}
+            {socialLink && (
+              <InfoRow
+                icon={<InstagramIcon />}
+                label="社群"
+                value={
+                  <a
+                    href={socialLink.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: 'inherit',
+                      textDecoration: 'none',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    {socialLink.text}
+                    <span className={mapIconWrapper}>
+                      <MapExternalIcon />
+                    </span>
+                    <span className="sr-only">（開新分頁）</span>
+                  </a>
+                }
+              />
+            )}
           </div>
         </section>
 
@@ -484,13 +517,6 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
           </section>
         )}
 
-        {venue.description && (
-          <section aria-label="其他說明" className={descSection}>
-            <h2 className={sectionTitle}>其他說明</h2>
-            <p className={descText}>{venue.description}</p>
-          </section>
-        )}
-
         {bookingChannel && (
           <section aria-label="聯繫這個場地" className={bookingSection}>
             <h2 className={sectionTitle}>聯繫這個場地</h2>
@@ -500,7 +526,7 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
                 此場地有填寫說明，預約前建議先閱讀下方「其他說明」。
               </p>
             )}
-            <div style={{ marginTop: '10px' }}>
+            <div style={{ marginTop: '10px', display: 'flex' }}>
               <a
                 href={bookingChannel.url}
                 target="_blank"
@@ -514,13 +540,24 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
           </section>
         )}
 
+        {venue.description && (
+          <section aria-label="其他說明" className={descSection}>
+            <h2 className={sectionTitle}>其他說明</h2>
+            <p className={descText}>{venue.description}</p>
+          </section>
+        )}
+
         {venue.events && venue.events.length > 0 && <PastEventsStrip events={venue.events} />}
 
-        <div className={submitSection}>
-          <Link href="/submit-event" className={submitBtn}>
-            投稿活動到這個場地
-          </Link>
-        </div>
+        {relatedVenues.length > 0 ? (
+          <RelatedVenuesStrip venues={relatedVenues} region={venue.region} />
+        ) : (
+          <div className={venueListSection}>
+            <Link href="/venues" className={venueListBtn}>
+              查看全部場地
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

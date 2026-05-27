@@ -8,7 +8,7 @@ const filterBar = css({
   position: 'sticky',
   top: '70px',
   zIndex: 20,
-  background: 'rgba(255,255,255,0.96)',
+  background: 'alpha.white.90',
   backdropFilter: 'saturate(180%) blur(10px)',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',

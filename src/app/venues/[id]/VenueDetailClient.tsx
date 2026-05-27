@@ -1,5 +1,5 @@
 import { css } from '@/styled-system/css';
-import type { VenueDetail } from '@/types';
+import type { Venue, VenueDetail } from '@/types';
 import VenueDetailView from '@/components/venues/VenueDetailView';
 
 const notFoundWrap = css({
@@ -28,9 +28,10 @@ const notFoundDesc = css({
 
 interface VenueDetailClientProps {
   venue: VenueDetail | null;
+  relatedVenues: Venue[];
 }
 
-export default function VenueDetailClient({ venue }: VenueDetailClientProps) {
+export default function VenueDetailClient({ venue, relatedVenues }: VenueDetailClientProps) {
   if (!venue) {
     return (
       <div className={notFoundWrap}>
@@ -40,5 +41,5 @@ export default function VenueDetailClient({ venue }: VenueDetailClientProps) {
     );
   }
 
-  return <VenueDetailView venue={venue} />;
+  return <VenueDetailView venue={venue} relatedVenues={relatedVenues} />;
 }

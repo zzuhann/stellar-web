@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { venueApi } from '@/lib/api';
+import type { Venue } from '@/types';
 import VenueDetailClient from './VenueDetailClient';
 
 interface PageProps {
@@ -41,5 +42,12 @@ export default async function VenueDetailPage({ params }: PageProps) {
   const { id } = await params;
   const venue = await venueApi.getVenueById(id).catch(() => null);
 
-  return <VenueDetailClient venue={venue} />;
+  const relatedVenues: Venue[] = venue
+    ? await venueApi
+        .getVenues({ region: [venue.region], status: 'active' })
+        .then((r) => r.venues.filter((v) => v.id !== id))
+        .catch(() => [])
+    : [];
+
+  return <VenueDetailClient venue={venue} relatedVenues={relatedVenues} />;
 }

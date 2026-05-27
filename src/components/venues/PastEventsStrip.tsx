@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { css } from '@/styled-system/css';
 import type { VenueEventCard } from '@/types';
+import { formatDateRange } from '@/utils';
 
 const section = css({
   padding: '20px 0 8px',
@@ -40,6 +41,10 @@ const counterPos = css({
   fontWeight: 600,
 });
 
+const counterDivider = css({
+  color: 'gray.300',
+});
+
 const hint = css({
   padding: '4px 16px 0',
   fontSize: '11px',
@@ -70,7 +75,7 @@ const track = css({
 
 const card = css({
   flex: '0 0 auto',
-  width: '144px',
+  width: '180px',
   scrollSnapAlign: 'start',
   textDecoration: 'none',
   display: 'block',
@@ -84,7 +89,7 @@ const card = css({
 
 const coverWrap = css({
   position: 'relative',
-  width: '144px',
+  width: '180px',
   height: '190px',
   background: 'gray.100',
   overflow: 'hidden',
@@ -158,13 +163,7 @@ const progressBar = css({
   transition: 'width 0.18s ease-out',
 });
 
-const CARD_WIDTH = 144 + 10;
-
-function formatDate(iso: string): string {
-  if (!iso) return '';
-  const d = new Date(iso);
-  return `${d.getUTCMonth() + 1}/${d.getUTCDate()}`;
-}
+const CARD_WIDTH = 180 + 10;
 
 interface PastEventsStripProps {
   events: VenueEventCard[];
@@ -188,12 +187,12 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
   };
 
   return (
-    <section aria-label="過往生咖活動" className={section}>
+    <section aria-label="平台收錄的生咖" className={section}>
       <div className={header}>
-        <h2 className={sectionTitle}>過往生咖活動</h2>
+        <h2 className={sectionTitle}>平台收錄的生咖</h2>
         <div className={counter}>
           <span className={counterPos}>{pos}</span>
-          <span style={{ color: 'var(--colors-gray-300)' }}>/</span>
+          <span className={counterDivider}>/</span>
           <span>{count}</span>
         </div>
       </div>
@@ -229,7 +228,7 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
                 <h3 className={cardTitle}>{event.title}</h3>
                 <div className={cardMeta}>{event.artistName}</div>
                 <div className={cardMeta}>
-                  {formatDate(event.startDate)} ~ {formatDate(event.endDate)}
+                  {formatDateRange(event.startDate, event.endDate)}
                 </div>
               </div>
             </Link>

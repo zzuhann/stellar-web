@@ -107,6 +107,11 @@ const eventCountNum = css({
 
 const SCROLL_KEY = 'venues_scrollY';
 
+const lineIconCls = css({ color: 'green.500' });
+const igIconCls = css({ color: 'gray.500' });
+const starIconCls = css({ color: 'amber.500' });
+const capacityTextCls = css({ color: 'gray.700', fontWeight: 600 });
+
 function ContactIcon({ venue }: { venue: Venue }) {
   if (venue.socialMedia?.line) {
     return (
@@ -117,7 +122,7 @@ function ContactIcon({ venue }: { venue: Venue }) {
           height="13"
           viewBox="0 0 24 24"
           fill="currentColor"
-          style={{ color: 'var(--colors-green-500)' }}
+          className={lineIconCls}
         >
           <path d="M12 2C6.48 2 2 5.92 2 10.72c0 3.07 1.86 5.77 4.67 7.4-.2.73-.72 2.65-.83 3.06-.13.5.19.5.4.36.16-.1 2.1-1.42 2.95-2 .9.13 1.85.2 2.81.2 5.52 0 10-3.92 10-8.72C22 5.92 17.52 2 12 2z" />
         </svg>
@@ -136,7 +141,7 @@ function ContactIcon({ venue }: { venue: Venue }) {
           stroke="currentColor"
           strokeWidth="1.8"
           strokeLinecap="round"
-          style={{ color: 'var(--colors-gray-500)' }}
+          className={igIconCls}
         >
           <rect x="3" y="3" width="18" height="18" rx="4" />
           <circle cx="12" cy="12" r="4" />
@@ -219,7 +224,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
                 <path d="M16 20c0-2.6 1.5-4.5 4-4.5" />
               </svg>
               可容納{' '}
-              <strong style={{ color: 'var(--colors-gray-700)', fontWeight: 600 }}>
+              <strong className={capacityTextCls}>
                 {venue.capacityRange}
               </strong>{' '}
               人
@@ -233,7 +238,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
               height="14"
               viewBox="0 0 24 24"
               fill="currentColor"
-              style={{ color: 'var(--colors-amber-500)' }}
+              className={starIconCls}
             >
               <path d="M12 3 14.5 9 21 10l-5 4.5 1.5 6.5L12 17.5 6.5 21 8 14.5 3 10l6.5-1z" />
             </svg>
