@@ -11,10 +11,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { id } = await params;
   try {
     const venue = await venueApi.getVenueById(id);
-    const title = `${venue.name} | 場地`;
-    const description =
-      venue.description ||
-      `${venue.name}，位於 ${venue.region}。辦過 ${venue.eventCount} 場生咖活動。`;
+    const title = `${venue.name} | 場地詳情`;
+    const description = `適合辦生咖、生日應援的場地：位於${venue.region}的${venue.name}，平台已收錄${venue.eventCount}場生咖、生日應援活動。`;
     const url = `https://www.stellar-zone.com/venues/${id}`;
     return {
       title,
@@ -34,7 +32,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       alternates: { canonical: url },
     };
   } catch {
-    return { title: '場地詳情 | STELLAR' };
+    return { title: '場地詳情' };
   }
 }
 

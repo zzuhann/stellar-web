@@ -2,11 +2,11 @@ import { venueApi } from '@/lib/api';
 import VenuesClient from './VenuesClient';
 
 export const metadata = {
-  title: '場地索引',
-  description: '找適合舉辦生咖、生日應援的咖啡廳、酒吧、書店、展演空間。',
+  title: '生咖、生日應援場地列表',
+  description: '在 STELLAR 找到適合舉辦生咖、生日應援的空間！',
   openGraph: {
-    title: '場地索引 | STELLAR',
-    description: '找適合舉辦生咖、生日應援的咖啡廳、酒吧、書店、展演空間。',
+    title: '生咖、生日應援場地列表',
+    description: '在 STELLAR 找到適合舉辦生咖、生日應援的空間！',
     url: 'https://www.stellar-zone.com/venues',
   },
   alternates: {

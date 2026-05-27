@@ -31,13 +31,6 @@ const heroSection = css({
   background: 'color.background.primary',
 });
 
-const eyebrow = css({
-  textStyle: 'caption',
-  color: 'color.text.secondary',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-});
-
 const title = css({
   marginTop: '0.5',
   marginX: '0',
@@ -131,12 +124,9 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
     <div className={page}>
       <div className={inner}>
         <section className={heroSection}>
-          <div className={eyebrow} lang="en">
-            Venues
-          </div>
-          <h1 className={title}>場地索引</h1>
+          <h1 className={title}>生咖、生日應援場地列表</h1>
           <p className={subtitle}>
-            找適合舉辦生咖、生日應援的咖啡廳、酒吧、書店、展演空間。共{' '}
+            在 STELLAR 找到適合舉辦生咖、生日應援的空間！目前共收錄{' '}
             <strong className={countHighlight}>{totalCount}</strong> 個場地。
           </p>
         </section>
