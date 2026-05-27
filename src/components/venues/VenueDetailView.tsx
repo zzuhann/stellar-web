@@ -342,11 +342,17 @@ function buildBookingChannel(venue: VenueDetail): BookingChannel | null {
       break;
     case 'instagram':
       if (venue.socialMedia?.instagram)
-        return { label: '前往 Instagram 主頁', url: `https://www.instagram.com/${venue.socialMedia.instagram}` };
+        return {
+          label: '前往 Instagram 主頁',
+          url: `https://www.instagram.com/${venue.socialMedia.instagram}`,
+        };
       break;
     case 'threads':
       if (venue.socialMedia?.threads)
-        return { label: '前往 Threads 主頁', url: `https://www.threads.com/@${venue.socialMedia.threads}` };
+        return {
+          label: '前往 Threads 主頁',
+          url: `https://www.threads.com/@${venue.socialMedia.threads}`,
+        };
       break;
     case 'other':
       if (venue.contactUrl) return { label: '查看聯絡資訊', url: venue.contactUrl };
@@ -418,6 +424,12 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
             </span>
           </div>
           <h1 className={venueName}>{venue.name}</h1>
+          <div className={regionRow}>
+            <span className={pinIconWrapper}>
+              <PinIcon />
+            </span>
+            {venue.region}
+          </div>
 
           <div className={statsGrid}>
             <div className={statBox}>
