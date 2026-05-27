@@ -5,6 +5,7 @@ const queryKey = {
   topArtists: (limit: number) => ['top-artists', limit],
   adminVenues: (...args: unknown[]) => ['admin-venues', ...args],
   venueDetail: (venueId: string) => ['venue-detail', venueId],
+  venues: (params?: unknown) => ['venues', params],
   artistEvents: (artistId: string) => ['artist-events', artistId],
 };
 
