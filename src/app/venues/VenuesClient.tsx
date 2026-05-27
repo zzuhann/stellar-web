@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useEffect, useLayoutEffect, useMemo } from 'react';
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { css } from '@/styled-system/css';
 import { venueApi } from '@/lib/api';
 import queryKey from '@/hooks/queryKey';
+import { useAuth } from '@/lib/auth-context';
+import { usePageView } from '@/hooks/usePageView';
+import { trackFilterVenues } from '@/lib/analytics/venues';
 import type { Venue, CapacityRange } from '@/types';
 import VenueFilters, { type CapacityFilter } from '@/components/venues/VenueFilters';
 import VenueCard from '@/components/venues/VenueCard';
@@ -79,8 +82,12 @@ interface VenuesClientProps {
 }
 
 export default function VenuesClient({ initialVenues, totalCount }: VenuesClientProps) {
+  const { user } = useAuth();
   const [region, setRegion] = useState('全部');
   const [capacity, setCapacity] = useState<CapacityFilter>('all');
+  const hasInitializedFilters = useRef(false);
+
+  usePageView({ eventPage: '/venues' });
 
   // Derive available regions from SSR data (keeps only regions with actual venues)
   const regions = useMemo(() => {
@@ -120,6 +127,20 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
     };
   }, []);
 
+  useEffect(() => {
+    if (!hasInitializedFilters.current) {
+      hasInitializedFilters.current = true;
+      return;
+    }
+
+    trackFilterVenues({
+      userId: user?.uid,
+      filterRegion: region,
+      filterCapacity: capacity,
+      resultCount: filtered.length,
+    });
+  }, [capacity, filtered.length, region, user?.uid]);
+
   return (
     <div className={page}>
       <div className={inner}>
@@ -152,7 +173,9 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
           ) : filtered.length === 0 ? (
             <div className={emptyState}>沒有符合條件的場地。試試調整地區或容納人數。</div>
           ) : (
-            filtered.map((venue) => <VenueCard key={venue.id} venue={venue} />)
+            filtered.map((venue, index) => (
+              <VenueCard key={venue.id} venue={venue} listPosition={index + 1} userId={user?.uid} />
+            ))
           )}
         </section>
       </div>
