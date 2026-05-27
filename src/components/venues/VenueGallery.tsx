@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { css } from '@/styled-system/css';
 
@@ -103,11 +103,25 @@ interface VenueGalleryProps {
 export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
   const [active, setActive] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
+  const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [thumbAtEnd, setThumbAtEnd] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const n = photos.length;
+
+  useEffect(() => {
+    const strip = stripRef.current;
+    const thumb = thumbRefs.current[active];
+    if (!strip || !thumb) return;
+    const left = thumb.offsetLeft;
+    const right = left + thumb.offsetWidth;
+    const scrollLeft = strip.scrollLeft;
+    const width = strip.clientWidth;
+    if (left < scrollLeft + 8 || right > scrollLeft + width - 8) {
+      strip.scrollTo({ left: left - width / 2 + thumb.offsetWidth / 2, behavior: 'smooth' });
+    }
+  }, [active]);
 
   const onThumbScroll = () => {
     const el = stripRef.current;
@@ -213,6 +227,9 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
             {photos.map((src, i) => (
               <button
                 key={i}
+                ref={(el) => {
+                  thumbRefs.current[i] = el;
+                }}
                 type="button"
                 aria-pressed={i === active}
                 aria-label={`場地照片 ${i + 1}`}

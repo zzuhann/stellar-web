@@ -274,7 +274,10 @@ const starIconCls = css({
 
 const mapIconWrapper = css({
   color: 'gray.400',
-  flexShrink: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  verticalAlign: 'middle',
+  marginLeft: '1',
 });
 
 const infoRowsWrap = css({
@@ -284,9 +287,6 @@ const infoRowsWrap = css({
 const infoLink = css({
   color: 'inherit',
   textDecoration: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '1',
 });
 
 const bookingBtnWrap = css({
