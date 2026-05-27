@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { css } from '@/styled-system/css';
 
 const photoStrip = css({
-  height: '180px',
+  height: '220px',
   overflow: 'hidden',
   position: 'relative',
   flexShrink: 0,
@@ -10,7 +10,7 @@ const photoStrip = css({
 });
 
 const placeholder = css({
-  height: '180px',
+  height: '220px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -27,7 +27,7 @@ const grid2col = css({
   display: 'grid',
   gridTemplateColumns: '2fr 1fr',
   gap: '2px',
-  height: '180px',
+  height: '220px',
   background: 'gray.200',
   overflow: 'hidden',
 });
