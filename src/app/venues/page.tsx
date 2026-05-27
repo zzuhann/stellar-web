@@ -1,4 +1,6 @@
+import { Suspense } from 'react';
 import { venueApi } from '@/lib/api';
+import { QueryStateProvider } from '@/hooks/useQueryStateContext';
 import VenuesClient from './VenuesClient';
 
 export const metadata = {
@@ -18,5 +20,11 @@ export default async function VenuesPage() {
   const data = await venueApi.getVenues({ status: 'active' }).catch(() => ({ venues: [] }));
   const venues = data.venues ?? [];
 
-  return <VenuesClient initialVenues={venues} totalCount={venues.length} />;
+  return (
+    <Suspense>
+      <QueryStateProvider>
+        <VenuesClient initialVenues={venues} totalCount={venues.length} />
+      </QueryStateProvider>
+    </Suspense>
+  );
 }

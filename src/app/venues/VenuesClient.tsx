@@ -8,8 +8,12 @@ import queryKey from '@/hooks/queryKey';
 import { useAuth } from '@/lib/auth-context';
 import { usePageView } from '@/hooks/usePageView';
 import { trackFilterVenues } from '@/lib/analytics/venues';
+import { useQueryState } from '@/hooks/useQueryState';
 import type { Venue, CapacityRange } from '@/types';
-import VenueFilters, { type CapacityFilter } from '@/components/venues/VenueFilters';
+import VenueFilters, {
+  type CapacityFilter,
+  type VenueSort,
+} from '@/components/venues/VenueFilters';
 import VenueCard from '@/components/venues/VenueCard';
 import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
 
@@ -81,10 +85,20 @@ interface VenuesClientProps {
   totalCount: number;
 }
 
+const VALID_SORT_VALUES: VenueSort[] = ['eventCount', 'newest'];
+
+function parseAsSort(value: string): VenueSort {
+  return VALID_SORT_VALUES.includes(value as VenueSort) ? (value as VenueSort) : 'eventCount';
+}
+
 export default function VenuesClient({ initialVenues, totalCount }: VenuesClientProps) {
   const { user } = useAuth();
   const [region, setRegion] = useState('全部');
   const [capacity, setCapacity] = useState<CapacityFilter>('all');
+  const [sort, setSort] = useQueryState<VenueSort>('sort', {
+    parse: parseAsSort,
+    defaultValue: 'eventCount',
+  });
   const shouldTrackFilterChange = useRef(false);
 
   usePageView({ eventPage: '/venues' });
@@ -96,13 +110,14 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
   }, [initialVenues]);
 
   const { data, isLoading } = useQuery({
-    queryKey: queryKey.venues({ region }),
+    queryKey: queryKey.venues({ region, sort }),
     queryFn: () =>
       venueApi.getVenues({
         region: region === '全部' ? undefined : [region],
         status: 'active',
+        sort: sort === 'eventCount' ? undefined : sort,
       }),
-    initialData: region === '全部' ? { venues: initialVenues } : undefined,
+    initialData: region === '全部' && sort === 'eventCount' ? { venues: initialVenues } : undefined,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -156,6 +171,13 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
     setCapacity(nextCapacity);
   };
 
+  const handleSortChange = (nextSort: VenueSort) => {
+    if (nextSort === sort) return;
+
+    sessionStorage.removeItem(SCROLL_KEY);
+    setSort(nextSort === 'eventCount' ? null : nextSort);
+  };
+
   return (
     <div className={page}>
       <div className={inner}>
@@ -173,6 +195,8 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
           onRegionChange={handleRegionChange}
           capacity={capacity}
           onCapacityChange={handleCapacityChange}
+          sort={sort}
+          onSortChange={handleSortChange}
         />
 
         <div aria-live="polite" aria-atomic="true" className="sr-only">
