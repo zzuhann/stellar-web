@@ -138,25 +138,20 @@ const sectionTitle = css({
   color: 'color.text.primary',
 });
 
-const mapsBtn = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '6px',
-  marginTop: '12px',
-  padding: '8px 14px',
-  borderRadius: 'radius.md',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  background: 'color.background.primary',
-  color: 'color.text.primary',
-  fontSize: '13px',
-  fontWeight: 500,
-  textDecoration: 'none',
-  transition: 'all 0.15s ease',
-  '&:hover': {
-    borderColor: 'color.primary',
-    color: 'color.primary',
-  },
+const bookingSubtitle = css({
+  margin: '4px 0 0',
+  fontSize: '12px',
+  color: 'color.text.secondary',
+});
+
+const bookingDescHint = css({
+  margin: '8px 0 0',
+  padding: '6px 10px',
+  borderLeft: '3px solid',
+  borderLeftColor: 'amber.400',
+  fontSize: '12px',
+  color: 'color.text.secondary',
+  lineHeight: 1.5,
 });
 
 const tagsSection = css({
@@ -214,27 +209,6 @@ const primaryBtn = css({
   transition: 'background 0.15s ease',
   '&:hover': {
     background: 'color.primaryHover',
-  },
-});
-
-const outlineBtn = css({
-  marginTop: '8px',
-  width: '100%',
-  padding: '13px',
-  borderRadius: 'radius.md',
-  background: 'color.background.primary',
-  color: 'color.primary',
-  cursor: 'pointer',
-  border: '1px solid',
-  borderColor: 'color.primary',
-  fontSize: '14px',
-  fontWeight: 500,
-  display: 'block',
-  textDecoration: 'none',
-  textAlign: 'center',
-  transition: 'all 0.15s ease',
-  '&:hover': {
-    background: 'stellarBlue.50',
   },
 });
 
@@ -323,12 +297,12 @@ function InstagramIcon() {
   );
 }
 
-function MapPinIcon() {
+function MapExternalIcon() {
   return (
     <svg
       aria-hidden="true"
-      width="14"
-      height="14"
+      width="12"
+      height="12"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -336,8 +310,9 @@ function MapPinIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12Z" />
-      <circle cx="12" cy="10" r="2.5" />
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
     </svg>
   );
 }
@@ -347,21 +322,27 @@ interface BookingChannel {
   url: string;
 }
 
-function buildBookingChannels(venue: VenueDetail): BookingChannel[] {
-  const channels: BookingChannel[] = [];
-  if (venue.contactUrl) {
-    channels.push({ label: '前往預約表單', url: venue.contactUrl });
+function buildBookingChannel(venue: VenueDetail): BookingChannel | null {
+  switch (venue.preferredContact) {
+    case 'form':
+      if (venue.contactUrl) return { label: '查看預約資訊', url: venue.contactUrl };
+      break;
+    case 'line':
+      if (venue.contactUrl) return { label: 'LINE 聯絡', url: venue.contactUrl };
+      break;
+    case 'instagram':
+      if (venue.socialMedia?.instagram)
+        return { label: '前往 Instagram 主頁', url: venue.socialMedia.instagram };
+      break;
+    case 'threads':
+      if (venue.socialMedia?.threads)
+        return { label: '前往 Threads 主頁', url: venue.socialMedia.threads };
+      break;
+    case 'other':
+      if (venue.contactUrl) return { label: '查看聯絡資訊', url: venue.contactUrl };
+      break;
   }
-  if (venue.socialMedia?.line) {
-    channels.push({ label: '透過 LINE 聯絡', url: venue.socialMedia.line });
-  }
-  if (venue.socialMedia?.instagram) {
-    channels.push({ label: '透過 IG 私訊預約', url: venue.socialMedia.instagram });
-  }
-  if (venue.socialMedia?.threads) {
-    channels.push({ label: '透過 Threads 私訊預約', url: venue.socialMedia.threads });
-  }
-  return channels;
+  return null;
 }
 
 function buildSocialText(venue: VenueDetail): string | null {
@@ -378,7 +359,7 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
   const router = useRouter();
   const photos = [venue.coverPhoto, ...(venue.otherPhotos ?? [])].filter(Boolean) as string[];
   const socialText = buildSocialText(venue);
-  const bookingChannels = buildBookingChannels(venue);
+  const bookingChannel = buildBookingChannel(venue);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${venue.lat},${venue.lng}&query_place_id=${venue.placeId}`;
 
   return (
@@ -455,7 +436,30 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
         <section aria-label="基本資訊" className={infoSection}>
           <h2 className={sectionTitle}>基本資訊</h2>
           <div style={{ marginTop: '4px' }}>
-            <InfoRow icon={<PinIcon />} label="地址" value={venue.address} />
+            <InfoRow
+              icon={<PinIcon />}
+              label="地址"
+              value={
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: 'inherit',
+                    textDecoration: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                  }}
+                >
+                  {venue.address}
+                  <span style={{ color: 'var(--colors-gray-400)', flexShrink: 0 }}>
+                    <MapExternalIcon />
+                  </span>
+                  <span className="sr-only">在 Google Maps 開啟（開新分頁）</span>
+                </a>
+              }
+            />
             {venue.nearestMrt && (
               <InfoRow
                 icon={<MrtIcon />}
@@ -465,10 +469,6 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
             )}
             {socialText && <InfoRow icon={<InstagramIcon />} label="社群" value={socialText} />}
           </div>
-          <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className={mapsBtn}>
-            <MapPinIcon />在 Google Maps 開啟
-            <span className="sr-only">（開新分頁）</span>
-          </a>
         </section>
 
         {venue.hostTags && venue.hostTags.length > 0 && (
@@ -491,22 +491,25 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
           </section>
         )}
 
-        {bookingChannels.length > 0 && (
-          <section aria-label="預約方式" className={bookingSection}>
-            <h2 className={sectionTitle}>預約方式</h2>
+        {bookingChannel && (
+          <section aria-label="聯繫這個場地" className={bookingSection}>
+            <h2 className={sectionTitle}>聯繫這個場地</h2>
+            <p className={bookingSubtitle}>請依場地規定確認預約步驟</p>
+            {venue.description && (
+              <p className={bookingDescHint}>
+                此場地有填寫說明，預約前建議先閱讀下方「其他說明」。
+              </p>
+            )}
             <div style={{ marginTop: '10px' }}>
-              {bookingChannels.map((ch, i) => (
-                <a
-                  key={ch.url}
-                  href={ch.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={i === 0 ? primaryBtn : outlineBtn}
-                >
-                  {ch.label}
-                  <span className="sr-only">（開新分頁）</span>
-                </a>
-              ))}
+              <a
+                href={bookingChannel.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={primaryBtn}
+              >
+                {bookingChannel.label}
+                <span className="sr-only">（開新分頁）</span>
+              </a>
             </div>
           </section>
         )}
