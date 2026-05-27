@@ -123,8 +123,6 @@ const segItemActive = css({
   boxShadow: 'shadow.sm',
 });
 
-const REGIONS = ['全部', '台北', '新北', '桃園', '台中', '台南', '高雄'];
-
 export type CapacityFilter = 'all' | CapacityRange;
 
 const CAPACITY_OPTIONS: { id: CapacityFilter; label: string }[] = [
@@ -136,6 +134,7 @@ const CAPACITY_OPTIONS: { id: CapacityFilter; label: string }[] = [
 ];
 
 interface VenueFiltersProps {
+  regions: string[];
   region: string;
   onRegionChange: (region: string) => void;
   capacity: CapacityFilter;
@@ -143,6 +142,7 @@ interface VenueFiltersProps {
 }
 
 export default function VenueFilters({
+  regions,
   region,
   onRegionChange,
   capacity,
@@ -172,7 +172,7 @@ export default function VenueFilters({
     <div className={filterBar}>
       <div className={regionWrap}>
         <div ref={rowRef} className={regionRow} onScroll={updateFades}>
-          {REGIONS.map((r) => (
+          {regions.map((r) => (
             <button
               key={r}
               type="button"

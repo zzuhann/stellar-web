@@ -152,9 +152,10 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
               <button
                 key={i}
                 type="button"
+                aria-pressed={i === active}
+                aria-label={`場地照片 ${i + 1}`}
                 className={`${thumbBtn} ${i === active ? thumbBtnActive : ''}`}
                 onClick={() => setActive(i)}
-                aria-label={`場地照片 ${i + 1}`}
               >
                 <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                   <Image

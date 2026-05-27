@@ -105,6 +105,49 @@ const eventCountNum = css({
   fontWeight: 700,
 });
 
+const SCROLL_KEY = 'venues_scrollY';
+
+function ContactIcon({ venue }: { venue: Venue }) {
+  if (venue.socialMedia?.line) {
+    return (
+      <span aria-label="提供 LINE 聯絡">
+        <svg
+          aria-hidden="true"
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          style={{ color: 'var(--colors-green-500)' }}
+        >
+          <path d="M12 2C6.48 2 2 5.92 2 10.72c0 3.07 1.86 5.77 4.67 7.4-.2.73-.72 2.65-.83 3.06-.13.5.19.5.4.36.16-.1 2.1-1.42 2.95-2 .9.13 1.85.2 2.81.2 5.52 0 10-3.92 10-8.72C22 5.92 17.52 2 12 2z" />
+        </svg>
+      </span>
+    );
+  }
+  if (venue.socialMedia?.instagram || venue.socialMedia?.threads) {
+    return (
+      <span aria-label="提供 IG 私訊聯絡">
+        <svg
+          aria-hidden="true"
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          style={{ color: 'var(--colors-gray-500)' }}
+        >
+          <rect x="3" y="3" width="18" height="18" rx="4" />
+          <circle cx="12" cy="12" r="4" />
+          <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" />
+        </svg>
+      </span>
+    );
+  }
+  return null;
+}
+
 interface VenueCardProps {
   venue: Venue;
 }
@@ -116,7 +159,11 @@ export default function VenueCard({ venue }: VenueCardProps) {
     : null;
 
   return (
-    <Link href={`/venues/${venue.id}`} className={card}>
+    <Link
+      href={`/venues/${venue.id}`}
+      className={card}
+      onClick={() => sessionStorage.setItem(SCROLL_KEY, window.scrollY.toString())}
+    >
       <VenueCardPhotos photos={photos} venueName={venue.name} />
       <div className={body}>
         <div className={nameRow}>
@@ -179,6 +226,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
             </span>
           )}
           <span className={eventCount}>
+            <ContactIcon venue={venue} />
             <svg
               aria-hidden="true"
               width="14"

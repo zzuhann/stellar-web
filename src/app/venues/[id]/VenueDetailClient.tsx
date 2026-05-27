@@ -1,5 +1,3 @@
-'use client';
-
 import { css } from '@/styled-system/css';
 import type { VenueDetail } from '@/types';
 import VenueDetailView from '@/components/venues/VenueDetailView';

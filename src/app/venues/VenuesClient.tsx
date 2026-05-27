@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { css } from '@/styled-system/css';
 import { venueApi } from '@/lib/api';
@@ -8,6 +8,8 @@ import queryKey from '@/hooks/queryKey';
 import type { Venue, CapacityRange } from '@/types';
 import VenueFilters, { type CapacityFilter } from '@/components/venues/VenueFilters';
 import VenueCard from '@/components/venues/VenueCard';
+
+const SCROLL_KEY = 'venues_scrollY';
 
 const page = css({
   minHeight: '100vh',
@@ -90,6 +92,12 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
   const [region, setRegion] = useState('全部');
   const [capacity, setCapacity] = useState<CapacityFilter>('all');
 
+  // Derive available regions from SSR data (keeps only regions with actual venues)
+  const regions = useMemo(() => {
+    const unique = Array.from(new Set(initialVenues.map((v) => v.region))).sort();
+    return ['全部', ...unique];
+  }, [initialVenues]);
+
   const { data, isLoading } = useQuery({
     queryKey: queryKey.venues({ region }),
     queryFn: () =>
@@ -104,11 +112,31 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
   const venues = data?.venues ?? [];
   const filtered = applyCapacityFilter(venues, capacity);
 
+  // Restore scroll position when navigating back from a venue detail page
+  useLayoutEffect(() => {
+    const savedY = sessionStorage.getItem(SCROLL_KEY);
+    if (savedY !== null) {
+      sessionStorage.removeItem(SCROLL_KEY);
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: parseInt(savedY, 10), behavior: 'instant' });
+      });
+    }
+  }, []);
+
+  // Save scroll position when navigating away
+  useEffect(() => {
+    return () => {
+      sessionStorage.setItem(SCROLL_KEY, window.scrollY.toString());
+    };
+  }, []);
+
   return (
     <div className={page}>
       <div className={inner}>
         <section className={heroSection}>
-          <div className={eyebrow}>Venues</div>
+          <div className={eyebrow} lang="en">
+            Venues
+          </div>
           <h1 className={title}>場地索引</h1>
           <p className={subtitle}>
             找適合舉辦生咖、生日應援的咖啡廳、酒吧、書店、展演空間。共{' '}
@@ -117,6 +145,7 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
         </section>
 
         <VenueFilters
+          regions={regions}
           region={region}
           onRegionChange={(r) => {
             setRegion(r);

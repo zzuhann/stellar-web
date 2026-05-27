@@ -138,6 +138,27 @@ const sectionTitle = css({
   color: 'color.text.primary',
 });
 
+const mapsBtn = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '6px',
+  marginTop: '12px',
+  padding: '8px 14px',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'color.background.primary',
+  color: 'color.text.primary',
+  fontSize: '13px',
+  fontWeight: 500,
+  textDecoration: 'none',
+  transition: 'all 0.15s ease',
+  '&:hover': {
+    borderColor: 'color.primary',
+    color: 'color.primary',
+  },
+});
+
 const tagsSection = css({
   padding: '12px 16px',
 });
@@ -160,13 +181,6 @@ const tagPill = css({
   fontWeight: 500,
 });
 
-const tagsEmpty = css({
-  marginTop: '8px',
-  fontSize: '13px',
-  color: 'color.text.secondary',
-  fontStyle: 'italic',
-});
-
 const descSection = css({
   padding: '12px 16px',
 });
@@ -179,8 +193,8 @@ const descText = css({
   whiteSpace: 'pre-wrap',
 });
 
-const ctaSection = css({
-  padding: '20px 16px 0',
+const bookingSection = css({
+  padding: '16px 16px 0',
 });
 
 const primaryBtn = css({
@@ -203,7 +217,7 @@ const primaryBtn = css({
   },
 });
 
-const secondaryBtn = css({
+const outlineBtn = css({
   marginTop: '8px',
   width: '100%',
   padding: '13px',
@@ -221,6 +235,31 @@ const secondaryBtn = css({
   transition: 'all 0.15s ease',
   '&:hover': {
     background: 'stellarBlue.50',
+  },
+});
+
+const submitSection = css({
+  padding: '20px 16px 0',
+});
+
+const submitBtn = css({
+  width: '100%',
+  padding: '13px',
+  borderRadius: 'radius.md',
+  background: 'color.background.secondary',
+  color: 'color.text.primary',
+  cursor: 'pointer',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  fontSize: '14px',
+  fontWeight: 500,
+  display: 'block',
+  textDecoration: 'none',
+  textAlign: 'center',
+  transition: 'all 0.15s ease',
+  '&:hover': {
+    borderColor: 'color.primary',
+    color: 'color.primary',
   },
 });
 
@@ -284,34 +323,45 @@ function InstagramIcon() {
   );
 }
 
-function LinkIcon() {
+function MapPinIcon() {
   return (
     <svg
       aria-hidden="true"
-      width="16"
-      height="16"
+      width="14"
+      height="14"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+      <path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12Z" />
+      <circle cx="12" cy="10" r="2.5" />
     </svg>
   );
 }
 
-function buildContactLabel(venue: VenueDetail): string {
-  const map: Record<string, string> = {
-    instagram: 'Instagram',
-    threads: 'Threads',
-    line: 'LINE',
-    form: '表單',
-    other: '其他',
-  };
-  return venue.preferredContact ? (map[venue.preferredContact] ?? '聯絡方式') : '聯絡方式';
+interface BookingChannel {
+  label: string;
+  url: string;
+}
+
+function buildBookingChannels(venue: VenueDetail): BookingChannel[] {
+  const channels: BookingChannel[] = [];
+  if (venue.contactUrl) {
+    channels.push({ label: '前往預約表單', url: venue.contactUrl });
+  }
+  if (venue.socialMedia?.line) {
+    channels.push({ label: '透過 LINE 聯絡', url: venue.socialMedia.line });
+  }
+  if (venue.socialMedia?.instagram) {
+    channels.push({ label: '透過 IG 私訊預約', url: venue.socialMedia.instagram });
+  }
+  if (venue.socialMedia?.threads) {
+    channels.push({ label: '透過 Threads 私訊預約', url: venue.socialMedia.threads });
+  }
+  return channels;
 }
 
 function buildSocialText(venue: VenueDetail): string | null {
@@ -328,7 +378,8 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
   const router = useRouter();
   const photos = [venue.coverPhoto, ...(venue.otherPhotos ?? [])].filter(Boolean) as string[];
   const socialText = buildSocialText(venue);
-  const contactLabel = buildContactLabel(venue);
+  const bookingChannels = buildBookingChannels(venue);
+  const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${venue.lat},${venue.lng}&query_place_id=${venue.placeId}`;
 
   return (
     <div className={pageOuter}>
@@ -413,28 +464,16 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
               />
             )}
             {socialText && <InfoRow icon={<InstagramIcon />} label="社群" value={socialText} />}
-            {venue.contactUrl && (
-              <InfoRow
-                icon={<LinkIcon />}
-                label={contactLabel}
-                value={
-                  <a
-                    href={venue.contactUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: 'var(--colors-stellar-blue-500)', wordBreak: 'break-all' }}
-                  >
-                    {venue.contactUrl}
-                  </a>
-                }
-              />
-            )}
           </div>
+          <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className={mapsBtn}>
+            <MapPinIcon />在 Google Maps 開啟
+            <span className="sr-only">（開新分頁）</span>
+          </a>
         </section>
 
-        <section aria-label="設備與服務" className={tagsSection}>
-          <h2 className={sectionTitle}>設備與服務</h2>
-          {venue.hostTags && venue.hostTags.length > 0 ? (
+        {venue.hostTags && venue.hostTags.length > 0 && (
+          <section aria-label="設備與服務" className={tagsSection}>
+            <h2 className={sectionTitle}>設備與服務</h2>
             <div className={tagsWrap}>
               {venue.hostTags.map((tag) => (
                 <span key={tag} className={tagPill}>
@@ -442,10 +481,8 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
                 </span>
               ))}
             </div>
-          ) : (
-            <p className={tagsEmpty}>資訊待補充</p>
-          )}
-        </section>
+          </section>
+        )}
 
         {venue.description && (
           <section aria-label="其他說明" className={descSection}>
@@ -454,22 +491,32 @@ export default function VenueDetailView({ venue }: VenueDetailViewProps) {
           </section>
         )}
 
+        {bookingChannels.length > 0 && (
+          <section aria-label="預約方式" className={bookingSection}>
+            <h2 className={sectionTitle}>預約方式</h2>
+            <div style={{ marginTop: '10px' }}>
+              {bookingChannels.map((ch, i) => (
+                <a
+                  key={ch.url}
+                  href={ch.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={i === 0 ? primaryBtn : outlineBtn}
+                >
+                  {ch.label}
+                  <span className="sr-only">（開新分頁）</span>
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
         {venue.events && venue.events.length > 0 && <PastEventsStrip events={venue.events} />}
 
-        <div className={ctaSection}>
-          <Link href="/submit-event" className={primaryBtn}>
+        <div className={submitSection}>
+          <Link href="/submit-event" className={submitBtn}>
             投稿活動到這個場地
           </Link>
-          {venue.contactUrl && (
-            <a
-              href={venue.contactUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={secondaryBtn}
-            >
-              聯繫主辦
-            </a>
-          )}
         </div>
       </div>
     </div>
