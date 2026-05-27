@@ -8,6 +8,7 @@ import queryKey from '@/hooks/queryKey';
 import type { Venue, CapacityRange } from '@/types';
 import VenueFilters, { type CapacityFilter } from '@/components/venues/VenueFilters';
 import VenueCard from '@/components/venues/VenueCard';
+import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
 
 const SCROLL_KEY = 'venues_scrollY';
 
@@ -24,58 +25,54 @@ const inner = css({
 });
 
 const heroSection = css({
-  padding: '18px 16px 14px',
+  paddingTop: '4',
+  paddingX: '4',
+  paddingBottom: '3',
   background: 'color.background.primary',
 });
 
 const eyebrow = css({
-  fontSize: '11px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   letterSpacing: '0.12em',
   textTransform: 'uppercase',
 });
 
 const title = css({
-  margin: '2px 0 6px',
-  fontSize: '22px',
-  fontWeight: 700,
+  marginTop: '0.5',
+  marginX: '0',
+  marginBottom: '1.5',
+  textStyle: 'h3',
+  fontWeight: 'bold',
   color: 'color.text.primary',
-  lineHeight: 1.3,
 });
 
 const subtitle = css({
   margin: 0,
-  fontSize: '13px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  lineHeight: 1.55,
 });
 
 const countHighlight = css({
   color: 'color.primary',
-  fontWeight: 700,
+  fontWeight: 'bold',
 });
 
 const listSection = css({
-  padding: '16px',
+  padding: '4',
   display: 'flex',
   flexDirection: 'column',
-  gap: '14px',
+  gap: '3',
 });
 
 const emptyState = css({
-  padding: '40px 20px',
+  paddingY: '10',
+  paddingX: '5',
   textAlign: 'center',
   background: 'color.background.secondary',
   borderRadius: 'radius.lg',
   color: 'color.text.secondary',
-  fontSize: '13px',
-});
-
-const loadingState = css({
-  padding: '60px 20px',
-  textAlign: 'center',
-  color: 'color.text.secondary',
-  fontSize: '13px',
+  textStyle: 'bodySmall',
 });
 
 function applyCapacityFilter(venues: Venue[], cap: CapacityFilter): Venue[] {
@@ -161,7 +158,7 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
 
         <section aria-label="場地列表" className={listSection}>
           {isLoading ? (
-            <div className={loadingState}>載入中…</div>
+            Array.from({ length: 6 }, (_, i) => <VenueCardSkeleton key={i} />)
           ) : filtered.length === 0 ? (
             <div className={emptyState}>沒有符合條件的場地。試試調整地區或容納人數。</div>
           ) : (
