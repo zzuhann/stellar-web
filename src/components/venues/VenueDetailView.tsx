@@ -19,88 +19,85 @@ const page = css({
   maxWidth: '500px',
   margin: '0 auto',
   background: 'color.background.primary',
-  paddingBottom: '40px',
+  paddingBottom: '10',
   boxShadow: 'shadow.md',
 });
 
 const backBar = css({
-  padding: '12px 16px 8px',
+  paddingTop: '3',
+  paddingX: '4',
+  paddingBottom: '2',
 });
 
 const backBtn = css({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '4px',
-  fontSize: '14px',
+  gap: '1',
+  textStyle: 'bodySmall',
   color: 'color.text.primary',
   textDecoration: 'none',
-  padding: '4px 0',
+  paddingY: '1',
+  paddingX: '0',
   cursor: 'pointer',
   background: 'none',
   border: 'none',
-  fontWeight: 500,
+  fontWeight: 'medium',
   '&:hover': {
     color: 'color.primary',
   },
 });
 
 const titleSection = css({
-  padding: '14px 16px 4px',
+  paddingTop: '3',
+  paddingX: '4',
+  paddingBottom: '1',
 });
 
 const typeAndCount = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
-  marginBottom: '4px',
+  gap: '2',
+  marginBottom: '1',
 });
 
 const typeTag = css({
   display: 'inline-flex',
   alignItems: 'center',
-  padding: '3px 8px',
+  paddingY: '0.5',
+  paddingX: '2',
   borderRadius: 'radius.sm',
   background: 'stellarBlue.50',
   color: 'stellarBlue.700',
-  fontSize: '11px',
-  fontWeight: 500,
+  textStyle: 'caption',
+  fontWeight: 'medium',
 });
 
 const countBadge = css({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '4px',
-  fontSize: '11px',
+  gap: '1',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   letterSpacing: '0.04em',
 });
 
 const venueName = css({
   margin: 0,
-  fontSize: '22px',
-  fontWeight: 700,
+  textStyle: 'h3',
+  fontWeight: 'bold',
   color: 'color.text.primary',
-  lineHeight: 1.3,
-});
-
-const regionRow = css({
-  marginTop: '6px',
-  fontSize: '13px',
-  color: 'color.text.secondary',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '6px',
 });
 
 const statsGrid = css({
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
-  gap: '8px',
-  marginTop: '14px',
+  gap: '2',
+  marginTop: '3',
 });
 
 const statBox = css({
-  padding: '10px 12px',
+  paddingY: '2.5',
+  paddingX: '3',
   borderRadius: 'radius.lg',
   background: 'color.background.secondary',
   border: '1px solid',
@@ -108,100 +105,112 @@ const statBox = css({
 });
 
 const statLabel = css({
-  fontSize: '11px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   letterSpacing: '0.06em',
   textTransform: 'uppercase',
 });
 
 const statValue = css({
-  marginTop: '4px',
-  fontSize: '22px',
-  fontWeight: 700,
+  marginTop: '1',
+  textStyle: 'h3',
+  fontWeight: 'bold',
   color: 'color.text.primary',
   letterSpacing: '0.01em',
 });
 
 const statUnit = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
-  fontWeight: 400,
+  fontWeight: 'normal',
 });
 
 const infoSection = css({
-  padding: '20px 16px 8px',
+  paddingTop: '5',
+  paddingX: '4',
+  paddingBottom: '2',
 });
 
 const sectionTitle = css({
   margin: 0,
-  fontSize: '15px',
-  fontWeight: 700,
+  textStyle: 'bodySmall',
+  fontWeight: 'bold',
   color: 'color.text.primary',
 });
 
 const bookingSubtitle = css({
-  margin: '4px 0 0',
-  fontSize: '12px',
+  marginTop: '1',
+  marginX: '0',
+  textStyle: 'caption',
   color: 'color.text.secondary',
 });
 
 const bookingDescHint = css({
-  margin: '8px 0 0',
-  padding: '6px 10px',
+  marginTop: '2',
+  marginX: '0',
+  paddingY: '1.5',
+  paddingX: '2.5',
   borderLeft: '3px solid',
   borderLeftColor: 'amber.400',
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   lineHeight: 1.5,
 });
 
 const tagsSection = css({
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
 });
 
 const tagsWrap = css({
-  marginTop: '8px',
+  marginTop: '2',
   display: 'flex',
   flexWrap: 'wrap',
-  gap: '6px',
+  gap: '1.5',
 });
 
 const tagPill = css({
-  padding: '6px 10px',
+  paddingY: '1.5',
+  paddingX: '2.5',
   borderRadius: '999px',
   background: 'color.background.secondary',
   border: '1px solid',
   borderColor: 'color.border.light',
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.text.primary',
-  fontWeight: 500,
+  fontWeight: 'medium',
 });
 
 const descSection = css({
-  padding: '12px 16px',
+  paddingY: '3',
+  paddingX: '4',
 });
 
 const descText = css({
-  margin: '8px 0 0',
-  fontSize: '14px',
+  marginTop: '2',
+  marginX: '0',
+  textStyle: 'bodySmall',
   color: 'color.text.primary',
   lineHeight: 1.7,
   whiteSpace: 'pre-wrap',
 });
 
 const bookingSection = css({
-  padding: '16px 16px 0',
+  paddingTop: '4',
+  paddingX: '4',
+  paddingBottom: '0',
 });
 
 const primaryBtn = css({
-  padding: '11px 20px',
+  paddingY: '3',
+  paddingX: '5',
   borderRadius: 'radius.md',
   border: 'none',
   background: 'color.primary',
   color: 'white',
   cursor: 'pointer',
-  fontSize: '14px',
-  fontWeight: 500,
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
   letterSpacing: '0.04em',
   display: 'inline-block',
   textDecoration: 'none',
@@ -213,20 +222,22 @@ const primaryBtn = css({
 });
 
 const venueListSection = css({
-  padding: '16px 16px 40px',
+  paddingTop: '4',
+  paddingX: '4',
+  paddingBottom: '10',
 });
 
 const venueListBtn = css({
   width: '100%',
-  padding: '13px',
+  padding: '3',
   borderRadius: 'radius.md',
   background: 'color.background.secondary',
   color: 'color.text.primary',
   cursor: 'pointer',
   border: '1px solid',
   borderColor: 'color.border.light',
-  fontSize: '14px',
-  fontWeight: 500,
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
   display: 'block',
   textDecoration: 'none',
   textAlign: 'center',
@@ -246,14 +257,9 @@ const mrtIconCls = css({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontSize: '11px',
-  fontWeight: 700,
+  textStyle: 'caption',
+  fontWeight: 'bold',
   flexShrink: 0,
-});
-
-const pinIconWrapper = css({
-  color: 'stellarBlue.500',
-  display: 'inline-flex',
 });
 
 const starIconCls = css({
@@ -420,16 +426,10 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
               >
                 <path d="M12 3 14.5 9 21 10l-5 4.5 1.5 6.5L12 17.5 6.5 21 8 14.5 3 10l6.5-1z" />
               </svg>
-              收錄 {venue.eventCount} 場生咖
+              收錄 {venue.eventCount} 場生咖、生日應援
             </span>
           </div>
           <h1 className={venueName}>{venue.name}</h1>
-          <div className={regionRow}>
-            <span className={pinIconWrapper}>
-              <PinIcon />
-            </span>
-            {venue.region}
-          </div>
 
           <div className={statsGrid}>
             <div className={statBox}>
@@ -445,7 +445,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
               </div>
             </div>
             <div className={statBox}>
-              <div className={statLabel}>平台生咖</div>
+              <div className={statLabel}>已收錄</div>
               <div className={statValue}>
                 {venue.eventCount} <span className={statUnit}>場</span>
               </div>
@@ -532,11 +532,12 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
         {bookingChannel && (
           <section aria-label="聯繫這個場地" className={bookingSection}>
             <h2 className={sectionTitle}>聯繫這個場地</h2>
-            <p className={bookingSubtitle}>請依場地規定確認預約步驟</p>
-            {venue.description && (
+            {venue.description ? (
               <p className={bookingDescHint}>
                 此場地有填寫說明，預約前建議先閱讀下方「其他說明」。
               </p>
+            ) : (
+              <p className={bookingSubtitle}>請依場地規定確認預約步驟</p>
             )}
             <div style={{ marginTop: '10px', display: 'flex' }}>
               <a

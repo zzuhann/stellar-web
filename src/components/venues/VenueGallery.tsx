@@ -13,25 +13,28 @@ const galleryWrap = css({
 
 const counter = css({
   position: 'absolute',
-  bottom: '10px',
-  right: '10px',
-  padding: '4px 8px',
+  bottom: '2.5',
+  right: '2.5',
+  paddingY: '1',
+  paddingX: '2',
   borderRadius: 'radius.sm',
   background: 'rgba(0,0,0,0.55)',
   color: 'white',
-  fontSize: '11px',
+  textStyle: 'caption',
   letterSpacing: '0.04em',
 });
 
 const thumbOuter = css({
   position: 'relative',
-  marginTop: '8px',
+  marginTop: '2',
 });
 
 const thumbStrip = css({
   display: 'flex',
-  gap: '6px',
-  padding: '0 16px 4px',
+  gap: '1.5',
+  paddingTop: '0',
+  paddingX: '4',
+  paddingBottom: '1',
   overflowX: 'auto',
   scrollbarWidth: 'none',
   '&::-webkit-scrollbar': {
@@ -42,7 +45,7 @@ const thumbStrip = css({
 const thumbFadeRight = css({
   position: 'absolute',
   top: 0,
-  bottom: '4px',
+  bottom: '1',
   right: 0,
   width: '32px',
   background: 'linear-gradient(to left, rgba(255,255,255,1), rgba(255,255,255,0))',
@@ -73,7 +76,7 @@ const emptyGallery = css({
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: '10px',
+  gap: '2.5',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   color: 'color.text.secondary',
@@ -82,7 +85,7 @@ const emptyGallery = css({
 });
 
 const emptyHint = css({
-  fontSize: '11px',
+  textStyle: 'caption',
   color: 'gray.400',
   letterSpacing: '0.04em',
 });

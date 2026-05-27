@@ -12,8 +12,8 @@ const filterBar = css({
   backdropFilter: 'saturate(180%) blur(10px)',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
-  paddingTop: '10px',
-  paddingBottom: '12px',
+  paddingTop: '2.5',
+  paddingBottom: '3',
 });
 
 const regionWrap = css({
@@ -22,9 +22,9 @@ const regionWrap = css({
 
 const regionRow = css({
   display: 'flex',
-  gap: '6px',
+  gap: '1.5',
   overflowX: 'auto',
-  paddingX: '16px',
+  paddingX: '4',
   scrollbarWidth: 'none',
   '&::-webkit-scrollbar': {
     display: 'none',
@@ -55,14 +55,15 @@ const regionFadeRight = css({
 
 const regionChip = css({
   flexShrink: 0,
-  padding: '7px 14px',
+  paddingY: '2',
+  paddingX: '3',
   borderRadius: '999px',
   border: '1px solid',
   borderColor: 'color.border.light',
   background: 'color.background.primary',
   color: 'color.text.primary',
-  fontSize: '13px',
-  fontWeight: 500,
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
   cursor: 'pointer',
   transition: 'all 0.15s ease',
 });
@@ -71,15 +72,15 @@ const regionChipActive = css({
   borderColor: 'color.primary',
   background: 'stellarBlue.50',
   color: 'stellarBlue.700',
-  fontWeight: 600,
+  fontWeight: 'semibold',
 });
 
 const capacityRow = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
-  paddingX: '16px',
-  marginTop: '10px',
+  gap: '2',
+  paddingX: '4',
+  marginTop: '2.5',
   overflowX: 'auto',
   scrollbarWidth: 'none',
   '&::-webkit-scrollbar': {
@@ -88,7 +89,7 @@ const capacityRow = css({
 });
 
 const capacityLabel = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   flexShrink: 0,
   whiteSpace: 'nowrap',
@@ -96,31 +97,44 @@ const capacityLabel = css({
 
 const segmented = css({
   display: 'flex',
-  gap: '4px',
-  padding: '3px',
+  gap: '1',
+  padding: '0.5',
   borderRadius: 'radius.lg',
   background: 'gray.100',
   flexShrink: 0,
+  position: 'relative',
 });
 
 const segItem = css({
-  padding: '5px 10px',
+  paddingY: '1',
+  paddingX: '2.5',
   borderRadius: 'radius.md',
   border: 'none',
   cursor: 'pointer',
   background: 'transparent',
   color: 'color.text.secondary',
-  fontSize: '12px',
-  fontWeight: 500,
-  transition: 'all 0.15s ease',
+  textStyle: 'caption',
+  fontWeight: 'medium',
+  transition: 'color 0.2s ease',
   whiteSpace: 'nowrap',
+  position: 'relative',
+  zIndex: 1,
 });
 
 const segItemActive = css({
-  background: 'color.background.primary',
-  color: 'color.text.primary',
-  fontWeight: 600,
-  boxShadow: 'shadow.sm',
+  color: 'white',
+  fontWeight: 'semibold',
+});
+
+const segSlider = css({
+  position: 'absolute',
+  top: '0.5',
+  bottom: '0.5',
+  borderRadius: 'radius.md',
+  background: 'stellarBlue.500',
+  transition: 'all 0.2s ease',
+  pointerEvents: 'none',
+  zIndex: 0,
 });
 
 export type CapacityFilter = 'all' | CapacityRange;
@@ -151,6 +165,11 @@ export default function VenueFilters({
   const rowRef = useRef<HTMLDivElement>(null);
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(true);
+  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [sliderStyle, setSliderStyle] = useState<{ left: number; width: number }>({
+    left: 0,
+    width: 0,
+  });
 
   const updateFades = () => {
     const el = rowRef.current;
@@ -167,6 +186,13 @@ export default function VenueFilters({
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const activeIndex = CAPACITY_OPTIONS.findIndex((opt) => opt.id === capacity);
+    const activeBtn = buttonRefs.current[activeIndex];
+    if (!activeBtn) return;
+    setSliderStyle({ left: activeBtn.offsetLeft, width: activeBtn.offsetWidth });
+  }, [capacity]);
 
   return (
     <div className={filterBar}>
@@ -197,11 +223,19 @@ export default function VenueFilters({
           空間人數
         </span>
         <div className={segmented} role="group" aria-labelledby="capacity-label">
-          {CAPACITY_OPTIONS.map((opt) => (
+          <div
+            className={segSlider}
+            aria-hidden="true"
+            style={{ left: sliderStyle.left, width: sliderStyle.width }}
+          />
+          {CAPACITY_OPTIONS.map((opt, index) => (
             <button
               key={opt.id}
               type="button"
               aria-pressed={capacity === opt.id}
+              ref={(el) => {
+                buttonRefs.current[index] = el;
+              }}
               className={`${segItem} ${capacity === opt.id ? segItemActive : ''}`}
               onClick={() => onCapacityChange(opt.id)}
             >

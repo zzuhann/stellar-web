@@ -14,11 +14,11 @@ const placeholder = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: '8px',
+  gap: '2',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   color: 'gray.500',
-  fontSize: '12px',
+  textStyle: 'caption',
   background:
     'repeating-linear-gradient(135deg, var(--colors-gray-100) 0 12px, var(--colors-gray-50) 12px 24px)',
 });
@@ -47,8 +47,8 @@ const overlay = css({
   justifyContent: 'center',
   background: 'rgba(31,45,61,0.55)',
   color: 'white',
-  fontSize: '13px',
-  fontWeight: '600',
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
   letterSpacing: '0.04em',
 });
 

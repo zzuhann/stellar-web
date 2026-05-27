@@ -8,29 +8,32 @@ import type { VenueEventCard } from '@/types';
 import { formatDateRange } from '@/utils';
 
 const section = css({
-  padding: '20px 0 8px',
+  paddingTop: '5',
+  paddingX: '0',
+  paddingBottom: '2',
 });
 
 const header = css({
-  padding: '0 16px',
+  paddingX: '4',
+  paddingY: '0',
   display: 'flex',
   alignItems: 'baseline',
   justifyContent: 'space-between',
-  gap: '10px',
+  gap: '2.5',
 });
 
 const sectionTitle = css({
   margin: 0,
-  fontSize: '15px',
-  fontWeight: 700,
+  textStyle: 'bodySmall',
+  fontWeight: 'bold',
   color: 'color.text.primary',
 });
 
 const counter = css({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '4px',
-  fontSize: '11px',
+  gap: '1',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   fontFamily: 'monospace',
   letterSpacing: '0.04em',
@@ -38,7 +41,7 @@ const counter = css({
 
 const counterPos = css({
   color: 'color.primary',
-  fontWeight: 600,
+  fontWeight: 'semibold',
 });
 
 const counterDivider = css({
@@ -46,8 +49,10 @@ const counterDivider = css({
 });
 
 const hint = css({
-  padding: '4px 16px 0',
-  fontSize: '11px',
+  paddingTop: '1',
+  paddingX: '4',
+  paddingBottom: '0',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   letterSpacing: '0.04em',
   fontFamily: 'monospace',
@@ -55,13 +60,15 @@ const hint = css({
 
 const trackWrap = css({
   position: 'relative',
-  marginTop: '10px',
+  marginTop: '2.5',
 });
 
 const track = css({
   display: 'flex',
-  gap: '10px',
-  padding: '0 16px 12px',
+  gap: '2.5',
+  paddingTop: '0',
+  paddingX: '4',
+  paddingBottom: '3',
   overflowX: 'auto',
   overflowY: 'hidden',
   scrollSnapType: 'x mandatory',
@@ -107,31 +114,32 @@ const coverPlaceholder = css({
 });
 
 const cardBody = css({
-  padding: '10px 12px 12px',
+  paddingTop: '2.5',
+  paddingX: '3',
+  paddingBottom: '3',
 });
 
 const cardTitle = css({
   margin: 0,
-  fontSize: '13px',
-  fontWeight: 600,
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
-  lineHeight: 1.35,
   lineClamp: 2,
 });
 
 const cardMeta = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '4px',
-  marginTop: '4px',
-  fontSize: '11px',
+  gap: '1',
+  marginTop: '1',
+  textStyle: 'caption',
   color: 'color.text.secondary',
 });
 
 const fadeLeft = css({
   position: 'absolute',
   top: 0,
-  bottom: '12px',
+  bottom: '3',
   left: 0,
   width: '40px',
   background: 'linear-gradient(to right, rgba(255,255,255,1) 10%, rgba(255,255,255,0))',
@@ -141,7 +149,7 @@ const fadeLeft = css({
 const fadeRight = css({
   position: 'absolute',
   top: 0,
-  bottom: '12px',
+  bottom: '3',
   right: 0,
   width: '40px',
   background: 'linear-gradient(to left, rgba(255,255,255,1) 10%, rgba(255,255,255,0))',
@@ -153,7 +161,8 @@ const progressTrack = css({
   borderRadius: '2px',
   background: 'gray.100',
   overflow: 'hidden',
-  margin: '0 16px',
+  marginX: '4',
+  marginY: '0',
 });
 
 const progressBar = css({
@@ -187,9 +196,9 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
   };
 
   return (
-    <section aria-label="平台收錄的生咖" className={section}>
+    <section aria-label="平台收錄的生咖、生日應援" className={section}>
       <div className={header}>
-        <h2 className={sectionTitle}>平台收錄的生咖</h2>
+        <h2 className={sectionTitle}>平台收錄的生咖、生日應援</h2>
         <div className={counter}>
           <span className={counterPos}>{pos}</span>
           <span className={counterDivider}>/</span>
@@ -227,9 +236,7 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
               <div className={cardBody}>
                 <h3 className={cardTitle}>{event.title}</h3>
                 <div className={cardMeta}>{event.artistName}</div>
-                <div className={cardMeta}>
-                  {formatDateRange(event.startDate, event.endDate)}
-                </div>
+                <div className={cardMeta}>{formatDateRange(event.startDate, event.endDate)}</div>
               </div>
             </Link>
           ))}

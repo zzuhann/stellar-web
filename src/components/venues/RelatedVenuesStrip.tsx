@@ -4,29 +4,33 @@ import { css } from '@/styled-system/css';
 import type { Venue } from '@/types';
 
 const section = css({
-  padding: '20px 0 8px',
+  paddingTop: '5',
+  paddingX: '0',
+  paddingBottom: '2',
 });
 
 const header = css({
-  padding: '0 16px 10px',
+  paddingTop: '0',
+  paddingX: '4',
+  paddingBottom: '2.5',
   display: 'flex',
   alignItems: 'baseline',
   justifyContent: 'space-between',
-  gap: '10px',
+  gap: '2.5',
 });
 
 const sectionTitle = css({
   margin: 0,
-  fontSize: '15px',
-  fontWeight: 700,
+  textStyle: 'bodySmall',
+  fontWeight: 'bold',
   color: 'color.text.primary',
 });
 
 const seeAllLink = css({
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.primary',
   textDecoration: 'none',
-  fontWeight: 500,
+  fontWeight: 'medium',
   flexShrink: 0,
   '&:hover': {
     textDecoration: 'underline',
@@ -39,8 +43,10 @@ const trackWrap = css({
 
 const track = css({
   display: 'flex',
-  gap: '10px',
-  padding: '0 16px 12px',
+  gap: '2.5',
+  paddingTop: '0',
+  paddingX: '4',
+  paddingBottom: '3',
   overflowX: 'auto',
   overflowY: 'hidden',
   scrollSnapType: 'x mandatory',
@@ -90,22 +96,23 @@ const coverPlaceholder = css({
 });
 
 const cardBody = css({
-  padding: '8px 10px 10px',
+  paddingTop: '2',
+  paddingX: '2.5',
+  paddingBottom: '2.5',
 });
 
 const cardName = css({
   margin: 0,
-  fontSize: '12px',
-  fontWeight: 600,
+  textStyle: 'caption',
+  fontWeight: 'semibold',
   color: 'color.text.primary',
-  lineHeight: 1.4,
   overflow: 'hidden',
   lineClamp: 2,
 });
 
 const cardMeta = css({
-  marginTop: '4px',
-  fontSize: '11px',
+  marginTop: '1',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
@@ -115,7 +122,7 @@ const cardMeta = css({
 const fadeRight = css({
   position: 'absolute',
   top: 0,
-  bottom: '12px',
+  bottom: '3',
   right: 0,
   width: '40px',
   background: 'linear-gradient(to left, rgba(255,255,255,1) 10%, rgba(255,255,255,0))',
@@ -142,12 +149,7 @@ export default function RelatedVenuesStrip({ venues, region }: RelatedVenuesStri
       <div className={trackWrap}>
         <div role="list" className={track}>
           {venues.map((venue) => (
-            <Link
-              key={venue.id}
-              href={`/venues/${venue.id}`}
-              role="listitem"
-              className={card}
-            >
+            <Link key={venue.id} href={`/venues/${venue.id}`} role="listitem" className={card}>
               <div className={coverWrap}>
                 {venue.coverPhoto ? (
                   <Image

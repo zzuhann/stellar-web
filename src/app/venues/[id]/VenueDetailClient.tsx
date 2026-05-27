@@ -8,20 +8,21 @@ const notFoundWrap = css({
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: '12px',
-  padding: '40px 20px',
+  gap: '3',
+  paddingY: '10',
+  paddingX: '5',
   textAlign: 'center',
 });
 
 const notFoundTitle = css({
-  fontSize: '18px',
-  fontWeight: 700,
+  textStyle: 'h4',
+  fontWeight: 'bold',
   color: 'color.text.primary',
   margin: 0,
 });
 
 const notFoundDesc = css({
-  fontSize: '14px',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
   margin: 0,
 });

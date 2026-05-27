@@ -19,34 +19,35 @@ const card = css({
 });
 
 const body = css({
-  padding: '12px 14px 14px',
+  paddingTop: '3',
+  paddingX: '3',
+  paddingBottom: '3',
 });
 
 const nameRow = css({
   display: 'flex',
   alignItems: 'flex-start',
   justifyContent: 'space-between',
-  gap: '10px',
+  gap: '2.5',
 });
 
 const venueName = css({
   margin: 0,
-  fontSize: '15px',
-  fontWeight: 700,
+  textStyle: 'bodySmall',
+  fontWeight: 'bold',
   color: 'color.text.primary',
-  lineHeight: 1.35,
 });
 
 const tag = css({
   display: 'inline-flex',
   alignItems: 'center',
-  padding: '3px 8px',
+  paddingY: '0.5',
+  paddingX: '2',
   borderRadius: 'radius.sm',
   background: 'stellarBlue.50',
   color: 'stellarBlue.700',
-  fontSize: '11px',
-  fontWeight: 500,
-  lineHeight: 1.4,
+  textStyle: 'caption',
+  fontWeight: 'medium',
   flexShrink: 0,
   whiteSpace: 'nowrap',
 });
@@ -54,9 +55,9 @@ const tag = css({
 const locationRow = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '6px',
-  marginTop: '8px',
-  fontSize: '12px',
+  gap: '1.5',
+  marginTop: '2',
+  textStyle: 'caption',
   color: 'color.text.secondary',
 });
 
@@ -68,7 +69,7 @@ const pinIcon = css({
 
 const mrtLabel = css({
   color: 'color.primary',
-  fontWeight: 600,
+  fontWeight: 'semibold',
 });
 
 const divider = css({
@@ -78,31 +79,31 @@ const divider = css({
 const statsRow = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '14px',
-  marginTop: '10px',
-  paddingTop: '10px',
+  gap: '3',
+  marginTop: '2.5',
+  paddingTop: '2.5',
   borderTop: '1px dashed',
   borderTopColor: 'color.border.light',
-  fontSize: '12px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
 });
 
 const statItem = css({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '4px',
+  gap: '1',
 });
 
 const eventCount = css({
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '4px',
+  gap: '1',
   marginLeft: 'auto',
 });
 
 const eventCountNum = css({
   color: 'color.primary',
-  fontWeight: 700,
+  fontWeight: 'bold',
 });
 
 const SCROLL_KEY = 'venues_scrollY';
@@ -110,7 +111,7 @@ const SCROLL_KEY = 'venues_scrollY';
 const lineIconCls = css({ color: 'green.500' });
 const igIconCls = css({ color: 'gray.500' });
 const starIconCls = css({ color: 'amber.500' });
-const capacityTextCls = css({ color: 'gray.700', fontWeight: 600 });
+const capacityTextCls = css({ color: 'gray.700', fontWeight: 'semibold' });
 
 function ContactIcon({ venue }: { venue: Venue }) {
   if (venue.socialMedia?.line) {
@@ -223,11 +224,7 @@ export default function VenueCard({ venue }: VenueCardProps) {
                 <circle cx="17" cy="9" r="2.4" />
                 <path d="M16 20c0-2.6 1.5-4.5 4-4.5" />
               </svg>
-              可容納{' '}
-              <strong className={capacityTextCls}>
-                {venue.capacityRange}
-              </strong>{' '}
-              人
+              可容納 <strong className={capacityTextCls}>{venue.capacityRange}</strong> 人
             </span>
           )}
           <span className={eventCount}>

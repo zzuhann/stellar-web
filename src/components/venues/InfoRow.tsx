@@ -2,8 +2,9 @@ import { css } from '@/styled-system/css';
 
 const row = css({
   display: 'flex',
-  gap: '12px',
-  padding: '11px 0',
+  gap: '3',
+  paddingY: '3',
+  paddingX: '0',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
 });
@@ -16,7 +17,7 @@ const iconWrap = css({
   alignItems: 'center',
   justifyContent: 'center',
   color: 'color.text.secondary',
-  marginTop: '2px',
+  marginTop: '0.5',
 });
 
 const textWrap = css({
@@ -25,17 +26,16 @@ const textWrap = css({
 });
 
 const labelText = css({
-  fontSize: '11px',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   letterSpacing: '0.06em',
   textTransform: 'uppercase',
 });
 
 const valueText = css({
-  marginTop: '2px',
-  fontSize: '14px',
+  marginTop: '0.5',
+  textStyle: 'bodySmall',
   color: 'color.text.primary',
-  lineHeight: 1.5,
   wordBreak: 'break-word',
 });
 
