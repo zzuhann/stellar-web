@@ -85,7 +85,7 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
   const { user } = useAuth();
   const [region, setRegion] = useState('全部');
   const [capacity, setCapacity] = useState<CapacityFilter>('all');
-  const hasInitializedFilters = useRef(false);
+  const shouldTrackFilterChange = useRef(false);
 
   usePageView({ eventPage: '/venues' });
 
@@ -128,8 +128,7 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
   }, []);
 
   useEffect(() => {
-    if (!hasInitializedFilters.current) {
-      hasInitializedFilters.current = true;
+    if (!shouldTrackFilterChange.current || isLoading) {
       return;
     }
 
@@ -139,7 +138,23 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
       filterCapacity: capacity,
       resultCount: filtered.length,
     });
-  }, [capacity, filtered.length, region, user?.uid]);
+    shouldTrackFilterChange.current = false;
+  }, [capacity, filtered.length, isLoading, region, user?.uid]);
+
+  const handleRegionChange = (nextRegion: string) => {
+    if (nextRegion === region && capacity === 'all') return;
+
+    shouldTrackFilterChange.current = true;
+    setRegion(nextRegion);
+    setCapacity('all');
+  };
+
+  const handleCapacityChange = (nextCapacity: CapacityFilter) => {
+    if (nextCapacity === capacity) return;
+
+    shouldTrackFilterChange.current = true;
+    setCapacity(nextCapacity);
+  };
 
   return (
     <div className={page}>
@@ -155,12 +170,9 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
         <VenueFilters
           regions={regions}
           region={region}
-          onRegionChange={(r) => {
-            setRegion(r);
-            setCapacity('all');
-          }}
+          onRegionChange={handleRegionChange}
           capacity={capacity}
-          onCapacityChange={setCapacity}
+          onCapacityChange={handleCapacityChange}
         />
 
         <div aria-live="polite" aria-atomic="true" className="sr-only">
