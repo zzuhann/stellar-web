@@ -432,6 +432,49 @@ const actionBarBtnCancel = css({
   },
 });
 
+const topBarActions = css({
+  marginLeft: 'auto',
+  display: 'flex',
+  gap: '2',
+  alignItems: 'center',
+});
+
+const headerSecondaryBtn = css({
+  paddingY: '2.5',
+  paddingX: '4',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'white',
+  color: 'color.text.secondary',
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: 'gray.50',
+    color: 'color.text.primary',
+  },
+});
+
+const headerPrimaryBtn = css({
+  paddingY: '2.5',
+  paddingX: '4',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.primary',
+  background: 'color.primary',
+  color: 'white',
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    background: 'stellarBlue.600',
+    borderColor: 'stellarBlue.600',
+  },
+});
+
 export default function PageVenues() {
   const { user, userData, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -637,83 +680,24 @@ export default function PageVenues() {
             審核後台
           </button>
           <h1 className={pageTitle}>場地管理</h1>
-          <div
-            className={css({
-              marginLeft: 'auto',
-              display: 'flex',
-              gap: '2',
-              alignItems: 'center',
-            })}
-          >
+          <div className={topBarActions}>
             {!isSelectMode && (
               <button
                 type="button"
-                className={css({
-                  paddingY: '2.5',
-                  paddingX: '4',
-                  borderRadius: 'radius.md',
-                  border: '1px solid',
-                  borderColor: 'color.border.light',
-                  background: 'white',
-                  color: 'color.text.secondary',
-                  textStyle: 'bodySmall',
-                  fontWeight: 'semibold',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    background: 'gray.50',
-                    color: 'color.text.primary',
-                  },
-                })}
+                className={headerSecondaryBtn}
                 onClick={() => setIsSelectMode(true)}
               >
                 批次操作
               </button>
             )}
             {isSelectMode && (
-              <button
-                type="button"
-                className={css({
-                  paddingY: '2.5',
-                  paddingX: '4',
-                  borderRadius: 'radius.md',
-                  border: '1px solid',
-                  borderColor: 'color.border.light',
-                  background: 'white',
-                  color: 'color.text.secondary',
-                  textStyle: 'bodySmall',
-                  fontWeight: 'semibold',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    background: 'gray.50',
-                    color: 'color.text.primary',
-                  },
-                })}
-                onClick={exitSelectMode}
-              >
+              <button type="button" className={headerSecondaryBtn} onClick={exitSelectMode}>
                 取消選取
               </button>
             )}
             <button
               type="button"
-              className={css({
-                paddingY: '2.5',
-                paddingX: '4',
-                borderRadius: 'radius.md',
-                border: '1px solid',
-                borderColor: 'color.primary',
-                background: 'color.primary',
-                color: 'white',
-                textStyle: 'bodySmall',
-                fontWeight: 'semibold',
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  background: 'stellarBlue.600',
-                  borderColor: 'stellarBlue.600',
-                },
-              })}
+              className={headerPrimaryBtn}
               onClick={() => router.push('/admin/venues/new')}
             >
               + 新增場地

@@ -9,6 +9,7 @@ import ImageUpload from '@/components/images/ImageUpload';
 import MultiImageUpload from '@/components/images/MultiImageUpload';
 import PlaceAutocomplete from '@/components/forms/PlaceAutocomplete';
 import { useAuthToken } from '@/hooks/useAuthToken';
+import { showToast } from '@/lib/toast';
 import { useCreateVenueMutation } from './hook/useCreateVenueMutation';
 import { useUpdateVenueMutation } from './hook/useUpdateVenueMutation';
 
@@ -397,7 +398,7 @@ function buildInitialForm(props: Props): FormState {
       contactUrl: v.contactUrl ?? '',
       description: v.description ?? '',
       // pending/rejected venues default to inactive in the form toggle
-      status: (v.status === 'active' || v.status === 'inactive') ? v.status : 'inactive',
+      status: v.status === 'active' || v.status === 'inactive' ? v.status : 'inactive',
     };
   }
   return {
@@ -472,6 +473,11 @@ export default function VenueFormClient(props: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!formState.region) {
+      showToast.error('請選擇地區');
+      return;
+    }
+
     if (props.mode === 'create') {
       const data: CreateVenueData = {
         name: formState.name.trim(),
@@ -482,8 +488,7 @@ export default function VenueFormClient(props: Props) {
       if (formState.lng !== null) data.lng = formState.lng;
       if (formState.placeId) data.placeId = formState.placeId;
       if (formState.nearestMrt) data.nearestMrt = formState.nearestMrt;
-      if (formState.mrtWalkMinutes)
-        data.mrtWalkMinutes = parseInt(formState.mrtWalkMinutes, 10);
+      if (formState.mrtWalkMinutes) data.mrtWalkMinutes = parseInt(formState.mrtWalkMinutes, 10);
       if (formState.capacityRange) data.capacityRange = formState.capacityRange;
       if (formState.coverPhoto) data.coverPhoto = formState.coverPhoto;
       if (formState.otherPhotos.length > 0) data.otherPhotos = formState.otherPhotos;
@@ -549,8 +554,7 @@ export default function VenueFormClient(props: Props) {
   };
 
   const set =
-    (field: keyof FormState) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    (field: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
       setFormState((prev) => ({ ...prev, [field]: e.target.value }));
 
   const hasLocation = formState.lat !== null && formState.lng !== null;
