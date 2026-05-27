@@ -110,7 +110,7 @@ const coverPlaceholder = css({
   justifyContent: 'center',
   background: 'gray.100',
   color: 'gray.400',
-  fontSize: '28px',
+  textStyle: 'h1',
 });
 
 const cardBody = css({

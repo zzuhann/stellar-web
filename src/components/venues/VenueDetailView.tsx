@@ -122,7 +122,6 @@ const statValue = css({
 const statUnit = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
-  fontWeight: 'normal',
 });
 
 const infoSection = css({
@@ -269,6 +268,23 @@ const starIconCls = css({
 const mapIconWrapper = css({
   color: 'gray.400',
   flexShrink: 0,
+});
+
+const infoRowsWrap = css({
+  marginTop: '1',
+});
+
+const infoLink = css({
+  color: 'inherit',
+  textDecoration: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1',
+});
+
+const bookingBtnWrap = css({
+  marginTop: '2.5',
+  display: 'flex',
 });
 
 function PinIcon() {
@@ -455,23 +471,12 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
 
         <section aria-label="基本資訊" className={infoSection}>
           <h2 className={sectionTitle}>基本資訊</h2>
-          <div style={{ marginTop: '4px' }}>
+          <div className={infoRowsWrap}>
             <InfoRow
               icon={<PinIcon />}
               label="地址"
               value={
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: 'inherit',
-                    textDecoration: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                >
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className={infoLink}>
                   {venue.address}
                   <span className={mapIconWrapper}>
                     <MapExternalIcon />
@@ -496,13 +501,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
                     href={socialLink.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{
-                      color: 'inherit',
-                      textDecoration: 'none',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}
+                    className={infoLink}
                   >
                     {socialLink.text}
                     <span className={mapIconWrapper}>
@@ -539,7 +538,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
             ) : (
               <p className={bookingSubtitle}>請依場地規定確認預約步驟</p>
             )}
-            <div style={{ marginTop: '10px', display: 'flex' }}>
+            <div className={bookingBtnWrap}>
               <a
                 href={bookingChannel.url}
                 target="_blank"

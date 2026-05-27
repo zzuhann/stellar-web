@@ -90,6 +90,11 @@ const emptyHint = css({
   letterSpacing: '0.04em',
 });
 
+const emptyText = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+});
+
 interface VenueGalleryProps {
   photos: string[];
   venueName: string;
@@ -124,7 +129,7 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
           <circle cx="12" cy="13" r="3.5" />
           <path d="M3 3l18 18" />
         </svg>
-        <div style={{ fontSize: 13 }}>店家尚未提供場地照片</div>
+        <div className={emptyText}>店家尚未提供場地照片</div>
         <div className={emptyHint}>可透過下方聯絡方式詢問</div>
       </div>
     );
