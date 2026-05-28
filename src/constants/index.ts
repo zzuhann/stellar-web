@@ -33,6 +33,8 @@ export const FIREBASE_ERROR_MESSAGES: Record<string, string> = {
   'auth/weak-password': '密碼強度不足',
   'auth/invalid-email': 'Email 格式錯誤',
   'auth/too-many-requests': '嘗試次數過多，請稍後再試',
+  'auth/web-storage-unsupported': '瀏覽器限制儲存功能，請改用 Safari/Chrome 一般模式再試',
+  'auth/operation-not-supported-in-this-environment': '目前瀏覽器環境不支援此登入方式',
 };
 
 // 預設分頁設定

@@ -1,7 +1,12 @@
 // Firebase 配置與初始化
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { initializeAuth, indexedDBLocalPersistence } from 'firebase/auth';
+import {
+  initializeAuth,
+  indexedDBLocalPersistence,
+  browserLocalPersistence,
+  browserPopupRedirectResolver,
+} from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 // Firebase 配置
@@ -17,11 +22,11 @@ const firebaseConfig = {
 // 初始化 Firebase App
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// 不傳 popupRedirectResolver，避免 Firebase 在每次 pageload 載入
-// firebaseapp.com/auth/iframe.js（造成 ~2.5s critical chain）。
-// Resolver 在 signInWithPopup 呼叫時才按需傳入。
+// 為了穩定支援 mobile redirect sign-in，初始化時需提供 popupRedirectResolver。
+// 另外保留 local persistence 作為 IndexedDB 不可用時的 fallback。
 export const auth = initializeAuth(app, {
-  persistence: [indexedDBLocalPersistence],
+  persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+  popupRedirectResolver: browserPopupRedirectResolver,
 });
 
 // 初始化 Firestore

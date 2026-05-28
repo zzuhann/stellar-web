@@ -41,6 +41,14 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      {
+        source: '/__/auth/:path*',
+        destination: 'https://stellar-7b82b.firebaseapp.com/__/auth/:path*',
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;
