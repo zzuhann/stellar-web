@@ -3,6 +3,7 @@ import {
   AuthError,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
   signInAnonymously as firebaseSignInAnonymously,
   browserPopupRedirectResolver,
 } from 'firebase/auth';
@@ -11,15 +12,30 @@ import { auth, db } from './firebase';
 import { User as AppUser } from '@/types';
 import { FIREBASE_ERROR_MESSAGES } from '@/constants';
 
+export function isPWA(): boolean {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as unknown as { standalone?: boolean }).standalone === true
+  );
+}
+
 // Google 登入
-export async function signInWithGoogle() {
+export async function signInWithGoogle(): Promise<
+  | { user: User; error: null; redirecting?: false }
+  | { user: null; error: string; redirecting?: false }
+  | { user: null; error: null; redirecting: true }
+> {
+  const provider = new GoogleAuthProvider();
+
+  if (isPWA()) {
+    await signInWithRedirect(auth, provider, browserPopupRedirectResolver);
+    return { user: null, error: null, redirecting: true };
+  }
+
   try {
-    const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(auth, provider, browserPopupRedirectResolver);
-
-    // 在 Firestore 中建立或更新使用者資料
     await createUserDocument(result.user);
-
     return { user: result.user, error: null };
   } catch (error) {
     const authError = error as AuthError;
@@ -49,7 +65,7 @@ export async function signInAnonymously() {
 }
 
 // 建立使用者文件
-async function createUserDocument(user: User): Promise<void> {
+export async function createUserDocument(user: User): Promise<void> {
   const userDocRef = doc(db, 'users', user.uid);
 
   // 檢查使用者是否已存在

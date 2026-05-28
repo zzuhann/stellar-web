@@ -1,9 +1,14 @@
 'use client';
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
+import {
+  User as FirebaseUser,
+  onAuthStateChanged,
+  getRedirectResult,
+  browserPopupRedirectResolver,
+} from 'firebase/auth';
 import { auth } from './firebase';
-import { getUserData } from './auth';
+import { getUserData, createUserDocument } from './auth';
 import { User as AppUser } from '@/types';
 
 interface AuthContextType {
@@ -38,6 +43,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const fetchUserDataByUid = useCallback(async (uid: string) => {
     const appUserData = await getUserData(uid);
     setUserData(appUserData);
+  }, []);
+
+  useEffect(() => {
+    getRedirectResult(auth, browserPopupRedirectResolver)
+      .then(async (result) => {
+        if (result?.user) {
+          await createUserDocument(result.user);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {

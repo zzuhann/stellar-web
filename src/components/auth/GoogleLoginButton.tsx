@@ -56,9 +56,15 @@ const GoogleLoginButton = ({ onSuccess }: GoogleLoginButtonProps) => {
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
+    let isRedirecting = false;
 
     try {
-      const { user, error } = await signInWithGoogle();
+      const { user, error, redirecting } = await signInWithGoogle();
+
+      if (redirecting) {
+        isRedirecting = true;
+        return;
+      }
 
       if (error) {
         showToast.error('Google 登入失敗');
@@ -75,7 +81,9 @@ const GoogleLoginButton = ({ onSuccess }: GoogleLoginButtonProps) => {
     } catch {
       showToast.error('Google 登入失敗');
     } finally {
-      setIsGoogleLoading(false);
+      if (!isRedirecting) {
+        setIsGoogleLoading(false);
+      }
     }
   };
 
