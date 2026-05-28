@@ -60,8 +60,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(firebaseUser);
 
       if (firebaseUser) {
-        // 取得使用者詳細資料
-        const appUserData = await getUserData(firebaseUser.uid);
+        // 取得使用者詳細資料；若 redirect 回來時文件尚未建立，補建後再重抓一次。
+        let appUserData = await getUserData(firebaseUser.uid);
+        if (!appUserData) {
+          await createUserDocument(firebaseUser);
+          appUserData = await getUserData(firebaseUser.uid);
+        }
         setUserData(appUserData);
 
         if (pendingAction) {
@@ -96,7 +100,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const handleSignOut = async () => {
     try {
       await auth.signOut();
-    } catch {}
+    } catch {
+      // noop
+    }
   };
 
   const value = {
