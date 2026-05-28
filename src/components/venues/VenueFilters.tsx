@@ -155,7 +155,6 @@ const filterDivider = css({
 
 const sortControl = css({
   display: 'flex',
-  gap: '0',
   padding: '2px',
   borderRadius: 'radius.sm',
   background: 'gray.100',
@@ -174,6 +173,7 @@ const sortItem = css({
   textStyle: 'caption',
   fontWeight: 'medium',
   transition: 'background 0.15s ease, color 0.12s ease',
+  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
   whiteSpace: 'nowrap',
   display: 'flex',
   alignItems: 'center',
@@ -325,13 +325,13 @@ export default function VenueFilters({
           </button>
 
           {capacityOpen && (
-            <div className={dropdownMenu} role="listbox" aria-labelledby="capacity-label">
+            <div className={dropdownMenu} role="menu" aria-labelledby="capacity-label">
               {CAPACITY_OPTIONS.map((opt) => (
                 <button
                   key={opt.id}
                   type="button"
-                  role="option"
-                  aria-selected={capacity === opt.id}
+                  role="menuitemradio"
+                  aria-checked={capacity === opt.id}
                   className={dropdownOption}
                   onClick={() => {
                     onCapacityChange(opt.id);
