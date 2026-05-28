@@ -14,12 +14,24 @@ function tsToIso(ts: FirebaseTimestamp): string {
   return new Date(ts._seconds * 1000).toISOString();
 }
 
+function buildEventDescription(event: CoffeeEvent): string {
+  if (event.description?.trim()) return event.description.trim();
+
+  const artistNames = event.artists.map((a) => a.name).join('、');
+  const startDate = new Date(event.datetime.start._seconds * 1000).toLocaleDateString('zh-TW', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  return `${artistNames} 生日應援活動，於 ${startDate} 在 ${event.location.name}（${event.location.address}）舉辦。`;
+}
+
 function buildEventJsonLd(event: CoffeeEvent) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: event.title,
-    description: event.description,
+    description: buildEventDescription(event),
     startDate: tsToIso(event.datetime.start),
     endDate: tsToIso(event.datetime.end),
     location: {
@@ -31,7 +43,12 @@ function buildEventJsonLd(event: CoffeeEvent) {
         addressCountry: 'TW',
       },
     },
+    eventStatus: 'https://schema.org/EventScheduled',
     ...(event.mainImage && { image: [event.mainImage] }),
+    performer: event.artists.map((a) => ({
+      '@type': 'PerformingGroup',
+      name: a.name,
+    })),
     url: `https://www.stellar-zone.com/event/${event.slug ?? event.id}`,
     organizer: {
       '@type': 'Organization',
