@@ -296,7 +296,7 @@ export default function VenueFilters({
           <button
             type="button"
             className={dropdownTrigger}
-            aria-haspopup="listbox"
+            aria-haspopup="menu"
             aria-expanded={capacityOpen}
             aria-labelledby="capacity-label"
             onClick={() => setCapacityOpen((o) => !o)}
