@@ -160,7 +160,6 @@ const sortControl = css({
   borderRadius: 'radius.sm',
   background: 'gray.100',
   flexShrink: 0,
-  position: 'relative',
 });
 
 const sortItem = css({
@@ -174,29 +173,19 @@ const sortItem = css({
   color: 'gray.600',
   textStyle: 'caption',
   fontWeight: 'medium',
-  transition: 'color 0.12s ease',
+  transition: 'background 0.15s ease, color 0.12s ease',
   whiteSpace: 'nowrap',
-  position: 'relative',
-  zIndex: 1,
   display: 'flex',
   alignItems: 'center',
+  justifyContent: 'center',
 });
 
 const sortItemActive = css({
+  background: 'white',
   color: 'stellarBlue.500',
   fontWeight: 'semibold',
-});
-
-const sortSlider = css({
-  position: 'absolute',
-  top: '2px',
-  bottom: '2px',
-  borderRadius: 'radius.sm',
-  background: 'white',
   boxShadow: 'shadow.sm',
-  transition: 'left 0.2s ease, width 0.2s ease',
-  pointerEvents: 'none',
-  zIndex: 0,
+  borderRadius: 'radius.sm',
 });
 
 const checkmark = css({
@@ -244,11 +233,6 @@ export default function VenueFilters({
   const [showRight, setShowRight] = useState(true);
   const [capacityOpen, setCapacityOpen] = useState(false);
   const capacityRef = useRef<HTMLDivElement>(null);
-  const sortButtonRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const [sortSliderStyle, setSortSliderStyle] = useState<{ left: number; width: number }>({
-    left: 0,
-    width: 0,
-  });
 
   const updateFades = () => {
     const el = rowRef.current;
@@ -275,13 +259,6 @@ export default function VenueFilters({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
-
-  useEffect(() => {
-    const activeIndex = SORT_OPTIONS.findIndex((opt) => opt.id === sort);
-    const activeBtn = sortButtonRefs.current[activeIndex];
-    if (!activeBtn) return;
-    setSortSliderStyle({ left: activeBtn.offsetLeft, width: activeBtn.offsetWidth });
-  }, [sort]);
 
   const selectedCapacityLabel =
     CAPACITY_OPTIONS.find((opt) => opt.id === capacity)?.label ?? '不限';
@@ -372,19 +349,11 @@ export default function VenueFilters({
         <div className={filterDivider} aria-hidden="true" />
 
         <div className={sortControl} role="group" aria-label="場地排序方式">
-          <div
-            className={sortSlider}
-            aria-hidden="true"
-            style={{ left: sortSliderStyle.left, width: sortSliderStyle.width }}
-          />
-          {SORT_OPTIONS.map((opt, index) => (
+          {SORT_OPTIONS.map((opt) => (
             <button
               key={opt.id}
               type="button"
               aria-pressed={sort === opt.id}
-              ref={(el) => {
-                sortButtonRefs.current[index] = el;
-              }}
               className={`${sortItem} ${sort === opt.id ? sortItemActive : ''}`}
               onClick={() => onSortChange(opt.id)}
             >
