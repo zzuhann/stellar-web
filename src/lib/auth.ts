@@ -3,7 +3,6 @@ import {
   AuthError,
   GoogleAuthProvider,
   signInWithPopup,
-  signInWithRedirect,
   signInAnonymously as firebaseSignInAnonymously,
   browserPopupRedirectResolver,
 } from 'firebase/auth';
@@ -12,27 +11,11 @@ import { auth, db } from './firebase';
 import { User as AppUser } from '@/types';
 import { FIREBASE_ERROR_MESSAGES } from '@/constants';
 
-export function isPWA(): boolean {
-  if (typeof window === 'undefined') return false;
-  return (
-    window.matchMedia('(display-mode: standalone)').matches ||
-    (window.navigator as unknown as { standalone?: boolean }).standalone === true
-  );
-}
-
 // Google 登入
 export async function signInWithGoogle(): Promise<
-  | { user: User; error: null; redirecting?: false }
-  | { user: null; error: string; redirecting?: false }
-  | { user: null; error: null; redirecting: true }
+  { user: User; error: null } | { user: null; error: string }
 > {
   const provider = new GoogleAuthProvider();
-
-  // PWA 維持 redirect 流程，避免 standalone 模式下 popup 不穩定。
-  if (isPWA()) {
-    await signInWithRedirect(auth, provider, browserPopupRedirectResolver);
-    return { user: null, error: null, redirecting: true };
-  }
 
   try {
     const result = await signInWithPopup(auth, provider, browserPopupRedirectResolver);

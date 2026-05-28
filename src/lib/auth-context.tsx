@@ -1,14 +1,9 @@
 'use client';
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import {
-  User as FirebaseUser,
-  onAuthStateChanged,
-  getRedirectResult,
-  browserPopupRedirectResolver,
-} from 'firebase/auth';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
-import { getUserData, createUserDocument, isPWA } from './auth';
+import { getUserData, createUserDocument } from './auth';
 import { User as AppUser } from '@/types';
 
 interface AuthContextType {
@@ -19,8 +14,7 @@ interface AuthContextType {
   authModalOpen: boolean;
   toggleAuthModal: (redirectTo?: string, onAuthSuccess?: () => void) => void;
   redirectUrl: string | null;
-  refetchUserData: () => Promise<void>;
-  fetchUserDataByUid: (uid: string) => Promise<void>;
+  refetchUserData: (uid?: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,38 +25,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState<string | null>(null);
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null); // 登入成功後要執行的動作
+  const pendingActionRef = useRef<(() => void) | null>(null);
 
-  const refetchUserData = useCallback(async () => {
-    if (user) {
-      const appUserData = await getUserData(user.uid);
-      setUserData(appUserData);
-    }
-  }, [user]);
-
-  const fetchUserDataByUid = useCallback(async (uid: string) => {
-    const appUserData = await getUserData(uid);
-    setUserData(appUserData);
-  }, []);
-
-  useEffect(() => {
-    if (!isPWA()) return;
-
-    getRedirectResult(auth, browserPopupRedirectResolver)
-      .then(async (result) => {
-        if (result?.user) {
-          await createUserDocument(result.user);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const refetchUserData = useCallback(
+    async (uid?: string) => {
+      const targetUid = uid ?? user?.uid;
+      if (targetUid) {
+        const appUserData = await getUserData(targetUid);
+        setUserData(appUserData);
+      }
+    },
+    [user]
+  );
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
 
       if (firebaseUser) {
-        // 取得使用者詳細資料；若 redirect 回來時文件尚未建立，補建後再重抓一次。
         let appUserData = await getUserData(firebaseUser.uid);
         if (!appUserData) {
           await createUserDocument(firebaseUser);
@@ -70,9 +50,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         setUserData(appUserData);
 
-        if (pendingAction) {
-          pendingAction();
-          setPendingAction(null);
+        if (pendingActionRef.current) {
+          pendingActionRef.current();
+          pendingActionRef.current = null;
         }
       } else {
         setUserData(null);
@@ -82,20 +62,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return unsubscribe;
-  }, [pendingAction]);
+  }, []);
 
   const toggleAuthModal = (redirectTo?: string, onAuthSuccess?: () => void) => {
     if (redirectTo) {
       setRedirectUrl(redirectTo);
     }
     if (onAuthSuccess) {
-      setPendingAction(() => onAuthSuccess);
+      pendingActionRef.current = onAuthSuccess;
     }
     setAuthModalOpen(!authModalOpen);
 
     if (authModalOpen) {
       setRedirectUrl(null);
-      setPendingAction(null);
+      pendingActionRef.current = null;
     }
   };
 
@@ -116,7 +96,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     toggleAuthModal,
     redirectUrl,
     refetchUserData,
-    fetchUserDataByUid,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -52,24 +52,18 @@ type GoogleLoginButtonProps = {
 
 const GoogleLoginButton = ({ onSuccess }: GoogleLoginButtonProps) => {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const { fetchUserDataByUid } = useAuth();
+  const { refetchUserData } = useAuth();
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
-    let isRedirecting = false;
 
     try {
-      const { user, error, redirecting } = await signInWithGoogle();
-
-      if (redirecting) {
-        isRedirecting = true;
-        return;
-      }
+      const { user, error } = await signInWithGoogle();
 
       if (error) {
         showToast.error(error);
       } else if (user) {
-        await fetchUserDataByUid(user.uid);
+        await refetchUserData(user.uid);
         sendGAEvent('event', 'login', {
           event_page: '/',
           user_id: user.uid,
@@ -81,9 +75,7 @@ const GoogleLoginButton = ({ onSuccess }: GoogleLoginButtonProps) => {
     } catch {
       showToast.error('Google 登入失敗');
     } finally {
-      if (!isRedirecting) {
-        setIsGoogleLoading(false);
-      }
+      setIsGoogleLoading(false);
     }
   };
 

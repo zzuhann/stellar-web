@@ -184,7 +184,7 @@ type AnonymousLoginButtonProps = {
 const AnonymousLoginButton = ({ onSuccess }: AnonymousLoginButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const { fetchUserDataByUid } = useAuth();
+  const { refetchUserData } = useAuth();
 
   const handleAnonymousSignIn = async () => {
     setIsLoading(true);
@@ -195,7 +195,7 @@ const AnonymousLoginButton = ({ onSuccess }: AnonymousLoginButtonProps) => {
       if (error) {
         showToast.error('訪客登入失敗');
       } else if (user) {
-        await fetchUserDataByUid(user.uid);
+        await refetchUserData(user.uid);
         sendGAEvent('event', 'login', {
           event_page: '/',
           user_id: user.uid,
