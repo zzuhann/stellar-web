@@ -17,15 +17,14 @@ function formatDateRange(start: string, end: string): string {
 }
 
 const cardContainer = css({
-  display: 'flex',
-  flexDirection: 'column',
-  width: '200px',
+  display: 'block',
+  width: '180px',
   flexShrink: 0,
   scrollSnapAlign: 'start',
   cursor: 'pointer',
   textDecoration: 'none',
   color: 'inherit',
-  padding: '2',
+  overflow: 'hidden',
   backgroundColor: 'color.background.primary',
   borderRadius: 'radius.lg',
   border: '1px solid',
@@ -35,9 +34,8 @@ const cardContainer = css({
 
 const imageArea = css({
   position: 'relative',
-  aspectRatio: '3 / 4',
+  height: '190px',
   width: '100%',
-  borderRadius: 'radius.lg',
   overflow: 'hidden',
   flexShrink: 0,
 });
@@ -49,17 +47,20 @@ const placeholderBg = css({
 });
 
 const infoArea = css({
-  paddingTop: '2',
+  paddingTop: '2.5',
+  paddingX: '3',
+  paddingBottom: '3',
   display: 'flex',
   flexDirection: 'column',
-  gap: '0.5',
 });
 
 const titleText = css({
-  textStyle: 'bodyStrong',
+  textStyle: 'bodySmall',
   fontWeight: 'semibold',
   color: 'color.text.primary',
-  lineHeight: '1.3',
+  lineClamp: 2,
+  height: 'calc(2em * 1.5)',
+  margin: 0,
   overflow: 'hidden',
 });
 
@@ -81,11 +82,12 @@ const cityBadge = css({
 const metaRow = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '0.5',
+  marginTop: '1',
+  gap: '1',
 });
 
 const metaText = css({
-  textStyle: 'bodySmall',
+  textStyle: 'caption',
   color: 'color.text.secondary',
   overflow: 'hidden',
   whiteSpace: 'nowrap',
@@ -134,7 +136,7 @@ const RelatedEventCard = ({ event, eventPage, contentId }: RelatedEventCardProps
             src={event.mainImage}
             alt={event.title}
             fill
-            sizes="200px"
+            sizes="180px"
             style={{ objectFit: 'cover' }}
           />
         ) : (
@@ -145,12 +147,7 @@ const RelatedEventCard = ({ event, eventPage, contentId }: RelatedEventCardProps
 
       {/* Info area */}
       <div className={infoArea}>
-        <p
-          className={titleText}
-          style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
-        >
-          {event.title}
-        </p>
+        <p className={titleText}>{event.title}</p>
         {dateRange && (
           <div className={metaRow}>
             <CalendarIcon width={14} height={14} className={metaIcon} />

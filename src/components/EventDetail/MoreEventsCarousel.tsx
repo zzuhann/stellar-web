@@ -12,8 +12,8 @@ import 'swiper/css';
 const sectionWrapper = css({
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
-  paddingTop: '4',
-  marginTop: '4',
+  paddingTop: '6',
+  marginTop: '6',
 });
 
 const sectionTitle = css({
@@ -22,7 +22,7 @@ const sectionTitle = css({
   color: 'color.text.primary',
   marginTop: '0',
   marginX: '0',
-  marginBottom: '2',
+  marginBottom: '4',
   display: 'flex',
   alignItems: 'center',
   gap: '2',
@@ -45,7 +45,7 @@ const fadeOverlay = cva({
     position: 'absolute',
     top: 0,
     bottom: 0,
-    width: '32px',
+    width: '40px',
     pointerEvents: 'none',
     zIndex: 10,
     transition: 'opacity 0.2s ease',
@@ -54,11 +54,11 @@ const fadeOverlay = cva({
     side: {
       left: {
         left: 0,
-        background: 'linear-gradient(to right, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%)',
+        background: 'linear-gradient(to right, rgba(255,255,255,1) 10%, rgba(255,255,255,0))',
       },
       right: {
         right: 0,
-        background: 'linear-gradient(to left, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 100%)',
+        background: 'linear-gradient(to left, rgba(255,255,255,1) 10%, rgba(255,255,255,0))',
       },
     },
     visible: {
@@ -68,6 +68,21 @@ const fadeOverlay = cva({
   },
 });
 
+const progressTrack = css({
+  height: '3px',
+  borderRadius: '2px',
+  background: 'gray.100',
+  overflow: 'hidden',
+  marginY: '4',
+});
+
+const progressBar = css({
+  height: '100%',
+  borderRadius: '2px',
+  background: 'color.primary',
+  transition: 'width 0.18s ease-out',
+});
+
 const skeletonCard = css({
   width: '180px',
   flexShrink: 0,
@@ -75,7 +90,7 @@ const skeletonCard = css({
 
 const skeletonImage = css({
   width: '180px',
-  aspectRatio: '3/4',
+  height: '190px',
   borderRadius: 'radius.lg',
   backgroundColor: 'color.background.secondary',
 });
@@ -101,10 +116,14 @@ export default function MoreEventsCarousel({
   const { data: events = [], isLoading } = useArtistEventsQuery(artistId, currentEventId);
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isEnd, setIsEnd] = useState(false);
 
   const updateFadeVisibility = (swiper: SwiperType) => {
     setShowLeftFade(!swiper.isBeginning);
     setShowRightFade(!swiper.isEnd);
+    setActiveIndex(swiper.activeIndex);
+    setIsEnd(swiper.isEnd);
   };
 
   // If not loading and no related events found, render nothing
@@ -127,7 +146,7 @@ export default function MoreEventsCarousel({
           className={swiperStyles}
           spaceBetween={12}
           slidesPerView="auto"
-          style={{ paddingLeft: 'var(--spacing-5)' }}
+          style={{ paddingLeft: 'var(--spacing-5)', paddingRight: 'var(--spacing-5)' }}
           onSwiper={(swiper) => {
             updateFadeVisibility(swiper);
           }}
@@ -155,6 +174,16 @@ export default function MoreEventsCarousel({
             ))}
         </Swiper>
       </div>
+      {!isLoading && events.length > 0 && (
+        <div className={progressTrack}>
+          <div
+            className={progressBar}
+            style={{
+              width: `${isEnd ? 100 : Math.max(8, ((activeIndex + 1) / events.length) * 100)}%`,
+            }}
+          />
+        </div>
+      )}
     </div>
   );
 }
