@@ -39,6 +39,10 @@ export async function signInWithGoogle(): Promise<
     return { user: result.user, error: null };
   } catch (error) {
     const authError = error as AuthError;
+    if (authError.code === 'auth/popup-blocked') {
+      await signInWithRedirect(auth, provider, browserPopupRedirectResolver);
+      return { user: null, error: null, redirecting: true };
+    }
     return {
       user: null,
       error: FIREBASE_ERROR_MESSAGES[authError.code] || 'Google 登入失敗',
