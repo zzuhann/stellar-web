@@ -20,28 +20,6 @@ export function isPWA(): boolean {
   );
 }
 
-function isMobileBrowser(): boolean {
-  if (typeof window === 'undefined') return false;
-
-  const userAgent = window.navigator.userAgent;
-  const isMobileUA =
-    /Android|iPhone|iPad|iPod|Mobile|Windows Phone|IEMobile/i.test(userAgent) ||
-    (userAgent.includes('Macintosh') && window.navigator.maxTouchPoints > 1);
-
-  return isMobileUA;
-}
-
-function shouldFallbackToRedirect(errorCode: string): boolean {
-  if (errorCode.startsWith('auth/popup-')) return true;
-
-  return [
-    'auth/cancelled-popup-request',
-    'auth/internal-error',
-    'auth/network-request-failed',
-    'auth/operation-not-supported-in-this-environment',
-  ].includes(errorCode);
-}
-
 // Google 登入
 export async function signInWithGoogle(): Promise<
   | { user: User; error: null; redirecting?: false }
@@ -50,8 +28,8 @@ export async function signInWithGoogle(): Promise<
 > {
   const provider = new GoogleAuthProvider();
 
-  // 手機瀏覽器與 PWA 上先走 redirect，可避免 popup 被系統策略立即關閉。
-  if (isPWA() || isMobileBrowser()) {
+  // PWA 維持 redirect 流程，避免 standalone 模式下 popup 不穩定。
+  if (isPWA()) {
     await signInWithRedirect(auth, provider, browserPopupRedirectResolver);
     return { user: null, error: null, redirecting: true };
   }
@@ -62,18 +40,6 @@ export async function signInWithGoogle(): Promise<
     return { user: result.user, error: null };
   } catch (error) {
     const authError = error as AuthError;
-    if (shouldFallbackToRedirect(authError.code)) {
-      try {
-        await signInWithRedirect(auth, provider, browserPopupRedirectResolver);
-        return { user: null, error: null, redirecting: true };
-      } catch (redirectError) {
-        const redirectAuthError = redirectError as AuthError;
-        return {
-          user: null,
-          error: FIREBASE_ERROR_MESSAGES[redirectAuthError.code] || 'Google 登入失敗',
-        };
-      }
-    }
     return {
       user: null,
       error: FIREBASE_ERROR_MESSAGES[authError.code] || 'Google 登入失敗',

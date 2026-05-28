@@ -8,7 +8,7 @@ import {
   browserPopupRedirectResolver,
 } from 'firebase/auth';
 import { auth } from './firebase';
-import { getUserData, createUserDocument } from './auth';
+import { getUserData, createUserDocument, isPWA } from './auth';
 import { User as AppUser } from '@/types';
 
 interface AuthContextType {
@@ -46,6 +46,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!isPWA()) return;
+
     getRedirectResult(auth, browserPopupRedirectResolver)
       .then(async (result) => {
         if (result?.user) {
