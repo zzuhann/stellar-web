@@ -58,7 +58,12 @@ const GoogleLoginButton = ({ onSuccess }: GoogleLoginButtonProps) => {
     setIsGoogleLoading(true);
 
     try {
-      const { user, error } = await signInWithGoogle();
+      const { user, error, redirecting } = await signInWithGoogle();
+
+      if (redirecting) {
+        // PWA mode: page is navigating away, keep loading state until redirect
+        return;
+      }
 
       if (error) {
         showToast.error('Google 登入失敗');
