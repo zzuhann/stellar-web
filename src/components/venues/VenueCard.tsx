@@ -1,5 +1,9 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { css } from '@/styled-system/css';
+import { trackClickVenueDetail, trackViewVenueCard } from '@/lib/analytics/venues';
 import type { Venue } from '@/types';
 import VenueCardPhotos from './VenueCardPhotos';
 
@@ -156,20 +160,70 @@ function ContactIcon({ venue }: { venue: Venue }) {
 
 interface VenueCardProps {
   venue: Venue;
+  listPosition: number;
+  userId?: string;
 }
 
-export default function VenueCard({ venue }: VenueCardProps) {
+function hasViewedCardInSession(venueId: string): boolean {
+  try {
+    return sessionStorage.getItem(`venues:viewed_card:${venueId}`) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markViewedCardInSession(venueId: string): void {
+  try {
+    sessionStorage.setItem(`venues:viewed_card:${venueId}`, '1');
+  } catch {
+    // ignore storage write failures in private mode
+  }
+}
+
+export default function VenueCard({ venue, listPosition, userId }: VenueCardProps) {
+  const cardRef = useRef<HTMLAnchorElement>(null);
   const photos = venue.coverPhoto ? [venue.coverPhoto] : [];
   const mrtText = venue.nearestMrt
     ? `${venue.nearestMrt}${venue.mrtWalkMinutes ? ` ${venue.mrtWalkMinutes} 分鐘` : ''}`
     : null;
 
+  useEffect(() => {
+    const element = cardRef.current;
+    if (!element || hasViewedCardInSession(venue.id)) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const isVisible = entries.some((entry) => entry.isIntersecting);
+        if (!isVisible) return;
+
+        markViewedCardInSession(venue.id);
+        trackViewVenueCard({
+          userId,
+          venueId: venue.id,
+          venueRegion: venue.region,
+          listPosition,
+        });
+        observer.disconnect();
+      },
+      { threshold: 0.4 }
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [listPosition, userId, venue.id, venue.region]);
+
+  const handleClick = () => {
+    trackClickVenueDetail({
+      userId,
+      venueId: venue.id,
+      venueRegion: venue.region,
+      listPosition,
+    });
+    sessionStorage.setItem(SCROLL_KEY, window.scrollY.toString());
+  };
+
   return (
-    <Link
-      href={`/venues/${venue.id}`}
-      className={card}
-      onClick={() => sessionStorage.setItem(SCROLL_KEY, window.scrollY.toString())}
-    >
+    <Link ref={cardRef} href={`/venues/${venue.id}`} className={card} onClick={handleClick}>
       <VenueCardPhotos photos={photos} venueName={venue.name} />
       <div className={body}>
         <div className={nameRow}>

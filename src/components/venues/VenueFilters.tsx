@@ -81,11 +81,6 @@ const capacityRow = css({
   gap: '2',
   paddingX: '4',
   marginTop: '2.5',
-  overflowX: 'auto',
-  scrollbarWidth: 'none',
-  '&::-webkit-scrollbar': {
-    display: 'none',
-  },
 });
 
 const capacityLabel = css({
@@ -95,46 +90,106 @@ const capacityLabel = css({
   whiteSpace: 'nowrap',
 });
 
-const segmented = css({
-  display: 'flex',
-  gap: '1',
-  padding: '0.5',
-  borderRadius: 'radius.lg',
-  background: 'gray.100',
-  flexShrink: 0,
+const dropdownContainer = css({
   position: 'relative',
+  flexShrink: 0,
 });
 
-const segItem = css({
+const dropdownTrigger = css({
+  minWidth: '110px',
+  paddingY: '2',
+  paddingX: '3',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'color.background.primary',
+  color: 'color.text.primary',
+  cursor: 'pointer',
+  textAlign: 'left',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: '1.5',
+  textStyle: 'caption',
+  '&:hover': { borderColor: 'color.primary' },
+});
+
+const dropdownMenu = css({
+  position: 'absolute',
+  top: 'calc(100% + 4px)',
+  left: 0,
+  right: 0,
+  maxHeight: '200px',
+  overflowY: 'auto',
+  background: 'color.background.primary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.md',
+  boxShadow: 'shadow.md',
+  zIndex: 30,
+});
+
+const dropdownOption = css({
+  width: '100%',
+  paddingY: '2',
+  paddingX: '3',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  background: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
+  textStyle: 'caption',
+  color: 'color.text.primary',
+  textAlign: 'left',
+  '&:hover': { background: 'gray.50' },
+});
+
+const filterDivider = css({
+  width: '1px',
+  alignSelf: 'stretch',
+  background: 'color.border.light',
+  flexShrink: 0,
+  marginX: '1',
+});
+
+const sortControl = css({
+  display: 'flex',
+  padding: '2px',
+  borderRadius: 'radius.sm',
+  background: 'gray.100',
+  flexShrink: 0,
+});
+
+const sortItem = css({
+  minHeight: '44px',
   paddingY: '1',
   paddingX: '2.5',
-  borderRadius: 'radius.md',
+  borderRadius: 'radius.sm',
   border: 'none',
   cursor: 'pointer',
   background: 'transparent',
-  color: 'color.text.secondary',
+  color: 'gray.600',
   textStyle: 'caption',
   fontWeight: 'medium',
-  transition: 'color 0.2s ease',
+  transition: 'background 0.15s ease, color 0.12s ease',
+  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
   whiteSpace: 'nowrap',
-  position: 'relative',
-  zIndex: 1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 });
 
-const segItemActive = css({
-  color: 'white',
+const sortItemActive = css({
+  background: 'white',
+  color: 'stellarBlue.500',
   fontWeight: 'semibold',
+  boxShadow: 'shadow.sm',
+  borderRadius: 'radius.sm',
 });
 
-const segSlider = css({
-  position: 'absolute',
-  top: '0.5',
-  bottom: '0.5',
-  borderRadius: 'radius.md',
-  background: 'stellarBlue.500',
-  transition: 'all 0.2s ease',
-  pointerEvents: 'none',
-  zIndex: 0,
+const checkmark = css({
+  color: 'color.primary',
 });
 
 export type CapacityFilter = 'all' | CapacityRange;
@@ -147,12 +202,21 @@ const CAPACITY_OPTIONS: { id: CapacityFilter; label: string }[] = [
   { id: '60以上', label: '60人以上' },
 ];
 
+export type VenueSort = 'eventCount' | 'newest';
+
+const SORT_OPTIONS: { id: VenueSort; label: string }[] = [
+  { id: 'eventCount', label: '最多收錄生咖' },
+  { id: 'newest', label: '最新上架' },
+];
+
 interface VenueFiltersProps {
   regions: string[];
   region: string;
   onRegionChange: (region: string) => void;
   capacity: CapacityFilter;
   onCapacityChange: (capacity: CapacityFilter) => void;
+  sort: VenueSort;
+  onSortChange: (sort: VenueSort) => void;
 }
 
 export default function VenueFilters({
@@ -161,15 +225,14 @@ export default function VenueFilters({
   onRegionChange,
   capacity,
   onCapacityChange,
+  sort,
+  onSortChange,
 }: VenueFiltersProps) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(true);
-  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const [sliderStyle, setSliderStyle] = useState<{ left: number; width: number }>({
-    left: 0,
-    width: 0,
-  });
+  const [capacityOpen, setCapacityOpen] = useState(false);
+  const capacityRef = useRef<HTMLDivElement>(null);
 
   const updateFades = () => {
     const el = rowRef.current;
@@ -188,11 +251,17 @@ export default function VenueFilters({
   }, []);
 
   useEffect(() => {
-    const activeIndex = CAPACITY_OPTIONS.findIndex((opt) => opt.id === capacity);
-    const activeBtn = buttonRefs.current[activeIndex];
-    if (!activeBtn) return;
-    setSliderStyle({ left: activeBtn.offsetLeft, width: activeBtn.offsetWidth });
-  }, [capacity]);
+    const handler = (e: MouseEvent) => {
+      if (capacityRef.current && !capacityRef.current.contains(e.target as Node)) {
+        setCapacityOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const selectedCapacityLabel =
+    CAPACITY_OPTIONS.find((opt) => opt.id === capacity)?.label ?? '不限';
 
   return (
     <div className={filterBar}>
@@ -222,22 +291,71 @@ export default function VenueFilters({
         <span id="capacity-label" className={capacityLabel}>
           空間人數
         </span>
-        <div className={segmented} role="group" aria-labelledby="capacity-label">
-          <div
-            className={segSlider}
-            aria-hidden="true"
-            style={{ left: sliderStyle.left, width: sliderStyle.width }}
-          />
-          {CAPACITY_OPTIONS.map((opt, index) => (
+
+        <div ref={capacityRef} className={dropdownContainer}>
+          <button
+            type="button"
+            className={dropdownTrigger}
+            aria-haspopup="menu"
+            aria-expanded={capacityOpen}
+            aria-labelledby="capacity-label"
+            onClick={() => setCapacityOpen((o) => !o)}
+          >
+            <span>{selectedCapacityLabel}</span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              aria-hidden="true"
+              style={{
+                transform: capacityOpen ? 'rotate(180deg)' : undefined,
+                transition: 'transform 0.15s ease',
+                flexShrink: 0,
+              }}
+            >
+              <path
+                d="M2 4L6 8L10 4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          {capacityOpen && (
+            <div className={dropdownMenu} role="menu" aria-labelledby="capacity-label">
+              {CAPACITY_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={capacity === opt.id}
+                  className={dropdownOption}
+                  onClick={() => {
+                    onCapacityChange(opt.id);
+                    setCapacityOpen(false);
+                  }}
+                >
+                  <span>{opt.label}</span>
+                  {capacity === opt.id && <span className={checkmark}>✓</span>}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className={filterDivider} aria-hidden="true" />
+
+        <div className={sortControl} role="group" aria-label="場地排序方式">
+          {SORT_OPTIONS.map((opt) => (
             <button
               key={opt.id}
               type="button"
-              aria-pressed={capacity === opt.id}
-              ref={(el) => {
-                buttonRefs.current[index] = el;
-              }}
-              className={`${segItem} ${capacity === opt.id ? segItemActive : ''}`}
-              onClick={() => onCapacityChange(opt.id)}
+              aria-pressed={sort === opt.id}
+              className={`${sortItem} ${sort === opt.id ? sortItemActive : ''}`}
+              onClick={() => onSortChange(opt.id)}
             >
               {opt.label}
             </button>

@@ -1,12 +1,19 @@
 'use client';
 
-import { useState, useEffect, useLayoutEffect, useMemo } from 'react';
+import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { css } from '@/styled-system/css';
 import { venueApi } from '@/lib/api';
 import queryKey from '@/hooks/queryKey';
+import { useAuth } from '@/lib/auth-context';
+import { usePageView } from '@/hooks/usePageView';
+import { trackFilterVenues } from '@/lib/analytics/venues';
+import { useQueryState } from '@/hooks/useQueryState';
 import type { Venue, CapacityRange } from '@/types';
-import VenueFilters, { type CapacityFilter } from '@/components/venues/VenueFilters';
+import VenueFilters, {
+  type CapacityFilter,
+  type VenueSort,
+} from '@/components/venues/VenueFilters';
 import VenueCard from '@/components/venues/VenueCard';
 import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
 
@@ -78,9 +85,23 @@ interface VenuesClientProps {
   totalCount: number;
 }
 
+const VALID_SORT_VALUES: VenueSort[] = ['eventCount', 'newest'];
+
+function parseAsSort(value: string): VenueSort {
+  return VALID_SORT_VALUES.includes(value as VenueSort) ? (value as VenueSort) : 'eventCount';
+}
+
 export default function VenuesClient({ initialVenues, totalCount }: VenuesClientProps) {
+  const { user } = useAuth();
   const [region, setRegion] = useState('全部');
   const [capacity, setCapacity] = useState<CapacityFilter>('all');
+  const [sort, setSort] = useQueryState<VenueSort>('sort', {
+    parse: parseAsSort,
+    defaultValue: 'eventCount',
+  });
+  const shouldTrackFilterChange = useRef(false);
+
+  usePageView({ eventPage: '/venues' });
 
   // Derive available regions from SSR data (keeps only regions with actual venues)
   const regions = useMemo(() => {
@@ -89,13 +110,14 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
   }, [initialVenues]);
 
   const { data, isLoading } = useQuery({
-    queryKey: queryKey.venues({ region }),
+    queryKey: queryKey.venues({ region, sort }),
     queryFn: () =>
       venueApi.getVenues({
         region: region === '全部' ? undefined : [region],
         status: 'active',
+        sort: sort === 'eventCount' ? undefined : sort,
       }),
-    initialData: region === '全部' ? { venues: initialVenues } : undefined,
+    initialData: region === '全部' && sort === 'eventCount' ? { venues: initialVenues } : undefined,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -120,6 +142,42 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
     };
   }, []);
 
+  useEffect(() => {
+    if (!shouldTrackFilterChange.current || isLoading) {
+      return;
+    }
+
+    trackFilterVenues({
+      userId: user?.uid,
+      filterRegion: region,
+      filterCapacity: capacity,
+      resultCount: filtered.length,
+    });
+    shouldTrackFilterChange.current = false;
+  }, [capacity, filtered.length, isLoading, region, user?.uid]);
+
+  const handleRegionChange = (nextRegion: string) => {
+    if (nextRegion === region && capacity === 'all') return;
+
+    shouldTrackFilterChange.current = true;
+    setRegion(nextRegion);
+    setCapacity('all');
+  };
+
+  const handleCapacityChange = (nextCapacity: CapacityFilter) => {
+    if (nextCapacity === capacity) return;
+
+    shouldTrackFilterChange.current = true;
+    setCapacity(nextCapacity);
+  };
+
+  const handleSortChange = (nextSort: VenueSort) => {
+    if (nextSort === sort) return;
+
+    sessionStorage.removeItem(SCROLL_KEY);
+    setSort(nextSort === 'eventCount' ? null : nextSort);
+  };
+
   return (
     <div className={page}>
       <div className={inner}>
@@ -134,12 +192,11 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
         <VenueFilters
           regions={regions}
           region={region}
-          onRegionChange={(r) => {
-            setRegion(r);
-            setCapacity('all');
-          }}
+          onRegionChange={handleRegionChange}
           capacity={capacity}
-          onCapacityChange={setCapacity}
+          onCapacityChange={handleCapacityChange}
+          sort={sort}
+          onSortChange={handleSortChange}
         />
 
         <div aria-live="polite" aria-atomic="true" className="sr-only">
@@ -152,7 +209,9 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
           ) : filtered.length === 0 ? (
             <div className={emptyState}>沒有符合條件的場地。試試調整地區或容納人數。</div>
           ) : (
-            filtered.map((venue) => <VenueCard key={venue.id} venue={venue} />)
+            filtered.map((venue, index) => (
+              <VenueCard key={venue.id} venue={venue} listPosition={index + 1} userId={user?.uid} />
+            ))
           )}
         </section>
       </div>

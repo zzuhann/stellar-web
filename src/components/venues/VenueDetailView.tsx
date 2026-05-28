@@ -3,6 +3,13 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { css } from '@/styled-system/css';
+import { useAuth } from '@/lib/auth-context';
+import { usePageView } from '@/hooks/usePageView';
+import {
+  toVenueContentId,
+  trackClickVenueContact,
+  trackClickVenueMap,
+} from '@/lib/analytics/venues';
 import type { Venue, VenueDetail } from '@/types';
 import VenueGallery from './VenueGallery';
 import InfoRow from './InfoRow';
@@ -267,7 +274,10 @@ const starIconCls = css({
 
 const mapIconWrapper = css({
   color: 'gray.400',
-  flexShrink: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  verticalAlign: 'middle',
+  marginLeft: '1',
 });
 
 const infoRowsWrap = css({
@@ -277,9 +287,6 @@ const infoRowsWrap = css({
 const infoLink = css({
   color: 'inherit',
   textDecoration: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '1',
 });
 
 const bookingBtnWrap = css({
@@ -399,10 +406,28 @@ interface VenueDetailViewProps {
 
 export default function VenueDetailView({ venue, relatedVenues }: VenueDetailViewProps) {
   const router = useRouter();
+  const { user } = useAuth();
   const photos = [venue.coverPhoto, ...(venue.otherPhotos ?? [])].filter(Boolean) as string[];
   const socialLink = buildSocialLink(venue);
   const bookingChannel = buildBookingChannel(venue);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${venue.lat},${venue.lng}&query_place_id=${venue.placeId}`;
+
+  usePageView({ eventPage: '/venues/[id]', contentId: toVenueContentId(venue.id) });
+
+  const handleClickMap = () => {
+    trackClickVenueMap({
+      userId: user?.uid,
+      venueId: venue.id,
+    });
+  };
+
+  const handleClickContact = () => {
+    trackClickVenueContact({
+      userId: user?.uid,
+      venueId: venue.id,
+      contactType: venue.preferredContact ?? 'other',
+    });
+  };
 
   return (
     <div className={pageOuter}>
@@ -476,7 +501,13 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
               icon={<PinIcon />}
               label="地址"
               value={
-                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className={infoLink}>
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={infoLink}
+                  onClick={handleClickMap}
+                >
                   {venue.address}
                   <span className={mapIconWrapper}>
                     <MapExternalIcon />
@@ -544,6 +575,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
                 target="_blank"
                 rel="noopener noreferrer"
                 className={primaryBtn}
+                onClick={handleClickContact}
               >
                 {bookingChannel.label}
                 <span className="sr-only">（開新分頁）</span>
