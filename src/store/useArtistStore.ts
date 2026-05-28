@@ -6,10 +6,8 @@ import { Artist } from '@/types';
 import { artistsApi, handleApiError } from '@/lib/api';
 
 interface ArtistState {
-  // 狀態 - 移除 artists 和 loading，因為這些現在由 React Query 管理
   error: string | null;
 
-  // 動作
   createArtist: (
     artist: Omit<
       Artist,
