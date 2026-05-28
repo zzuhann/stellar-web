@@ -71,7 +71,7 @@ const fadeOverlay = cva({
 const progressTrack = css({
   height: '3px',
   borderRadius: '2px',
-  background: 'gray.100',
+  background: 'color.background.secondary',
   overflow: 'hidden',
   marginY: '4',
 });
