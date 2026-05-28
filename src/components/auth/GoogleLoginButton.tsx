@@ -67,7 +67,7 @@ const GoogleLoginButton = ({ onSuccess }: GoogleLoginButtonProps) => {
       }
 
       if (error) {
-        showToast.error('Google 登入失敗');
+        showToast.error(error);
       } else if (user) {
         await fetchUserDataByUid(user.uid);
         sendGAEvent('event', 'login', {
