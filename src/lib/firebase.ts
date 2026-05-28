@@ -2,6 +2,7 @@
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
+  getAuth,
   initializeAuth,
   indexedDBLocalPersistence,
   browserLocalPersistence,
@@ -22,12 +23,16 @@ const firebaseConfig = {
 // 初始化 Firebase App
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// 為了穩定支援 mobile redirect sign-in，初始化時需提供 popupRedirectResolver。
-// 另外保留 local persistence 作為 IndexedDB 不可用時的 fallback。
-export const auth = initializeAuth(app, {
-  persistence: [indexedDBLocalPersistence, browserLocalPersistence],
-  popupRedirectResolver: browserPopupRedirectResolver,
-});
+const isBrowser = typeof window !== 'undefined';
+
+// SSR 環境不能初始化 browser-only auth 依賴，否則會觸發 Firebase internal assertion。
+// 瀏覽器端才使用 redirect/popup 所需 resolver 與 persistence 設定。
+export const auth = isBrowser
+  ? initializeAuth(app, {
+      persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+      popupRedirectResolver: browserPopupRedirectResolver,
+    })
+  : getAuth(app);
 
 // 初始化 Firestore
 export const db = getFirestore(app);
