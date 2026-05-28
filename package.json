@@ -22,7 +22,7 @@
     "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^5.4.0",
     "@microsoft/clarity": "^1.0.2",
-    "@next/third-parties": "16.2.4",
+    "@next/third-parties": "16.2.6",
     "@react-leaflet/core": "^3.0.0",
     "@sentry/nextjs": "^10.55.0",
     "@tanstack/react-query": "^5.100.14",
@@ -30,9 +30,9 @@
     "axios": "^1.16.1",
     "firebase": "^12.13.0",
     "leaflet": "^1.9.4",
-    "next": "16.2.4",
-    "react": "19.2.5",
-    "react-dom": "19.2.5",
+    "next": "16.2.6",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
     "react-hook-form": "^7.76.1",
     "react-leaflet": "^5.0.0",
     "react-leaflet-cluster": "^4.1.3",
@@ -42,25 +42,25 @@
     "web-vitals": "^5.2.0",
     "yet-another-react-lightbox": "^3.32.0",
     "zod": "^4.4.3",
-    "zustand": "^5.0.12"
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
-    "@next/eslint-plugin-next": "^16.2.4",
+    "@next/eslint-plugin-next": "^16.2.6",
     "@pandacss/dev": "^1.11.1",
     "@playwright/test": "^1.60.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^24.12.2",
-    "@types/react": "19.2.14",
+    "@types/react": "19.2.15",
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.60.0",
     "@typescript-eslint/parser": "^8.60.0",
-    "@vitejs/plugin-react": "^6.0.1",
+    "@vitejs/plugin-react": "^6.0.2",
     "autoprefixer": "^10.5.0",
     "eslint": "^9.39.4",
-    "eslint-config-next": "16.2.4",
+    "eslint-config-next": "16.2.6",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
@@ -68,11 +68,11 @@
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "lint-staged": "^16.4.0",
-    "postcss": "^8.5.10",
+    "postcss": "^8.5.15",
     "prettier": "^3.8.3",
     "typescript": "^5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.7"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx}": [
@@ -89,7 +89,7 @@
     ]
   },
   "overrides": {
-    "@types/react": "19.2.14",
+    "@types/react": "19.2.15",
     "@types/react-dom": "19.2.3"
   }
 }
