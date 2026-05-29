@@ -137,7 +137,7 @@ const input = css({
 
 const inputError = css({
   borderColor: 'red.600',
-  '&:focus': {
+  '&:focus-visible': {
     borderColor: 'red.600',
   },
 });
@@ -317,6 +317,7 @@ export default function DisplayNamePage() {
                   type="text"
                   placeholder="請輸入名稱"
                   className={`${input} ${errors.displayName ? inputError : ''}`}
+                  autoComplete="name"
                   disabled={updateProfileMutation.isPending}
                   aria-invalid={!!errors.displayName}
                   aria-describedby={errors.displayName ? 'displayName-error' : undefined}
