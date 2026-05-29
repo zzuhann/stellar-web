@@ -11,8 +11,6 @@ import useTabState from './hook/useTabState';
 import useWeeklyEvents from './hook/useWeeklyEvents';
 import useBirthdayArtists from './hook/useBirthdayArtists';
 import { css } from '@/styled-system/css';
-import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
-// import EventCardCarousel from '../EventCardCarousel';
 import TrendingEventsSection from '@/components/HomePage/components/TrendingEventsSection';
 import TopArtistsSection from '@/components/HomePage/components/TopArtistsSection';
 import { usePageView } from '@/hooks/usePageView';
@@ -91,7 +89,7 @@ function HomePageContent() {
     <main className={pageContainer} id="main-content">
       <div className={mainContainer}>
         <section className={contentWrapper} aria-label="首頁">
-          <IOSInstallBanner />
+          {/* <IOSInstallBanner /> */}
 
           {/* 熱門生咖、生日應援 */}
           <TrendingEventsSection />

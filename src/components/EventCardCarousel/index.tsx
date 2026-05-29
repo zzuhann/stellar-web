@@ -93,6 +93,7 @@ export default function EventCardCarousel({
         modules={[Pagination]}
         pagination={{
           clickable: true,
+          dynamicBullets: true,
         }}
         spaceBetween={6}
         slidesPerView={1.3}

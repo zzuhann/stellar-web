@@ -13,7 +13,7 @@ const verticalEventCardContainer = css({
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
   overflow: 'hidden',
-  transition: 'all 0.2s ease',
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
   boxShadow: 'shadow.sm',
   position: 'relative',
   '&:hover': {
@@ -25,6 +25,7 @@ const verticalEventCardContainer = css({
 const eventImageStyle = css({
   width: '100%',
   aspectRatio: '3/4',
+  maxHeight: '420px',
   backgroundColor: 'color.background.secondary',
   position: 'relative',
 });
@@ -37,7 +38,7 @@ const imageOverlay = cva({
     top: 0,
     bottom: 0,
     background:
-      'linear-gradient(to top, var(--colors-alpha-black-30) 0%, var(--colors-alpha-black-20) 50%, var(--colors-alpha-black-10) 100%)',
+      'linear-gradient(to top, rgba(0,0,0,0.75) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.05) 100%)',
     padding: '4',
     color: 'white',
     display: 'flex',

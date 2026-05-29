@@ -61,6 +61,12 @@ const addButtonItem = css({
   flexShrink: 0,
   width: '72px',
   cursor: 'pointer',
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+    borderRadius: 'radius.md',
+  },
 });
 
 const addButtonWrapper = css({
@@ -79,7 +85,7 @@ const addButtonCircle = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease, background-color 0.2s ease',
   '&:hover': {
     borderColor: 'color.primary',
     backgroundColor: 'stellarBlue.50',
