@@ -136,15 +136,12 @@ const statusBadge = cva({
   },
 });
 
-const getStatusText = (
-  status: 'pending' | 'approved' | 'rejected' | 'exists',
-  rejectedReason?: string
-) => {
+const getStatusText = (status: 'pending' | 'approved' | 'rejected' | 'exists') => {
   switch (status) {
     case 'approved':
       return '已通過';
     case 'rejected':
-      return `未通過：${rejectedReason}`;
+      return '未通過';
     case 'exists':
       return '已存在';
     case 'pending':
@@ -189,7 +186,7 @@ const VerticalArtistCard = ({
             className={statusBadge({ status: artist.status })}
             aria-label={`${artist.stageName} 的審核狀態`}
           >
-            {getStatusText(artist.status, artist.rejectedReason)}
+            {getStatusText(artist.status)}
           </span>
         )}
 

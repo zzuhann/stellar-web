@@ -17,6 +17,7 @@ export const actionButtonsContainer = css({
 export const actionButtons = css({
   display: 'flex',
   gap: '1.5',
+  flexWrap: 'wrap',
 });
 
 export const actionButton = cva({

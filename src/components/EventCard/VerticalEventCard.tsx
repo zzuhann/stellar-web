@@ -184,12 +184,12 @@ const statusBadge = cva({
   },
 });
 
-const getStatusText = (status: 'pending' | 'approved' | 'rejected', rejectedReason?: string) => {
+const getStatusText = (status: 'pending' | 'approved' | 'rejected') => {
   switch (status) {
     case 'approved':
       return '已通過';
     case 'rejected':
-      return `未通過：${rejectedReason}`;
+      return '未通過';
     case 'pending':
     default:
       return '審核中';
@@ -228,7 +228,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
               )}
               {isShowSubmissionInfo && (
                 <span className={statusBadge({ status: event.status })}>
-                  {getStatusText(event.status, event.rejectedReason)}
+                  {getStatusText(event.status)}
                 </span>
               )}
 
@@ -309,7 +309,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
             )}
             {isShowSubmissionInfo && (
               <span className={statusBadge({ status: event.status })}>
-                {getStatusText(event.status, event.rejectedReason)}
+                {getStatusText(event.status)}
               </span>
             )}
 

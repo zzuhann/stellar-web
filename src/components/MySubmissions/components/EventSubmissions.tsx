@@ -1,5 +1,5 @@
 import CardHeader from './CardHeader';
-import { actionButton, actionButtons, actionButtonsContainer, contentCard } from './styles';
+import { actionButton, actionButtons, contentCard } from './styles';
 import EmptyState from './EmptyState';
 import { css } from '@/styled-system/css';
 import { useRouter } from 'next/navigation';
@@ -119,7 +119,11 @@ const EventSubmissions = ({
           title="還沒有舉辦過生日應援"
           description="如果你是主辦，可以點擊投稿生日應援 ✨"
           cta={
-            <button className={ctaButton} onClick={() => router.push('/submit-event')}>
+            <button
+              type="button"
+              className={ctaButton}
+              onClick={() => router.push('/submit-event')}
+            >
               前往投稿
             </button>
           }
@@ -136,48 +140,44 @@ const EventSubmissions = ({
                 <VerticalEventCard
                   event={event}
                   actionButtons={
-                    <div className={actionButtonsContainer}>
-                      <div className={actionButtons}>
-                        <button
-                          type="button"
-                          className={actionButton({ variant: 'edit' })}
-                          onClick={(e) => handlePreviewEvent(e, event)}
-                          title="預覽"
-                        >
-                          <EyeIcon width={12} height={12} aria-hidden="true" />
-                          預覽
-                        </button>
-                        <button
-                          type="button"
-                          className={actionButton({ variant: 'edit' })}
-                          onClick={(e) => handleEditEvent(e, event)}
-                          title="編輯"
-                        >
-                          <PencilIcon width={12} height={12} aria-hidden="true" />
-                          編輯
-                        </button>
-                      </div>
-                      <div className={actionButtons}>
-                        <button
-                          type="button"
-                          className={actionButton({ variant: 'edit' })}
-                          onClick={(e) => handleCopyEvent(e, event)}
-                          title="複製"
-                        >
-                          <DocumentDuplicateIcon width={12} height={12} aria-hidden="true" />
-                          複製
-                        </button>
-                        <button
-                          type="button"
-                          className={actionButton()}
-                          onClick={(e) => handleDeleteEvent(e, event)}
-                          disabled={deleteEventMutation.isPending}
-                          title="刪除"
-                        >
-                          <TrashIcon width={12} height={12} aria-hidden="true" />
-                          {deleteEventMutation.isPending ? '刪除中...' : '刪除'}
-                        </button>
-                      </div>
+                    <div className={actionButtons}>
+                      <button
+                        type="button"
+                        className={actionButton({ variant: 'edit' })}
+                        onClick={(e) => handlePreviewEvent(e, event)}
+                        title="預覽"
+                      >
+                        <EyeIcon width={12} height={12} aria-hidden="true" />
+                        預覽
+                      </button>
+                      <button
+                        type="button"
+                        className={actionButton({ variant: 'edit' })}
+                        onClick={(e) => handleEditEvent(e, event)}
+                        title="編輯"
+                      >
+                        <PencilIcon width={12} height={12} aria-hidden="true" />
+                        編輯
+                      </button>
+                      <button
+                        type="button"
+                        className={actionButton({ variant: 'edit' })}
+                        onClick={(e) => handleCopyEvent(e, event)}
+                        title="複製"
+                      >
+                        <DocumentDuplicateIcon width={12} height={12} aria-hidden="true" />
+                        複製
+                      </button>
+                      <button
+                        type="button"
+                        className={actionButton()}
+                        onClick={(e) => handleDeleteEvent(e, event)}
+                        disabled={deleteEventMutation.isPending}
+                        title="刪除"
+                      >
+                        <TrashIcon width={12} height={12} aria-hidden="true" />
+                        {deleteEventMutation.isPending ? '刪除中…' : '刪除'}
+                      </button>
                     </div>
                   }
                 />

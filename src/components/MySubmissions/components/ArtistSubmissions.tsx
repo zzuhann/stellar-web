@@ -25,8 +25,13 @@ const artistInfo = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '2',
-  height: '60px',
-  justifyContent: 'center',
+});
+
+const rejectionReasonText = css({
+  textStyle: 'caption',
+  color: 'red.700',
+  margin: '0',
+  wordBreak: 'break-word',
 });
 
 type ArtistSubmissionsProps = {
@@ -75,23 +80,32 @@ const ArtistSubmissions = ({
                 submissionTime={
                   artist.createdAt
                     ? firebaseTimestampToDate(artist.createdAt as FirebaseTimestamp).toLocaleString(
-                        'zh-TW'
+                        'zh-TW',
+                        {
+                          year: 'numeric',
+                          month: 'numeric',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }
                       )
                     : undefined
                 }
                 actionButtons={
                   artist.status === 'rejected' ? (
                     <div className={artistInfo}>
+                      {artist.rejectedReason && (
+                        <p className={rejectionReasonText}>未通過原因：{artist.rejectedReason}</p>
+                      )}
                       <div className={actionButtons}>
-                        {artist.status === 'rejected' && (
-                          <button
-                            className={actionButton({ variant: 'edit' })}
-                            onClick={(e) => handleEditArtist(e, artist)}
-                            title="編輯並重新送審"
-                          >
-                            編輯並重新送審
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          className={actionButton({ variant: 'edit' })}
+                          onClick={(e) => handleEditArtist(e, artist)}
+                          title="編輯並重新送審"
+                        >
+                          編輯並重新送審
+                        </button>
                       </div>
                     </div>
                   ) : undefined
