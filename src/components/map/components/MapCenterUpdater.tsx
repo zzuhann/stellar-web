@@ -18,9 +18,10 @@ const MapCenterUpdater = () => {
   useEffect(() => {
     if (map && center && isMountedRef.current) {
       try {
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         map.setView([center.lat, center.lng], center.zoom, {
-          animate: true,
-          duration: 0.5,
+          animate: !prefersReducedMotion,
+          duration: prefersReducedMotion ? 0 : 0.5,
         });
       } catch {
         // 忽略地圖操作錯誤
