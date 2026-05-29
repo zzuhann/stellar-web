@@ -49,7 +49,7 @@ const artistOption = css({
   background: 'white',
   cursor: 'pointer',
   marginBottom: '2',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
 
   '&:hover': {
     background: 'color.background.secondary',
@@ -58,6 +58,12 @@ const artistOption = css({
 
   '&:last-child': {
     marginBottom: '0',
+  },
+
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 
@@ -71,10 +77,16 @@ const cancelButton = css({
   color: 'color.text.secondary',
   cursor: 'pointer',
   marginTop: '4',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease',
 
   '&:hover': {
     background: 'color.background.secondary',
+  },
+
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 

@@ -48,6 +48,11 @@ const actionButton = css({
     cursor: 'not-allowed',
     opacity: '0.6',
   },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '-2px',
+  },
 });
 
 const actionLabel = css({
