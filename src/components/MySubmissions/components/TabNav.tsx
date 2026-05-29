@@ -59,20 +59,26 @@ type TabNavProps = {
 const TabNav = ({ activeTab, handleTabChange }: TabNavProps) => {
   return (
     <div className={tabContainer}>
-      <nav className={tabNav}>
+      <div role="tablist" className={tabNav}>
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'event'}
           className={tabButton({ active: activeTab === 'event' })}
           onClick={() => handleTabChange('event')}
         >
           生日應援投稿
         </button>
         <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'artist'}
           className={tabButton({ active: activeTab === 'artist' })}
           onClick={() => handleTabChange('artist')}
         >
           藝人投稿
         </button>
-      </nav>
+      </div>
     </div>
   );
 };

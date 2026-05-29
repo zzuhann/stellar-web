@@ -104,14 +104,6 @@ const EventSubmissions = ({
     setPreviewingEvent(event);
   };
 
-  const handleCardKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, event: CoffeeEvent) => {
-    if (event.status === 'approved') return;
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      setPreviewingEvent(event);
-    }
-  };
-
   return (
     <div className={contentCard}>
       <CardHeader
@@ -140,10 +132,6 @@ const EventSubmissions = ({
                 key={event.id}
                 className={event.status !== 'approved' ? previewableCard : undefined}
                 onClick={() => handleCardPreview(event)}
-                onKeyDown={(e) => handleCardKeyDown(e, event)}
-                role={event.status !== 'approved' ? 'button' : undefined}
-                tabIndex={event.status !== 'approved' ? 0 : undefined}
-                aria-label={event.status !== 'approved' ? `預覽 ${event.title}` : undefined}
               >
                 <VerticalEventCard
                   event={event}
