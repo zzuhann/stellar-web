@@ -136,6 +136,17 @@ const EventSubmissions = ({
                 key={event.id}
                 className={event.status !== 'approved' ? previewableCard : undefined}
                 onClick={() => handleCardPreview(event)}
+                {...(event.status !== 'approved' && {
+                  role: 'button',
+                  tabIndex: 0,
+                  'aria-label': `預覽 ${event.title}`,
+                  onKeyDown: (e: React.KeyboardEvent) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleCardPreview(event);
+                    }
+                  },
+                })}
               >
                 <VerticalEventCard
                   event={event}
