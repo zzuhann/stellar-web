@@ -19,6 +19,7 @@ const drawerContent = css({
 const eventList = css({
   flex: '1',
   overflowY: 'auto',
+  overscrollBehavior: 'contain',
   padding: '4',
   display: 'flex',
   flexDirection: 'column',
