@@ -16,7 +16,7 @@ const artistSelectionButton = css({
   background: 'color.background.primary',
   color: 'color.text.primary',
   textStyle: 'bodySmall',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
@@ -79,7 +79,7 @@ const removeButtonStyle = css({
   alignItems: 'center',
   justifyContent: 'center',
   color: 'color.text.secondary',
-  transition: 'all 0.2s ease',
+  transition: 'color 0.2s ease, background 0.2s ease',
   '&:hover': {
     color: 'color.text.primary',
     background: 'color.background.secondary',

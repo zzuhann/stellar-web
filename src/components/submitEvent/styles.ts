@@ -30,11 +30,11 @@ export const input = css({
   background: 'color.background.primary',
   color: 'color.text.primary',
   textStyle: 'body',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
   '&::placeholder': {
     color: 'color.text.disabled',
   },
-  '&:focus': {
+  '&:focus-visible': {
     outline: 'none',
     borderColor: 'color.primary',
     boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',

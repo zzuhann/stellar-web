@@ -23,7 +23,7 @@ const step = cva({
       justifyContent: 'center',
       textStyle: 'bodySmall',
       fontWeight: 'semibold',
-      transition: 'all 0.2s ease',
+      transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
     },
     '& .step-title': {
       textStyle: 'bodySmall',
@@ -90,7 +90,7 @@ const stepConnector = cva({
   base: {
     width: '40px',
     height: '2px',
-    transition: 'all 0.2s ease',
+    transition: 'background 0.2s ease',
   },
   variants: {
     completed: {

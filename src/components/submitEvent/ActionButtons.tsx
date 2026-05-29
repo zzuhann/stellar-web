@@ -23,7 +23,7 @@ const button = cva({
     borderRadius: 'radius.lg',
     textStyle: 'body',
     fontWeight: 'semibold',
-    transition: 'all 0.2s ease',
+    transition: 'background 0.2s ease, border-color 0.2s ease, opacity 0.2s ease',
     cursor: 'pointer',
     border: '1px solid',
     display: 'flex',
@@ -35,6 +35,11 @@ const button = cva({
       cursor: 'not-allowed',
       transform: 'none',
       boxShadow: 'none',
+    },
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '2px',
     },
   },
   variants: {
