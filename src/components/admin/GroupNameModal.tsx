@@ -59,7 +59,7 @@ const input = css({
   background: 'color.background.primary',
   color: 'color.text.primary',
   fontSize: '14px',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
   '&::placeholder': {
     color: 'color.text.secondary',
   },
@@ -91,9 +91,14 @@ const button = cva({
     borderRadius: 'radius.lg',
     fontSize: '14px',
     fontWeight: '600',
-    transition: 'all 0.2s ease',
+    transition: 'background 0.2s ease, border-color 0.2s ease',
     cursor: 'pointer',
     border: '1px solid',
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '2px',
+    },
   },
   variants: {
     variant: {
@@ -140,7 +145,7 @@ const removeButton = css({
   borderRadius: 'radius.md',
   color: 'red.600',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, color 0.2s ease',
   border: '1px solid',
   borderColor: 'color.status.error',
   background: 'transparent',
@@ -151,6 +156,11 @@ const removeButton = css({
   '& svg': {
     width: '16px',
     height: '16px',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 
@@ -163,7 +173,7 @@ const addButton = css({
   borderRadius: 'radius.md',
   fontSize: '14px',
   fontWeight: '500',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
   borderColor: 'color.border.light',
@@ -176,6 +186,11 @@ const addButton = css({
   '& svg': {
     width: '16px',
     height: '16px',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 
@@ -276,7 +291,7 @@ export default function GroupNameModal({
                 onClick={addGroupName}
                 disabled={isLoading}
               >
-                <PlusIcon />
+                <PlusIcon aria-hidden="true" />
                 新增團名
               </button>
             )}
@@ -295,8 +310,9 @@ export default function GroupNameModal({
                   className={removeButton}
                   onClick={() => removeGroupName(index)}
                   disabled={isLoading}
+                  aria-label={`移除第 ${index + 1} 個團名`}
                 >
-                  <XMarkIcon />
+                  <XMarkIcon aria-hidden="true" />
                 </button>
               </div>
             ))}
