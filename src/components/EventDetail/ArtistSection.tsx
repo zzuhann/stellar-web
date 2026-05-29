@@ -19,6 +19,12 @@ const artistItem = css({
   alignItems: 'center',
   gap: '1.5',
   cursor: 'pointer',
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+    borderRadius: 'radius.sm',
+  },
 });
 
 const artistAvatar = css({
