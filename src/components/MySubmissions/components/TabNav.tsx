@@ -21,10 +21,15 @@ const tabButton = cva({
     borderRadius: 'radius.md',
     textStyle: 'bodySmall',
     fontWeight: 'semibold',
-    transition: 'all 0.2s ease',
+    transition: 'background 0.2s ease, color 0.2s ease',
     cursor: 'pointer',
     border: 'none',
     position: 'relative',
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '2px',
+    },
   },
   variants: {
     active: {

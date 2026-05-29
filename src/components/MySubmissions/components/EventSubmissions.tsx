@@ -19,7 +19,7 @@ const ctaButton = css({
   borderRadius: 'radius.lg',
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
   background: 'color.primary',
@@ -30,6 +30,11 @@ const ctaButton = css({
   '&:hover': {
     background: 'stellarBlue.600',
     borderColor: 'stellarBlue.600',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 
@@ -151,7 +156,7 @@ const EventSubmissions = ({
                           onClick={(e) => handlePreviewEvent(e, event)}
                           title="預覽"
                         >
-                          <EyeIcon width={12} height={12} />
+                          <EyeIcon width={12} height={12} aria-hidden="true" />
                           預覽
                         </button>
                         <button
@@ -160,7 +165,7 @@ const EventSubmissions = ({
                           onClick={(e) => handleEditEvent(e, event)}
                           title="編輯"
                         >
-                          <PencilIcon width={12} height={12} />
+                          <PencilIcon width={12} height={12} aria-hidden="true" />
                           編輯
                         </button>
                       </div>
@@ -171,7 +176,7 @@ const EventSubmissions = ({
                           onClick={(e) => handleCopyEvent(e, event)}
                           title="複製"
                         >
-                          <DocumentDuplicateIcon width={12} height={12} />
+                          <DocumentDuplicateIcon width={12} height={12} aria-hidden="true" />
                           複製
                         </button>
                         <button
@@ -181,7 +186,7 @@ const EventSubmissions = ({
                           disabled={deleteEventMutation.isPending}
                           title="刪除"
                         >
-                          <TrashIcon width={12} height={12} />
+                          <TrashIcon width={12} height={12} aria-hidden="true" />
                           {deleteEventMutation.isPending ? '刪除中...' : '刪除'}
                         </button>
                       </div>

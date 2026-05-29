@@ -29,7 +29,8 @@ export const actionButton = cva({
     borderRadius: 'radius.md',
     textStyle: 'caption',
     fontWeight: 'semibold',
-    transition: 'all 0.2s ease',
+    transition:
+      'background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
     cursor: 'pointer',
     border: '1px solid',
     background: 'red.50',
@@ -47,6 +48,11 @@ export const actionButton = cva({
       cursor: 'not-allowed',
       transform: 'none',
       boxShadow: 'none',
+    },
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '2px',
     },
   },
   variants: {
