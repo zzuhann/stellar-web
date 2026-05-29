@@ -308,21 +308,27 @@ export default function RejectModal({
           </div>
 
           <div className={formGroup}>
-            <label className={label}>
+            <label className={label} htmlFor="reject-reason">
               拒絕原因
               <span className={requiredIndicator}>*</span>
             </label>
             <textarea
+              id="reject-reason"
               className={textarea}
               value={reason}
               onChange={handleReasonChange}
               placeholder="請說明拒絕的原因，幫助投稿者了解如何改進..."
               disabled={loading}
+              aria-describedby={error ? 'reject-reason-error' : undefined}
             />
             <div className={characterCount({ isNearLimit })}>
               {reason.length}/{MAX_REASON_LENGTH}
             </div>
-            {error && <div className={errorText}>{error}</div>}
+            {error && (
+              <div id="reject-reason-error" className={errorText} role="alert">
+                {error}
+              </div>
+            )}
             {!error && (
               <div className={helperText}>
                 請清楚說明拒絕原因，幫助投稿者改進內容以符合平台規範。

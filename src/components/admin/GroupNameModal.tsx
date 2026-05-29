@@ -300,6 +300,7 @@ export default function GroupNameModal({
                 <input
                   type="text"
                   className={input}
+                  aria-label={`第 ${index + 1} 個團名`}
                   placeholder="例：BOYNEXTDOOR、SEVENTEEN、&TEAM"
                   value={groupName}
                   onChange={(e) => updateGroupName(index, e.target.value)}

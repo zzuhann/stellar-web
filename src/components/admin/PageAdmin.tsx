@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -756,11 +757,11 @@ export default function AdminPage() {
       <div className={mainContainer}>
         {/* Venue Link */}
         <div style={{ marginBottom: '12px' }}>
-          <button className={venueLink} onClick={() => router.push('/admin/venues')}>
+          <Link href="/admin/venues" className={venueLink}>
             <BuildingStorefrontIcon aria-hidden="true" />
             場地管理
             <ArrowRightIcon aria-hidden="true" />
-          </button>
+          </Link>
         </div>
 
         {/* Tabs */}
@@ -900,6 +901,7 @@ export default function AdminPage() {
                         actionButtons={
                           <div className={actionButtons}>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonPreview}`}
                               onClick={() => handleEditArtist(artist)}
                             >
@@ -907,6 +909,7 @@ export default function AdminPage() {
                               編輯
                             </button>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonApprove}`}
                               onClick={() => handleApproveArtist(artist)}
                               disabled={approveArtistMutation.isPending}
@@ -915,6 +918,7 @@ export default function AdminPage() {
                               通過
                             </button>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonExists}`}
                               onClick={() => handleExistsArtist(artist.id)}
                               disabled={markAsExistsMutation.isPending}
@@ -923,6 +927,7 @@ export default function AdminPage() {
                               已存在
                             </button>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonReject}`}
                               onClick={() => setRejectingArtist(artist)}
                               disabled={rejectArtistMutation.isPending}
@@ -1039,6 +1044,7 @@ export default function AdminPage() {
                         actionButtons={
                           <div className={actionButtons}>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonPreview}`}
                               onClick={() => handlePreviewEvent(event)}
                             >
@@ -1046,6 +1052,7 @@ export default function AdminPage() {
                               預覽
                             </button>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonApprove}`}
                               onClick={() => handleApproveEvent(event.id)}
                               disabled={approveEventMutation.isPending}
@@ -1054,6 +1061,7 @@ export default function AdminPage() {
                               通過
                             </button>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonReject}`}
                               onClick={() => setRejectingEvent(event)}
                               disabled={rejectEventMutation.isPending}
