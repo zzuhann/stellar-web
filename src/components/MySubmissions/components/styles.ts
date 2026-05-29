@@ -59,9 +59,9 @@ export const actionButton = cva({
   variants: {
     variant: {
       edit: {
-        background: 'gray.0',
-        borderColor: 'gray.200',
-        color: 'gray.700',
+        background: 'stellarBlue.50',
+        borderColor: 'stellarBlue.200',
+        color: 'stellarBlue.700',
       },
     },
   },
