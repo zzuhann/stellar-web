@@ -247,7 +247,7 @@ const venueListBtn = css({
   display: 'block',
   textDecoration: 'none',
   textAlign: 'center',
-  transition: 'all 0.15s ease',
+  transition: 'border-color 0.15s ease, color 0.15s ease',
   '&:hover': {
     borderColor: 'color.primary',
     color: 'color.primary',

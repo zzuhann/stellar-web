@@ -66,7 +66,7 @@ const backBtn = css({
   fontSize: '13px',
   fontWeight: 600,
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, color 0.2s ease',
   '&:hover': {
     background: 'gray.50',
     color: 'color.text.primary',
@@ -178,7 +178,7 @@ const searchInput = css({
   color: 'color.text.primary',
   background: 'white',
   outline: 'none',
-  '&:focus': {
+  '&:focus-visible': {
     borderColor: 'color.primary',
     boxShadow: '0 0 0 2px var(--colors-stellar-blue-100)',
   },
@@ -208,7 +208,7 @@ const dropdownButton = css({
   justifyContent: 'space-between',
   alignItems: 'center',
   gap: '2',
-  transition: 'all 0.2s',
+  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
   '&:hover': {
     borderColor: 'color.primary',
   },
@@ -290,7 +290,7 @@ const selectAllBtn = css({
   fontSize: '13px',
   fontWeight: 600,
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease, color 0.2s ease',
   '&:hover': {
     borderColor: 'color.primary',
     color: 'color.primary',
@@ -375,7 +375,7 @@ const actionBarBtn = css({
   fontSize: '13px',
   fontWeight: 600,
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease, color 0.2s ease',
   '&:disabled': {
     opacity: 0.4,
     cursor: 'not-allowed',
@@ -450,7 +450,7 @@ const headerSecondaryBtn = css({
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, color 0.2s ease',
   '&:hover': {
     background: 'gray.50',
     color: 'color.text.primary',
@@ -468,7 +468,7 @@ const headerPrimaryBtn = css({
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
   '&:hover': {
     background: 'stellarBlue.600',
     borderColor: 'stellarBlue.600',

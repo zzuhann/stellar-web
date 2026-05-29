@@ -19,7 +19,7 @@ const uploadArea = cva({
     border: '2px dashed',
     borderRadius: 'radius.lg',
     padding: '6',
-    transition: 'all 0.2s ease',
+    transition: 'border-color 0.2s ease, background 0.2s ease',
     borderColor: 'color.border.light',
     background: 'color.background.primary',
 
@@ -105,7 +105,7 @@ const actionButton = cva({
   base: {
     padding: '1',
     borderRadius: 'radius.circle',
-    transition: 'all 0.2s ease',
+    transition: 'background 0.2s ease',
     border: 'none',
     cursor: 'pointer',
     display: 'flex',

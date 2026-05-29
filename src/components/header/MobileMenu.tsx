@@ -61,7 +61,7 @@ const closeButton = css({
   cursor: 'pointer',
   padding: '1',
   borderRadius: 'radius.sm',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease',
   '&:hover': {
     background: 'color.background.secondary',
   },
@@ -86,7 +86,7 @@ const mobileMenuButton = css({
   color: 'color.text.primary',
   cursor: 'pointer',
   borderRadius: 'radius.md',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, color 0.2s ease',
   display: 'flex',
   alignItems: 'center',
   gap: '3',
@@ -114,8 +114,10 @@ const mobileMenuOverlay = cva({
     right: '0',
     bottom: '0',
     background: 'alpha.black.50',
+    border: 'none',
+    cursor: 'default',
     zIndex: '100',
-    transition: 'all 0.3s ease',
+    transition: 'opacity 0.3s ease, visibility 0.3s ease',
     '@media (max-width: 768px)': {
       display: 'block',
     },
@@ -149,18 +151,12 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
 
   return (
     <>
-      <div
+      <button
+        type="button"
         className={mobileMenuOverlay({ isOpen })}
         onClick={closeMobileMenu}
         aria-label="點擊關閉選單"
-        role="button"
         tabIndex={isOpen ? 0 : -1}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            closeMobileMenu();
-          }
-        }}
       />
       <nav
         ref={focusTrapRef}

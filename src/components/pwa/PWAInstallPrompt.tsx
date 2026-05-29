@@ -268,7 +268,7 @@ export default function PWAInstallPrompt() {
               paddingX: '6',
               textStyle: 'bodyStrong',
               cursor: 'pointer',
-              transition: 'all 0.2s ease',
+              transition: 'opacity 0.2s ease',
               width: '100%',
               '&:hover': {
                 opacity: 0.9,
@@ -374,7 +374,7 @@ export default function PWAInstallPrompt() {
             paddingX: '6',
             textStyle: 'bodyStrong',
             cursor: 'pointer',
-            transition: 'all 0.2s ease',
+            transition: 'opacity 0.2s ease',
             width: '100%',
             '&:hover': {
               opacity: 0.9,

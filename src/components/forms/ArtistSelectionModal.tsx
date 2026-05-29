@@ -59,7 +59,7 @@ const modalContent = cva({
       marginY: '4',
       minHeight: '60vh',
       maxHeight: '80vh',
-      transition: 'all 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+      transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
     },
   },
   variants: {
@@ -156,7 +156,7 @@ const ctaButton = css({
   borderRadius: 'radius.lg',
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
   background: 'color.primary',
@@ -176,7 +176,7 @@ const closeButton = css({
   borderRadius: 'radius.md',
   color: 'color.text.secondary',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, color 0.2s ease',
   flexShrink: 0,
   '&:hover': {
     background: 'color.background.secondary',

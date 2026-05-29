@@ -160,7 +160,7 @@ const actionBtn = css({
   fontWeight: 600,
   cursor: 'pointer',
   border: '1px solid',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
   '&:disabled': {
     opacity: 0.5,
     cursor: 'not-allowed',
@@ -201,10 +201,7 @@ const activateBtn = css({
   },
 });
 
-const STATUS_BADGE_MAP: Record<
-  Venue['status'],
-  { badgeClass: string; label: string }
-> = {
+const STATUS_BADGE_MAP: Record<Venue['status'], { badgeClass: string; label: string }> = {
   active: { badgeClass: activeBadge, label: '開放中' },
   inactive: { badgeClass: inactiveBadge, label: '已下架' },
   pending: { badgeClass: pendingBadge, label: '待審核' },
@@ -310,8 +307,8 @@ export default function VenueCard({
           編輯
         </button>
         {/* Only show activate/deactivate for active/inactive venues; pending/rejected handled via batch */}
-        {(venue.status === 'active' || venue.status === 'inactive') && (
-          isInactive ? (
+        {(venue.status === 'active' || venue.status === 'inactive') &&
+          (isInactive ? (
             <button
               className={`${actionBtn} ${activateBtn}`}
               onClick={(e) => {
@@ -335,8 +332,7 @@ export default function VenueCard({
               <TrashIcon />
               下架
             </button>
-          )
-        )}
+          ))}
       </div>
     </div>
   );

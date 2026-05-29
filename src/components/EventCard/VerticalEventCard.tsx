@@ -15,7 +15,7 @@ const verticalEventCardContainer = css({
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
   overflow: 'hidden',
-  transition: 'all 0.2s ease',
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
   boxShadow: 'shadow.sm',
   position: 'relative',
   '&:hover': {

@@ -16,7 +16,7 @@ const navigationButton = css({
   height: '32px',
   color: 'color.text.primary',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
   '&:hover': {
     background: 'color.background.secondary',
     borderColor: 'color.border.medium',
@@ -35,7 +35,7 @@ const monthYearDisplay = css({
   paddingY: '1',
   paddingX: '2',
   borderRadius: 'radius.md',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease',
   '&:hover': {
     background: 'color.background.secondary',
   },

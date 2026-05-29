@@ -14,7 +14,7 @@ const artistCardContainer = css({
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
-  transition: 'all 0.2s ease',
+  transition: 'box-shadow 0.2s ease',
   boxShadow: 'shadow.sm',
 });
 

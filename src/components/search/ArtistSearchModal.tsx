@@ -59,7 +59,7 @@ const modalContent = cva({
       margin: '0 16px',
       minHeight: '60vh',
       maxHeight: '80vh',
-      transition: 'all 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+      transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
     },
   },
   variants: {
@@ -104,7 +104,7 @@ const closeButton = css({
   borderRadius: 'radius.md',
   color: 'color.text.secondary',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, color 0.2s ease',
   flexShrink: 0,
   '&:hover': {
     background: 'color.background.secondary',

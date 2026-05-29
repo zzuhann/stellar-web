@@ -39,7 +39,7 @@ const dropdownButton = css({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  transition: 'all 0.2s',
+  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
   '&:hover': {
     borderColor: 'color.primary',
   },

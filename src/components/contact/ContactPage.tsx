@@ -106,9 +106,9 @@ const inputStyle = css({
   background: 'color.background.primary',
   color: 'color.text.primary',
   textStyle: 'body',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
   '&::placeholder': { color: 'color.text.disabled' },
-  '&:focus': {
+  '&:focus-visible': {
     outline: 'none',
     borderColor: 'color.primary',
     boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
@@ -128,11 +128,11 @@ const textareaStyle = css({
   background: 'color.background.primary',
   color: 'color.text.primary',
   textStyle: 'body',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
   resize: 'vertical',
   minHeight: '140px',
   '&::placeholder': { color: 'color.text.disabled' },
-  '&:focus': {
+  '&:focus-visible': {
     outline: 'none',
     borderColor: 'color.primary',
     boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
@@ -165,7 +165,7 @@ const submitButton = css({
   color: 'white',
   border: 'none',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease',
   _hover: { background: 'color.primaryHover' },
   '&:disabled': { background: 'color.text.disabled', cursor: 'not-allowed' },
 });

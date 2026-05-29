@@ -35,7 +35,7 @@ const dateInput = cva({
     background: 'color.background.primary',
     color: 'color.text.primary',
     textStyle: 'bodySmall',
-    transition: 'all 0.2s ease',
+    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',

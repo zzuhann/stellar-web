@@ -43,7 +43,7 @@ const deactivateBtn = css({
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
   '&:hover:not(:disabled)': {
     background: 'red.50',
     borderColor: 'red.400',
@@ -118,7 +118,7 @@ const confirmBtn = css({
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
   '&:hover:not(:disabled)': {
     background: 'red.600',
     borderColor: 'red.600',
