@@ -119,21 +119,11 @@ const ChooseArtistSection = ({
         {/* 已選擇的藝人按鈕 */}
         {selectedArtists.map((artist) => (
           <div key={artist.id} role="listitem">
-            <div
+            <button
+              type="button"
               className={artistSelectionButton}
-              role="button"
               tabIndex={mode === 'edit' ? -1 : 0}
               onClick={mode === 'edit' ? undefined : openArtistSelectionModal}
-              onKeyDown={
-                mode === 'edit'
-                  ? undefined
-                  : (e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        openArtistSelectionModal();
-                      }
-                    }
-              }
               aria-label={
                 mode === 'edit'
                   ? `已選擇 ${artist.stageName}，編輯模式下無法修改`
@@ -178,7 +168,7 @@ const ChooseArtistSection = ({
                   </button>
                 )}
               </div>
-            </div>
+            </button>
           </div>
         ))}
 

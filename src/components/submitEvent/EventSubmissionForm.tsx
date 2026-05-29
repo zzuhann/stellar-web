@@ -586,6 +586,8 @@ function EventSubmissionForm({
             <input
               className={emailInput}
               type="email"
+              name="email"
+              autoComplete="email"
               placeholder="example@email.com"
               value={submitterEmail}
               onChange={(e) => {
