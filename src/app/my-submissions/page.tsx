@@ -13,7 +13,7 @@ const pageContainer = css({
 });
 
 const mainContainer = css({
-  maxWidth: '600px',
+  maxWidth: '480px',
   margin: '0 auto',
   paddingTop: '25',
   paddingX: '4',

@@ -10,7 +10,7 @@ import {
   UserSubmissionResourceSummary,
   UserSubmissionsPagination,
 } from '@/types';
-import { actionButton, actionButtons, contentCard } from './styles';
+import { actionButton, contentCard } from './styles';
 import SubmissionsPagination from './SubmissionsPagination';
 
 const artistGrid = css({
@@ -97,16 +97,15 @@ const ArtistSubmissions = ({
                       {artist.rejectedReason && (
                         <p className={rejectionReasonText}>未通過原因：{artist.rejectedReason}</p>
                       )}
-                      <div className={actionButtons}>
-                        <button
-                          type="button"
-                          className={actionButton({ variant: 'edit' })}
-                          onClick={(e) => handleEditArtist(e, artist)}
-                          title="編輯並重新送審"
-                        >
-                          編輯並重新送審
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        className={actionButton({ variant: 'edit' })}
+                        onClick={(e) => handleEditArtist(e, artist)}
+                        title="編輯並重新送審"
+                        style={{ width: '100%' }}
+                      >
+                        編輯並重新送審
+                      </button>
                     </div>
                   ) : undefined
                 }

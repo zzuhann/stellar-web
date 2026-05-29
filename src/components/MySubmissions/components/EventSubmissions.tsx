@@ -147,7 +147,7 @@ const EventSubmissions = ({
                         onClick={(e) => handlePreviewEvent(e, event)}
                         title="預覽"
                       >
-                        <EyeIcon width={12} height={12} aria-hidden="true" />
+                        <EyeIcon width={16} height={16} aria-hidden="true" />
                         預覽
                       </button>
                       <button
@@ -156,7 +156,7 @@ const EventSubmissions = ({
                         onClick={(e) => handleEditEvent(e, event)}
                         title="編輯"
                       >
-                        <PencilIcon width={12} height={12} aria-hidden="true" />
+                        <PencilIcon width={16} height={16} aria-hidden="true" />
                         編輯
                       </button>
                       <button
@@ -165,7 +165,7 @@ const EventSubmissions = ({
                         onClick={(e) => handleCopyEvent(e, event)}
                         title="複製"
                       >
-                        <DocumentDuplicateIcon width={12} height={12} aria-hidden="true" />
+                        <DocumentDuplicateIcon width={16} height={16} aria-hidden="true" />
                         複製
                       </button>
                       <button
@@ -175,7 +175,7 @@ const EventSubmissions = ({
                         disabled={deleteEventMutation.isPending}
                         title="刪除"
                       >
-                        <TrashIcon width={12} height={12} aria-hidden="true" />
+                        <TrashIcon width={16} height={16} aria-hidden="true" />
                         {deleteEventMutation.isPending ? '刪除中…' : '刪除'}
                       </button>
                     </div>
