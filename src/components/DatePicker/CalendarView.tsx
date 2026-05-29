@@ -44,7 +44,7 @@ const dayButton = cva({
     color: 'color.text.primary',
     textStyle: 'caption',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'background 0.2s ease, box-shadow 0.2s ease',
     '&:hover:not(:disabled)': {
       background: 'color.background.secondary',
     },

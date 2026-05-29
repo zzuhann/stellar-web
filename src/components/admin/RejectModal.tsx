@@ -50,7 +50,7 @@ const closeButton = css({
   color: 'color.text.secondary',
   cursor: 'pointer',
   borderRadius: 'radius.sm',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, color 0.2s ease',
   '&:hover': {
     background: 'color.background.secondary',
     color: 'color.text.primary',
@@ -58,6 +58,11 @@ const closeButton = css({
   '& svg': {
     width: '20px',
     height: '20px',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 
@@ -121,7 +126,7 @@ const textarea = css({
   lineHeight: '1.5',
   resize: 'vertical',
   minHeight: '120px',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
   '&::placeholder': {
     color: 'color.text.secondary',
   },
@@ -184,12 +189,17 @@ const button = cva({
     borderRadius: 'radius.md',
     fontSize: '14px',
     fontWeight: '600',
-    transition: 'all 0.2s ease',
+    transition: 'background 0.2s ease, border-color 0.2s ease',
     cursor: 'pointer',
     border: '1px solid',
     display: 'flex',
     alignItems: 'center',
     gap: '2',
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '2px',
+    },
   },
   variants: {
     variant: {
@@ -280,8 +290,14 @@ export default function RejectModal({
       <div className={modalContainer}>
         <div className={modalHeader}>
           <h2 className={modalTitle}>{title}</h2>
-          <button className={closeButton} onClick={handleClose} disabled={loading}>
-            <XMarkIcon />
+          <button
+            className={closeButton}
+            onClick={handleClose}
+            disabled={loading}
+            type="button"
+            aria-label="關閉"
+          >
+            <XMarkIcon aria-hidden="true" />
           </button>
         </div>
 
@@ -292,21 +308,27 @@ export default function RejectModal({
           </div>
 
           <div className={formGroup}>
-            <label className={label}>
+            <label className={label} htmlFor="reject-reason">
               拒絕原因
               <span className={requiredIndicator}>*</span>
             </label>
             <textarea
+              id="reject-reason"
               className={textarea}
               value={reason}
               onChange={handleReasonChange}
               placeholder="請說明拒絕的原因，幫助投稿者了解如何改進..."
               disabled={loading}
+              aria-describedby={error ? 'reject-reason-error' : undefined}
             />
             <div className={characterCount({ isNearLimit })}>
               {reason.length}/{MAX_REASON_LENGTH}
             </div>
-            {error && <div className={errorText}>{error}</div>}
+            {error && (
+              <div id="reject-reason-error" className={errorText} role="alert">
+                {error}
+              </div>
+            )}
             {!error && (
               <div className={helperText}>
                 請清楚說明拒絕原因，幫助投稿者改進內容以符合平台規範。

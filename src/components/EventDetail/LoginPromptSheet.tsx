@@ -63,9 +63,14 @@ const primaryButton = css({
   borderRadius: 'radius.lg',
   textStyle: 'button',
   cursor: 'pointer',
-  transition: 'background 0.2s ease',
+  transition: 'background 0.2s ease, opacity 0.2s ease',
   '&:hover': {
     opacity: '0.9',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'white',
+    outlineOffset: '2px',
   },
 });
 
@@ -84,6 +89,11 @@ const secondaryButton = css({
   transition: 'background 0.2s ease',
   '&:hover': {
     backgroundColor: 'color.background.secondary',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 

@@ -1,7 +1,5 @@
 'use client';
 
-import { useTransition } from 'react';
-import { useRouter } from 'next/navigation';
 import { css } from '@/styled-system/css';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -16,6 +14,12 @@ const topArtistItem = css({
   gap: '1.5',
   flexShrink: 0,
   width: '72px',
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+    borderRadius: 'radius.md',
+  },
 });
 
 const avatarWrapper = css({
@@ -70,26 +74,6 @@ const eventCountStyle = css({
   gap: '0.5',
 });
 
-const loadingOverlay = css({
-  position: 'absolute',
-  inset: 0,
-  borderRadius: 'radius.circle',
-  backgroundColor: 'rgba(0,0,0,0.35)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  zIndex: 3,
-});
-
-const spinner = css({
-  width: '20px',
-  height: '20px',
-  borderRadius: '50%',
-  border: '2px solid rgba(255,255,255,0.3)',
-  borderTopColor: 'white',
-  animation: 'spin 0.7s linear infinite',
-});
-
 export function TopArtistCardSkeleton() {
   return (
     <div className={topArtistItem}>
@@ -108,19 +92,13 @@ interface TopArtistCardProps {
 
 const TopArtistCard = ({ artist, onClick, isFirst = false }: TopArtistCardProps) => {
   const eventCount = artist.upcomingEventCount ?? 0;
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    onClick?.(artist.id);
-    startTransition(() => {
-      router.push(`/map/${artist.slug ?? artist.id}`);
-    });
-  };
 
   return (
-    <Link href={`/map/${artist.slug ?? artist.id}`} className={topArtistItem} onClick={handleClick}>
+    <Link
+      href={`/map/${artist.slug ?? artist.id}`}
+      className={topArtistItem}
+      onClick={() => onClick?.(artist.id)}
+    >
       <div className={avatarWrapper}>
         <div className={avatarInner}>
           {artist.profileImage && (
@@ -136,11 +114,6 @@ const TopArtistCard = ({ artist, onClick, isFirst = false }: TopArtistCardProps)
           )}
         </div>
         <BirthdayHat birthday={artist.birthday ?? ''} className={birthdayHat} />
-        {isPending && (
-          <div className={loadingOverlay}>
-            <div className={spinner} />
-          </div>
-        )}
       </div>
       <div>
         <p className={artistName}>{artist.stageName}</p>

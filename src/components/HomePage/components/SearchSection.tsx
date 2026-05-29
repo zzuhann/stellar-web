@@ -21,6 +21,11 @@ const container = css({
   textAlign: 'left',
   width: '100%',
   cursor: 'pointer',
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
 });
 
 const searchInput = css({

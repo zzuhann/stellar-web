@@ -21,7 +21,7 @@ const modalContent = cva({
     flexDirection: 'column',
     marginY: 0,
     marginX: '4',
-    transition: 'all 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+    transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
   },
   variants: {
     isOpen: {
@@ -53,7 +53,7 @@ const closeButton = css({
   borderRadius: 'radius.md',
   color: 'color.text.secondary',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, color 0.2s ease',
   '&:hover': {
     background: 'color.background.secondary',
     color: 'color.text.primary',

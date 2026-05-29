@@ -40,7 +40,7 @@ const closeButton = css({
   padding: '1',
   borderRadius: 'radius.md',
   color: 'color.text.secondary',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, color 0.2s ease',
   '&:hover': {
     background: 'color.background.secondary',
     color: 'color.text.primary',
@@ -75,7 +75,7 @@ const button = cva({
     borderRadius: 'radius.lg',
     textStyle: 'bodySmall',
     fontWeight: 'semibold',
-    transition: 'all 0.2s ease',
+    transition: 'background 0.2s ease, border-color 0.2s ease',
     cursor: 'pointer',
     border: '1px solid',
     '&:disabled': {

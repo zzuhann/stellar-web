@@ -12,7 +12,7 @@ const ctaButton = css({
   borderRadius: 'radius.lg',
   textStyle: 'button',
   fontWeight: 'semibold',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
   background: 'color.primary',

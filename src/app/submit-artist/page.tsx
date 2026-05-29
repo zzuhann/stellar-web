@@ -50,7 +50,7 @@ function SubmitArtistFallback() {
   return (
     <div className={fallbackContainer}>
       <div className={fallbackContent}>
-        <div className={spinner} />
+        <div className={spinner} aria-hidden="true" />
         <p className={loadingText}>載入中...</p>
       </div>
     </div>

@@ -42,7 +42,7 @@ const comboboxInput = cva({
     background: 'color.background.primary',
     color: 'color.text.primary',
     textStyle: 'body',
-    transition: 'all 0.2s ease',
+    transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
     paddingRight: '10',
     '&::placeholder': {
       color: 'color.text.secondary',
@@ -136,7 +136,7 @@ const comboboxOption = css({
   userSelect: 'none',
   paddingY: '3',
   paddingX: '4',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease',
   color: 'color.text.primary',
   '&:hover': {
     background: 'color.background.secondary',

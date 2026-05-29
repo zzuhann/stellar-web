@@ -57,7 +57,7 @@ const closeButton = css({
   alignItems: 'center',
   justifyContent: 'center',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease, transform 0.2s ease',
   zIndex: '10',
   '&:hover': {
     background: 'color.background.tertiary',
@@ -66,6 +66,11 @@ const closeButton = css({
   },
   '&:active': {
     transform: 'scale(0.95)',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 

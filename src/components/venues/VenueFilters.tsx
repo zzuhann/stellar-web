@@ -65,7 +65,7 @@ const regionChip = css({
   textStyle: 'bodySmall',
   fontWeight: 'medium',
   cursor: 'pointer',
-  transition: 'all 0.15s ease',
+  transition: 'background 0.15s ease, border-color 0.15s ease, color 0.15s ease',
 });
 
 const regionChipActive = css({

@@ -35,7 +35,7 @@ const paginationButton = css({
   borderColor: 'color.border.light',
   background: 'white',
   color: 'color.text.primary',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease, color 0.2s ease',
   '&:hover:not(:disabled)': {
     borderColor: 'color.primary',
     color: 'color.primary',
@@ -57,7 +57,7 @@ const ctaButton = css({
   paddingY: '3',
   paddingX: '6',
   borderRadius: 'radius.lg',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
   background: 'color.primary',

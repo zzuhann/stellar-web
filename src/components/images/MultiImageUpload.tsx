@@ -32,7 +32,7 @@ const imageCard = css({
   borderRadius: 'radius.lg',
   overflow: 'hidden',
   background: 'color.background.secondary',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease',
   '&:hover': {
     borderColor: 'color.border.medium',
   },
@@ -67,7 +67,7 @@ const actionButton = cva({
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'transform 0.2s ease, background 0.2s ease',
     '&:hover:not(:disabled)': {
       transform: 'scale(1.1)',
     },
@@ -140,7 +140,7 @@ const uploadCard = cva({
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    transition: 'all 0.2s ease',
+    transition: 'border-color 0.2s ease, background 0.2s ease',
   },
   variants: {
     disabled: {

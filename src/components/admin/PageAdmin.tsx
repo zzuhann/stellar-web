@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -58,7 +59,7 @@ const venueLink = css({
   fontSize: '14px',
   fontWeight: 600,
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
   textDecoration: 'none',
   '&:hover': {
     background: 'gray.50',
@@ -68,6 +69,11 @@ const venueLink = css({
   '& svg': {
     width: '16px',
     height: '16px',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 
@@ -88,7 +94,7 @@ const tabButton = cva({
     borderRadius: 'radius.md',
     fontSize: '14px',
     fontWeight: 600,
-    transition: 'all 0.2s ease',
+    transition: 'background 0.2s ease, color 0.2s ease',
     cursor: 'pointer',
     border: 'none',
     position: 'relative',
@@ -96,6 +102,11 @@ const tabButton = cva({
     alignItems: 'center',
     justifyContent: 'center',
     gap: '2',
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '2px',
+    },
   },
   variants: {
     active: {
@@ -201,7 +212,8 @@ const actionButton = css({
   borderRadius: 'radius.md',
   fontSize: '13px',
   fontWeight: 600,
-  transition: 'all 0.2s ease',
+  transition:
+    'background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
   '&:disabled': {
@@ -213,6 +225,10 @@ const actionButton = css({
   '& svg': {
     width: '14px',
     height: '14px',
+  },
+  '&:focus-visible': {
+    outline: '2px solid white',
+    outlineOffset: '2px',
   },
 });
 
@@ -315,7 +331,8 @@ const batchButton = css({
   borderRadius: 'radius.md',
   fontSize: '13px',
   fontWeight: 600,
-  transition: 'all 0.2s ease',
+  transition:
+    'background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
   '&:disabled': {
@@ -327,6 +344,10 @@ const batchButton = css({
   '& svg': {
     width: '14px',
     height: '14px',
+  },
+  '&:focus-visible': {
+    outline: '2px solid white',
+    outlineOffset: '2px',
   },
 });
 
@@ -736,11 +757,11 @@ export default function AdminPage() {
       <div className={mainContainer}>
         {/* Venue Link */}
         <div style={{ marginBottom: '12px' }}>
-          <button className={venueLink} onClick={() => router.push('/admin/venues')}>
-            <BuildingStorefrontIcon />
+          <Link href="/admin/venues" className={venueLink}>
+            <BuildingStorefrontIcon aria-hidden="true" />
             場地管理
-            <ArrowRightIcon />
-          </button>
+            <ArrowRightIcon aria-hidden="true" />
+          </Link>
         </div>
 
         {/* Tabs */}
@@ -798,7 +819,7 @@ export default function AdminPage() {
                         onClick={() => setBatchApproving(true)}
                         disabled={batchReviewMutation.isPending}
                       >
-                        <CheckCircleIcon />
+                        <CheckCircleIcon aria-hidden="true" />
                         批次通過
                       </button>
                       <button
@@ -806,7 +827,7 @@ export default function AdminPage() {
                         onClick={handleBatchExists}
                         disabled={batchReviewMutation.isPending}
                       >
-                        <ExclamationTriangleIcon />
+                        <ExclamationTriangleIcon aria-hidden="true" />
                         批次標記已存在
                       </button>
                       <button
@@ -816,7 +837,7 @@ export default function AdminPage() {
                         }
                         disabled={batchReviewMutation.isPending}
                       >
-                        <XCircleIcon />
+                        <XCircleIcon aria-hidden="true" />
                         批次拒絕
                       </button>
                     </div>
@@ -840,6 +861,7 @@ export default function AdminPage() {
                         selectedArtists.size === pendingArtists.length && pendingArtists.length > 0
                       }
                       onChange={(e) => handleSelectAllArtists(e.target.checked)}
+                      aria-label="全選所有藝人"
                     />
                     <span style={{ fontSize: '14px', fontWeight: '500' }}>
                       全選 ({selectedArtists.size}/{pendingArtists.length})
@@ -866,6 +888,7 @@ export default function AdminPage() {
                           type="checkbox"
                           checked={selectedArtists.has(artist.id)}
                           onChange={(e) => handleSelectArtist(artist.id, e.target.checked)}
+                          aria-label={`選擇 ${artist.stageName}`}
                         />
                       </div>
                       <VerticalArtistCard
@@ -878,34 +901,38 @@ export default function AdminPage() {
                         actionButtons={
                           <div className={actionButtons}>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonPreview}`}
                               onClick={() => handleEditArtist(artist)}
                             >
-                              <PencilSquareIcon />
+                              <PencilSquareIcon aria-hidden="true" />
                               編輯
                             </button>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonApprove}`}
                               onClick={() => handleApproveArtist(artist)}
                               disabled={approveArtistMutation.isPending}
                             >
-                              <CheckCircleIcon />
+                              <CheckCircleIcon aria-hidden="true" />
                               通過
                             </button>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonExists}`}
                               onClick={() => handleExistsArtist(artist.id)}
                               disabled={markAsExistsMutation.isPending}
                             >
-                              <ExclamationTriangleIcon />
+                              <ExclamationTriangleIcon aria-hidden="true" />
                               已存在
                             </button>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonReject}`}
                               onClick={() => setRejectingArtist(artist)}
                               disabled={rejectArtistMutation.isPending}
                             >
-                              <XCircleIcon />
+                              <XCircleIcon aria-hidden="true" />
                               拒絕
                             </button>
                           </div>
@@ -948,7 +975,7 @@ export default function AdminPage() {
                         onClick={handleBatchApproveEvents}
                         disabled={batchReviewEventsMutation.isPending}
                       >
-                        <CheckCircleIcon />
+                        <CheckCircleIcon aria-hidden="true" />
                         批次通過
                       </button>
                       <button
@@ -958,7 +985,7 @@ export default function AdminPage() {
                         }
                         disabled={batchReviewEventsMutation.isPending}
                       >
-                        <XCircleIcon />
+                        <XCircleIcon aria-hidden="true" />
                         批次拒絕
                       </button>
                     </div>
@@ -982,6 +1009,7 @@ export default function AdminPage() {
                         selectedEvents.size === pendingEvents.length && pendingEvents.length > 0
                       }
                       onChange={(e) => handleSelectAllEvents(e.target.checked)}
+                      aria-label="全選所有生咖"
                     />
                     <span style={{ fontSize: '14px', fontWeight: '500' }}>
                       全選 ({selectedEvents.size}/{pendingEvents.length})
@@ -1008,6 +1036,7 @@ export default function AdminPage() {
                           type="checkbox"
                           checked={selectedEvents.has(event.id)}
                           onChange={(e) => handleSelectEvent(event.id, e.target.checked)}
+                          aria-label={`選擇 ${event.title}`}
                         />
                       </div>
                       <VerticalEventCard
@@ -1015,26 +1044,29 @@ export default function AdminPage() {
                         actionButtons={
                           <div className={actionButtons}>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonPreview}`}
                               onClick={() => handlePreviewEvent(event)}
                             >
-                              <EyeIcon />
+                              <EyeIcon aria-hidden="true" />
                               預覽
                             </button>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonApprove}`}
                               onClick={() => handleApproveEvent(event.id)}
                               disabled={approveEventMutation.isPending}
                             >
-                              <CheckCircleIcon />
+                              <CheckCircleIcon aria-hidden="true" />
                               通過
                             </button>
                             <button
+                              type="button"
                               className={`${actionButton} ${actionButtonReject}`}
                               onClick={() => setRejectingEvent(event)}
                               disabled={rejectEventMutation.isPending}
                             >
-                              <XCircleIcon />
+                              <XCircleIcon aria-hidden="true" />
                               拒絕
                             </button>
                           </div>

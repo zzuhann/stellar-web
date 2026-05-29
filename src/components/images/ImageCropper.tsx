@@ -150,7 +150,7 @@ const styledButton = cva({
     borderRadius: 'radius.lg',
     textStyle: 'bodySmall',
     fontWeight: 'semibold',
-    transition: 'all 0.2s ease',
+    transition: 'background 0.2s ease',
     cursor: 'pointer',
     border: '1px solid',
     flex: '1',

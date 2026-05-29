@@ -20,7 +20,8 @@ const locationButton = cva({
     borderColor: 'color.border.light',
     boxShadow: 'shadow.md',
     color: 'color.text.primary',
-    transition: 'all 0.2s ease',
+    transition:
+      'background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease',
     '&:hover:not(:disabled)': {
       background: 'color.background.secondary',
       borderColor: 'color.border.medium',
@@ -32,6 +33,11 @@ const locationButton = cva({
     },
     '&:disabled': {
       opacity: '0.6',
+    },
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '2px',
     },
   },
   variants: {

@@ -68,15 +68,20 @@ const backButton = css({
   width: '40px',
   height: '40px',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease',
+  borderRadius: 'radius.md',
   '&:hover': {
     background: 'color.background.tertiary',
-    borderColor: 'color.border.medium',
   },
   '& svg': {
     width: '20px',
     height: '20px',
     color: 'color.text.primary',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 
@@ -116,10 +121,10 @@ const input = css({
   borderColor: 'color.border.light',
   borderRadius: 'radius.md',
   textStyle: 'body',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease',
   background: 'white',
   color: 'color.text.primary',
-  '&:focus': {
+  '&:focus-visible': {
     outline: 'none',
     borderColor: 'color.primary',
   },
@@ -132,7 +137,7 @@ const input = css({
 
 const inputError = css({
   borderColor: 'red.600',
-  '&:focus': {
+  '&:focus-visible': {
     borderColor: 'red.600',
   },
 });
@@ -159,7 +164,7 @@ const button = css({
   borderRadius: 'radius.md',
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
   cursor: 'pointer',
   border: '1px solid',
   '&:disabled': {
@@ -169,6 +174,11 @@ const button = css({
   '& svg': {
     width: '16px',
     height: '16px',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 
@@ -307,6 +317,7 @@ export default function DisplayNamePage() {
                   type="text"
                   placeholder="請輸入名稱"
                   className={`${input} ${errors.displayName ? inputError : ''}`}
+                  autoComplete="name"
                   disabled={updateProfileMutation.isPending}
                   aria-invalid={!!errors.displayName}
                   aria-describedby={errors.displayName ? 'displayName-error' : undefined}

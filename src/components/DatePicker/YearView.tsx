@@ -22,7 +22,7 @@ const yearMonthButton = cva({
     color: 'color.text.primary',
     textStyle: 'caption',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'background 0.2s ease, border-color 0.2s ease',
     '&:hover': {
       background: 'color.background.secondary',
       borderColor: 'color.border.medium',

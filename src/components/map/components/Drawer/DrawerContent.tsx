@@ -8,7 +8,6 @@ import EmptyState from '../EmptyState';
 import CTAButton from '@/components/CTAButton';
 import { useMapStore } from '@/store';
 import useMapSelection from '../../hook/useMapSelection';
-import IOSInstallBanner from '@/components/pwa/IOSInstallBanner';
 
 const drawerContent = css({
   height: 'calc(100% - 80px)',
@@ -20,6 +19,7 @@ const drawerContent = css({
 const eventList = css({
   flex: '1',
   overflowY: 'auto',
+  overscrollBehavior: 'contain',
   padding: '4',
   display: 'flex',
   flexDirection: 'column',
@@ -61,7 +61,6 @@ const DrawerContent = ({ mapEvents, artistData }: DrawerContentProps) => {
             </CTAButton>
           </>
         )}
-        <IOSInstallBanner />
       </div>
     </div>
   );

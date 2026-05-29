@@ -31,6 +31,11 @@ const button = css({
       cursor: 'not-allowed',
       opacity: '0.5',
     },
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '2px',
+    },
   },
 });
 

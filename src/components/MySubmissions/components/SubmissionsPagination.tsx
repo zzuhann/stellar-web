@@ -22,7 +22,7 @@ const paginationButton = css({
   borderColor: 'color.border.light',
   background: 'white',
   color: 'color.text.primary',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease, color 0.2s ease',
   '&:hover:not(:disabled)': {
     borderColor: 'color.primary',
     color: 'color.primary',
@@ -30,6 +30,11 @@ const paginationButton = css({
   '&:disabled': {
     opacity: 0.5,
     cursor: 'not-allowed',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 

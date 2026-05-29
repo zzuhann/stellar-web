@@ -98,7 +98,7 @@ const input = css({
   background: 'color.background.primary',
   color: 'color.text.primary',
   textStyle: 'body',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
   '&::placeholder': {
     color: 'color.text.disabled',
   },
@@ -232,7 +232,8 @@ const button = cva({
     borderRadius: 'radius.lg',
     textStyle: 'body',
     fontWeight: 'semibold',
-    transition: 'all 0.2s ease',
+    transition:
+      'background 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
     cursor: 'pointer',
     border: '1px solid',
     display: 'flex',
@@ -243,6 +244,11 @@ const button = cva({
     '@media (min-width: 768px)': {
       paddingY: '4',
       paddingX: '8',
+    },
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '2px',
     },
     '&:disabled': {
       cursor: 'not-allowed',
@@ -704,6 +710,10 @@ export default function ArtistSubmissionForm({
             <input
               className={input}
               type="email"
+              name="email"
+              autoComplete="email"
+              aria-label="電子信箱"
+              aria-describedby={emailError ? 'submitter-email-error' : undefined}
               placeholder="example@email.com"
               value={submitterEmail}
               onChange={(e) => {
@@ -712,7 +722,11 @@ export default function ArtistSubmissionForm({
               }}
               onBlur={() => validateEmail(submitterEmail)}
             />
-            {emailError && <p className={errorText}>{emailError}</p>}
+            {emailError && (
+              <p id="submitter-email-error" className={errorText} role="alert">
+                {emailError}
+              </p>
+            )}
           </div>
         )}
 

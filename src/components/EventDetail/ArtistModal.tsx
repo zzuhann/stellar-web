@@ -9,14 +9,27 @@ const modalOverlay = css({
   left: '0',
   right: '0',
   bottom: '0',
-  background: 'alpha.black.50',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   zIndex: '1000',
 });
 
+const modalBackdrop = css({
+  position: 'absolute',
+  inset: '0',
+  background: 'alpha.black.50',
+  border: 'none',
+  cursor: 'default',
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
+});
+
 const modalContent = css({
+  position: 'relative',
   background: 'white',
   borderRadius: 'var(--radius-lg)',
   padding: '6',
@@ -49,7 +62,7 @@ const artistOption = css({
   background: 'white',
   cursor: 'pointer',
   marginBottom: '2',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease, border-color 0.2s ease',
 
   '&:hover': {
     background: 'color.background.secondary',
@@ -58,6 +71,12 @@ const artistOption = css({
 
   '&:last-child': {
     marginBottom: '0',
+  },
+
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 
@@ -71,10 +90,16 @@ const cancelButton = css({
   color: 'color.text.secondary',
   cursor: 'pointer',
   marginTop: '4',
-  transition: 'all 0.2s ease',
+  transition: 'background 0.2s ease',
 
   '&:hover': {
     background: 'color.background.secondary',
+  },
+
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
 });
 
@@ -107,23 +132,16 @@ const ArtistModal = ({ event, handleArtistSelect, handleCloseModal }: ArtistModa
   useScrollLock(true);
 
   return (
-    <div
-      className={modalOverlay}
-      onClick={handleCloseModal}
-      aria-label="點擊關閉"
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleCloseModal();
-        }
-      }}
-    >
+    <div className={modalOverlay}>
+      <button
+        className={modalBackdrop}
+        onClick={handleCloseModal}
+        aria-label="關閉對話框"
+        tabIndex={-1}
+      />
       <div
         ref={focusTrapRef}
         className={modalContent}
-        onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="artist-modal-title"

@@ -43,7 +43,7 @@ export default function ShareButton() {
       className={css({
         display: 'none',
         cursor: 'pointer',
-        transition: 'all 0.2s ease',
+        transition: 'opacity 0.2s ease',
         position: 'relative',
         '&:hover': {
           opacity: 0.9,

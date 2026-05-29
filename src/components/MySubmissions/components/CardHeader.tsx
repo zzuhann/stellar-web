@@ -8,7 +8,7 @@ const cardHeaderContainer = css({
 });
 
 const cardHeader = css({
-  textStyle: 'bodyStrong',
+  textStyle: 'h3',
   color: 'color.text.primary',
   marginBottom: '1',
   marginTop: '0',

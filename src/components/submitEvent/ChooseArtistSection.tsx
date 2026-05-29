@@ -16,7 +16,7 @@ const artistSelectionButton = css({
   background: 'color.background.primary',
   color: 'color.text.primary',
   textStyle: 'bodySmall',
-  transition: 'all 0.2s ease',
+  transition: 'border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
@@ -79,7 +79,7 @@ const removeButtonStyle = css({
   alignItems: 'center',
   justifyContent: 'center',
   color: 'color.text.secondary',
-  transition: 'all 0.2s ease',
+  transition: 'color 0.2s ease, background 0.2s ease',
   '&:hover': {
     color: 'color.text.primary',
     background: 'color.background.secondary',
@@ -120,20 +120,16 @@ const ChooseArtistSection = ({
         {selectedArtists.map((artist) => (
           <div key={artist.id} role="listitem">
             <div
-              className={artistSelectionButton}
               role="button"
+              className={artistSelectionButton}
               tabIndex={mode === 'edit' ? -1 : 0}
               onClick={mode === 'edit' ? undefined : openArtistSelectionModal}
-              onKeyDown={
-                mode === 'edit'
-                  ? undefined
-                  : (e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        openArtistSelectionModal();
-                      }
-                    }
-              }
+              onKeyDown={(e) => {
+                if (mode !== 'edit' && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
+                  openArtistSelectionModal();
+                }
+              }}
               aria-label={
                 mode === 'edit'
                   ? `已選擇 ${artist.stageName}，編輯模式下無法修改`

@@ -24,7 +24,7 @@ const memberButton = css({
   textStyle: 'button',
   color: 'color.text.primary',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  transition: 'color 0.2s ease',
 });
 
 const styledLink = css({

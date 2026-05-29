@@ -35,10 +35,15 @@ const weekNavigationButton = cva({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '24px',
-    height: '24px',
+    minWidth: '44px',
+    minHeight: '44px',
     borderRadius: 'radius.md',
-    transition: 'all 0.2s ease',
+    transition: 'color 0.2s ease, opacity 0.2s ease',
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '2px',
+    },
   },
   variants: {
     disabled: {
