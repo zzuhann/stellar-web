@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { css } from '@/styled-system/css';
 import { Artist } from '@/types';
-import CakeIcon from '@heroicons/react/24/outline/CakeIcon';
 import { sendGAEvent } from '@next/third-parties/google';
 import { useAuth } from '@/lib/auth-context';
 import { formatBirthdayShort } from '@/utils/birthdayHelpers';
@@ -13,7 +12,8 @@ const cardLink = css({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  padding: '4',
+  paddingX: '3',
+  paddingY: '4',
   textAlign: 'center',
   textDecoration: 'none',
   background: 'color.background.primary',
@@ -24,9 +24,7 @@ const cardLink = css({
   transition: 'box-shadow 0.2s ease',
   minWidth: '0',
   overflow: 'hidden',
-  '&:hover': {
-    boxShadow: 'shadow.md',
-  },
+  '&:hover': { boxShadow: 'shadow.md' },
   '&:focus-visible': {
     outline: '2px solid',
     outlineColor: 'color.primary',
@@ -36,8 +34,8 @@ const cardLink = css({
 
 const avatarWrapper = css({
   position: 'relative',
-  width: '56px',
-  height: '56px',
+  width: '80px',
+  height: '80px',
   borderRadius: 'radius.circle',
   overflow: 'hidden',
   flexShrink: 0,
@@ -45,8 +43,8 @@ const avatarWrapper = css({
 });
 
 const nameText = css({
-  marginTop: '2.5',
-  textStyle: 'caption',
+  marginTop: '2',
+  textStyle: 'bodySmall',
   fontWeight: 'semibold',
   color: 'color.text.primary',
   letterSpacing: '0.02em',
@@ -56,43 +54,23 @@ const nameText = css({
   whiteSpace: 'nowrap',
 });
 
-const zhNameText = css({
+const birthdayText = css({
+  marginTop: '1',
   textStyle: 'caption',
   color: 'color.text.secondary',
-  marginTop: '0.5',
 });
 
-const divider = css({
-  marginTop: '2.5',
-  paddingTop: '2.5',
-  width: '100%',
-  borderTop: '1px dashed',
-  borderTopColor: 'color.border.light',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
+const countRow = css({
+  marginTop: '1',
   textStyle: 'bodySmall',
-  color: 'color.text.secondary',
-});
-
-const birthdayCol = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '1',
-});
-
-const countText = css({
-  color: 'color.primary',
   fontWeight: 'semibold',
+  color: 'color.primary',
 });
 
-const countEmptyText = css({
+const countEmptyRow = css({
+  marginTop: '3',
+  textStyle: 'bodySmall',
   color: 'color.text.disabled',
-});
-
-const iconStyle = css({
-  flexShrink: 0,
-  color: 'color.text.secondary',
 });
 
 interface WeekArtistCardProps {
@@ -125,27 +103,14 @@ export default function WeekArtistCard({ artist }: WeekArtistCardProps) {
           src={artist.profileImage ?? '/default_profile.png'}
           alt={artist.stageName}
           fill
-          sizes="56px"
+          sizes="80px"
           style={{ objectFit: 'cover' }}
         />
       </div>
 
       <p className={nameText}>{artist.stageName?.toUpperCase()}</p>
-      <p className={zhNameText} aria-hidden={!artist.stageNameZh}>
-        {artist.stageNameZh ?? ' '}
-      </p>
-
-      <div className={divider}>
-        <span className={birthdayCol}>
-          <CakeIcon width={14} height={14} className={iconStyle} aria-hidden="true" />
-          {birthday}
-        </span>
-        {count > 0 ? (
-          <span className={countText}>{count} 個</span>
-        ) : (
-          <span className={countEmptyText}>—</span>
-        )}
-      </div>
+      <p className={birthdayText}>{birthday}</p>
+      {count > 0 ? <p className={countRow}>{count} 場應援</p> : <p className={countEmptyRow}>—</p>}
     </Link>
   );
 }
