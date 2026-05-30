@@ -12,8 +12,13 @@ const MapCenterUpdater = () => {
     isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
+      try {
+        map.stop();
+      } catch {
+        // map may already be gone
+      }
     };
-  }, []);
+  }, [map]);
 
   useEffect(() => {
     if (map && center && isMountedRef.current) {
