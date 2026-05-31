@@ -12,6 +12,13 @@ Sentry.init({
   tracesSampleRate: 0.1,
   // Enable logs to be sent to Sentry
   enableLogs: true,
+
+  // Filter out browser extension errors
+  ignoreErrors: [
+    'Invalid call to runtime.sendMessage()',
+    /chrome-extension:\/\//,
+    /moz-extension:\/\//,
+  ],
 });
 
 export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
