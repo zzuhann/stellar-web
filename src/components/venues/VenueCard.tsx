@@ -293,7 +293,7 @@ export default function VenueCard({ venue, listPosition, userId }: VenueCardProp
             >
               <path d="M12 3 14.5 9 21 10l-5 4.5 1.5 6.5L12 17.5 6.5 21 8 14.5 3 10l6.5-1z" />
             </svg>
-            辦過 <strong className={eventCountNum}>{venue.eventCount}</strong> 場
+            收錄 <strong className={eventCountNum}>{venue.eventCount}</strong> 場
           </span>
         </div>
       </div>
