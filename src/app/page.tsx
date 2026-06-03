@@ -7,6 +7,8 @@ import { Suspense } from 'react';
 import Loading from '@/components/Loading';
 import type { Metadata } from 'next';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   alternates: {
     canonical: 'https://www.stellar-zone.com/',
