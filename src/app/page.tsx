@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nextjs';
 import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
 import HomePage from '@/components/HomePage';
 import { artistsApi, eventsApi } from '@/lib/api';
@@ -68,7 +69,9 @@ export default async function Home() {
         staleTime: 1000 * 60 * 60 * 6,
       }),
     ]);
-  } catch {}
+  } catch (error) {
+    Sentry.captureException(error, { tags: { context: 'homepage_prefetch' } });
+  }
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
