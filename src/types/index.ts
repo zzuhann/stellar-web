@@ -350,6 +350,7 @@ export interface VenueDetail {
   };
   preferredContact?: 'instagram' | 'threads' | 'line' | 'form' | 'other';
   contactUrl?: string;
+  updatedAt?: FirebaseTimestamp | string;
   events: VenueEventCard[];
 }
 
