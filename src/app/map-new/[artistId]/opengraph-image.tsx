@@ -73,7 +73,7 @@ export default async function Image({ params }: ImageProps) {
           style={{
             display: 'flex',
             fontSize: 54,
-            fontWeight: 700,
+            fontWeight: 900,
             lineHeight: 1.15,
             letterSpacing: '-0.02em',
             textShadow: '0 8px 32px rgba(0, 0, 0, 0.35)',
@@ -85,7 +85,7 @@ export default async function Image({ params }: ImageProps) {
           style={{
             display: 'flex',
             fontSize: 28,
-            fontWeight: 500,
+            fontWeight: 700,
             opacity: 0.94,
             textShadow: '0 4px 20px rgba(0, 0, 0, 0.35)',
           }}
