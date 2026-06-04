@@ -371,6 +371,7 @@ export interface Venue {
     instagram?: string;
     line?: string;
   };
+  updatedAt?: FirebaseTimestamp | string;
 }
 
 export interface PlacePrediction {

@@ -41,6 +41,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const venues = venuesResponse?.venues ?? [];
     const venueRoutes: MetadataRoute.Sitemap = venues.map((venue) => ({
       url: `${BASE_URL}/venues/${venue.id}`,
+      lastModified: venue.updatedAt ? tsToDate(venue.updatedAt) : undefined,
     }));
 
     return [...staticRoutes, ...artistRoutes, ...eventRoutes, ...venueRoutes];
