@@ -32,32 +32,35 @@ export default async function Home() {
   const eventStartDate = today.toISOString();
   const endDateISO = new Date(weekEnd.getTime() + 24 * 60 * 60 * 1000 - 1).toISOString();
 
+  // Fire and forget — short staleTime (5 min), client will fetch on its own
+  queryClient.prefetchQuery({
+    queryKey: queryKey.birthdayArtists(startDate, endDate),
+    queryFn: () =>
+      artistsApi.getAll({
+        status: 'approved',
+        birthdayStartDate: startDate,
+        birthdayEndDate: endDate,
+        sortBy: 'coffeeEventCount',
+        sortOrder: 'desc',
+      }),
+    staleTime: 1000 * 60 * 5,
+  });
+  queryClient.prefetchQuery({
+    queryKey: queryKey.weeklyEvents(eventStartDate, endDateISO),
+    queryFn: () =>
+      eventsApi.getAll({
+        status: 'approved',
+        startTimeFrom: eventStartDate,
+        startTimeTo: endDateISO,
+        sortBy: 'startTime',
+        sortOrder: 'asc',
+      }),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // Await for above-the-fold image URLs to land in HTML
   try {
     await Promise.all([
-      queryClient.prefetchQuery({
-        queryKey: queryKey.birthdayArtists(startDate, endDate),
-        queryFn: () =>
-          artistsApi.getAll({
-            status: 'approved',
-            birthdayStartDate: startDate,
-            birthdayEndDate: endDate,
-            sortBy: 'coffeeEventCount',
-            sortOrder: 'desc',
-          }),
-        staleTime: 1000 * 60 * 5,
-      }),
-      queryClient.prefetchQuery({
-        queryKey: queryKey.weeklyEvents(eventStartDate, endDateISO),
-        queryFn: () =>
-          eventsApi.getAll({
-            status: 'approved',
-            startTimeFrom: eventStartDate,
-            startTimeTo: endDateISO,
-            sortBy: 'startTime',
-            sortOrder: 'asc',
-          }),
-        staleTime: 1000 * 60 * 5,
-      }),
       queryClient.prefetchQuery({
         queryKey: queryKey.trendingEvents(10),
         queryFn: () => eventsApi.getTrending(10),
