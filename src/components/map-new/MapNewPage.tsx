@@ -38,7 +38,7 @@ const mapArea = css({
 });
 
 const locateButton = css({
-  position: 'fixed',
+  position: 'absolute',
   right: '4',
   width: '44px',
   height: '44px',
@@ -70,10 +70,11 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
 
   const { saveState, consumeRestoredState } = useMapStateStorage(artistId);
   const [restoredState, setRestoredState] = useState(() => consumeRestoredState());
+  const [sheetHeight, setSheetHeight] = useState(120);
 
   const handleMapBeforeNavigate = useCallback(
-    (sheetHeight: number, carouselScrollLeft: number) => {
-      saveState({ sheetHeight, carouselScrollLeft });
+    (savedSheetHeight: number, carouselScrollLeft: number) => {
+      saveState({ sheetHeight: savedSheetHeight, carouselScrollLeft });
     },
     [saveState]
   );
@@ -148,7 +149,7 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
         <button
           type="button"
           className={locateButton}
-          style={{ bottom: '148px' }}
+          style={{ bottom: `${selectedEvent ? 148 : sheetHeight + 28}px` }}
           aria-label="查看全部活動"
           onClick={() => {
             sendGAEvent('event', 'map_reset_view', {
@@ -179,6 +180,7 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
             initialCarouselScrollLeft={restoredState?.carouselScrollLeft}
             onBeforeNavigate={handleMapBeforeNavigate}
             onRestoredStateConsumed={() => setRestoredState(null)}
+            onHeightChange={setSheetHeight}
           />
         )}
       </div>
