@@ -8,13 +8,7 @@ import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
 import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
-
-function formatDateRange(start: string, end: string): string {
-  const s = new Date(start);
-  const e = new Date(end);
-  const fmt = (d: Date) => `${d.getMonth() + 1}/${String(d.getDate()).padStart(2, '0')}`;
-  return s.toDateString() === e.toDateString() ? fmt(s) : `${fmt(s)} - ${fmt(e)}`;
-}
+import { formatDateRange } from '@/utils';
 
 const wrapper = css({
   position: 'fixed',
