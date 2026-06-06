@@ -73,8 +73,8 @@ export default function MapNewPage({ artistId }: MapNewPageProps) {
   const [sheetHeight, setSheetHeight] = useState(120);
 
   const handleMapBeforeNavigate = useCallback(
-    (sheetHeight: number, carouselScrollLeft: number) => {
-      saveState({ sheetHeight, carouselScrollLeft });
+    (savedSheetHeight: number, carouselScrollLeft: number) => {
+      saveState({ sheetHeight: savedSheetHeight, carouselScrollLeft });
     },
     [saveState]
   );

@@ -145,6 +145,7 @@ const EventCarouselCard = ({ event, artistId, onBeforeNavigate }: EventCarouselC
   const href = eventSlug ? `/event/${eventSlug}` : '#';
 
   const handleCardClick = () => {
+    if (href === '#') return;
     setIsNavigating(true);
     onBeforeNavigate?.();
     sendGAEvent('event', 'click_event_detail', {

@@ -176,6 +176,7 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
   const href = eventSlug ? `/event/${eventSlug}` : '#';
 
   const handleCardClick = () => {
+    if (href === '#') return;
     setIsNavigating(true);
     sendGAEvent('event', 'click_event_detail', {
       event_page: '/map-new/[artistId]',
