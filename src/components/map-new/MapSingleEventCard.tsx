@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { sendGAEvent } from '@next/third-parties/google';
@@ -62,6 +63,26 @@ const placeholderBg = css({
   position: 'absolute',
   inset: '0',
   background: 'linear-gradient(135deg, {colors.stellarBlue.500} 0%, {colors.stellarBlue.200} 100%)',
+});
+
+const navigatingOverlay = css({
+  position: 'absolute',
+  inset: '0',
+  background: 'rgba(255,255,255,0.6)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 'inherit',
+  zIndex: '2',
+});
+
+const spinner = css({
+  width: '24px',
+  height: '24px',
+  border: '2px solid rgba(0,0,0,0.15)',
+  borderTopColor: 'rgba(0,0,0,0.5)',
+  borderRadius: '50%',
+  animation: 'spin 0.6s linear infinite',
 });
 
 const infoArea = css({
@@ -144,6 +165,7 @@ export interface MapSingleEventCardProps {
 
 const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardProps) => {
   const { user } = useAuth();
+  const [isNavigating, setIsNavigating] = useState(false);
 
   const dateRange =
     event.datetime?.start && event.datetime?.end
@@ -154,6 +176,7 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
   const href = eventSlug ? `/event/${eventSlug}` : '#';
 
   const handleCardClick = () => {
+    setIsNavigating(true);
     sendGAEvent('event', 'click_event_detail', {
       event_page: '/map-new/[artistId]',
       user_id: user?.uid ?? '',
@@ -184,6 +207,11 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
               />
             ) : (
               <div className={placeholderBg} />
+            )}
+            {isNavigating && (
+              <div className={navigatingOverlay}>
+                <div className={spinner} />
+              </div>
             )}
           </div>
 

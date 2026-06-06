@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { sendGAEvent } from '@next/third-parties/google';
@@ -54,19 +55,35 @@ const placeholderBg = css({
   background: 'linear-gradient(135deg, {colors.stellarBlue.500} 0%, {colors.stellarBlue.200} 100%)',
 });
 
-const cityBadge = css({
+const navigatingOverlay = css({
   position: 'absolute',
-  top: '2',
-  left: '2',
-  background: 'white',
-  color: 'color.text.primary',
+  inset: '0',
+  background: 'rgba(255,255,255,0.6)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 'inherit',
+  zIndex: '2',
+});
+
+const spinner = css({
+  width: '24px',
+  height: '24px',
+  border: '2px solid rgba(0,0,0,0.15)',
+  borderTopColor: 'rgba(0,0,0,0.5)',
+  borderRadius: '50%',
+  animation: 'spin 0.6s linear infinite',
+});
+
+const cityLabel = css({
   textStyle: 'bodySmall',
+  color: 'color.text.secondary',
+  lineHeight: '1.4',
+  background: '{colors.gray.100}',
+  borderRadius: '9999px',
   paddingX: '2',
   paddingY: '0.5',
-  borderRadius: '9999px',
-  lineHeight: '1.4',
-  zIndex: '1',
-  boxShadow: 'shadow.md',
+  width: 'fit-content',
 });
 
 const infoArea = css({
@@ -118,6 +135,7 @@ export interface EventCarouselCardProps {
 
 const EventCarouselCard = ({ event, artistId, onBeforeNavigate }: EventCarouselCardProps) => {
   const { user } = useAuth();
+  const [isNavigating, setIsNavigating] = useState(false);
   const dateRange =
     event.datetime?.start && event.datetime?.end
       ? formatDateRange(event.datetime.start, event.datetime.end)
@@ -127,6 +145,7 @@ const EventCarouselCard = ({ event, artistId, onBeforeNavigate }: EventCarouselC
   const href = eventSlug ? `/event/${eventSlug}` : '#';
 
   const handleCardClick = () => {
+    setIsNavigating(true);
     onBeforeNavigate?.();
     sendGAEvent('event', 'click_event_detail', {
       event_page: '/map-new/[artistId]',
@@ -152,11 +171,16 @@ const EventCarouselCard = ({ event, artistId, onBeforeNavigate }: EventCarouselC
         ) : (
           <div className={placeholderBg} />
         )}
-        {event.location?.city && <span className={cityBadge}>{event.location.city}</span>}
+        {isNavigating && (
+          <div className={navigatingOverlay}>
+            <div className={spinner} />
+          </div>
+        )}
       </div>
 
       {/* Info area */}
       <div className={infoArea}>
+        {event.location?.city && <span className={cityLabel}>{event.location.city}</span>}
         <p
           className={titleText}
           style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}

@@ -85,7 +85,7 @@ export function useBottomSheet({
     }
 
     // Snap to nearest: half or peek
-    const midPoint = PEEK_HEIGHT + (halfHeight - PEEK_HEIGHT) * 0.5;
+    const midPoint = PEEK_HEIGHT + (halfHeight - PEEK_HEIGHT) * 0.3;
     if (currentHeight > midPoint) onExpandToHalf?.('drag');
     snapTo(currentHeight > midPoint ? halfHeight : PEEK_HEIGHT);
   }, [getHalfHeight, snapTo, onExpandToHalf]);
