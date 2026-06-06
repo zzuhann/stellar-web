@@ -1,7 +1,8 @@
 import { notFound, permanentRedirect } from 'next/navigation';
 import { Metadata } from 'next';
+import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query';
 import { Artist } from '@/types';
-import { artistsApi } from '@/lib/api';
+import { artistsApi, eventsApi } from '@/lib/api';
 import MapPageClient from '@/components/map/MapPage';
 
 interface MapPageProps {
@@ -78,6 +79,21 @@ export default async function MapPage({ params }: MapPageProps) {
     permanentRedirect(`/map/${artist.slug}`);
   }
 
+  const queryClient = new QueryClient();
+
+  if (artist) {
+    // Seed artist cache so useArtist() on the client is a cache hit
+    queryClient.setQueryData(['artist', artistId], artist);
+
+    // Prefetch events in parallel with SSR — eliminates the client-side waterfall
+    // (artist fetch → resolve Firestore ID → events fetch)
+    await queryClient.prefetchQuery({
+      queryKey: ['map-data', { status: 'all', search: '', artistId: artist.id }],
+      queryFn: () => eventsApi.getMapData({ status: 'all', artistId: artist.id }),
+      staleTime: 1000 * 60 * 5,
+    });
+  }
+
   const breadcrumbJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -99,7 +115,9 @@ export default async function MapPage({ params }: MapPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <MapPageClient artistId={artistId} />
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <MapPageClient artistId={artistId} />
+      </HydrationBoundary>
     </>
   );
 }
