@@ -1,8 +1,8 @@
 export default function MapLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <link rel="preconnect" href="https://tile.openstreetmap.org" />
-      <link rel="dns-prefetch" href="https://tile.openstreetmap.org" />
+      <link rel="preconnect" href="https://basemaps.cartocdn.com" crossOrigin="anonymous" />
+      <link rel="dns-prefetch" href="https://basemaps.cartocdn.com" />
       {children}
     </>
   );

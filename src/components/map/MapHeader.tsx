@@ -89,12 +89,12 @@ const burgerButton = css({
   },
 });
 
-interface MapNewHeaderProps {
+interface MapHeaderProps {
   artistName: string;
   isLoading?: boolean;
 }
 
-export default function MapNewHeader({ artistName, isLoading }: MapNewHeaderProps) {
+export default function MapHeader({ artistName, isLoading }: MapHeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
@@ -116,7 +116,12 @@ export default function MapNewHeader({ artistName, isLoading }: MapNewHeaderProp
 
           <div className={titleContainer}>
             {isLoading ? (
-              <Skeleton width="140px" height="16px" borderRadius="4px" style={{ margin: '0 auto' }} />
+              <Skeleton
+                width="140px"
+                height="16px"
+                borderRadius="4px"
+                style={{ margin: '0 auto' }}
+              />
             ) : (
               <span className={titleText}>{artistName}的生日應援地圖</span>
             )}

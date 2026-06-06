@@ -3,7 +3,7 @@ import { useIsInAppBrowser } from '@/hooks/useIsInAppBrowser';
 import { useEffect, useRef } from 'react';
 
 const useMapNewLocation = () => {
-  // useRef resets on unmount, so each map-new page visit triggers a fresh GPS attempt.
+  // useRef resets on unmount, so each map page visit triggers a fresh GPS attempt.
   // This differs from the old useMapLocation which used a module-level flag that
   // persisted across page navigations and prevented GPS on subsequent visits.
   const hasAttemptedAutoGetRef = useRef(false);

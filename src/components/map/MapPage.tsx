@@ -1,162 +1,189 @@
 'use client';
 
-import useMapPageData from './hook/useMapPageData';
-import useMapLocation from './hook/useMapLocation';
-import useDrawer from './hook/useDrawer';
-import { useMapStore } from '@/store';
-import Loading from '../Loading';
+import { useEffect, useRef, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
+import L from 'leaflet';
+import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
-import Drawer from './components/Drawer';
-import { TileLayer, Marker } from 'react-leaflet';
-import { LatLngTuple } from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-import { createUserLocationIcon } from './utils/userLocationIcon';
-import MapEventHandler from './components/MapEventHandler';
-import MapCenterUpdater from './components/MapCenterUpdater';
-import MarkerCluster from './components/MarkerCluster';
-import SafeMapContainer from './components/SafeMapContainer';
-import { initializeLeafletIcons } from './utils/leaflet-icons';
-import { usePageShare } from '@/hooks/usePageShare';
+import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
+import { useAuth } from '@/lib/auth-context';
+import useMapPageData from '@/components/map/hook/useMapPageData';
+import useMapNewLocation from './hooks/useMapNewLocation';
+import { useMapNewState } from './hooks/useMapNewState';
+import { useMapStateStorage } from './hooks/useMapStateStorage';
+import MapHeader from './MapHeader';
+import MapBottomSheet from './MapBottomSheet';
+import MapSingleEventCard from './MapSingleEventCard';
+import { MapEvent } from '@/types';
 
-// 初始化 Leaflet 圖標
-initializeLeafletIcons();
+import { DEFAULT_CENTER, DEFAULT_ZOOM } from './constants';
+
+// Leaflet requires client-side only rendering
+const MapSection = dynamic(() => import('./MapSection'), { ssr: false });
 
 const pageContainer = css({
-  minHeight: '100vh',
+  maxWidth: '600px',
+  mx: 'auto',
+  height: '100dvh',
+  overflow: 'hidden',
+  position: 'relative',
   background: 'color.background.primary',
-  position: 'relative',
 });
 
-const mainContainer = css({
-  position: 'relative',
-  height: '100vh',
-  paddingTop: '70px',
-});
-
-const mapSection = css({
+const mapArea = css({
   position: 'absolute',
   inset: '0',
   top: '70px',
 });
 
-const mapContainer = css({
-  height: '100%',
-  background: 'color.background.primary',
-  position: 'relative',
-  overflow: 'hidden',
-});
-
-const mapInner = css({
+const locateButton = css({
   position: 'absolute',
-  inset: '0',
-  overflow: 'hidden',
-});
-
-const mapWrapper = css({
-  width: '100%',
-  height: '100%',
-  borderRadius: 'radius.lg',
-  overflow: 'hidden',
+  right: '4',
+  width: '44px',
+  height: '44px',
+  borderRadius: 'radius.circle',
+  background: 'color.background.secondary',
   boxShadow: 'shadow.md',
-  position: 'relative',
-  zIndex: 0,
-});
-
-const loadingContainer = css({
-  height: '100vh',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  cursor: 'pointer',
+  color: 'color.text.secondary',
+  zIndex: '10',
 });
 
 interface MapPageProps {
-  artistId?: string;
-  search?: string;
+  artistId: string;
 }
 
-export default function MapPage({
-  artistId: propsArtistId,
-  search: propsSearch,
-}: MapPageProps = {}) {
-  const center = useMapStore((state) => state.center);
-  const selectedEventId = useMapStore((state) => state.selectedEventId);
-  const isLocationSelected = useMapStore((state) => state.isLocationSelected);
-  const selectedLocationEvents = useMapStore((state) => state.selectedLocationEvents);
-
-  const position: LatLngTuple = [center.lat, center.lng]; // 地圖中心點座標
-  const { latitude, longitude } = useMapLocation();
-  const userLocationIcon = createUserLocationIcon();
-
+export default function MapPage({ artistId }: MapPageProps) {
+  const router = useRouter();
+  const { user } = useAuth();
   const { mapEvents, isMapLoading, artistData, isArtistLoading } = useMapPageData({
-    propsSearch,
-    propsArtistId,
+    propsArtistId: artistId,
   });
 
-  // 計算實際顯示的事件數量
-  const displayEventsCount = selectedEventId
-    ? 1
-    : isLocationSelected
-      ? selectedLocationEvents.length
-      : mapEvents.length;
+  const { latitude, longitude } = useMapNewLocation();
 
-  usePageShare({
-    text: `${artistData?.stageName} 的生日應援地圖 | STELLAR 台灣生日應援地圖`,
-    url: window.location.href,
-  });
+  const { saveState, consumeRestoredState } = useMapStateStorage(artistId);
+  const [restoredState, setRestoredState] = useState(() => consumeRestoredState());
+  const [sheetHeight, setSheetHeight] = useState(120);
 
-  const { style, bind } = useDrawer({ eventsCount: displayEventsCount });
+  const handleMapBeforeNavigate = useCallback(
+    (savedSheetHeight: number, carouselScrollLeft: number) => {
+      saveState({ sheetHeight: savedSheetHeight, carouselScrollLeft });
+    },
+    [saveState]
+  );
 
-  if (isMapLoading || isArtistLoading) {
-    return (
-      <div className={loadingContainer}>
-        <Loading description="載入中..." />
-      </div>
-    );
-  }
+  const { selectedEvent, selectedLocationEvents, selectEvent, selectLocation, clearSelection } =
+    useMapNewState();
+  const mapRef = useRef<L.Map | null>(null);
+
+  const handleMapReady = (map: L.Map) => {
+    mapRef.current = map;
+  };
+
+  const handleSingleMarkerClick = (event: MapEvent) => {
+    sendGAEvent('event', 'click_map_marker', {
+      event_page: '/map/[artistId]',
+      user_id: user?.uid ?? '',
+      content_id: event.id,
+      artist_id: artistId,
+    });
+    selectEvent(event);
+  };
+
+  const handleMultiMarkerClick = (events: MapEvent[]) => {
+    sendGAEvent('event', 'map_location_filter_apply', {
+      event_page: '/map/[artistId]',
+      user_id: user?.uid ?? '',
+      content_id: artistId,
+      location_name: events[0]?.location?.name ?? events[0]?.location?.city ?? '',
+    });
+    selectLocation(events);
+  };
+
+  // Prevent body scroll so global Footer doesn't appear below the map
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isMapLoading && !isArtistLoading && !artistData) {
+      router.replace('/');
+    }
+  }, [isMapLoading, isArtistLoading, artistData, router]);
+
+  if (!isMapLoading && !isArtistLoading && !artistData) return null;
+
+  const isLoading = isMapLoading || isArtistLoading;
+  const artistName = artistData?.stageNameZh ?? artistData?.stageName ?? '';
+
+  const displayEvents = selectedLocationEvents ?? mapEvents;
 
   return (
-    <div className={pageContainer} id="main-content">
-      <div className={mainContainer}>
-        {/* 地圖區域 */}
-        <div className={mapSection}>
-          <div className={mapContainer}>
-            <div className={mapInner}>
-              <div className={mapWrapper}>
-                <SafeMapContainer
-                  center={position}
-                  zoom={center.zoom}
-                  style={{ height: '100%', width: '100%' }}
-                  zoomControl={true}
-                >
-                  <TileLayer
-                    maxZoom={19}
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-                  />
-
-                  {/* 地圖事件監聽器 */}
-                  <MapEventHandler />
-
-                  {/* 地圖中心點更新器 */}
-                  <MapCenterUpdater />
-
-                  {/* 用戶位置標記 */}
-                  {latitude && longitude && userLocationIcon && (
-                    <Marker
-                      position={[latitude, longitude]}
-                      icon={userLocationIcon}
-                      title="我的位置"
-                      alt="我的位置"
-                    />
-                  )}
-
-                  {/* Marker 聚合群組 */}
-                  <MarkerCluster mapEvents={mapEvents} artistData={artistData ?? null} />
-                </SafeMapContainer>
-              </div>
-            </div>
-          </div>
+    <>
+      <MapHeader artistName={artistName} isLoading={isLoading} />
+      <div className={pageContainer} id="main-content">
+        <div className={mapArea}>
+          <MapSection
+            artistId={artistId}
+            mapEvents={mapEvents}
+            artistData={artistData ?? null}
+            latitude={latitude}
+            longitude={longitude}
+            selectedEventId={selectedEvent?.id ?? null}
+            onSingleMarkerClick={handleSingleMarkerClick}
+            onMultiMarkerClick={handleMultiMarkerClick}
+            onMapReady={handleMapReady}
+            onClearSelection={clearSelection}
+          />
         </div>
-
-        <Drawer style={style} bind={bind} artistData={artistData ?? null} mapEvents={mapEvents} />
+        <button
+          type="button"
+          className={locateButton}
+          style={{ bottom: `${selectedEvent ? 148 : sheetHeight + 28}px` }}
+          aria-label="查看全部活動"
+          onClick={() => {
+            sendGAEvent('event', 'map_reset_view', {
+              event_page: '/map/[artistId]',
+              user_id: user?.uid ?? '',
+              content_id: artistId,
+            });
+            mapRef.current?.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true });
+          }}
+        >
+          <ArrowsPointingOutIcon width={20} height={20} />
+        </button>
+        {selectedEvent && (
+          <MapSingleEventCard
+            event={selectedEvent}
+            artistId={artistId}
+            onDismiss={() => selectEvent(null)}
+          />
+        )}
+        {!selectedEvent && (
+          <MapBottomSheet
+            artistId={artistId}
+            events={displayEvents}
+            isLocationFiltered={!!selectedLocationEvents}
+            onClearLocationFilter={clearSelection}
+            isLoading={isLoading}
+            initialHeight={restoredState?.sheetHeight}
+            initialCarouselScrollLeft={restoredState?.carouselScrollLeft}
+            onBeforeNavigate={handleMapBeforeNavigate}
+            onRestoredStateConsumed={() => setRestoredState(null)}
+            onHeightChange={setSheetHeight}
+          />
+        )}
       </div>
-    </div>
+    </>
   );
 }

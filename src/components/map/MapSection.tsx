@@ -66,7 +66,7 @@ export default function MapSection({
   const userLocationIcon = createUserLocationIcon();
 
   return (
-    <div className={`${mapWrapper} map-new-map`}>
+    <div className={`${mapWrapper} map-section`}>
       <MapContainer
         center={DEFAULT_CENTER}
         zoom={DEFAULT_ZOOM}

@@ -112,15 +112,15 @@ body {
   z-index: 2 !important;
 }
 
-/* map-new: custom zoom control */
-.map-new-map .leaflet-control-zoom {
+/* map: custom zoom control */
+.map-section .leaflet-control-zoom {
   border: 1px solid var(--color-border-light) !important;
   border-radius: var(--radius-lg) !important;
   box-shadow: var(--shadow-md) !important;
   overflow: hidden;
 }
 
-.map-new-map .leaflet-bar a {
+.map-section .leaflet-bar a {
   background-color: var(--color-bg-primary) !important;
   color: var(--color-primary) !important;
   border-bottom: 1px solid var(--color-border-light) !important;
@@ -131,11 +131,11 @@ body {
   font-weight: 400;
 }
 
-.map-new-map .leaflet-bar a:last-child {
+.map-section .leaflet-bar a:last-child {
   border-bottom: none !important;
 }
 
-.map-new-map .leaflet-bar a:hover {
+.map-section .leaflet-bar a:hover {
   background-color: var(--color-accent) !important;
   color: var(--color-primary) !important;
 }
