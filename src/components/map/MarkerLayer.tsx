@@ -165,7 +165,7 @@ const MarkerLayer = ({
         map.flyTo(clusterCenter, currentZoom);
       } else {
         sendGAEvent('event', 'map_cluster_zoom_in', {
-          event_page: '/map-new/[artistId]',
+          event_page: '/map/[artistId]',
           user_id: user?.uid ?? '',
           content_id: artistId,
         });

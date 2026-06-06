@@ -149,7 +149,7 @@ const EventCarouselCard = ({ event, artistId, onBeforeNavigate }: EventCarouselC
     setIsNavigating(true);
     onBeforeNavigate?.();
     sendGAEvent('event', 'click_event_detail', {
-      event_page: '/map-new/[artistId]',
+      event_page: '/map/[artistId]',
       user_id: user?.uid ?? '',
       content_id: event.id,
       artist_id: artistId,

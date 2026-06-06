@@ -2,18 +2,15 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { Metadata } from 'next';
 import { Artist } from '@/types';
 import { artistsApi } from '@/lib/api';
-import MapClientWrapper from './MapClientWrapper';
+import MapPageClient from '@/components/map/MapPage';
 
-interface MapWithArtistPageProps {
+interface MapPageProps {
   params: Promise<{
     artistId: string;
   }>;
-  searchParams: Promise<{
-    search?: string;
-  }>;
 }
 
-export async function generateMetadata({ params }: MapWithArtistPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: MapPageProps): Promise<Metadata> {
   try {
     const { artistId } = await params;
     const artist: Artist | null = await artistsApi.getById(artistId).catch(() => null);
@@ -31,16 +28,18 @@ export async function generateMetadata({ params }: MapWithArtistPageProps): Prom
     const description = `查看 ${displayName} 在台灣各地的生咖（生日應援）活動，透過地圖找到離你最近的活動資訊。`;
     const resolvedArtistId = artist.slug ?? artistId;
     const ogImageUrl = `https://www.stellar-zone.com/map/${resolvedArtistId}/opengraph-image`;
+    const canonicalUrl = `https://www.stellar-zone.com/map/${resolvedArtistId}`;
 
     return {
       title: { absolute: title },
       description,
       alternates: {
-        canonical: `https://www.stellar-zone.com/map/${resolvedArtistId}`,
+        canonical: canonicalUrl,
       },
       openGraph: {
         title,
         description,
+        url: canonicalUrl,
         images: [
           {
             url: ogImageUrl,
@@ -66,9 +65,8 @@ export async function generateMetadata({ params }: MapWithArtistPageProps): Prom
   }
 }
 
-export default async function MapWithArtistPage({ params, searchParams }: MapWithArtistPageProps) {
+export default async function MapPage({ params }: MapPageProps) {
   const { artistId } = await params;
-  const { search } = await searchParams;
 
   if (!artistId || artistId.trim() === '') {
     notFound();
@@ -101,7 +99,7 @@ export default async function MapWithArtistPage({ params, searchParams }: MapWit
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <MapClientWrapper artistId={artistId} search={search} />
+      <MapPageClient artistId={artistId} />
     </>
   );
 }

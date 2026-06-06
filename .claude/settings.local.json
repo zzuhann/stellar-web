@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:github.com)",
-      "Bash(grep -rn '`/event/' /Users/zzuhann/Documents/stellar-web/src --include=\"*.tsx\" --include=\"*.ts\")"
+      "Bash(grep -rn '`/event/' /Users/zzuhann/Documents/stellar-web/src --include=\"*.tsx\" --include=\"*.ts\")",
+      "Edit",
+      "Write"
     ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true
   }
 }

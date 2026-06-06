@@ -233,7 +233,7 @@ const MapBottomSheet = ({
   const handleExpandToHalf = useCallback(
     (triggerMethod: 'drag' | 'tap_handle') => {
       sendGAEvent('event', 'map_bottom_sheet_expand', {
-        event_page: '/map-new/[artistId]',
+        event_page: '/map/[artistId]',
         user_id: user?.uid ?? '',
         content_id: artistId,
         trigger_method: triggerMethod,
@@ -270,7 +270,7 @@ const MapBottomSheet = ({
     if (isLocationFiltered && !isLocationFilteredRef.current) {
       snapToHalf();
       sendGAEvent('event', 'map_bottom_sheet_expand', {
-        event_page: '/map-new/[artistId]',
+        event_page: '/map/[artistId]',
         user_id: user?.uid ?? '',
         content_id: artistId,
         trigger_method: 'location_filter',
@@ -384,7 +384,7 @@ const MapBottomSheet = ({
                     aria-label="清除地點篩選"
                     onClick={() => {
                       sendGAEvent('event', 'map_location_filter_clear', {
-                        event_page: '/map-new/[artistId]',
+                        event_page: '/map/[artistId]',
                         user_id: user?.uid ?? '',
                         content_id: artistId,
                       });

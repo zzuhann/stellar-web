@@ -179,7 +179,7 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
     if (href === '#') return;
     setIsNavigating(true);
     sendGAEvent('event', 'click_event_detail', {
-      event_page: '/map-new/[artistId]',
+      event_page: '/map/[artistId]',
       user_id: user?.uid ?? '',
       content_id: event.id,
       artist_id: artistId,
@@ -271,7 +271,7 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
           aria-label="關閉"
           onClick={() => {
             sendGAEvent('event', 'map_single_card_close', {
-              event_page: '/map-new/[artistId]',
+              event_page: '/map/[artistId]',
               user_id: user?.uid ?? '',
               content_id: event.id,
               artist_id: artistId,
