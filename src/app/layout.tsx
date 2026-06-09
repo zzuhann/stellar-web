@@ -8,7 +8,7 @@ import { QueryProvider } from '@/lib/query-client';
 import { LoadingProvider } from '@/lib/loading-context';
 import StyledToaster from '@/components/StyledToaster';
 import Header from '@/components/header';
-import Footer from '@/components/layout/Footer';
+import FooterWrapper from '@/components/layout/FooterWrapper';
 import { Analytics } from '@vercel/analytics/next';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
@@ -133,7 +133,7 @@ export default function RootLayout({
                 <ServiceWorkerRegistration />
                 <PWAInstallPrompt />
                 <StyledToaster />
-                <Footer />
+                <FooterWrapper />
               </ShareProvider>
             </LoadingProvider>
           </AuthProvider>
