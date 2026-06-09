@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
+import * as Sentry from '@sentry/nextjs';
 import { auth } from './firebase';
 import { getUserData, createUserDocument } from './auth';
 import { User as AppUser } from '@/types';
@@ -47,8 +48,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!appUserData) {
           try {
             await createUserDocument(firebaseUser);
-          } catch {
-            // User doc creation failed, user is still authenticated
+          } catch (e) {
+             
+            Sentry.captureException(e, { tags: { context: 'auth_createUserDocument' } });
           }
           appUserData = await getUserData(firebaseUser.uid);
         }
@@ -68,20 +70,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const toggleAuthModal = (redirectTo?: string, onAuthSuccess?: () => void) => {
+  const toggleAuthModal = useCallback((redirectTo?: string, onAuthSuccess?: () => void) => {
     if (redirectTo) {
       setRedirectUrl(redirectTo);
     }
     if (onAuthSuccess) {
       pendingActionRef.current = onAuthSuccess;
     }
-    setAuthModalOpen(!authModalOpen);
-
-    if (authModalOpen) {
-      setRedirectUrl(null);
-      pendingActionRef.current = null;
-    }
-  };
+    setAuthModalOpen((prev) => {
+      if (prev) {
+        // closing modal — clear redirect and pending action
+        setRedirectUrl(null);
+        pendingActionRef.current = null;
+      }
+      return !prev;
+    });
+  }, []);
 
   const handleSignOut = async () => {
     try {

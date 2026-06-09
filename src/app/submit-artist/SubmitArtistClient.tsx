@@ -69,8 +69,11 @@ export default function SubmitArtistClient() {
       openedModalRef.current = true;
       toggleAuthModal();
     }
+    // user intentionally omitted: this effect should only run once when auth resolves,
+    // not re-run on logout (handled by wasLoggedInRef effect below)
+    // authModalOpen intentionally omitted: reading it here would create a stale closure loop
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
+  }, [loading, toggleAuthModal]);
 
   // Reset ref after successful login
   useEffect(() => {

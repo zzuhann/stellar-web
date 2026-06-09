@@ -25,6 +25,11 @@ function resolveAuthDomain(): string {
     return 'stellar-7b82b.firebaseapp.com';
   }
 
+  // Vercel preview deployments — not in Firebase Authorized Domains, fall back to default
+  if (hostname.endsWith('.vercel.app')) {
+    return 'stellar-7b82b.firebaseapp.com';
+  }
+
   return hostname;
 }
 
