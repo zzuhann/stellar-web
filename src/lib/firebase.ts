@@ -1,13 +1,7 @@
 // Firebase 配置與初始化
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import {
-  getAuth,
-  initializeAuth,
-  indexedDBLocalPersistence,
-  browserLocalPersistence,
-  browserPopupRedirectResolver,
-} from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 // Firebase 配置
@@ -20,19 +14,10 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// 初始化 Firebase App
+// 初始化 Firebase App（singleton guard 避免 hot reload 重複初始化）
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-const isBrowser = typeof window !== 'undefined';
-
-// SSR 環境不能初始化 browser-only auth 依賴，否則會觸發 Firebase internal assertion。
-// 瀏覽器端才使用 redirect/popup 所需 resolver 與 persistence 設定。
-export const auth = isBrowser
-  ? initializeAuth(app, {
-      persistence: [indexedDBLocalPersistence, browserLocalPersistence],
-      popupRedirectResolver: browserPopupRedirectResolver,
-    })
-  : getAuth(app);
+export const auth = getAuth(app);
 
 // 初始化 Firestore
 export const db = getFirestore(app);

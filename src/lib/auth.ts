@@ -3,6 +3,7 @@ import {
   AuthError,
   GoogleAuthProvider,
   signInWithPopup,
+  browserPopupRedirectResolver,
   signInAnonymously as firebaseSignInAnonymously,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
@@ -17,7 +18,7 @@ export async function signInWithGoogle(): Promise<
   const provider = new GoogleAuthProvider();
 
   try {
-    const result = await signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider, browserPopupRedirectResolver);
     await createUserDocument(result.user);
     return { user: result.user, error: null };
   } catch (error) {
