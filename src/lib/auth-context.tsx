@@ -45,7 +45,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (firebaseUser) {
         let appUserData = await getUserData(firebaseUser.uid);
         if (!appUserData) {
-          await createUserDocument(firebaseUser);
+          try {
+            await createUserDocument(firebaseUser);
+          } catch {
+            // User doc creation failed, user is still authenticated
+          }
           appUserData = await getUserData(firebaseUser.uid);
         }
         setUserData(appUserData);

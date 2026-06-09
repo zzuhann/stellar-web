@@ -4,7 +4,6 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInAnonymously as firebaseSignInAnonymously,
-  browserPopupRedirectResolver,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
@@ -18,14 +17,14 @@ export async function signInWithGoogle(): Promise<
   const provider = new GoogleAuthProvider();
 
   try {
-    const result = await signInWithPopup(auth, provider, browserPopupRedirectResolver);
+    const result = await signInWithPopup(auth, provider);
     await createUserDocument(result.user);
     return { user: result.user, error: null };
   } catch (error) {
     const authError = error as AuthError;
     return {
       user: null,
-      error: FIREBASE_ERROR_MESSAGES[authError.code] || 'Google 登入失敗',
+      error: FIREBASE_ERROR_MESSAGES[authError.code] || authError.message || 'Google 登入失敗',
     };
   }
 }
