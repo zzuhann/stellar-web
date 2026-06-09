@@ -37,6 +37,7 @@ export default function SubmitEventClient() {
 
   const openedModalRef = useRef(false);
   const prevModalOpenRef = useRef(false);
+  const wasLoggedInRef = useRef(false);
 
   // Open auth modal when unauthenticated; check !authModalOpen to avoid toggling it closed
   useEffect(() => {
@@ -49,7 +50,10 @@ export default function SubmitEventClient() {
 
   // Reset ref after successful login
   useEffect(() => {
-    if (user) openedModalRef.current = false;
+    if (user) {
+      openedModalRef.current = false;
+      wasLoggedInRef.current = true;
+    }
   }, [user]);
 
   // Redirect home only when modal transitions from open → closed without logging in
@@ -60,6 +64,13 @@ export default function SubmitEventClient() {
       router.push('/');
     }
   }, [authModalOpen, user, router]);
+
+  // Redirect home on logout (user was logged in, then signed out)
+  useEffect(() => {
+    if (!loading && !user && wasLoggedInRef.current) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
     if (loadingEvent || loading) return;
