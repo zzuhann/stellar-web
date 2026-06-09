@@ -3,6 +3,7 @@
 import { useAuth } from '@/lib/auth-context';
 import Link from 'next/link';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 import AuthModal from '../auth/AuthModal';
 import { css } from '@/styled-system/css';
 import DesktopNav from './DesktopNav';
@@ -58,6 +59,9 @@ const Header = () => {
   const { authModalOpen, toggleAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const closeMobileMenu = () => setMobileMenuOpen(false);
+  const pathname = usePathname();
+
+  if (pathname.startsWith('/map/')) return null;
 
   return (
     <>

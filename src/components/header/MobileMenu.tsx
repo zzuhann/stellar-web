@@ -9,7 +9,8 @@ import { sendGAEvent } from '@next/third-parties/google';
 
 const mobileMenu = cva({
   base: {
-    display: 'none',
+    display: 'flex',
+    flexDirection: 'column',
     position: 'fixed',
     top: '0',
     right: '0',
@@ -20,10 +21,6 @@ const mobileMenu = cva({
     transition: 'transform 0.3s ease',
     zIndex: '101',
     overflowY: 'auto',
-    '@media (max-width: 768px)': {
-      display: 'flex',
-      flexDirection: 'column',
-    },
   },
   variants: {
     isOpen: {
@@ -107,7 +104,7 @@ const menuSeparator = css({
 
 const mobileMenuOverlay = cva({
   base: {
-    display: 'none',
+    display: 'block',
     position: 'fixed',
     top: '0',
     left: '0',
@@ -118,9 +115,6 @@ const mobileMenuOverlay = cva({
     cursor: 'default',
     zIndex: '100',
     transition: 'opacity 0.3s ease, visibility 0.3s ease',
-    '@media (max-width: 768px)': {
-      display: 'block',
-    },
   },
   variants: {
     isOpen: {
