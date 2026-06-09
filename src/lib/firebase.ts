@@ -10,33 +10,10 @@ import {
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// authDomain 必須與使用者實際所在的 host 一致，popup 才能把結果傳回 opener。
-// 若設成 apex（stellar-zone.com）但站點在 www，handler 會 307 跳轉，signInWithPopup 可能永遠不 resolve。
-function resolveAuthDomain(): string {
-  const fallback = process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? 'stellar-7b82b.firebaseapp.com';
-
-  if (typeof window === 'undefined') {
-    return fallback;
-  }
-
-  const { hostname } = window.location;
-
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'stellar-7b82b.firebaseapp.com';
-  }
-
-  // Vercel preview deployments — not in Firebase Authorized Domains, fall back to default
-  if (hostname.endsWith('.vercel.app')) {
-    return 'stellar-7b82b.firebaseapp.com';
-  }
-
-  return hostname;
-}
-
 // Firebase 配置
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: resolveAuthDomain(),
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? 'stellar-7b82b.firebaseapp.com',
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
