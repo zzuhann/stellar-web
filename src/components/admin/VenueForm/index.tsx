@@ -241,6 +241,76 @@ const autoFilledHint = css({
   marginTop: '1',
 });
 
+const tagInputRow = css({
+  display: 'flex',
+  gap: '2',
+});
+
+const tagAddBtn = css({
+  paddingY: '2.5',
+  paddingX: '3',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'white',
+  color: 'color.text.primary',
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
+  cursor: 'pointer',
+  flexShrink: 0,
+  transition: 'border-color 0.2s ease, background 0.2s ease',
+  '&:hover': {
+    borderColor: 'color.primary',
+    background: 'stellarBlue.50',
+  },
+});
+
+const tagList = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '1.5',
+  marginTop: '2',
+});
+
+const tagPill = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  paddingY: '1',
+  paddingX: '2.5',
+  borderRadius: '999px',
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  textStyle: 'caption',
+  color: 'color.text.primary',
+  fontWeight: 'medium',
+});
+
+const tagRemoveBtn = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '14px',
+  height: '14px',
+  borderRadius: '999px',
+  border: 'none',
+  background: 'none',
+  color: 'color.text.secondary',
+  cursor: 'pointer',
+  padding: '0',
+  flexShrink: 0,
+  '&:hover': {
+    color: 'red.500',
+  },
+});
+
+const fieldHint = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+  marginTop: '0.5',
+});
+
 const divider = css({
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
@@ -367,6 +437,7 @@ type FormState = {
   capacityRange: CapacityRange | '';
   coverPhoto: string;
   otherPhotos: string[];
+  hostTags: string[];
   threads: string;
   instagram: string;
   line: string;
@@ -391,6 +462,7 @@ function buildInitialForm(props: Props): FormState {
       capacityRange: v.capacityRange ?? '',
       coverPhoto: v.coverPhoto ?? '',
       otherPhotos: v.otherPhotos ?? [],
+      hostTags: v.hostTags ?? [],
       threads: v.socialMedia?.threads ?? '',
       instagram: v.socialMedia?.instagram ?? '',
       line: v.socialMedia?.line ?? '',
@@ -413,6 +485,7 @@ function buildInitialForm(props: Props): FormState {
     capacityRange: '',
     coverPhoto: '',
     otherPhotos: [],
+    hostTags: [],
     threads: '',
     instagram: '',
     line: '',
@@ -427,6 +500,7 @@ export default function VenueFormClient(props: Props) {
   const { token } = useAuthToken();
   const router = useRouter();
   const [formState, setFormState] = useState<FormState>(() => buildInitialForm(props));
+  const [hostTagInput, setHostTagInput] = useState('');
 
   const createMutation = useCreateVenueMutation();
   const updateMutation = useUpdateVenueMutation(props.mode === 'edit' ? props.venue.id : '');
@@ -470,6 +544,27 @@ export default function VenueFormClient(props: Props) {
     }));
   };
 
+  const MAX_HOST_TAGS = 5;
+
+  const handleAddHostTag = () => {
+    const tag = hostTagInput.trim();
+    if (!tag || formState.hostTags.includes(tag) || formState.hostTags.length >= MAX_HOST_TAGS)
+      return;
+    setFormState((prev) => ({ ...prev, hostTags: [...prev.hostTags, tag] }));
+    setHostTagInput('');
+  };
+
+  const handleRemoveHostTag = (tag: string) => {
+    setFormState((prev) => ({ ...prev, hostTags: prev.hostTags.filter((t) => t !== tag) }));
+  };
+
+  const handleHostTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddHostTag();
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -492,6 +587,7 @@ export default function VenueFormClient(props: Props) {
       if (formState.capacityRange) data.capacityRange = formState.capacityRange;
       if (formState.coverPhoto) data.coverPhoto = formState.coverPhoto;
       if (formState.otherPhotos.length > 0) data.otherPhotos = formState.otherPhotos;
+      if (formState.hostTags.length > 0) data.hostTags = formState.hostTags;
       if (formState.description.trim()) data.description = formState.description.trim();
       if (formState.threads || formState.instagram || formState.line) {
         data.socialMedia = {
@@ -534,6 +630,10 @@ export default function VenueFormClient(props: Props) {
       const photosChanged =
         JSON.stringify(formState.otherPhotos) !== JSON.stringify(v.otherPhotos ?? []);
       if (photosChanged) data.otherPhotos = formState.otherPhotos;
+
+      const hostTagsChanged =
+        JSON.stringify(formState.hostTags) !== JSON.stringify(v.hostTags ?? []);
+      if (hostTagsChanged) data.hostTags = formState.hostTags;
 
       if (formState.description !== (v.description ?? '')) data.description = formState.description;
 
@@ -862,6 +962,48 @@ export default function VenueFormClient(props: Props) {
             placeholder="新增照片"
             compressionParams={{ maxWidth: 1200, maxHeight: 900, quality: 0.85 }}
           />
+        </div>
+
+        <div className={fieldGroup}>
+          <label className={labelStyle}>場地標籤</label>
+          <p className={fieldHint}>
+            主辦初步篩選用，建議 1–3 個，最多 {MAX_HOST_TAGS} 個（例：免場地費、新手友善）
+          </p>
+          <div className={tagInputRow}>
+            <input
+              className={input}
+              value={hostTagInput}
+              onChange={(e) => setHostTagInput(e.target.value)}
+              onKeyDown={handleHostTagKeyDown}
+              placeholder="輸入標籤後按 Enter 或點新增"
+              disabled={formState.hostTags.length >= MAX_HOST_TAGS}
+            />
+            <button
+              type="button"
+              className={tagAddBtn}
+              onClick={handleAddHostTag}
+              disabled={formState.hostTags.length >= MAX_HOST_TAGS}
+            >
+              新增
+            </button>
+          </div>
+          {formState.hostTags.length > 0 && (
+            <div className={tagList}>
+              {formState.hostTags.map((t) => (
+                <span key={t} className={tagPill}>
+                  {t}
+                  <button
+                    type="button"
+                    className={tagRemoveBtn}
+                    aria-label={`移除標籤 ${t}`}
+                    onClick={() => handleRemoveHostTag(t)}
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className={fieldGroup}>

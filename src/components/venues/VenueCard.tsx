@@ -48,8 +48,8 @@ const tag = css({
   paddingY: '0.5',
   paddingX: '2',
   borderRadius: 'radius.sm',
-  background: 'stellarBlue.50',
-  color: 'stellarBlue.700',
+  background: 'color.background.secondary',
+  color: 'color.text.secondary',
   textStyle: 'caption',
   fontWeight: 'medium',
   flexShrink: 0,
@@ -111,6 +111,25 @@ const eventCountNum = css({
 });
 
 const SCROLL_KEY = 'venues_scrollY';
+
+const hostTagsRow = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '1.5',
+  marginTop: '2.5',
+});
+
+const hostTagPill = css({
+  paddingY: '1',
+  paddingX: '2',
+  borderRadius: '999px',
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  textStyle: 'caption',
+  color: 'color.text.primary',
+  fontWeight: 'medium',
+});
 
 const lineIconCls = css({ color: 'green.500' });
 const igIconCls = css({ color: 'gray.500' });
@@ -296,6 +315,16 @@ export default function VenueCard({ venue, listPosition, userId }: VenueCardProp
             收錄 <strong className={eventCountNum}>{venue.eventCount}</strong> 場
           </span>
         </div>
+
+        {venue.hostTags && venue.hostTags.length > 0 && (
+          <div className={hostTagsRow}>
+            {venue.hostTags.slice(0, 3).map((t) => (
+              <span key={t} className={hostTagPill}>
+                {t}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </Link>
   );
