@@ -366,6 +366,7 @@ export interface Venue {
   capacityRange: CapacityRange | null;
   eventCount: number;
   coverPhoto: string | null;
+  hostTags?: string[];
   status: 'active' | 'inactive' | 'pending' | 'rejected';
   socialMedia?: {
     threads?: string;
@@ -425,6 +426,7 @@ export interface CreateVenueData {
   description?: string;
   coverPhoto?: string;
   otherPhotos?: string[];
+  hostTags?: string[];
   nearestMrt?: string;
   mrtWalkMinutes?: number;
   lat?: number;
