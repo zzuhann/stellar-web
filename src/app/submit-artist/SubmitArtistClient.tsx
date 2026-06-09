@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { artistsApi } from '@/lib/api';
 import { css } from '@/styled-system/css';
@@ -41,7 +41,7 @@ const loadingText = css({
 });
 
 export default function SubmitArtistClient() {
-  const { user, loading } = useAuth();
+  const { user, loading, authModalOpen, toggleAuthModal } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
@@ -59,16 +59,33 @@ export default function SubmitArtistClient() {
     retry: false,
   });
 
+  const openedModalRef = useRef(false);
+
+  // Open auth modal when unauthenticated; check !authModalOpen to avoid toggling it closed
   useEffect(() => {
-    if (!loading && !user) {
-      showToast.warning('請先登入');
+    if (!loading && !user && !authModalOpen) {
+      openedModalRef.current = true;
+      toggleAuthModal();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  // Reset ref after successful login
+  useEffect(() => {
+    if (user) openedModalRef.current = false;
+  }, [user]);
+
+  // Redirect home when modal is dismissed without logging in
+  useEffect(() => {
+    if (openedModalRef.current && !authModalOpen && !user) {
       router.push('/');
     }
-  }, [user, loading, router]);
+  }, [authModalOpen, user, router]);
 
   // 檢查編輯模式下的藝人狀態
   useEffect(() => {
     if (artistLoading || loading) return;
+    if (!user) return;
     if (isEditMode) {
       if (!existingArtist) {
         showToast.warning('藝人不存在');

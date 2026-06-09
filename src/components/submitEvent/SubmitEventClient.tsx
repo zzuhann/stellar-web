@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { css } from '@/styled-system/css';
 import EventSubmissionForm from '@/components/submitEvent/EventSubmissionForm';
 import showToast from '@/lib/toast';
@@ -23,7 +23,7 @@ const mainContent = css({
 });
 
 export default function SubmitEventClient() {
-  const { user, loading } = useAuth();
+  const { user, loading, authModalOpen, toggleAuthModal } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const editEventId = searchParams.get('edit');
@@ -35,14 +35,32 @@ export default function SubmitEventClient() {
   const eventId = editEventId || copyEventId;
   const { data: existingEvent, isLoading: loadingEvent } = useEventDetail(eventId ?? '');
 
+  const openedModalRef = useRef(false);
+
+  // Open auth modal when unauthenticated; check !authModalOpen to avoid toggling it closed
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user && !authModalOpen) {
+      openedModalRef.current = true;
+      toggleAuthModal();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  // Reset ref after successful login
+  useEffect(() => {
+    if (user) openedModalRef.current = false;
+  }, [user]);
+
+  // Redirect home when modal is dismissed without logging in
+  useEffect(() => {
+    if (openedModalRef.current && !authModalOpen && !user) {
       router.push('/');
     }
-  }, [user, loading, router]);
+  }, [authModalOpen, user, router]);
 
   useEffect(() => {
     if (loadingEvent || loading) return;
+    if (!user) return;
     if (isEditMode || isCopyMode) {
       if (!existingEvent) {
         showToast.warning('活動不存在');
