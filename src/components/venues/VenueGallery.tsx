@@ -3,6 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { css } from '@/styled-system/css';
+import dynamic from 'next/dynamic';
+import 'yet-another-react-lightbox/styles.css';
+
+const Lightbox = dynamic(() => import('yet-another-react-lightbox'), {
+  ssr: false,
+});
 
 const galleryWrap = css({
   position: 'relative',
@@ -102,26 +108,18 @@ interface VenueGalleryProps {
 
 export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
   const [active, setActive] = useState(0);
-  const stripRef = useRef<HTMLDivElement>(null);
-  const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [thumbAtEnd, setThumbAtEnd] = useState(false);
-  const touchStartX = useRef<number | null>(null);
   const [dragX, setDragX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const stripRef = useRef<HTMLDivElement>(null);
+  const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const touchStartX = useRef<number | null>(null);
   const n = photos.length;
-
-  useEffect(() => {
-    const strip = stripRef.current;
-    const thumb = thumbRefs.current[active];
-    if (!strip || !thumb) return;
-    const left = thumb.offsetLeft;
-    const right = left + thumb.offsetWidth;
-    const scrollLeft = strip.scrollLeft;
-    const width = strip.clientWidth;
-    if (left < scrollLeft + 8 || right > scrollLeft + width - 8) {
-      strip.scrollTo({ left: left - width / 2 + thumb.offsetWidth / 2, behavior: 'smooth' });
-    }
-  }, [active]);
+  // Each slide occupies 1/n of the track; active * (100/n)% moves by one container width
+  const slidePercent = 100 / n;
+  const slides = photos.map((src) => ({ src, alt: `${venueName} 場地照片` }));
 
   const onThumbScroll = () => {
     const el = stripRef.current;
@@ -154,8 +152,18 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
     touchStartX.current = null;
   };
 
-  // Each slide occupies 1/n of the track; active * (100/n)% moves by one container width
-  const slidePercent = 100 / n;
+  useEffect(() => {
+    const strip = stripRef.current;
+    const thumb = thumbRefs.current[active];
+    if (!strip || !thumb) return;
+    const left = thumb.offsetLeft;
+    const right = left + thumb.offsetWidth;
+    const scrollLeft = strip.scrollLeft;
+    const width = strip.clientWidth;
+    if (left < scrollLeft + 8 || right > scrollLeft + width - 8) {
+      strip.scrollTo({ left: left - width / 2 + thumb.offsetWidth / 2, behavior: 'smooth' });
+    }
+  }, [active]);
 
   if (n === 0) {
     return (
@@ -202,6 +210,10 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
             <div
               key={i}
               style={{ flex: `0 0 ${slidePercent}%`, position: 'relative', height: '100%' }}
+              onClick={() => {
+                setLightboxIndex(i);
+                setLightboxOpen(true);
+              }}
             >
               <Image
                 src={src}
@@ -255,6 +267,20 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
             style={{ opacity: thumbAtEnd ? 0 : 1 }}
           />
         </div>
+      )}
+      {lightboxOpen && (
+        <Lightbox
+          open={lightboxOpen}
+          close={() => setLightboxOpen(false)}
+          slides={slides}
+          index={lightboxIndex}
+          on={{
+            view: ({ index }) => {
+              setActive(index);
+              setLightboxIndex(index);
+            },
+          }}
+        />
       )}
     </div>
   );
