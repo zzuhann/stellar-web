@@ -96,24 +96,16 @@ src/
 
 ## 環境變數
 
-```env
-# Firebase（前端 SDK）
-NEXT_PUBLIC_FIREBASE_API_KEY=
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
-NEXT_PUBLIC_FIREBASE_APP_ID=
-
-# API
-NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api
-
-NODE_ENV=development
-```
+需要新增時，由使用者自己新增，不要讀取、改動 env 檔案
 
 ---
 
 ## UI 元件規範
+
+### 排序
+
+useState 在 useRef 上方
+useEffect 在最下面（return 之上）
 
 ### 選單（Dropdown）
 
@@ -127,21 +119,35 @@ const dropdownContainer = css({ position: 'relative' });
 
 const dropdownTrigger = css({
   width: '100%',
-  paddingY: '2.5', paddingX: '3',
+  paddingY: '2.5',
+  paddingX: '3',
   borderRadius: 'radius.md',
-  border: '1px solid', borderColor: 'color.border.light',
-  background: 'white', color: 'color.text.primary',
-  cursor: 'pointer', textAlign: 'left',
-  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-  '&[data-empty="true"]': { color: 'color.text.tertiary' },  // placeholder 色
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'white',
+  color: 'color.text.primary',
+  cursor: 'pointer',
+  textAlign: 'left',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  '&[data-empty="true"]': { color: 'color.text.tertiary' }, // placeholder 色
   '&:hover': { borderColor: 'color.primary' },
 });
 
 const dropdownMenu = css({
-  position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
-  maxHeight: '240px', overflowY: 'auto',
-  background: 'white', border: '1px solid', borderColor: 'color.border.light',
-  borderRadius: 'radius.md', boxShadow: 'shadow.md', zIndex: 20,
+  position: 'absolute',
+  top: 'calc(100% + 4px)',
+  left: 0,
+  right: 0,
+  maxHeight: '240px',
+  overflowY: 'auto',
+  background: 'white',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.md',
+  boxShadow: 'shadow.md',
+  zIndex: 20,
 });
 ```
 
@@ -159,23 +165,43 @@ useEffect(() => {
 
 // JSX
 <div ref={ref} className={dropdownContainer}>
-  <button type="button" className={dropdownTrigger} data-empty={!value ? 'true' : undefined}
-    onClick={() => setOpen(o => !o)} aria-haspopup="listbox" aria-expanded={open}>
+  <button
+    type="button"
+    className={dropdownTrigger}
+    data-empty={!value ? 'true' : undefined}
+    onClick={() => setOpen((o) => !o)}
+    aria-haspopup="listbox"
+    aria-expanded={open}
+  >
     <span>{value || '請選擇'}</span>
-    <ChevronDownIcon className={css({ width: '14px', height: '14px', ...(open && { transform: 'rotate(180deg)' }) })} />
+    <ChevronDownIcon
+      className={css({
+        width: '14px',
+        height: '14px',
+        ...(open && { transform: 'rotate(180deg)' }),
+      })}
+    />
   </button>
   {open && (
     <div className={dropdownMenu} role="listbox">
-      {options.map(opt => (
-        <button key={opt.value} type="button" role="option" aria-selected={value === opt.value}
-          onClick={() => { onChange(opt.value); setOpen(false); }}>
+      {options.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          role="option"
+          aria-selected={value === opt.value}
+          onClick={() => {
+            onChange(opt.value);
+            setOpen(false);
+          }}
+        >
           <span>{opt.label}</span>
           {value === opt.value && <span>✓</span>}
         </button>
       ))}
     </div>
   )}
-</div>
+</div>;
 ```
 
 ---

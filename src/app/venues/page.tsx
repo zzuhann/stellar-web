@@ -23,7 +23,7 @@ export default async function VenuesPage() {
   return (
     <Suspense>
       <QueryStateProvider>
-        <VenuesClient initialVenues={venues} totalCount={venues.length} />
+        <VenuesClient initialVenues={venues} />
       </QueryStateProvider>
     </Suspense>
   );

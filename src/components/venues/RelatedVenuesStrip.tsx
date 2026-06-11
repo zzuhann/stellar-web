@@ -60,7 +60,7 @@ const track = css({
 
 const card = css({
   flex: '0 0 auto',
-  width: '140px',
+  width: '180px',
   scrollSnapAlign: 'start',
   textDecoration: 'none',
   display: 'block',
@@ -78,8 +78,8 @@ const card = css({
 
 const coverWrap = css({
   position: 'relative',
-  width: '140px',
-  height: '96px',
+  width: '180px',
+  height: '120px',
   background: 'gray.100',
   overflow: 'hidden',
 });
@@ -138,9 +138,9 @@ export default function RelatedVenuesStrip({ venues, region }: RelatedVenuesStri
   if (venues.length === 0) return null;
 
   return (
-    <section aria-label={`${region} 的其他場地`} className={section}>
+    <section aria-label={`${region}的其他場地`} className={section}>
       <div className={header}>
-        <h2 className={sectionTitle}>{region} 的其他場地</h2>
+        <h2 className={sectionTitle}>{region}的其他場地</h2>
         <Link href="/venues" className={seeAllLink}>
           查看全部
         </Link>
@@ -158,7 +158,7 @@ export default function RelatedVenuesStrip({ venues, region }: RelatedVenuesStri
                     fill
                     style={{ objectFit: 'cover' }}
                     unoptimized
-                    sizes="140px"
+                    sizes="180px"
                   />
                 ) : (
                   <div className={coverPlaceholder} aria-hidden="true">

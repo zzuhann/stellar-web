@@ -467,7 +467,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
               >
                 <path d="M12 3 14.5 9 21 10l-5 4.5 1.5 6.5L12 17.5 6.5 21 8 14.5 3 10l6.5-1z" />
               </svg>
-              收錄 {venue.eventCount} 場生咖、生日應援
+              {venue.eventCount} 場生日應援紀錄
             </span>
           </div>
           <h1 className={venueName}>{venue.name}</h1>
@@ -486,7 +486,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
               </div>
             </div>
             <div className={statBox}>
-              <div className={statLabel}>已收錄</div>
+              <div className={statLabel}>生日應援紀錄</div>
               <div className={statValue}>
                 {venue.eventCount} <span className={statUnit}>場</span>
               </div>
@@ -563,9 +563,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
           <section aria-label="聯繫這個場地" className={bookingSection}>
             <h2 className={sectionTitle}>聯繫這個場地</h2>
             {venue.description ? (
-              <p className={bookingDescHint}>
-                此場地有填寫說明，預約前建議先閱讀下方「其他說明」。
-              </p>
+              <p className={bookingDescHint}>預約前建議先閱讀下方「其他說明」。</p>
             ) : (
               <p className={bookingSubtitle}>請依場地規定確認預約步驟</p>
             )}

@@ -53,11 +53,6 @@ const subtitle = css({
   color: 'color.text.secondary',
 });
 
-const countHighlight = css({
-  color: 'color.primary',
-  fontWeight: 'bold',
-});
-
 const listSection = css({
   padding: '4',
   display: 'flex',
@@ -82,7 +77,6 @@ function applyCapacityFilter(venues: Venue[], cap: CapacityFilter): Venue[] {
 
 interface VenuesClientProps {
   initialVenues: Venue[];
-  totalCount: number;
 }
 
 const VALID_SORT_VALUES: VenueSort[] = ['eventCount', 'newest'];
@@ -91,7 +85,7 @@ function parseAsSort(value: string): VenueSort {
   return VALID_SORT_VALUES.includes(value as VenueSort) ? (value as VenueSort) : 'eventCount';
 }
 
-export default function VenuesClient({ initialVenues, totalCount }: VenuesClientProps) {
+export default function VenuesClient({ initialVenues }: VenuesClientProps) {
   const { user } = useAuth();
   const [region, setRegion] = useState('全部');
   const [capacity, setCapacity] = useState<CapacityFilter>('all');
@@ -183,10 +177,7 @@ export default function VenuesClient({ initialVenues, totalCount }: VenuesClient
       <div className={inner}>
         <section className={heroSection}>
           <h1 className={title}>生咖、生日應援場地列表</h1>
-          <p className={subtitle}>
-            在 STELLAR 找到適合舉辦生咖、生日應援的空間！目前共收錄{' '}
-            <strong className={countHighlight}>{totalCount}</strong> 個場地。
-          </p>
+          <p className={subtitle}>在 STELLAR 找到適合舉辦生咖、生日應援的空間！</p>
         </section>
 
         <VenueFilters

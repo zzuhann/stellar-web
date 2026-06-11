@@ -96,7 +96,7 @@ const dropdownContainer = css({
 });
 
 const dropdownTrigger = css({
-  minWidth: '110px',
+  minWidth: '90px',
   paddingY: '2',
   paddingX: '3',
   borderRadius: 'radius.md',
