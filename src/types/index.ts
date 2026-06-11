@@ -366,6 +366,7 @@ export interface Venue {
   capacityRange: CapacityRange | null;
   eventCount: number;
   coverPhoto: string | null;
+  otherPhotos?: string[];
   hostTags?: string[];
   status: 'active' | 'inactive' | 'pending' | 'rejected';
   socialMedia?: {

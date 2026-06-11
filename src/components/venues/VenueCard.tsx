@@ -201,7 +201,7 @@ function markViewedCardInSession(venueId: string): void {
 
 export default function VenueCard({ venue, listPosition, userId }: VenueCardProps) {
   const cardRef = useRef<HTMLAnchorElement>(null);
-  const photos = venue.coverPhoto ? [venue.coverPhoto] : [];
+  const photos = [...(venue.coverPhoto ? [venue.coverPhoto] : []), ...(venue.otherPhotos ?? [])];
   const mrtText = venue.nearestMrt
     ? `${venue.nearestMrt}${venue.mrtWalkMinutes ? ` ${venue.mrtWalkMinutes} 分鐘` : ''}`
     : null;
