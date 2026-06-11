@@ -32,8 +32,6 @@ const body = css({
 const nameRow = css({
   display: 'flex',
   alignItems: 'flex-start',
-  justifyContent: 'space-between',
-  gap: '2.5',
 });
 
 const venueName = css({

@@ -31,17 +31,15 @@ export default function EventImageGallery({ items }: EventImageGalleryProps) {
           setOpen(true);
         }}
       />
-      {open && (
-        <Lightbox
-          open={open}
-          close={() => setOpen(false)}
-          slides={slides}
-          index={index}
-          plugins={[Zoom]}
-          zoom={{ maxZoomPixelRatio: 3, scrollToZoom: true, doubleTapDelay: 300 }}
-          controller={{ closeOnBackdropClick: true }}
-        />
-      )}
+      <Lightbox
+        open={open}
+        close={() => setOpen(false)}
+        slides={slides}
+        index={index}
+        plugins={[Zoom]}
+        zoom={{ maxZoomPixelRatio: 3, scrollToZoom: true, doubleTapDelay: 300 }}
+        controller={{ closeOnBackdropClick: true }}
+      />
     </>
   );
 }

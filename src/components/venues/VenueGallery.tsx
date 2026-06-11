@@ -268,20 +268,18 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
           />
         </div>
       )}
-      {lightboxOpen && (
-        <Lightbox
-          open={lightboxOpen}
-          close={() => setLightboxOpen(false)}
-          slides={slides}
-          index={lightboxIndex}
-          on={{
-            view: ({ index }) => {
-              setActive(index);
-              setLightboxIndex(index);
-            },
-          }}
-        />
-      )}
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        slides={slides}
+        index={lightboxIndex}
+        on={{
+          view: ({ index }) => {
+            setActive(index);
+            setLightboxIndex(index);
+          },
+        }}
+      />
     </div>
   );
 }
