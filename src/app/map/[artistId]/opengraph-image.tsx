@@ -2,7 +2,11 @@ import { ImageResponse } from 'next/og';
 import { artistsApi } from '@/lib/api';
 
 export const runtime = 'nodejs';
-export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  const artists = await artistsApi.getAll({ status: 'approved' }).catch(() => []);
+  return artists.map((a) => ({ artistId: a.slug ?? a.id }));
+}
 
 export const size = {
   width: 1200,
