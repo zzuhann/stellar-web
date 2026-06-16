@@ -5,20 +5,10 @@
 export const isPWAMode = (): boolean => {
   if (typeof window === 'undefined') return false;
 
-  // 檢查是否在 standalone 模式運行
-  if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
-    return true;
+  if (window.matchMedia) {
+    if (window.matchMedia('(display-mode: standalone)').matches) return true;
+    if (window.matchMedia('(display-mode: fullscreen)').matches) return true;
   }
 
-  // 檢查是否在 fullscreen 模式運行
-  if (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) {
-    return true;
-  }
-
-  // 檢查是否為 iOS Safari 的 standalone 模式
-  if ((window.navigator as unknown as { standalone?: boolean }).standalone === true) {
-    return true;
-  }
-
-  return false;
+  return (window.navigator as unknown as { standalone?: boolean }).standalone === true;
 };

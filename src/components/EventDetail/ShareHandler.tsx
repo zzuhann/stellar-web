@@ -1,6 +1,7 @@
 'use client';
 
-import { usePageShare } from '@/hooks/usePageShare';
+import { useEffect } from 'react';
+import { useShare } from '@/context/ShareContext';
 
 interface ShareHandlerProps {
   title: string;
@@ -8,11 +9,12 @@ interface ShareHandlerProps {
 
 export default function ShareHandler({ title }: ShareHandlerProps) {
   const url = typeof window !== 'undefined' ? window.location.href : '';
+  const { setShareData, resetShareData } = useShare();
 
-  usePageShare({
-    text: `${title} | STELLAR 台灣生日應援地圖`,
-    url,
-  });
+  useEffect(() => {
+    setShareData({ text: `${title} | STELLAR 台灣生日應援地圖`, url });
+    return () => resetShareData();
+  }, [title, url, setShareData, resetShareData]);
 
   return null;
 }
