@@ -44,6 +44,8 @@ export default async function Image({ params }: ImageProps) {
       <img
         src={artistImageUrl}
         alt={title}
+        width={1200}
+        height={630}
         style={{
           width: '100%',
           height: '100%',
