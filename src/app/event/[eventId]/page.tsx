@@ -4,6 +4,8 @@ import { eventsApi } from '@/lib/api';
 import EventDetail from '@/components/EventDetail';
 import type { CoffeeEvent, FirebaseTimestamp } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
   params: Promise<{
     eventId: string;
