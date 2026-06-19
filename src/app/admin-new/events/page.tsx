@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -1242,8 +1242,6 @@ function AdminEventsInner() {
 }
 
 // ─── Page export ──────────────────────────────────────────────────────────────
-
-import { Suspense } from 'react';
 
 export default function AdminEventsPage() {
   return (
