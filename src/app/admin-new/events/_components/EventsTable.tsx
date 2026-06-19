@@ -72,18 +72,6 @@ const tdSlug = css({
   whiteSpace: 'nowrap',
 });
 
-const tdSubmitter = css({
-  paddingX: '3',
-  paddingY: '3',
-  textStyle: 'bodySmall',
-  color: 'color.text.secondary',
-  verticalAlign: 'middle',
-  maxWidth: '140px',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-});
-
 const tdDate = css({
   paddingX: '3',
   paddingY: '3',
@@ -352,11 +340,6 @@ function formatDate(ts: { _seconds: number } | string | undefined): string {
   return `${y}-${m}-${d} ${hh}:${mm}`;
 }
 
-function formatSubmitter(createdBy: string): string {
-  if (createdBy.includes('@')) return createdBy;
-  return createdBy.slice(0, 8);
-}
-
 // ─── Skeleton rows ────────────────────────────────────────────────────────────
 
 function SkeletonTableRows() {
@@ -372,9 +355,6 @@ function SkeletonTableRows() {
           </td>
           <td className={td}>
             <Skeleton width="56px" height="20px" borderRadius="4px" />
-          </td>
-          <td className={td}>
-            <Skeleton width="80%" height="16px" />
           </td>
           <td className={td}>
             <Skeleton width="90px" height="16px" />
@@ -456,9 +436,6 @@ export default function EventsTable({
                 狀態
               </th>
               <th className={th} style={{ width: '140px' }}>
-                投稿者
-              </th>
-              <th className={th} style={{ width: '140px' }}>
                 建立時間
               </th>
               <th className={th} style={{ width: '120px' }}>
@@ -479,7 +456,6 @@ export default function EventsTable({
                       {STATUS_LABEL[event.status] ?? event.status}
                     </span>
                   </td>
-                  <td className={tdSubmitter}>{formatSubmitter(event.createdBy)}</td>
                   <td className={tdDate}>{formatDate(event.createdAt)}</td>
                   <td className={tdActions}>
                     <div className={css({ display: 'flex', gap: '1', alignItems: 'center' })}>
