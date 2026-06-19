@@ -7,6 +7,8 @@ const queryKey = {
   venueDetail: (venueId: string) => ['venue-detail', venueId],
   venues: (params?: unknown) => ['venues', params],
   artistEvents: (artistId: string) => ['artist-events', artistId],
+  adminEvents: (params: object) => ['admin-events', params],
+  adminArtists: (params: object) => ['admin-artists', params],
 };
 
 export default queryKey;

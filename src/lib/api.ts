@@ -591,4 +591,19 @@ export const contactApi = {
   },
 };
 
+export interface AdminPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export const adminApi = {
+  getEvents: (params: { search?: string; status?: string; page?: number; limit?: number }) =>
+    api.get<{ data: CoffeeEvent[]; pagination: AdminPagination }>('/admin/events', { params }),
+
+  getArtists: (params: { search?: string; status?: string; page?: number; limit?: number }) =>
+    api.get<{ data: Artist[]; pagination: AdminPagination }>('/admin/artists', { params }),
+};
+
 export default api;
