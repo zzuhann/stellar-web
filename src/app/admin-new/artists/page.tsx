@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { useQueryState, parseAsInt } from '@/hooks/useQueryState';
-import { useDebounce } from '@/hooks/useDebounce';
 import { QueryStateProvider, useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
 import { adminApi } from '@/lib/api';
 import queryKey from '@/hooks/queryKey';
@@ -117,18 +116,17 @@ function AdminArtistsInner() {
   const { mergeUpdates } = useQueryStateContextMergeUpdates();
 
   const [searchInput, setSearchInput] = useState('');
+  const [committedSearch, setCommittedSearch] = useState('');
   const [searchField, setSearchField] = useQueryState<SearchField>('field', {
     defaultValue: 'name',
   });
   const [statusFilter, setStatusFilter] = useQueryState('status', { defaultValue: '' });
   const [page, setPage] = useQueryState('page', { parse: parseAsInt, defaultValue: 1 });
 
-  const debouncedSearch = useDebounce(searchInput, 500);
-
   const [deleteTarget, setDeleteTarget] = useState<Artist | null>(null);
 
   const field = searchField ?? 'name';
-  const searchValue = debouncedSearch || undefined;
+  const searchValue = committedSearch || undefined;
 
   const params = {
     search: field === 'name' ? searchValue : undefined,
@@ -161,14 +159,22 @@ function AdminArtistsInner() {
 
   function handleFieldChange(v: SearchField) {
     setSearchInput('');
+    setCommittedSearch('');
     mergeUpdates(() => {
       setSearchField(v);
       setPage(1);
     });
   }
 
-  const emptyMessage = debouncedSearch
-    ? EMPTY_MESSAGE_WITH_TERM[field](debouncedSearch)
+  function handleSearchCommit() {
+    setCommittedSearch(searchInput);
+    mergeUpdates(() => {
+      setPage(1);
+    });
+  }
+
+  const emptyMessage = committedSearch
+    ? EMPTY_MESSAGE_WITH_TERM[field](committedSearch)
     : '目前沒有任何藝人';
 
   return (
@@ -191,12 +197,8 @@ function AdminArtistsInner() {
                 className={searchInputStyle}
                 placeholder={SEARCH_PLACEHOLDER[field]}
                 value={searchInput}
-                onChange={(e) => {
-                  setSearchInput(e.target.value);
-                  mergeUpdates(() => {
-                    setPage(1);
-                  });
-                }}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearchCommit()}
                 aria-label={`以${field === 'name' ? '名稱' : field}搜尋藝人`}
               />
             </div>
@@ -209,8 +211,11 @@ function AdminArtistsInner() {
           isLoading={isLoading}
           isError={isError}
           emptyMessage={emptyMessage}
-          debouncedSearch={debouncedSearch}
-          onClearSearch={() => setSearchInput('')}
+          debouncedSearch={committedSearch}
+          onClearSearch={() => {
+            setSearchInput('');
+            setCommittedSearch('');
+          }}
           onDelete={setDeleteTarget}
           refetch={refetch}
           pagination={pagination}
