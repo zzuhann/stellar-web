@@ -125,11 +125,6 @@ function AdminArtistsInner() {
 
   const [deleteTarget, setDeleteTarget] = useState<Artist | null>(null);
 
-  async function handleBatchDelete(ids: string[]) {
-    await adminApi.deleteArtistsBatch(ids);
-    refetch();
-  }
-
   const field = searchField ?? 'name';
   const searchValue = committedSearch || undefined;
 
@@ -148,6 +143,11 @@ function AdminArtistsInner() {
     staleTime: 10 * 60 * 1000,
     refetchOnWindowFocus: false,
   });
+
+  async function handleBatchDelete(ids: string[]) {
+    await adminApi.deleteArtistsBatch(ids);
+    refetch();
+  }
 
   const artists = data?.data ?? [];
   const pagination = data?.pagination;
