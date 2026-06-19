@@ -11,8 +11,8 @@ import { adminApi } from '@/lib/api';
 import queryKey from '@/hooks/queryKey';
 import AdminSidebar from '../_components/AdminSidebar';
 import DeleteEventDialog from './_components/DeleteEventDialog';
-import StatusDropdown from './_components/StatusDropdown';
-import SearchFieldDropdown, { type SearchField } from './_components/SearchFieldDropdown';
+import StatusDropdown from '../_components/StatusDropdown';
+import SearchFieldDropdown, { type SearchField } from '../_components/SearchFieldDropdown';
 import EventsTable from './_components/EventsTable';
 import type { CoffeeEvent } from '@/types';
 
