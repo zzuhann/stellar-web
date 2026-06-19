@@ -12,6 +12,7 @@ import queryKey from '@/hooks/queryKey';
 import AdminSidebar from '../_components/AdminSidebar';
 import DeleteEventDialog from './_components/DeleteEventDialog';
 import StatusDropdown from './_components/StatusDropdown';
+import SearchFieldDropdown, { type SearchField } from './_components/SearchFieldDropdown';
 import EventsTable from './_components/EventsTable';
 import type { CoffeeEvent } from '@/types';
 
@@ -96,12 +97,29 @@ const searchInputStyle = css({
   },
 });
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const SEARCH_PLACEHOLDER: Record<SearchField, string> = {
+  name: '搜尋活動名稱...',
+  slug: '搜尋 slug（精確比對）',
+  id: '搜尋 ID（精確比對）',
+};
+
+const EMPTY_MESSAGE_WITH_TERM: Record<SearchField, (term: string) => string> = {
+  name: (term) => `找不到符合「${term}」的活動`,
+  slug: (term) => `找不到 slug 為「${term}」的活動`,
+  id: (term) => `找不到 id 為「${term}」的活動`,
+};
+
 // ─── Inner page (needs QueryStateProvider) ────────────────────────────────────
 
 function AdminEventsInner() {
   const { mergeUpdates } = useQueryStateContextMergeUpdates();
 
   const [searchInput, setSearchInput] = useState('');
+  const [searchField, setSearchField] = useQueryState<SearchField>('field', {
+    defaultValue: 'name',
+  });
   const [statusFilter, setStatusFilter] = useQueryState('status', { defaultValue: '' });
   const [page, setPage] = useQueryState('page', { parse: parseAsInt, defaultValue: 1 });
 
@@ -109,8 +127,13 @@ function AdminEventsInner() {
 
   const [deleteTarget, setDeleteTarget] = useState<CoffeeEvent | null>(null);
 
+  const field = searchField ?? 'name';
+  const searchValue = debouncedSearch || undefined;
+
   const params = {
-    search: debouncedSearch || undefined,
+    search: field === 'name' ? searchValue : undefined,
+    slug: field === 'slug' ? searchValue : undefined,
+    id: field === 'id' ? searchValue : undefined,
     status: statusFilter || undefined,
     page: page ?? 1,
     limit: 20,
@@ -136,8 +159,16 @@ function AdminEventsInner() {
     });
   }
 
+  function handleFieldChange(v: SearchField) {
+    setSearchInput('');
+    mergeUpdates(() => {
+      setSearchField(v);
+      setPage(1);
+    });
+  }
+
   const emptyMessage = debouncedSearch
-    ? `找不到符合「${debouncedSearch}」的活動`
+    ? EMPTY_MESSAGE_WITH_TERM[field](debouncedSearch)
     : '目前沒有任何活動';
 
   return (
@@ -148,12 +179,13 @@ function AdminEventsInner() {
         <div className={topBar}>
           <h1 className={pageTitle}>活動列表</h1>
           <div className={controlRow}>
+            <SearchFieldDropdown value={field} onChange={handleFieldChange} />
             <div className={searchWrapper}>
               <MagnifyingGlassIcon className={searchIcon} aria-hidden="true" />
               <input
                 type="search"
                 className={searchInputStyle}
-                placeholder="搜尋活動名稱..."
+                placeholder={SEARCH_PLACEHOLDER[field]}
                 value={searchInput}
                 onChange={(e) => {
                   setSearchInput(e.target.value);
@@ -161,7 +193,7 @@ function AdminEventsInner() {
                     setPage(1);
                   });
                 }}
-                aria-label="搜尋活動"
+                aria-label={`以${field === 'name' ? '名稱' : field}搜尋活動`}
               />
             </div>
             <StatusDropdown value={statusFilter ?? ''} onChange={handleStatusChange} />

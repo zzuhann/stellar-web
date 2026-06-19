@@ -599,11 +599,23 @@ export interface AdminPagination {
 }
 
 export const adminApi = {
-  getEvents: (params: { search?: string; status?: string; page?: number; limit?: number }) =>
-    api.get<{ data: CoffeeEvent[]; pagination: AdminPagination }>('/admin/events', { params }),
+  getEvents: (params: {
+    search?: string;
+    slug?: string;
+    id?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }) => api.get<{ data: CoffeeEvent[]; pagination: AdminPagination }>('/admin/events', { params }),
 
-  getArtists: (params: { search?: string; status?: string; page?: number; limit?: number }) =>
-    api.get<{ data: Artist[]; pagination: AdminPagination }>('/admin/artists', { params }),
+  getArtists: (params: {
+    search?: string;
+    slug?: string;
+    id?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }) => api.get<{ data: Artist[]; pagination: AdminPagination }>('/admin/artists', { params }),
 };
 
 export default api;
