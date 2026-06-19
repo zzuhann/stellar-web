@@ -85,20 +85,19 @@ const tdActions = css({
 const tdName = css({
   paddingX: '3',
   paddingY: '3',
-  verticalAlign: 'middle',
-  minWidth: '160px',
-});
-
-const artistStageName = css({
   textStyle: 'bodySmall',
   color: 'color.text.primary',
-  fontWeight: 'semibold',
+  verticalAlign: 'middle',
+  minWidth: '120px',
 });
 
-const artistStageNameZh = css({
-  textStyle: 'caption',
+const tdNameSecondary = css({
+  paddingX: '3',
+  paddingY: '3',
+  textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  marginTop: '0.5',
+  verticalAlign: 'middle',
+  minWidth: '100px',
 });
 
 // ─── Badge ────────────────────────────────────────────────────────────────────
@@ -354,8 +353,13 @@ function SkeletonTableRows() {
       {Array.from({ length: 5 }).map((_, i) => (
         <tr key={i} className={tr}>
           <td className={td}>
-            <Skeleton width="60%" height="16px" />
-            <Skeleton width="40%" height="12px" style={{ marginTop: '4px' }} />
+            <Skeleton width="80px" height="16px" />
+          </td>
+          <td className={td}>
+            <Skeleton width="60px" height="16px" />
+          </td>
+          <td className={td}>
+            <Skeleton width="60px" height="16px" />
           </td>
           <td className={td}>
             <Skeleton width="120px" height="16px" />
@@ -433,8 +437,14 @@ export default function ArtistsTable({
         <table className={table} aria-label="藝人列表">
           <thead className={thead}>
             <tr>
-              <th className={th} style={{ minWidth: '160px' }}>
-                藝名
+              <th className={th} style={{ minWidth: '120px' }}>
+                藝名（英）
+              </th>
+              <th className={th} style={{ minWidth: '100px' }}>
+                藝名（中）
+              </th>
+              <th className={th} style={{ minWidth: '100px' }}>
+                本名
               </th>
               <th className={th} style={{ width: '260px' }}>
                 Slug
@@ -456,12 +466,9 @@ export default function ArtistsTable({
               !isError &&
               artists.map((artist) => (
                 <tr key={artist.id} className={tr}>
-                  <td className={tdName}>
-                    <div className={artistStageName}>{artist.stageName}</div>
-                    {artist.stageNameZh && (
-                      <div className={artistStageNameZh}>{artist.stageNameZh}</div>
-                    )}
-                  </td>
+                  <td className={tdName}>{artist.stageName}</td>
+                  <td className={tdNameSecondary}>{artist.stageNameZh ?? '—'}</td>
+                  <td className={tdNameSecondary}>{artist.realName ?? '—'}</td>
                   <td className={tdSlug}>{artist.slug ?? '—'}</td>
                   <td className={td}>
                     <span

@@ -1,49 +1,69 @@
 'use client';
 
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
 
-const segmentGroup = css({
+const dropdownContainer = css({ position: 'relative', flexShrink: 0 });
+
+const dropdownTrigger = css({
+  height: '36px',
+  paddingY: '0',
+  paddingX: '3',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'white',
+  color: 'color.text.secondary',
+  cursor: 'pointer',
   display: 'flex',
-  flexShrink: 0,
+  alignItems: 'center',
+  gap: '1.5',
+  textStyle: 'bodySmall',
+  whiteSpace: 'nowrap',
+  '&:hover': {
+    borderColor: 'color.border.medium',
+    color: 'color.text.primary',
+  },
 });
 
-const segmentBtn = cva({
+const dropdownMenu = css({
+  position: 'absolute',
+  top: 'calc(100% + 4px)',
+  left: 0,
+  minWidth: '100%',
+  background: 'white',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.md',
+  boxShadow: 'shadow.md',
+  zIndex: 20,
+  overflow: 'hidden',
+});
+
+const dropdownOption = cva({
   base: {
-    height: '36px',
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%',
     paddingX: '3',
-    border: '1px solid',
-    borderColor: 'color.border.light',
-    background: 'white',
-    color: 'color.text.secondary',
-    cursor: 'pointer',
+    paddingY: '2',
     textStyle: 'bodySmall',
+    color: 'color.text.primary',
+    cursor: 'pointer',
+    background: 'none',
+    border: 'none',
+    textAlign: 'left',
     whiteSpace: 'nowrap',
-    transition: 'background 0.15s ease, color 0.15s ease',
-    marginLeft: '-1px',
-    position: 'relative',
-    '&:first-child': {
-      borderRadius: 'radius.md 0 0 radius.md',
-      marginLeft: '0',
-    },
-    '&:last-child': {
-      borderRadius: '0 radius.md radius.md 0',
-    },
     '&:hover': {
-      color: 'color.text.primary',
-      zIndex: 1,
+      background: 'color.background.secondary',
     },
   },
   variants: {
-    active: {
+    selected: {
       true: {
-        background: 'stellarBlue.50',
-        borderColor: 'stellarBlue.400',
-        color: 'stellarBlue.600',
+        color: 'color.primary',
         fontWeight: 'semibold',
-        zIndex: 2,
-        '&:hover': {
-          color: 'stellarBlue.600',
-        },
       },
     },
   },
@@ -66,21 +86,57 @@ interface SearchFieldDropdownProps {
 }
 
 export default function SearchFieldDropdown({ value, onChange, labels }: SearchFieldDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
   const resolvedLabels = { ...DEFAULT_LABELS, ...labels };
 
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
   return (
-    <div className={segmentGroup} role="group" aria-label="搜尋欄位">
-      {FIELDS.map((field) => (
-        <button
-          key={field}
-          type="button"
-          className={segmentBtn({ active: value === field })}
-          onClick={() => onChange(field)}
-          aria-pressed={value === field}
-        >
-          {resolvedLabels[field]}
-        </button>
-      ))}
+    <div ref={ref} className={dropdownContainer}>
+      <button
+        type="button"
+        className={dropdownTrigger}
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span>{resolvedLabels[value]}</span>
+        <ChevronDownIcon
+          className={css({
+            width: '12px',
+            height: '12px',
+            transition: 'transform 0.15s ease',
+            ...(open ? { transform: 'rotate(180deg)' } : {}),
+          })}
+          aria-hidden="true"
+        />
+      </button>
+      {open && (
+        <div className={dropdownMenu} role="listbox">
+          {FIELDS.map((field) => (
+            <button
+              key={field}
+              type="button"
+              role="option"
+              aria-selected={value === field}
+              className={dropdownOption({ selected: value === field })}
+              onClick={() => {
+                onChange(field);
+                setOpen(false);
+              }}
+            >
+              {resolvedLabels[field]}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
