@@ -140,6 +140,8 @@ function AdminArtistsInner() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: queryKey.adminArtists(params),
     queryFn: () => adminApi.getArtists(params).then((r) => r.data),
+    staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const artists = data?.data ?? [];

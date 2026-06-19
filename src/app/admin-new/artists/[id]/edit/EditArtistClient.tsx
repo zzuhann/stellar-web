@@ -36,6 +36,8 @@ export default function EditArtistClient({ id }: { id: string }) {
   const { data, isLoading } = useQuery({
     queryKey: ['admin-artist-edit', id],
     queryFn: () => adminApi.getArtists({ id }).then((r) => r.data.data[0] ?? null),
+    staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const backToList = () => router.push('/admin-new/artists');

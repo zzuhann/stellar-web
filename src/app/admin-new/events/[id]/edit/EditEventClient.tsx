@@ -36,6 +36,8 @@ export default function EditEventClient({ id }: { id: string }) {
   const { data, isLoading } = useQuery({
     queryKey: ['admin-event-edit', id],
     queryFn: () => adminApi.getEvents({ id }).then((r) => r.data.data[0] ?? null),
+    staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const backToList = () => router.push('/admin-new/events');

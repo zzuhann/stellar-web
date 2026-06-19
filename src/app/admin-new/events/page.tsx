@@ -140,6 +140,8 @@ function AdminEventsInner() {
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: queryKey.adminEvents(params),
     queryFn: () => adminApi.getEvents(params).then((r) => r.data),
+    staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   const events = data?.data ?? [];
