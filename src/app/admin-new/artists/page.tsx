@@ -179,7 +179,11 @@ function AdminArtistsInner() {
         <div className={topBar}>
           <h1 className={pageTitle}>藝人列表</h1>
           <div className={controlRow}>
-            <SearchFieldDropdown value={field} onChange={handleFieldChange} />
+            <SearchFieldDropdown
+              value={field}
+              onChange={handleFieldChange}
+              labels={{ name: '名稱（藝名／本名）' }}
+            />
             <div className={searchWrapper}>
               <MagnifyingGlassIcon className={searchIcon} aria-hidden="true" />
               <input
