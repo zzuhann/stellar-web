@@ -66,7 +66,7 @@ const tdSlug = css({
   color: 'gray.600',
   fontFamily: 'monospace',
   verticalAlign: 'middle',
-  maxWidth: '180px',
+  maxWidth: '260px',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
@@ -429,7 +429,7 @@ export default function EventsTable({
               <th className={th} style={{ minWidth: '200px' }}>
                 活動名稱
               </th>
-              <th className={th} style={{ width: '180px' }}>
+              <th className={th} style={{ width: '260px' }}>
                 Slug
               </th>
               <th className={th} style={{ width: '100px' }}>
