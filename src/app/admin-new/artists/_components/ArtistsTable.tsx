@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
@@ -39,10 +40,24 @@ const th = css({
   whiteSpace: 'nowrap',
 });
 
+const thCheckbox = css({
+  paddingX: '3',
+  paddingY: '2.5',
+  width: '40px',
+  verticalAlign: 'middle',
+});
+
 const tr = css({
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
   '&:hover': { background: 'gray.50' },
+});
+
+const trSelected = css({
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+  background: 'blue.50',
+  '&:hover': { background: 'blue.100' },
 });
 
 const td = css({
@@ -50,6 +65,13 @@ const td = css({
   paddingY: '3',
   textStyle: 'bodySmall',
   color: 'color.text.primary',
+  verticalAlign: 'middle',
+});
+
+const tdCheckbox = css({
+  paddingX: '3',
+  paddingY: '3',
+  width: '40px',
   verticalAlign: 'middle',
 });
 
@@ -98,6 +120,110 @@ const tdNameSecondary = css({
   color: 'color.text.secondary',
   verticalAlign: 'middle',
   minWidth: '100px',
+});
+
+// ─── Checkbox ─────────────────────────────────────────────────────────────────
+
+const checkboxStyle = css({
+  width: '16px',
+  height: '16px',
+  cursor: 'pointer',
+  accentColor: 'color.primary',
+});
+
+// ─── Batch action bar ─────────────────────────────────────────────────────────
+
+const batchBar = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '3',
+  paddingX: '4',
+  paddingY: '2.5',
+  background: 'blue.50',
+  borderBottom: '1px solid',
+  borderBottomColor: 'blue.200',
+  md: { paddingX: '6' },
+});
+
+const batchBarText = css({
+  flex: 1,
+  textStyle: 'bodySmall',
+  color: 'blue.700',
+  fontWeight: 'semibold',
+});
+
+const batchDeleteBtn = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  paddingX: '3',
+  paddingY: '1.5',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'red.300',
+  background: 'white',
+  color: 'red.600',
+  textStyle: 'caption',
+  fontWeight: 'semibold',
+  cursor: 'pointer',
+  transition: 'background 0.15s ease, border-color 0.15s ease',
+  '& svg': { width: '13px', height: '13px' },
+  '&:hover': { background: 'red.50', borderColor: 'red.500' },
+  '&:disabled': { opacity: 0.5, cursor: 'not-allowed' },
+});
+
+// ─── Confirm bar (inline) ─────────────────────────────────────────────────────
+
+const confirmBar = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '3',
+  paddingX: '4',
+  paddingY: '2.5',
+  background: 'red.50',
+  borderBottom: '1px solid',
+  borderBottomColor: 'red.200',
+  md: { paddingX: '6' },
+});
+
+const confirmBarText = css({
+  flex: 1,
+  textStyle: 'bodySmall',
+  color: 'red.700',
+  fontWeight: 'semibold',
+});
+
+const confirmBarBtns = css({
+  display: 'flex',
+  gap: '2',
+  alignItems: 'center',
+});
+
+const cancelBtn = css({
+  paddingX: '3',
+  paddingY: '1.5',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'white',
+  color: 'color.text.primary',
+  textStyle: 'caption',
+  cursor: 'pointer',
+  '&:hover': { background: 'color.background.secondary' },
+});
+
+const confirmDeleteBtn = css({
+  paddingX: '3',
+  paddingY: '1.5',
+  borderRadius: 'radius.md',
+  border: 'none',
+  background: 'red.600',
+  color: 'white',
+  textStyle: 'caption',
+  fontWeight: 'semibold',
+  cursor: 'pointer',
+  '&:hover': { background: 'red.700' },
+  '&:disabled': { opacity: 0.5, cursor: 'not-allowed' },
 });
 
 // ─── Badge ────────────────────────────────────────────────────────────────────
@@ -223,6 +349,18 @@ const mobileRow = css({
   flexDirection: 'column',
   gap: '1',
   '&:hover': { background: 'gray.50' },
+});
+
+const mobileRowSelected = css({
+  paddingX: '4',
+  paddingY: '3',
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1',
+  background: 'blue.50',
+  '&:hover': { background: 'blue.100' },
 });
 
 const mobileRowLine1 = css({
@@ -352,6 +490,7 @@ function SkeletonTableRows() {
     <>
       {Array.from({ length: 5 }).map((_, i) => (
         <tr key={i} className={tr}>
+          <td className={tdCheckbox} />
           <td className={td}>
             <Skeleton width="80px" height="16px" />
           </td>
@@ -411,6 +550,7 @@ interface ArtistsTableProps {
   debouncedSearch: string;
   onClearSearch: () => void;
   onDelete: (artist: Artist) => void;
+  onBatchDelete: (ids: string[]) => Promise<void>;
   refetch: () => void;
   pagination: AdminPagination | undefined;
   onPageChange: (page: number) => void;
@@ -424,19 +564,118 @@ export default function ArtistsTable({
   debouncedSearch,
   onClearSearch,
   onDelete,
+  onBatchDelete,
   refetch,
   pagination,
   onPageChange,
 }: ArtistsTableProps) {
   const router = useRouter();
 
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const allIds = artists.map((a) => a.id);
+  const currentArtistIds = useMemo(() => new Set(allIds), [artists]); // eslint-disable-line react-hooks/exhaustive-deps
+  const validSelectedIds = useMemo(
+    () => new Set([...selectedIds].filter((id) => currentArtistIds.has(id))),
+    [selectedIds, currentArtistIds]
+  );
+
+  const isAllSelected = allIds.length > 0 && allIds.every((id) => validSelectedIds.has(id));
+  const isIndeterminate = allIds.some((id) => validSelectedIds.has(id)) && !isAllSelected;
+
+  function toggleAll() {
+    if (isAllSelected) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(allIds));
+    }
+  }
+
+  function toggleOne(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }
+
+  async function handleConfirmDelete() {
+    setIsDeleting(true);
+    try {
+      await onBatchDelete(Array.from(validSelectedIds));
+      setSelectedIds(new Set());
+      setIsConfirming(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  }
+
+  const selectedCount = validSelectedIds.size;
+
   return (
     <>
+      {/* Batch action bar */}
+      {selectedCount > 0 && !isConfirming && (
+        <div className={batchBar}>
+          <span className={batchBarText}>已選 {selectedCount} 筆</span>
+          <button type="button" className={batchDeleteBtn} onClick={() => setIsConfirming(true)}>
+            <TrashIcon aria-hidden="true" />
+            刪除
+          </button>
+        </div>
+      )}
+
+      {/* Inline confirm bar */}
+      {isConfirming && (
+        <div className={confirmBar}>
+          <span className={confirmBarText}>
+            確定要刪除 {selectedCount} 筆藝人？此操作無法復原。
+          </span>
+          <div className={confirmBarBtns}>
+            <button
+              type="button"
+              className={cancelBtn}
+              onClick={() => setIsConfirming(false)}
+              disabled={isDeleting}
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              className={confirmDeleteBtn}
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? '刪除中...' : '確認刪除'}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className={tableWrapper}>
         {/* Desktop table */}
         <table className={table} aria-label="藝人列表">
           <thead className={thead}>
             <tr>
+              <th className={thCheckbox}>
+                <input
+                  type="checkbox"
+                  className={checkboxStyle}
+                  checked={isAllSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = isIndeterminate;
+                  }}
+                  onChange={toggleAll}
+                  aria-label="全選"
+                  disabled={isLoading || artists.length === 0}
+                />
+              </th>
               <th className={th} style={{ minWidth: '120px' }}>
                 藝名（英）
               </th>
@@ -465,7 +704,16 @@ export default function ArtistsTable({
             {!isLoading &&
               !isError &&
               artists.map((artist) => (
-                <tr key={artist.id} className={tr}>
+                <tr key={artist.id} className={selectedIds.has(artist.id) ? trSelected : tr}>
+                  <td className={tdCheckbox}>
+                    <input
+                      type="checkbox"
+                      className={checkboxStyle}
+                      checked={selectedIds.has(artist.id)}
+                      onChange={() => toggleOne(artist.id)}
+                      aria-label={`選取 ${artist.stageName}`}
+                    />
+                  </td>
                   <td className={tdName}>{artist.stageName}</td>
                   <td className={tdNameSecondary}>{artist.stageNameZh ?? '—'}</td>
                   <td className={tdNameSecondary}>{artist.realName ?? '—'}</td>
@@ -513,8 +761,18 @@ export default function ArtistsTable({
           {!isLoading &&
             !isError &&
             artists.map((artist) => (
-              <div key={artist.id} className={mobileRow}>
+              <div
+                key={artist.id}
+                className={selectedIds.has(artist.id) ? mobileRowSelected : mobileRow}
+              >
                 <div className={mobileRowLine1}>
+                  <input
+                    type="checkbox"
+                    className={checkboxStyle}
+                    checked={selectedIds.has(artist.id)}
+                    onChange={() => toggleOne(artist.id)}
+                    aria-label={`選取 ${artist.stageName}`}
+                  />
                   <span
                     className={badge({
                       status: artist.status as 'pending' | 'approved' | 'rejected' | 'exists',

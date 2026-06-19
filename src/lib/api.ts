@@ -616,6 +616,9 @@ export const adminApi = {
     page?: number;
     limit?: number;
   }) => api.get<{ data: Artist[]; pagination: AdminPagination }>('/admin/artists', { params }),
+
+  deleteArtistsBatch: (ids: string[]) =>
+    api.delete<{ deleted: number }>('/admin/artists/batch', { data: { ids } }),
 };
 
 export default api;
