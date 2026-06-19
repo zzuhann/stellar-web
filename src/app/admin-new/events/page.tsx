@@ -27,6 +27,7 @@ import type { CoffeeEvent } from '@/types';
 const pageWrapper = css({
   display: 'flex',
   minHeight: '100dvh',
+  paddingTop: '70px',
   background: 'color.background.primary',
 });
 

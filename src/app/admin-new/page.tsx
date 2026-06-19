@@ -6,7 +6,8 @@ const pageContainer = css({
   minHeight: '100vh',
   background: 'color.background.primary',
   paddingX: '4',
-  paddingY: '10',
+  paddingTop: 'calc(70px + token(spacing.10))',
+  paddingBottom: '10',
 });
 
 const inner = css({
