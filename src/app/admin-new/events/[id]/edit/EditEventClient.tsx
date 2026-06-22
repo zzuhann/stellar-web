@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { css } from '@/styled-system/css';
 import { adminApi } from '@/lib/api';
-import AdminSidebar from '../../../_components/AdminSidebar';
+import AdminSidebar from '@/components/admin-new/AdminSidebar';
 import EventSubmissionForm from '@/components/submitEvent/EventSubmissionForm';
 import Loading from '@/components/Loading';
 

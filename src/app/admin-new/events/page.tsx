@@ -8,11 +8,11 @@ import { useQueryState, parseAsInt } from '@/hooks/useQueryState';
 import { QueryStateProvider, useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
 import { adminApi } from '@/lib/api';
 import queryKey from '@/hooks/queryKey';
-import AdminSidebar from '../_components/AdminSidebar';
-import DeleteEventDialog from './_components/DeleteEventDialog';
-import StatusDropdown from '../_components/StatusDropdown';
-import SearchFieldDropdown, { type SearchField } from '../_components/SearchFieldDropdown';
-import EventsTable from './_components/EventsTable';
+import AdminSidebar from '@/components/admin-new/AdminSidebar';
+import DeleteEventDialog from '@/components/admin-new/DeleteEventDialog';
+import StatusDropdown from '@/components/admin-new/StatusDropdown';
+import SearchFieldDropdown, { type SearchField } from '@/components/admin-new/SearchFieldDropdown';
+import EventsTable from '@/components/admin-new/EventsTable';
 import type { CoffeeEvent } from '@/types';
 
 // ─── Layout CSS ───────────────────────────────────────────────────────────────

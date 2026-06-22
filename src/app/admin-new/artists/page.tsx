@@ -8,11 +8,11 @@ import { useQueryState, parseAsInt } from '@/hooks/useQueryState';
 import { QueryStateProvider, useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
 import { adminApi } from '@/lib/api';
 import queryKey from '@/hooks/queryKey';
-import AdminSidebar from '../_components/AdminSidebar';
-import StatusDropdown from '../_components/StatusDropdown';
-import SearchFieldDropdown, { type SearchField } from '../_components/SearchFieldDropdown';
-import DeleteArtistDialog from './_components/DeleteArtistDialog';
-import ArtistsTable from './_components/ArtistsTable';
+import AdminSidebar from '@/components/admin-new/AdminSidebar';
+import StatusDropdown from '@/components/admin-new/StatusDropdown';
+import SearchFieldDropdown, { type SearchField } from '@/components/admin-new/SearchFieldDropdown';
+import DeleteArtistDialog from '@/components/admin-new/DeleteArtistDialog';
+import ArtistsTable from '@/components/admin-new/ArtistsTable';
 import type { Artist } from '@/types';
 
 // ─── Layout CSS ───────────────────────────────────────────────────────────────
