@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
-import { eventsApi } from '@/lib/api';
+import { adminApi } from '@/lib/api';
 import ModalOverlay from '@/components/ui/ModalOverlay';
 import type { CoffeeEvent } from '@/types';
 
@@ -135,7 +135,7 @@ export default function DeleteEventDialog({ event, onClose, onSuccess }: DeleteE
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => eventsApi.delete(id),
+    mutationFn: (id: string) => adminApi.deleteEvent(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-events'] });
       onSuccess();
@@ -169,7 +169,7 @@ export default function DeleteEventDialog({ event, onClose, onSuccess }: DeleteE
         <div className={dialogHeader}>
           <h3 id="delete-dialog-title" className={dialogTitle}>
             <ExclamationTriangleIcon
-              style={{ width: '20px', height: '20px', color: 'var(--colors-amber-500)' }}
+              className={css({ width: '20px', height: '20px', color: 'amber.500' })}
               aria-hidden="true"
             />
             {isError ? '刪除失敗' : '確認刪除'}

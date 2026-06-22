@@ -33,7 +33,7 @@ const thead = css({
   borderBottomColor: 'color.border.light',
 });
 
-const th = css({
+const thTitle = css({
   paddingX: '3',
   paddingY: '2.5',
   textStyle: 'caption',
@@ -41,6 +41,51 @@ const th = css({
   color: 'color.text.secondary',
   textAlign: 'left',
   whiteSpace: 'nowrap',
+  minWidth: '200px',
+});
+
+const thSlug = css({
+  paddingX: '3',
+  paddingY: '2.5',
+  textStyle: 'caption',
+  fontWeight: 'semibold',
+  color: 'color.text.secondary',
+  textAlign: 'left',
+  whiteSpace: 'nowrap',
+  width: '260px',
+});
+
+const thStatus = css({
+  paddingX: '3',
+  paddingY: '2.5',
+  textStyle: 'caption',
+  fontWeight: 'semibold',
+  color: 'color.text.secondary',
+  textAlign: 'left',
+  whiteSpace: 'nowrap',
+  width: '100px',
+});
+
+const thDate = css({
+  paddingX: '3',
+  paddingY: '2.5',
+  textStyle: 'caption',
+  fontWeight: 'semibold',
+  color: 'color.text.secondary',
+  textAlign: 'left',
+  whiteSpace: 'nowrap',
+  width: '140px',
+});
+
+const thActions = css({
+  paddingX: '3',
+  paddingY: '2.5',
+  textStyle: 'caption',
+  fontWeight: 'semibold',
+  color: 'color.text.secondary',
+  textAlign: 'left',
+  whiteSpace: 'nowrap',
+  width: '120px',
 });
 
 const tr = css({
@@ -426,21 +471,11 @@ export default function EventsTable({
         <table className={table} aria-label="活動列表">
           <thead className={thead}>
             <tr>
-              <th className={th} style={{ minWidth: '200px' }}>
-                活動名稱
-              </th>
-              <th className={th} style={{ width: '260px' }}>
-                Slug
-              </th>
-              <th className={th} style={{ width: '100px' }}>
-                狀態
-              </th>
-              <th className={th} style={{ width: '140px' }}>
-                建立時間
-              </th>
-              <th className={th} style={{ width: '120px' }}>
-                操作
-              </th>
+              <th className={thTitle}>活動名稱</th>
+              <th className={thSlug}>Slug</th>
+              <th className={thStatus}>狀態</th>
+              <th className={thDate}>建立時間</th>
+              <th className={thActions}>操作</th>
             </tr>
           </thead>
           <tbody>

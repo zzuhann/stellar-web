@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
-import { artistsApi } from '@/lib/api';
+import { adminApi } from '@/lib/api';
 import ModalOverlay from '@/components/ui/ModalOverlay';
 import type { Artist } from '@/types';
 
@@ -132,7 +132,7 @@ export default function DeleteArtistDialog({
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => artistsApi.delete(id),
+    mutationFn: (id: string) => adminApi.deleteArtist(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin-artists'] });
       onSuccess();
@@ -166,7 +166,7 @@ export default function DeleteArtistDialog({
         <div className={dialogHeader}>
           <h3 id="delete-dialog-title" className={dialogTitle}>
             <ExclamationTriangleIcon
-              style={{ width: '20px', height: '20px', color: 'var(--colors-amber-500)' }}
+              className={css({ width: '20px', height: '20px', color: 'amber.500' })}
               aria-hidden="true"
             />
             {isError ? '刪除失敗' : '確認刪除'}

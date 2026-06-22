@@ -619,6 +619,10 @@ export const adminApi = {
 
   deleteArtistsBatch: (ids: string[]) =>
     api.delete<{ deleted: number }>('/admin/artists/batch', { data: { ids } }),
+
+  deleteEvent: (id: string) => api.delete<{ message: string }>(`/events/${id}`),
+
+  deleteArtist: (id: string) => api.delete<{ message: string }>(`/artists/${id}`),
 };
 
 export default api;

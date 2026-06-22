@@ -575,21 +575,22 @@ export default function ArtistsTable({
   const [isConfirming, setIsConfirming] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const allIds = artists.map((a) => a.id);
-  const currentArtistIds = useMemo(() => new Set(allIds), [artists]); // eslint-disable-line react-hooks/exhaustive-deps
+  const currentArtistIds = useMemo(() => new Set(artists.map((a) => a.id)), [artists]);
   const validSelectedIds = useMemo(
     () => new Set([...selectedIds].filter((id) => currentArtistIds.has(id))),
     [selectedIds, currentArtistIds]
   );
 
-  const isAllSelected = allIds.length > 0 && allIds.every((id) => validSelectedIds.has(id));
-  const isIndeterminate = allIds.some((id) => validSelectedIds.has(id)) && !isAllSelected;
+  const isAllSelected =
+    currentArtistIds.size > 0 && [...currentArtistIds].every((id) => validSelectedIds.has(id));
+  const isIndeterminate =
+    [...currentArtistIds].some((id) => validSelectedIds.has(id)) && !isAllSelected;
 
   function toggleAll() {
     if (isAllSelected) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(allIds));
+      setSelectedIds(new Set(currentArtistIds));
     }
   }
 
@@ -673,7 +674,7 @@ export default function ArtistsTable({
                   }}
                   onChange={toggleAll}
                   aria-label="全選"
-                  disabled={isLoading || artists.length === 0}
+                  disabled={isLoading || currentArtistIds.size === 0}
                 />
               </th>
               <th className={th} style={{ minWidth: '120px' }}>
