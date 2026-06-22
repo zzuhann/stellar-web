@@ -205,7 +205,7 @@ const CAPACITY_OPTIONS: { id: CapacityFilter; label: string }[] = [
 export type VenueSort = 'eventCount' | 'newest';
 
 const SORT_OPTIONS: { id: VenueSort; label: string }[] = [
-  { id: 'eventCount', label: '最多收錄生咖' },
+  { id: 'eventCount', label: '最多生咖數' },
   { id: 'newest', label: '最新上架' },
 ];
 

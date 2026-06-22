@@ -7,6 +7,22 @@ const queryKey = {
   venueDetail: (venueId: string) => ['venue-detail', venueId],
   venues: (params?: unknown) => ['venues', params],
   artistEvents: (artistId: string) => ['artist-events', artistId],
+  adminEvents: (params: {
+    search?: string;
+    slug?: string;
+    id?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }) => ['admin-events', params],
+  adminArtists: (params: {
+    search?: string;
+    slug?: string;
+    id?: string;
+    status?: string;
+    page?: number;
+    limit?: number;
+  }) => ['admin-artists', params],
 };
 
 export default queryKey;
