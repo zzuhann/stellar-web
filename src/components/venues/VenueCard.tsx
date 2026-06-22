@@ -100,20 +100,19 @@ const SCROLL_KEY = 'venues_scrollY';
 const hostTagsRow = css({
   display: 'flex',
   flexWrap: 'wrap',
-  gap: '1.5',
+  gap: '2',
   marginTop: '2.5',
 });
 
 const hostTagPill = css({
-  paddingY: '1',
+  paddingY: '0.5',
   paddingX: '2',
-  borderRadius: '999px',
-  background: 'color.background.secondary',
+  borderRadius: 'radius.sm',
+  background: 'transparent',
   border: '1px solid',
-  borderColor: 'color.border.light',
+  borderColor: 'gray.300',
   textStyle: 'caption',
-  color: 'color.text.primary',
-  fontWeight: 'medium',
+  color: 'gray.700',
 });
 
 const starIconCls = css({ color: 'amber.500' });

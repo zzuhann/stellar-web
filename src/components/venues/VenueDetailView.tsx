@@ -172,19 +172,18 @@ const tagsWrap = css({
   marginTop: '2',
   display: 'flex',
   flexWrap: 'wrap',
-  gap: '1.5',
+  gap: '2',
 });
 
 const tagPill = css({
-  paddingY: '1.5',
-  paddingX: '2.5',
-  borderRadius: '999px',
-  background: 'color.background.secondary',
+  paddingY: '0.5',
+  paddingX: '2',
+  borderRadius: 'radius.sm',
+  background: 'transparent',
   border: '1px solid',
-  borderColor: 'color.border.light',
+  borderColor: 'gray.300',
   textStyle: 'caption',
-  color: 'color.text.primary',
-  fontWeight: 'medium',
+  color: 'gray.700',
 });
 
 const descSection = css({
