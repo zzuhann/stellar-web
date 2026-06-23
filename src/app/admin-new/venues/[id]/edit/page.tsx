@@ -651,6 +651,7 @@ export default function VenueEditPage() {
 
   const [hostTagInput, setHostTagInput] = useState('');
   const initialized = useRef(false);
+  const [isFormReady, setIsFormReady] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -690,6 +691,7 @@ export default function VenueEditPage() {
         preferredContact: (venue.preferredContact as PreferredContact) ?? '',
         contactUrl: venue.contactUrl ?? '',
       });
+      setIsFormReady(true);
     }
   }, [venue]);
 
@@ -1039,27 +1041,31 @@ export default function VenueEditPage() {
             {/* coverPhoto */}
             <div className={fieldGroup}>
               <span className={label}>封面圖片</span>
-              <ImageUpload
-                currentImageUrl={form.coverPhoto || undefined}
-                onUploadComplete={(url) => setForm((prev) => ({ ...prev, coverPhoto: url }))}
-                onImageRemove={() => setForm((prev) => ({ ...prev, coverPhoto: '' }))}
-                authToken={token || undefined}
-                placeholder="點擊上傳封面圖片"
-                compressionParams={{ maxWidth: 1200, maxHeight: 800, quality: 0.85 }}
-              />
+              {isFormReady && (
+                <ImageUpload
+                  currentImageUrl={form.coverPhoto || undefined}
+                  onUploadComplete={(url) => setForm((prev) => ({ ...prev, coverPhoto: url }))}
+                  onImageRemove={() => setForm((prev) => ({ ...prev, coverPhoto: '' }))}
+                  authToken={token || undefined}
+                  placeholder="點擊上傳封面圖片"
+                  compressionParams={{ maxWidth: 1200, maxHeight: 800, quality: 0.85 }}
+                />
+              )}
             </div>
 
             {/* otherPhotos */}
             <div className={fieldGroup}>
               <span className={label}>其他照片</span>
-              <MultiImageUpload
-                currentImages={form.otherPhotos}
-                onImagesChange={(urls) => setForm((prev) => ({ ...prev, otherPhotos: urls }))}
-                authToken={token || undefined}
-                maxImages={9}
-                placeholder="新增照片"
-                compressionParams={{ maxWidth: 1200, maxHeight: 900, quality: 0.85 }}
-              />
+              {isFormReady && (
+                <MultiImageUpload
+                  currentImages={form.otherPhotos}
+                  onImagesChange={(urls) => setForm((prev) => ({ ...prev, otherPhotos: urls }))}
+                  authToken={token || undefined}
+                  maxImages={9}
+                  placeholder="新增照片"
+                  compressionParams={{ maxWidth: 1200, maxHeight: 900, quality: 0.85 }}
+                />
+              )}
             </div>
 
             {/* hostTags */}
