@@ -58,6 +58,13 @@ const dialogBody = css({
   color: 'color.text.secondary',
 });
 
+const inlineError = css({
+  paddingX: '5',
+  paddingBottom: '2',
+  textStyle: 'caption',
+  color: 'red.600',
+});
+
 const dialogFooter = css({
   display: 'flex',
   gap: '2',
@@ -151,6 +158,7 @@ interface VenueBatchDialogProps {
   onConfirm: () => void;
   onClose: () => void;
   isLoading: boolean;
+  error?: string | null;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -161,6 +169,7 @@ export default function VenueBatchDialog({
   onConfirm,
   onClose,
   isLoading,
+  error,
 }: VenueBatchDialogProps) {
   if (action === null) return null;
 
@@ -195,6 +204,11 @@ export default function VenueBatchDialog({
         <div className={dialogBody}>
           <p>{config.description(count)}</p>
         </div>
+        {error && (
+          <div className={inlineError} role="alert">
+            {error}
+          </div>
+        )}
         <div className={dialogFooter}>
           <button
             className={dialogBtn({ variant: 'cancel' })}

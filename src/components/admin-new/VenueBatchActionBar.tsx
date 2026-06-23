@@ -134,7 +134,7 @@ interface VenueBatchActionBarProps {
 
 type SelectionKind = 'all-pending' | 'all-active' | 'all-inactive' | 'all-rejected' | 'mixed';
 
-function getSelectionKind(venues: Venue[]): SelectionKind {
+export function getSelectionKind(venues: Venue[]): SelectionKind {
   if (venues.length === 0) return 'mixed';
   const statuses = new Set(venues.map((v) => v.status));
   if (statuses.size === 1) {

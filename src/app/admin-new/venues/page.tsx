@@ -147,6 +147,7 @@ function AdminVenuesInner() {
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [batchAction, setBatchAction] = useState<VenueBatchAction | null>(null);
+  const [batchError, setBatchError] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Venue | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -189,6 +190,10 @@ function AdminVenuesInner() {
       queryClient.invalidateQueries({ queryKey: queryKey.adminVenues() });
       setSelectedIds(new Set());
       setBatchAction(null);
+      setBatchError(null);
+    },
+    onError: (err) => {
+      setBatchError(handleApiError(err));
     },
   });
 
@@ -333,8 +338,12 @@ function AdminVenuesInner() {
         onConfirm={() => {
           if (batchAction) batchMutation.mutate(batchAction);
         }}
-        onClose={() => setBatchAction(null)}
+        onClose={() => {
+          setBatchAction(null);
+          setBatchError(null);
+        }}
         isLoading={batchMutation.isPending}
+        error={batchError}
       />
 
       <DeleteVenueDialog
