@@ -8,6 +8,7 @@ import { css } from '@/styled-system/css';
 import { useQueryState, parseAsInt } from '@/hooks/useQueryState';
 import { QueryStateProvider, useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
 import { adminApi, venueApi, handleApiError } from '@/lib/api';
+import { showToast } from '@/lib/toast';
 import queryKey from '@/hooks/queryKey';
 import AdminSidebar from '@/components/admin-new/AdminSidebar';
 import StatusDropdown from '@/components/admin-new/StatusDropdown';
@@ -186,7 +187,13 @@ function AdminVenuesInner() {
         return venueApi.batchStatusVenues(ids.map((venueId) => ({ venueId, status: 'inactive' })));
       }
     },
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      const ids = Array.from(selectedIds);
+      const count = ids.length;
+      if (variables === 'approve') showToast.success(`已審核通過 ${count} 間場地`);
+      else if (variables === 'reject') showToast.success(`已拒絕 ${count} 間場地`);
+      else if (variables === 'online') showToast.success(`已上架 ${count} 間場地`);
+      else if (variables === 'offline') showToast.success(`已下架 ${count} 間場地`);
       queryClient.invalidateQueries({ queryKey: queryKey.adminVenues() });
       setSelectedIds(new Set());
       setBatchAction(null);
@@ -329,6 +336,7 @@ function AdminVenuesInner() {
           selectedIds={selectedIds}
           onToggleSelect={handleToggleSelect}
           onToggleSelectAll={handleToggleSelectAll}
+          isBatchLoading={batchMutation.isPending}
         />
       </main>
 

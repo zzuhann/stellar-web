@@ -374,6 +374,7 @@ export interface Venue {
     instagram?: string;
     line?: string;
   };
+  createdAt?: FirebaseTimestamp | string;
   updatedAt?: FirebaseTimestamp | string;
 }
 

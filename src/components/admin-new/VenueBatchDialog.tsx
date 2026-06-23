@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
 import ModalOverlay from '@/components/ui/ModalOverlay';
@@ -171,6 +172,14 @@ export default function VenueBatchDialog({
   isLoading,
   error,
 }: VenueBatchDialogProps) {
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isLoading) onClose();
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [isLoading, onClose]);
+
   if (action === null) return null;
 
   const config = ACTION_CONFIG[action];

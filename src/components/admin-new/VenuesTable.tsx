@@ -475,6 +475,9 @@ function SkeletonTableRows() {
           <td className={td}>
             <Skeleton width="80px" height="16px" />
           </td>
+          <td className={td}>
+            <Skeleton width="80px" height="16px" />
+          </td>
           <td className={tdActions}>
             <div className={css({ display: 'flex', gap: '1' })}>
               <Skeleton width="32px" height="32px" borderRadius="6px" />
@@ -522,6 +525,7 @@ interface VenuesTableProps {
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onToggleSelectAll: () => void;
+  isBatchLoading?: boolean;
 }
 
 export default function VenuesTable({
@@ -538,6 +542,7 @@ export default function VenuesTable({
   selectedIds,
   onToggleSelect,
   onToggleSelectAll,
+  isBatchLoading,
 }: VenuesTableProps) {
   const router = useRouter();
 
@@ -567,10 +572,11 @@ export default function VenuesTable({
               <th className={thRegion}>地區</th>
               <th className={thStatus}>狀態</th>
               <th className={thDate}>建立時間</th>
+              <th className={thDate}>更新時間</th>
               <th className={thActions}>操作</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody style={{ pointerEvents: isBatchLoading ? 'none' : undefined }}>
             {isLoading && <SkeletonTableRows />}
             {!isLoading &&
               !isError &&
@@ -597,6 +603,7 @@ export default function VenuesTable({
                       {STATUS_LABEL[venue.status] ?? venue.status}
                     </span>
                   </td>
+                  <td className={tdDate}>{formatDate(venue.createdAt)}</td>
                   <td className={tdDate}>{formatDate(venue.updatedAt)}</td>
                   <td className={tdActions}>
                     <div className={css({ display: 'flex', gap: '1', alignItems: 'center' })}>
