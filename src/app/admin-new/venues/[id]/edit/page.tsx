@@ -7,9 +7,12 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ChevronLeftIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
 import { venueApi, handleApiError } from '@/lib/api';
+import { useAuthToken } from '@/hooks/useAuthToken';
 import queryKey from '@/hooks/queryKey';
 import Skeleton from '@/components/ui/Skeleton';
 import DeleteVenueDialog from '@/components/admin-new/DeleteVenueDialog';
+import ImageUpload from '@/components/images/ImageUpload';
+import MultiImageUpload from '@/components/images/MultiImageUpload';
 import type { UpdateVenueData, CapacityRange } from '@/types';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
@@ -73,6 +76,12 @@ const label = css({
   gap: '1',
 });
 
+const labelSub = css({
+  textStyle: 'caption',
+  fontWeight: 'normal',
+  color: 'color.text.secondary',
+});
+
 const requiredMark = css({
   color: 'red.500',
 });
@@ -90,6 +99,7 @@ const inputStyle = css({
   '&::placeholder': { color: 'color.text.disabled' },
   '&:focus-visible': { outline: 'none', borderColor: 'color.primary' },
   '&[aria-invalid="true"]': { borderColor: 'red.400' },
+  '&:disabled': { background: 'gray.50', color: 'color.text.secondary', cursor: 'not-allowed' },
 });
 
 const numberInputStyle = css({
@@ -128,6 +138,11 @@ const fieldError = css({
   marginTop: '0.5',
 });
 
+const fieldHint = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+});
+
 const dropdownContainer = css({ position: 'relative' });
 
 const dropdownTrigger = css({
@@ -162,6 +177,8 @@ const dropdownMenu = css({
   boxShadow: 'shadow.md',
   zIndex: 20,
   overflow: 'hidden',
+  maxHeight: '240px',
+  overflowY: 'auto',
 });
 
 const dropdownOption = cva({
@@ -184,6 +201,75 @@ const dropdownOption = cva({
       true: { color: 'color.primary', fontWeight: 'semibold' },
     },
   },
+});
+
+const fieldRow = css({
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr',
+  gap: '3',
+});
+
+const tagInputRow = css({
+  display: 'flex',
+  gap: '2',
+});
+
+const tagAddBtn = css({
+  paddingY: '2.5',
+  paddingX: '3',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'white',
+  color: 'color.text.primary',
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
+  cursor: 'pointer',
+  flexShrink: 0,
+  transition: 'border-color 0.2s ease, background 0.2s ease',
+  '&:hover:not(:disabled)': {
+    borderColor: 'color.primary',
+    background: 'stellarBlue.50',
+  },
+  '&:disabled': { opacity: 0.5, cursor: 'not-allowed' },
+});
+
+const tagList = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '1.5',
+  marginTop: '1',
+});
+
+const tagPill = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  paddingY: '1',
+  paddingX: '2.5',
+  borderRadius: '999px',
+  background: 'color.background.secondary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  textStyle: 'caption',
+  color: 'color.text.primary',
+  fontWeight: 'medium',
+});
+
+const tagRemoveBtn = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '14px',
+  height: '14px',
+  borderRadius: '999px',
+  border: 'none',
+  background: 'none',
+  color: 'color.text.secondary',
+  cursor: 'pointer',
+  padding: '0',
+  flexShrink: 0,
+  '&:hover': { color: 'red.500' },
 });
 
 const submitRow = css({
@@ -361,6 +447,18 @@ const STATUS_LABEL: Record<string, string> = {
 
 const REGION_OPTIONS = ['台北', '新北', '桃園', '台中', '台南', '高雄', '其他'];
 const CAPACITY_OPTIONS: CapacityRange[] = ['20以下', '20-40', '40-60', '60以上'];
+const MAX_HOST_TAGS = 5;
+
+type PreferredContact = 'instagram' | 'threads' | 'line' | 'form' | 'other';
+
+const PREFERRED_CONTACT_OPTIONS: { value: PreferredContact | ''; label: string }[] = [
+  { value: '', label: '不填寫' },
+  { value: 'instagram', label: 'IG 私訊' },
+  { value: 'threads', label: 'Threads 私訊' },
+  { value: 'line', label: 'Line' },
+  { value: 'form', label: '表單／連結' },
+  { value: 'other', label: '其他' },
+];
 
 // ─── SelectDropdown component ─────────────────────────────────────────────────
 
@@ -430,6 +528,72 @@ function SelectDropdown({ value, onChange, options, placeholder, invalid }: Sele
   );
 }
 
+// ─── PreferredContactDropdown component ───────────────────────────────────────
+
+interface PreferredContactDropdownProps {
+  value: PreferredContact | '';
+  onChange: (v: PreferredContact | '') => void;
+}
+
+function PreferredContactDropdown({ value, onChange }: PreferredContactDropdownProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const selectedLabel = PREFERRED_CONTACT_OPTIONS.find((o) => o.value === value)?.label ?? '不填寫';
+
+  return (
+    <div ref={ref} className={dropdownContainer}>
+      <button
+        type="button"
+        className={dropdownTrigger}
+        data-empty={!value ? 'true' : undefined}
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+      >
+        <span>{selectedLabel}</span>
+        <ChevronDownIcon
+          className={css({
+            width: '14px',
+            height: '14px',
+            transition: 'transform 0.15s ease',
+            flexShrink: 0,
+            ...(open ? { transform: 'rotate(180deg)' } : {}),
+          })}
+          aria-hidden="true"
+        />
+      </button>
+      {open && (
+        <div className={dropdownMenu} role="listbox">
+          {PREFERRED_CONTACT_OPTIONS.map(({ value: optVal, label }) => (
+            <button
+              key={optVal || 'empty'}
+              type="button"
+              role="option"
+              aria-selected={value === optVal}
+              className={dropdownOption({ selected: value === optVal })}
+              onClick={() => {
+                onChange(optVal);
+                setOpen(false);
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Form state ───────────────────────────────────────────────────────────────
 
 interface FormState {
@@ -441,6 +605,14 @@ interface FormState {
   capacityRange: string;
   description: string;
   status: string;
+  coverPhoto: string;
+  otherPhotos: string[];
+  hostTags: string[];
+  threads: string;
+  instagram: string;
+  line: string;
+  preferredContact: PreferredContact | '';
+  contactUrl: string;
 }
 
 interface FormErrors {
@@ -456,6 +628,7 @@ export default function VenueEditPage() {
   const params = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const venueId = params.id;
+  const { token } = useAuthToken();
 
   const [form, setForm] = useState<FormState>({
     name: '',
@@ -466,8 +639,17 @@ export default function VenueEditPage() {
     capacityRange: '',
     description: '',
     status: '',
+    coverPhoto: '',
+    otherPhotos: [],
+    hostTags: [],
+    threads: '',
+    instagram: '',
+    line: '',
+    preferredContact: '',
+    contactUrl: '',
   });
 
+  const [hostTagInput, setHostTagInput] = useState('');
   const initialized = useRef(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -499,6 +681,14 @@ export default function VenueEditPage() {
         capacityRange: venue.capacityRange ?? '',
         description: venue.description ?? '',
         status: venue.status,
+        coverPhoto: venue.coverPhoto ?? '',
+        otherPhotos: venue.otherPhotos ?? [],
+        hostTags: venue.hostTags ?? [],
+        threads: venue.socialMedia?.threads ?? '',
+        instagram: venue.socialMedia?.instagram ?? '',
+        line: venue.socialMedia?.line ?? '',
+        preferredContact: (venue.preferredContact as PreferredContact) ?? '',
+        contactUrl: venue.contactUrl ?? '',
       });
     }
   }, [venue]);
@@ -565,7 +755,22 @@ export default function VenueEditPage() {
       mrtWalkMinutes: form.mrtWalkMinutes ? Number(form.mrtWalkMinutes) : null,
       capacityRange: (form.capacityRange as CapacityRange) || null,
       description: form.description.trim() || undefined,
+      coverPhoto: form.coverPhoto || undefined,
+      otherPhotos: form.otherPhotos,
+      hostTags: form.hostTags,
+      preferredContact: (form.preferredContact as PreferredContact) || undefined,
+      contactUrl: form.contactUrl || undefined,
     };
+
+    if (form.threads || form.instagram || form.line) {
+      data.socialMedia = {
+        threads: form.threads || undefined,
+        instagram: form.instagram || undefined,
+        line: form.line || undefined,
+      };
+    } else {
+      data.socialMedia = undefined;
+    }
 
     setSubmitError(null);
     updateMutation.mutate(data);
@@ -575,6 +780,24 @@ export default function VenueEditPage() {
     setForm((prev) => ({ ...prev, [key]: value }));
     if (errors[key as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [key]: undefined }));
+    }
+  }
+
+  function handleAddHostTag() {
+    const tag = hostTagInput.trim();
+    if (!tag || form.hostTags.includes(tag) || form.hostTags.length >= MAX_HOST_TAGS) return;
+    setForm((prev) => ({ ...prev, hostTags: [...prev.hostTags, tag] }));
+    setHostTagInput('');
+  }
+
+  function handleRemoveHostTag(tag: string) {
+    setForm((prev) => ({ ...prev, hostTags: prev.hostTags.filter((t) => t !== tag) }));
+  }
+
+  function handleHostTagKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddHostTag();
     }
   }
 
@@ -737,6 +960,150 @@ export default function VenueEditPage() {
                 options={CAPACITY_OPTIONS}
                 placeholder="請選擇容納人數範圍"
               />
+            </div>
+
+            {/* socialMedia */}
+            <div className={fieldGroup}>
+              <span className={label}>社群帳號</span>
+              <div className={fieldRow}>
+                <div className={fieldGroup}>
+                  <label htmlFor="venue-threads" className={labelSub}>
+                    Threads
+                  </label>
+                  <input
+                    id="venue-threads"
+                    type="text"
+                    className={inputStyle}
+                    placeholder="@username"
+                    value={form.threads}
+                    onChange={(e) => setField('threads', e.target.value)}
+                  />
+                </div>
+                <div className={fieldGroup}>
+                  <label htmlFor="venue-instagram" className={labelSub}>
+                    Instagram
+                  </label>
+                  <input
+                    id="venue-instagram"
+                    type="text"
+                    className={inputStyle}
+                    placeholder="@username"
+                    value={form.instagram}
+                    onChange={(e) => setField('instagram', e.target.value)}
+                  />
+                </div>
+              </div>
+              <div className={fieldGroup}>
+                <label htmlFor="venue-line" className={labelSub}>
+                  Line
+                </label>
+                <input
+                  id="venue-line"
+                  type="text"
+                  className={inputStyle}
+                  placeholder="Line ID 或連結"
+                  value={form.line}
+                  onChange={(e) => setField('line', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* preferredContact */}
+            <div className={fieldGroup}>
+              <span className={label}>偏好聯絡方式</span>
+              <PreferredContactDropdown
+                value={form.preferredContact}
+                onChange={(v) => setForm((prev) => ({ ...prev, preferredContact: v }))}
+              />
+            </div>
+
+            {/* contactUrl — shown for line / form / other */}
+            {(form.preferredContact === 'line' ||
+              form.preferredContact === 'form' ||
+              form.preferredContact === 'other') && (
+              <div className={fieldGroup}>
+                <label htmlFor="venue-contact-url" className={label}>
+                  預約表單連結
+                </label>
+                <input
+                  id="venue-contact-url"
+                  type="text"
+                  className={inputStyle}
+                  placeholder="https://... 或 Line ID"
+                  value={form.contactUrl}
+                  onChange={(e) => setField('contactUrl', e.target.value)}
+                />
+              </div>
+            )}
+
+            {/* coverPhoto */}
+            <div className={fieldGroup}>
+              <span className={label}>封面圖片</span>
+              <ImageUpload
+                currentImageUrl={form.coverPhoto || undefined}
+                onUploadComplete={(url) => setForm((prev) => ({ ...prev, coverPhoto: url }))}
+                onImageRemove={() => setForm((prev) => ({ ...prev, coverPhoto: '' }))}
+                authToken={token || undefined}
+                placeholder="點擊上傳封面圖片"
+                compressionParams={{ maxWidth: 1200, maxHeight: 800, quality: 0.85 }}
+              />
+            </div>
+
+            {/* otherPhotos */}
+            <div className={fieldGroup}>
+              <span className={label}>其他照片</span>
+              <MultiImageUpload
+                currentImages={form.otherPhotos}
+                onImagesChange={(urls) => setForm((prev) => ({ ...prev, otherPhotos: urls }))}
+                authToken={token || undefined}
+                maxImages={9}
+                placeholder="新增照片"
+                compressionParams={{ maxWidth: 1200, maxHeight: 900, quality: 0.85 }}
+              />
+            </div>
+
+            {/* hostTags */}
+            <div className={fieldGroup}>
+              <span className={label}>場地標籤</span>
+              <p className={fieldHint}>
+                主辦初步篩選用，建議 1–3 個，最多 {MAX_HOST_TAGS} 個（例：免場地費、新手友善）
+              </p>
+              <div className={tagInputRow}>
+                <input
+                  type="text"
+                  className={inputStyle}
+                  value={hostTagInput}
+                  onChange={(e) => setHostTagInput(e.target.value)}
+                  onKeyDown={handleHostTagKeyDown}
+                  placeholder="輸入標籤後按 Enter 或點新增"
+                  disabled={form.hostTags.length >= MAX_HOST_TAGS}
+                />
+                <button
+                  type="button"
+                  className={tagAddBtn}
+                  onClick={handleAddHostTag}
+                  disabled={form.hostTags.length >= MAX_HOST_TAGS}
+                >
+                  新增
+                </button>
+              </div>
+              {form.hostTags.length > 0 && (
+                <div className={tagList}>
+                  {form.hostTags.map((t) => (
+                    <span key={t} className={tagPill}>
+                      {t}
+                      <button
+                        type="button"
+                        className={tagRemoveBtn}
+                        aria-label={`移除標籤 ${t}`}
+                        onClick={() => handleRemoveHostTag(t)}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* description */}
