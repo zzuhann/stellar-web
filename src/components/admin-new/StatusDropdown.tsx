@@ -79,11 +79,14 @@ const STATUS_OPTIONS = [
 interface StatusDropdownProps {
   value: string;
   onChange: (v: string) => void;
+  options?: { value: string; label: string }[];
 }
 
-export default function StatusDropdown({ value, onChange }: StatusDropdownProps) {
+export default function StatusDropdown({ value, onChange, options }: StatusDropdownProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  const resolvedOptions = options ?? STATUS_OPTIONS;
 
   useEffect(() => {
     function handler(e: MouseEvent) {
@@ -93,7 +96,7 @@ export default function StatusDropdown({ value, onChange }: StatusDropdownProps)
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const selected = STATUS_OPTIONS.find((o) => o.value === value) ?? STATUS_OPTIONS[0];
+  const selected = resolvedOptions.find((o) => o.value === value) ?? resolvedOptions[0];
 
   return (
     <div ref={ref} className={dropdownContainer}>
@@ -117,7 +120,7 @@ export default function StatusDropdown({ value, onChange }: StatusDropdownProps)
       </button>
       {open && (
         <div className={dropdownMenu} role="listbox">
-          {STATUS_OPTIONS.map((opt) => (
+          {resolvedOptions.map((opt) => (
             <button
               key={opt.value}
               type="button"
