@@ -163,29 +163,6 @@ const bookingDescHint = css({
   lineHeight: 1.5,
 });
 
-const tagsSection = css({
-  paddingY: '3',
-  paddingX: '4',
-});
-
-const tagsWrap = css({
-  marginTop: '2',
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '2',
-});
-
-const tagPill = css({
-  paddingY: '0.5',
-  paddingX: '2',
-  borderRadius: 'radius.sm',
-  background: 'transparent',
-  border: '1px solid',
-  borderColor: 'gray.300',
-  textStyle: 'caption',
-  color: 'gray.700',
-});
-
 const descSection = css({
   paddingY: '3',
   paddingX: '4',
@@ -544,19 +521,6 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
             )}
           </div>
         </section>
-
-        {venue.hostTags && venue.hostTags.length > 0 && (
-          <section aria-label="設備與服務" className={tagsSection}>
-            <h2 className={sectionTitle}>設備與服務</h2>
-            <div className={tagsWrap}>
-              {venue.hostTags.map((tag) => (
-                <span key={tag} className={tagPill}>
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
 
         {bookingChannel && (
           <section aria-label="聯繫這個場地" className={bookingSection}>
