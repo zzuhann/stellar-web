@@ -60,34 +60,6 @@ const titleSection = css({
   paddingBottom: '1',
 });
 
-const typeAndCount = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '2',
-  marginBottom: '1',
-});
-
-const typeTag = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  paddingY: '0.5',
-  paddingX: '2',
-  borderRadius: 'radius.sm',
-  background: 'stellarBlue.50',
-  color: 'stellarBlue.700',
-  textStyle: 'caption',
-  fontWeight: 'medium',
-});
-
-const countBadge = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1',
-  textStyle: 'caption',
-  color: 'color.text.secondary',
-  letterSpacing: '0.04em',
-});
-
 const venueName = css({
   margin: 0,
   textStyle: 'h3',
@@ -242,10 +214,6 @@ const mrtIconCls = css({
   textStyle: 'caption',
   fontWeight: 'bold',
   flexShrink: 0,
-});
-
-const starIconCls = css({
-  color: 'amber.500',
 });
 
 const mapIconWrapper = css({
@@ -430,22 +398,6 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
         <VenueGallery photos={photos} venueName={venue.name} />
 
         <section className={titleSection}>
-          <div className={typeAndCount}>
-            <span className={typeTag}>{venue.region}</span>
-            <span className={countBadge}>
-              <svg
-                aria-hidden="true"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className={starIconCls}
-              >
-                <path d="M12 3 14.5 9 21 10l-5 4.5 1.5 6.5L12 17.5 6.5 21 8 14.5 3 10l6.5-1z" />
-              </svg>
-              {venue.eventCount} 場生日應援紀錄
-            </span>
-          </div>
           <h1 className={venueName}>{venue.name}</h1>
 
           <div className={statsGrid}>

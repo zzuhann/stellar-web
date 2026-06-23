@@ -103,7 +103,7 @@ const hostTagsRow = css({
 
 const hostTagPill = css({
   paddingY: '1',
-  paddingX: '3',
+  paddingX: '2.5',
   borderRadius: '9999px',
   background: 'stellarBlue.50',
   textStyle: 'caption',
