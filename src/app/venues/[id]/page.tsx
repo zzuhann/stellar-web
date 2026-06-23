@@ -3,6 +3,8 @@ import { venueApi } from '@/lib/api';
 import type { Venue } from '@/types';
 import VenueDetailClient from './VenueDetailClient';
 
+export const revalidate = 3600;
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }

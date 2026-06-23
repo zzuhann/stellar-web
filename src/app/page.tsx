@@ -8,7 +8,7 @@ import { Suspense } from 'react';
 import Loading from '@/components/Loading';
 import type { Metadata } from 'next';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 export const metadata: Metadata = {
   alternates: {
