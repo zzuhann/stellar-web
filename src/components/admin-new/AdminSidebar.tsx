@@ -76,7 +76,7 @@ const NAV_ITEMS = [
   { label: '活動', href: '/admin-new/events', disabled: false },
   { label: '藝人', href: '/admin-new/artists', disabled: false },
   { label: '待審核', href: '#', disabled: true },
-  { label: '場地', href: '#', disabled: true },
+  { label: '場地', href: '/admin-new/venues', disabled: false },
 ];
 
 export default function AdminSidebar() {
