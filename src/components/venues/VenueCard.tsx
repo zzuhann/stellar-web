@@ -70,10 +70,7 @@ const statsRow = css({
   flexDirection: 'row',
   alignItems: 'center',
   gap: '3',
-  marginTop: '2.5',
-  paddingTop: '2.5',
-  borderTop: '1px solid',
-  borderTopColor: 'color.border.light',
+  marginTop: '1',
   textStyle: 'caption',
   color: 'color.text.secondary',
 });
@@ -105,14 +102,12 @@ const hostTagsRow = css({
 });
 
 const hostTagPill = css({
-  paddingY: '0.5',
-  paddingX: '2',
-  borderRadius: 'radius.sm',
-  background: 'transparent',
-  border: '1px solid',
-  borderColor: 'gray.300',
+  paddingY: '1',
+  paddingX: '2.5',
+  borderRadius: '9999px',
+  background: 'stellarBlue.50',
   textStyle: 'caption',
-  color: 'gray.700',
+  color: 'stellarBlue.700',
 });
 
 const starIconCls = css({ color: 'amber.500' });

@@ -90,7 +90,7 @@ const MENU_ITEMS = [
   { label: '活動', href: '/admin-new/events', enabled: true },
   { label: '藝人', href: '/admin-new/artists', enabled: true },
   { label: '待審核', href: '/admin-new/review', enabled: false },
-  { label: '場地管理', href: '/admin-new/venues', enabled: false },
+  { label: '場地管理', href: '/admin-new/venues', enabled: true },
 ];
 
 export default function AdminNewPage() {

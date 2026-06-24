@@ -196,9 +196,9 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
   };
 
   return (
-    <section aria-label="平台收錄的生咖、生日應援" className={section}>
+    <section aria-label="平台記錄的生咖、生日應援" className={section}>
       <div className={header}>
-        <h2 className={sectionTitle}>平台收錄的生咖、生日應援</h2>
+        <h2 className={sectionTitle}>平台記錄的生咖、生日應援</h2>
         <div className={counter}>
           <span className={counterPos}>{pos}</span>
           <span className={counterDivider}>/</span>

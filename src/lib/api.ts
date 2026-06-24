@@ -23,6 +23,7 @@ import {
   VenueFilterParams,
   VenuesResponse,
   VenueDetail,
+  Venue,
   UpdateVenueData,
   CreateVenueData,
   PlacePrediction,
@@ -623,6 +624,9 @@ export const adminApi = {
   deleteEvent: (id: string) => api.delete<{ message: string }>(`/events/${id}`),
 
   deleteArtist: (id: string) => api.delete<{ message: string }>(`/artists/${id}`),
+
+  getVenues: (params: { search?: string; status?: string; page?: number; limit?: number }) =>
+    api.get<{ data: Venue[]; pagination: AdminPagination }>('/admin/venues', { params }),
 };
 
 export default api;

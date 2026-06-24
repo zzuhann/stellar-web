@@ -60,34 +60,6 @@ const titleSection = css({
   paddingBottom: '1',
 });
 
-const typeAndCount = css({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '2',
-  marginBottom: '1',
-});
-
-const typeTag = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  paddingY: '0.5',
-  paddingX: '2',
-  borderRadius: 'radius.sm',
-  background: 'stellarBlue.50',
-  color: 'stellarBlue.700',
-  textStyle: 'caption',
-  fontWeight: 'medium',
-});
-
-const countBadge = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1',
-  textStyle: 'caption',
-  color: 'color.text.secondary',
-  letterSpacing: '0.04em',
-});
-
 const venueName = css({
   margin: 0,
   textStyle: 'h3',
@@ -161,29 +133,6 @@ const bookingDescHint = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
   lineHeight: 1.5,
-});
-
-const tagsSection = css({
-  paddingY: '3',
-  paddingX: '4',
-});
-
-const tagsWrap = css({
-  marginTop: '2',
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '2',
-});
-
-const tagPill = css({
-  paddingY: '0.5',
-  paddingX: '2',
-  borderRadius: 'radius.sm',
-  background: 'transparent',
-  border: '1px solid',
-  borderColor: 'gray.300',
-  textStyle: 'caption',
-  color: 'gray.700',
 });
 
 const descSection = css({
@@ -265,10 +214,6 @@ const mrtIconCls = css({
   textStyle: 'caption',
   fontWeight: 'bold',
   flexShrink: 0,
-});
-
-const starIconCls = css({
-  color: 'amber.500',
 });
 
 const mapIconWrapper = css({
@@ -453,22 +398,6 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
         <VenueGallery photos={photos} venueName={venue.name} />
 
         <section className={titleSection}>
-          <div className={typeAndCount}>
-            <span className={typeTag}>{venue.region}</span>
-            <span className={countBadge}>
-              <svg
-                aria-hidden="true"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className={starIconCls}
-              >
-                <path d="M12 3 14.5 9 21 10l-5 4.5 1.5 6.5L12 17.5 6.5 21 8 14.5 3 10l6.5-1z" />
-              </svg>
-              {venue.eventCount} 場生日應援紀錄
-            </span>
-          </div>
           <h1 className={venueName}>{venue.name}</h1>
 
           <div className={statsGrid}>
@@ -544,19 +473,6 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
             )}
           </div>
         </section>
-
-        {venue.hostTags && venue.hostTags.length > 0 && (
-          <section aria-label="設備與服務" className={tagsSection}>
-            <h2 className={sectionTitle}>設備與服務</h2>
-            <div className={tagsWrap}>
-              {venue.hostTags.map((tag) => (
-                <span key={tag} className={tagPill}>
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
 
         {bookingChannel && (
           <section aria-label="聯繫這個場地" className={bookingSection}>
