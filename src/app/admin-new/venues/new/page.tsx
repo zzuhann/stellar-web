@@ -2,14 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
-import { venueApi, handleApiError } from '@/lib/api';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import VenueForm from '@/components/admin-new/VenueForm';
-import type { CreateVenueData } from '@/types';
+import { useCreateVenueMutation } from '../_hooks/useCreateVenueMutation';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
@@ -54,15 +51,10 @@ const pageTitle = css({
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function VenueNewPage() {
-  const router = useRouter();
   const { token } = useAuthToken();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const mutation = useMutation({
-    mutationFn: (data: CreateVenueData) => venueApi.createVenue(data),
-    onSuccess: () => router.push('/admin-new/venues'),
-    onError: (err) => setSubmitError(handleApiError(err)),
-  });
+  const mutation = useCreateVenueMutation({ onError: (msg) => setSubmitError(msg) });
 
   return (
     <div className={pageWrapper}>

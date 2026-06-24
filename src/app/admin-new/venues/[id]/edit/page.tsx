@@ -2,17 +2,17 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useParams } from 'next/navigation';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useParams } from 'next/navigation';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
-import { venueApi, handleApiError } from '@/lib/api';
 import { useAuthToken } from '@/hooks/useAuthToken';
-import queryKey from '@/hooks/queryKey';
 import Skeleton from '@/components/ui/Skeleton';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import VenueForm, { type VenueFormValues } from '@/components/admin-new/VenueForm';
-import type { UpdateVenueData } from '@/types';
+import { useAdminVenueDetail } from '../../_hooks/useAdminVenueDetail';
+import { useUpdateVenueMutation } from '../../_hooks/useUpdateVenueMutation';
+import { useDeleteVenueMutation } from '../../_hooks/useDeleteVenueMutation';
+import { useVenueStatusMutation } from '../../_hooks/useVenueStatusMutation';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
@@ -74,67 +74,21 @@ const formErrorBanner = css({
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function VenueEditPage() {
-  const router = useRouter();
   const params = useParams<{ id: string }>();
-  const queryClient = useQueryClient();
   const venueId = params.id;
   const { token } = useAuthToken();
 
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [statusOverride, setStatusOverride] = useState<string | null>(null);
 
-  // ─── Load data ─────────────────────────────────────────────────────────────
+  // ─── Data & mutations ──────────────────────────────────────────────────────
 
-  const {
-    data: venue,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: queryKey.venueDetail(venueId),
-    queryFn: () => venueApi.getAdminVenueById(venueId),
-    enabled: !!venueId,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // ─── Update mutation ───────────────────────────────────────────────────────
-
-  const updateMutation = useMutation({
-    mutationFn: (data: UpdateVenueData) => venueApi.updateVenue(venueId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKey.venueDetail(venueId) });
-      router.push('/admin-new/venues');
-    },
-    onError: (err) => {
-      setSubmitError(handleApiError(err));
-    },
-  });
-
-  // ─── Delete mutation ───────────────────────────────────────────────────────
-
-  const deleteMutation = useMutation({
-    mutationFn: () => venueApi.permanentDeleteVenue(venueId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKey.adminVenues() });
-      router.push('/admin-new/venues');
-    },
-    onError: (err) => {
-      setDeleteError(handleApiError(err));
-    },
-  });
-
-  // ─── Status toggle mutation ────────────────────────────────────────────────
-
-  const statusMutation = useMutation({
-    mutationFn: (status: 'active' | 'inactive') => venueApi.updateVenue(venueId, { status }),
-    onSuccess: (_, status) => {
-      setStatusOverride(status);
-      queryClient.invalidateQueries({ queryKey: queryKey.venueDetail(venueId) });
-    },
-    onError: (err) => {
-      setSubmitError(handleApiError(err));
-    },
+  const { data: venue, isLoading, isError } = useAdminVenueDetail(venueId);
+  const updateMutation = useUpdateVenueMutation(venueId, { onError: (msg) => setSubmitError(msg) });
+  const deleteMutation = useDeleteVenueMutation(venueId, { onError: (msg) => setDeleteError(msg) });
+  const { mutation: statusMutation, statusOverride } = useVenueStatusMutation(venueId, {
+    onError: (msg) => setSubmitError(msg),
   });
 
   // ─── Loading / Error states ────────────────────────────────────────────────
