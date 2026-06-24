@@ -99,7 +99,7 @@ const dropdownTrigger = css({
   justifyContent: 'space-between',
   alignItems: 'center',
   textStyle: 'bodySmall',
-  '&[data-empty="true"]': { color: 'color.text.disabled' },
+  '&[data-empty="true"]': { color: 'color.text.tertiary' },
   '&:hover': { borderColor: 'color.border.medium' },
   '&[aria-invalid="true"]': { borderColor: 'red.400' },
 });
