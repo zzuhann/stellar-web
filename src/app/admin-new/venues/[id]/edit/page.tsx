@@ -179,7 +179,7 @@ export default function VenueEditPage() {
   }
 
   const currentStatus = statusOverride ?? venue.status;
-  const canDelete = venue.status === 'inactive' && venue.eventCount === 0;
+  const canDelete = currentStatus === 'inactive' && venue.eventCount === 0;
 
   const initialValues: VenueFormValues = {
     name: venue.name,
