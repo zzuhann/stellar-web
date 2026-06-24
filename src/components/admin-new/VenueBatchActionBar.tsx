@@ -86,7 +86,7 @@ const actionBtnStyle = cva({
         '&:hover:not(:disabled)': { background: 'red.50', borderColor: 'red.400' },
       },
       offline: {
-        background: 'transparent',
+        background: 'white',
         borderColor: 'color.border.light',
         color: 'color.text.secondary',
         '&:hover:not(:disabled)': {

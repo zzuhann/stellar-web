@@ -16,8 +16,7 @@ import VenuesTable from '@/components/admin-new/VenuesTable';
 import VenueBatchActionBar, {
   type VenueBatchAction,
 } from '@/components/admin-new/VenueBatchActionBar';
-import VenueBatchDialog from '@/components/admin-new/VenueBatchDialog';
-import DeleteVenueDialog from '@/components/admin-new/DeleteVenueDialog';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import type { Venue } from '@/types';
 
 // ─── Layout CSS ───────────────────────────────────────────────────────────────
@@ -124,6 +123,34 @@ const searchInputStyle = css({
     borderColor: 'color.primary',
   },
 });
+
+// ─── Batch dialog config ──────────────────────────────────────────────────────
+
+const BATCH_DIALOG_CONFIG: Record<
+  VenueBatchAction,
+  { title: string; description: (n: number) => string; confirmVariant: 'destructive' | 'primary' }
+> = {
+  approve: {
+    title: '批次審核通過',
+    description: (n) => `確認將 ${n} 個場地審核通過並上架？`,
+    confirmVariant: 'primary',
+  },
+  reject: {
+    title: '批次拒絕',
+    description: (n) => `確認拒絕 ${n} 個場地？拒絕後場地不會上架。`,
+    confirmVariant: 'destructive',
+  },
+  offline: {
+    title: '批次下架',
+    description: (n) => `確認將 ${n} 個場地下架？`,
+    confirmVariant: 'destructive',
+  },
+  online: {
+    title: '批次上架',
+    description: (n) => `確認將 ${n} 個場地上架？`,
+    confirmVariant: 'primary',
+  },
+};
 
 // ─── Status options for venues ────────────────────────────────────────────────
 
@@ -340,9 +367,14 @@ function AdminVenuesInner() {
         />
       </main>
 
-      <VenueBatchDialog
-        action={batchAction}
-        count={selectedIds.size}
+      <ConfirmDialog
+        open={batchAction !== null}
+        title={batchAction ? BATCH_DIALOG_CONFIG[batchAction].title : ''}
+        description={
+          batchAction ? BATCH_DIALOG_CONFIG[batchAction].description(selectedIds.size) : ''
+        }
+        confirmLabel="確認"
+        confirmVariant={batchAction ? BATCH_DIALOG_CONFIG[batchAction].confirmVariant : 'primary'}
         onConfirm={() => {
           if (batchAction) batchMutation.mutate(batchAction);
         }}
@@ -354,8 +386,11 @@ function AdminVenuesInner() {
         error={batchError}
       />
 
-      <DeleteVenueDialog
-        venue={deleteTarget}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title="確認永久刪除場地？"
+        description="此操作無法復原。場地資料將從系統中完全移除。若該場地有關聯的活動紀錄，系統將拒絕刪除。"
+        confirmLabel="永久刪除"
         onConfirm={() => {
           if (deleteTarget) deleteMutation.mutate(deleteTarget.id);
         }}

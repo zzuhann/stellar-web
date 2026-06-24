@@ -10,7 +10,7 @@ import { venueApi, handleApiError } from '@/lib/api';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import queryKey from '@/hooks/queryKey';
 import Skeleton from '@/components/ui/Skeleton';
-import DeleteVenueDialog from '@/components/admin-new/DeleteVenueDialog';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import ImageUpload from '@/components/images/ImageUpload';
 import MultiImageUpload from '@/components/images/MultiImageUpload';
 import type { UpdateVenueData, CapacityRange } from '@/types';
@@ -1202,8 +1202,11 @@ export default function VenueEditPage() {
         </form>
       </div>
 
-      <DeleteVenueDialog
-        venue={deleteDialogOpen ? venue : null}
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        title="確認永久刪除場地？"
+        description="此操作無法復原。場地資料將從系統中完全移除。若該場地有關聯的活動紀錄，系統將拒絕刪除。"
+        confirmLabel="永久刪除"
         onConfirm={() => deleteMutation.mutate()}
         onClose={() => {
           setDeleteDialogOpen(false);
