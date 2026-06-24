@@ -18,6 +18,7 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { artistsApi, eventsApi } from '@/lib/api';
 import showToast from '@/lib/toast';
+import { revalidatePaths } from '@/lib/revalidate';
 import { css, cva } from '@/styled-system/css';
 import EventPreviewModal from '@/components/events/EventPreviewModal';
 import RejectModal from '@/components/admin/RejectModal';
@@ -516,7 +517,11 @@ export default function AdminPage() {
   // 審核活動 mutations
   const approveEventMutation = useMutation({
     mutationFn: (id: string) => eventsApi.admin.approve(id),
-    onSuccess: () => {
+    onSuccess: (event) => {
+      revalidatePaths([
+        `/event/${event.slug ?? event.id}`,
+        ...event.artists.map((a) => `/map/${a.slug ?? a.id}`),
+      ]);
       queryClient.invalidateQueries({ queryKey: ['admin-pending-events'] });
       queryClient.invalidateQueries({ queryKey: ['top-artists'] });
       showToast.success('審核成功');
@@ -529,7 +534,11 @@ export default function AdminPage() {
   const rejectEventMutation = useMutation({
     mutationFn: ({ id, reason }: { id: string; reason: string }) =>
       eventsApi.admin.reject(id, { reason }),
-    onSuccess: () => {
+    onSuccess: (event) => {
+      revalidatePaths([
+        `/event/${event.slug ?? event.id}`,
+        ...event.artists.map((a) => `/map/${a.slug ?? a.id}`),
+      ]);
       queryClient.invalidateQueries({ queryKey: ['admin-pending-events'] });
       queryClient.invalidateQueries({ queryKey: ['top-artists'] });
       showToast.success('已拒絕此投稿');
@@ -548,7 +557,12 @@ export default function AdminPage() {
         reason?: string;
       }>
     ) => eventsApi.admin.batchReview(updates),
-    onSuccess: () => {
+    onSuccess: (events) => {
+      const paths = events.flatMap((e) => [
+        `/event/${e.slug ?? e.id}`,
+        ...e.artists.map((a) => `/map/${a.slug ?? a.id}`),
+      ]);
+      revalidatePaths(paths);
       queryClient.invalidateQueries({ queryKey: ['admin-pending-events'] });
       queryClient.invalidateQueries({ queryKey: ['top-artists'] });
       setSelectedEvents(new Set());

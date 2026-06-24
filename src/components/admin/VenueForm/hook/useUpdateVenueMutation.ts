@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { venueApi } from '@/lib/api';
 import { showToast } from '@/lib/toast';
+import { revalidatePaths } from '@/lib/revalidate';
 import queryKey from '@/hooks/queryKey';
 import type { UpdateVenueData } from '@/types';
 
@@ -12,6 +13,7 @@ export function useUpdateVenueMutation(venueId: string) {
   return useMutation({
     mutationFn: (data: UpdateVenueData) => venueApi.updateVenue(venueId, data),
     onSuccess: () => {
+      revalidatePaths([`/venues/${venueId}`, '/venues']);
       queryClient.invalidateQueries({ queryKey: queryKey.adminVenues() });
       queryClient.invalidateQueries({ queryKey: queryKey.venueDetail(venueId) });
       showToast.success('場地已更新');
