@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  Dialog,
-  DialogBackdrop,
-  DialogDescription,
-  DialogPanel,
-  DialogTitle,
-} from '@headlessui/react';
+import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
 import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
 
@@ -199,7 +193,7 @@ export default function ConfirmDialog({
               <XMarkIcon width={20} height={20} aria-hidden="true" />
             </button>
           </div>
-          <DialogDescription className={dialogBody}>{description}</DialogDescription>
+          <Description className={dialogBody}>{description}</Description>
           {error && (
             <div className={inlineError} role="alert">
               {error}
