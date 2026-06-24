@@ -1,16 +1,26 @@
 'use client';
 
-import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogDescription,
+  DialogPanel,
+  DialogTitle,
+} from '@headlessui/react';
 import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
+const dialogRoot = css({
+  position: 'relative',
+  zIndex: 50,
+});
+
 const backdrop = css({
   position: 'fixed',
   inset: 0,
   background: 'alpha.black.50',
-  zIndex: 50,
 });
 
 const panelWrapper = css({
@@ -20,7 +30,6 @@ const panelWrapper = css({
   alignItems: 'center',
   justifyContent: 'center',
   padding: '4',
-  zIndex: 50,
 });
 
 const dialogBox = css({
@@ -163,13 +172,12 @@ export default function ConfirmDialog({
   isLoading = false,
   error,
 }: ConfirmDialogProps) {
+  function handleClose() {
+    if (!isLoading) onClose();
+  }
+
   return (
-    <Dialog
-      open={open}
-      onClose={() => {
-        if (!isLoading) onClose();
-      }}
-    >
+    <Dialog open={open} onClose={handleClose} role="alertdialog" className={dialogRoot}>
       <DialogBackdrop className={backdrop} />
       <div className={panelWrapper}>
         <DialogPanel className={dialogBox}>
@@ -184,18 +192,14 @@ export default function ConfirmDialog({
             <button
               type="button"
               className={dialogCloseBtn}
-              onClick={() => {
-                if (!isLoading) onClose();
-              }}
+              onClick={handleClose}
               disabled={isLoading}
               aria-label="關閉"
             >
               <XMarkIcon width={20} height={20} aria-hidden="true" />
             </button>
           </div>
-          <div className={dialogBody}>
-            <p>{description}</p>
-          </div>
+          <DialogDescription className={dialogBody}>{description}</DialogDescription>
           {error && (
             <div className={inlineError} role="alert">
               {error}
@@ -205,7 +209,7 @@ export default function ConfirmDialog({
             <button
               type="button"
               className={dialogBtn({ variant: 'cancel' })}
-              onClick={onClose}
+              onClick={handleClose}
               disabled={isLoading}
             >
               {cancelLabel}
