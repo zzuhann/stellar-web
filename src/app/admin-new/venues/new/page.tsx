@@ -6,7 +6,7 @@ import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import VenueForm from '@/components/admin-new/VenueForm';
-import { useCreateVenueMutation } from '../_hooks/useCreateVenueMutation';
+import { useCreateVenueMutation } from '@/components/admin-new/hooks/useCreateVenueMutation';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 

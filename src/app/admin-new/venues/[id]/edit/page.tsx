@@ -9,10 +9,10 @@ import { useAuthToken } from '@/hooks/useAuthToken';
 import Skeleton from '@/components/ui/Skeleton';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import VenueForm, { type VenueFormValues } from '@/components/admin-new/VenueForm';
-import { useAdminVenueDetail } from '../../_hooks/useAdminVenueDetail';
-import { useUpdateVenueMutation } from '../../_hooks/useUpdateVenueMutation';
-import { useDeleteVenueMutation } from '../../_hooks/useDeleteVenueMutation';
-import { useVenueStatusMutation } from '../../_hooks/useVenueStatusMutation';
+import { useAdminVenueDetail } from '@/components/admin-new/hooks/useAdminVenueDetail';
+import { useUpdateVenueMutation } from '@/components/admin-new/hooks/useUpdateVenueMutation';
+import { useDeleteVenueMutation } from '@/components/admin-new/hooks/useDeleteVenueMutation';
+import { useVenueStatusMutation } from '@/components/admin-new/hooks/useVenueStatusMutation';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
