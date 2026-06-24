@@ -10,6 +10,7 @@ import StyledToaster from '@/components/StyledToaster';
 import Header from '@/components/header';
 import FooterWrapper from '@/components/layout/FooterWrapper';
 import { Analytics } from '@vercel/analytics/next';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 import PWAInstallPrompt from '@/components/pwa/PWAInstallPrompt';
 import { ShareProvider } from '@/context/ShareContext';
@@ -127,6 +128,7 @@ export default function RootLayout({
                 <Header />
                 {children}
                 <Analytics />
+                <SpeedInsights />
                 <ClarityInit />
                 <GATracker />
                 <WebVitalsReporter />
