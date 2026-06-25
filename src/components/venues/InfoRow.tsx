@@ -17,7 +17,6 @@ const iconWrap = css({
   alignItems: 'center',
   justifyContent: 'center',
   color: 'color.text.secondary',
-  marginTop: '0.5',
 });
 
 const textWrap = css({

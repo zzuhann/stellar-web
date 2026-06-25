@@ -8,6 +8,7 @@ import { css } from '@/styled-system/css';
 import { useQueryState, parseAsInt } from '@/hooks/useQueryState';
 import { QueryStateProvider, useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
 import { adminApi, venueApi, handleApiError } from '@/lib/api';
+import { revalidatePaths } from '@/lib/revalidate';
 import { showToast } from '@/lib/toast';
 import queryKey from '@/hooks/queryKey';
 import AdminSidebar from '@/components/admin-new/AdminSidebar';
@@ -222,6 +223,7 @@ function AdminVenuesInner() {
       else if (variables === 'online') showToast.success(`已上架 ${count} 間場地`);
       else if (variables === 'offline') showToast.success(`已下架 ${count} 間場地`);
       queryClient.invalidateQueries({ queryKey: queryKey.adminVenues() });
+      revalidatePaths(['/venues']);
       setSelectedIds(new Set());
       setBatchAction(null);
       setBatchError(null);

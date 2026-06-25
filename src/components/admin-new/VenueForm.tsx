@@ -8,6 +8,7 @@ import ImageUpload from '@/components/images/ImageUpload';
 import MultiImageUpload from '@/components/images/MultiImageUpload';
 import PlaceAutocomplete from '@/components/forms/PlaceAutocomplete';
 import type { CreateVenueData, UpdateVenueData, CapacityRange } from '@/types';
+import { REGIONS } from '@/constants';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
@@ -340,7 +341,7 @@ const statusBadge = cva({
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const REGION_OPTIONS = ['台北', '新北', '桃園', '台中', '台南', '高雄', '其他'];
+const REGION_OPTIONS = [...REGIONS, '其他'];
 const CAPACITY_OPTIONS: CapacityRange[] = ['20以下', '20-40', '40-60', '60以上'];
 const MAX_HOST_TAGS = 5;
 

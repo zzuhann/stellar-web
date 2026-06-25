@@ -2,7 +2,9 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { css } from '@/styled-system/css';
-import type { CapacityRange } from '@/types';
+import { CAPACITY_OPTIONS, type CapacityFilter } from './venueCapacity';
+
+export type { CapacityFilter };
 
 const filterBar = css({
   position: 'sticky',
@@ -191,16 +193,6 @@ const sortItemActive = css({
 const checkmark = css({
   color: 'color.primary',
 });
-
-export type CapacityFilter = 'all' | CapacityRange;
-
-const CAPACITY_OPTIONS: { id: CapacityFilter; label: string }[] = [
-  { id: 'all', label: '不限' },
-  { id: '20以下', label: '20人以下' },
-  { id: '20-40', label: '20-40人' },
-  { id: '40-60', label: '40-60人' },
-  { id: '60以上', label: '60人以上' },
-];
 
 export type VenueSort = 'eventCount' | 'newest';
 

@@ -96,6 +96,13 @@ const emptyHint = css({
   letterSpacing: '0.04em',
 });
 
+const slideItem = css({
+  position: 'relative',
+  height: '100%',
+  background: 'black',
+  cursor: 'pointer',
+});
+
 const emptyText = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
@@ -209,7 +216,8 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
           {photos.map((src, i) => (
             <div
               key={i}
-              style={{ flex: `0 0 ${slidePercent}%`, position: 'relative', height: '100%' }}
+              className={slideItem}
+              style={{ flex: `0 0 ${slidePercent}%` }}
               onClick={() => {
                 setLightboxIndex(i);
                 setLightboxOpen(true);
@@ -219,7 +227,7 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
                 src={src}
                 alt={`${venueName} 場地照片 ${i + 1}`}
                 fill
-                style={{ objectFit: 'cover' }}
+                style={{ objectFit: 'contain' }}
                 unoptimized
                 sizes="100vw"
                 priority={i === 0}

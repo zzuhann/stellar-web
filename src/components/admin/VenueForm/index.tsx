@@ -12,29 +12,7 @@ import { useAuthToken } from '@/hooks/useAuthToken';
 import { showToast } from '@/lib/toast';
 import { useCreateVenueMutation } from './hook/useCreateVenueMutation';
 import { useUpdateVenueMutation } from './hook/useUpdateVenueMutation';
-
-const REGIONS = [
-  '臺北',
-  '新北',
-  '桃園',
-  '臺中',
-  '臺南',
-  '高雄',
-  '基隆',
-  '新竹',
-  '嘉義',
-  '宜蘭',
-  '苗栗',
-  '彰化',
-  '南投',
-  '雲林',
-  '屏東',
-  '花蓮',
-  '臺東',
-  '澎湖',
-  '金門',
-  '連江',
-] as const;
+import { REGIONS } from '@/constants';
 
 const pageContainer = css({
   maxWidth: '640px',
