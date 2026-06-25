@@ -11,10 +11,12 @@ import {
   trackClickVenueMap,
 } from '@/lib/analytics/venues';
 import type { Venue, VenueDetail } from '@/types';
+import { CAPACITY_RANGE_LABEL } from './venueCapacity';
 import VenueGallery from './VenueGallery';
 import InfoRow from './InfoRow';
 import PastEventsStrip from './PastEventsStrip';
 import RelatedVenuesStrip from './RelatedVenuesStrip';
+import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 
 const pageOuter = css({
   minHeight: '100vh',
@@ -378,7 +380,8 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
       <div className={page}>
         <div className={backBar}>
           <button type="button" className={backBtn} onClick={() => router.back()}>
-            <svg
+            <ChevronLeftIcon width={16} height={16} aria-hidden="true" />
+            {/* <svg
               aria-hidden="true"
               width="18"
               height="18"
@@ -390,7 +393,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
               strokeLinejoin="round"
             >
               <path d="m15 6-6 6 6 6" />
-            </svg>
+            </svg> */}
             場地列表
           </button>
         </div>
@@ -405,9 +408,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
               <div className={statLabel}>容納人數</div>
               <div className={statValue}>
                 {venue.capacityRange ? (
-                  <>
-                    {venue.capacityRange} <span className={statUnit}>人</span>
-                  </>
+                  (CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange)
                 ) : (
                   <span className={statUnit}>未提供</span>
                 )}

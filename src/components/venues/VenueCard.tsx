@@ -6,6 +6,7 @@ import { UsersIcon, StarIcon } from '@heroicons/react/24/solid';
 import { css } from '@/styled-system/css';
 import { trackClickVenueDetail, trackViewVenueCard } from '@/lib/analytics/venues';
 import type { Venue } from '@/types';
+import { CAPACITY_RANGE_LABEL } from './venueCapacity';
 import VenueCardPhotos from './VenueCardPhotos';
 
 const card = css({
@@ -122,13 +123,6 @@ const eventCountNum = css({
 });
 
 const starIconCls = css({ color: 'amber.500' });
-
-const CAPACITY_RANGE_LABEL: Record<string, string> = {
-  '20以下': '20人以下',
-  '20-40': '20-40人',
-  '40-60': '40-60人',
-  '60以上': '60人以上',
-};
 
 const SCROLL_KEY = 'venues_scrollY';
 
