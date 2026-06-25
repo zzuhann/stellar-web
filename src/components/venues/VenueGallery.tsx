@@ -209,7 +209,12 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
           {photos.map((src, i) => (
             <div
               key={i}
-              style={{ flex: `0 0 ${slidePercent}%`, position: 'relative', height: '100%' }}
+              style={{
+                flex: `0 0 ${slidePercent}%`,
+                position: 'relative',
+                height: '100%',
+                background: 'black',
+              }}
               onClick={() => {
                 setLightboxIndex(i);
                 setLightboxOpen(true);
@@ -219,7 +224,7 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
                 src={src}
                 alt={`${venueName} 場地照片 ${i + 1}`}
                 fill
-                style={{ objectFit: 'cover' }}
+                style={{ objectFit: 'contain' }}
                 unoptimized
                 sizes="100vw"
                 priority={i === 0}
