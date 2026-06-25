@@ -222,7 +222,7 @@ function AdminVenuesInner() {
       else if (variables === 'reject') showToast.success(`已拒絕 ${count} 間場地`);
       else if (variables === 'online') showToast.success(`已上架 ${count} 間場地`);
       else if (variables === 'offline') showToast.success(`已下架 ${count} 間場地`);
-      queryClient.invalidateQueries({ queryKey: ['admin-venues'] });
+      queryClient.invalidateQueries({ queryKey: queryKey.adminVenues() });
       revalidatePaths(['/venues']);
       setSelectedIds(new Set());
       setBatchAction(null);
@@ -238,7 +238,7 @@ function AdminVenuesInner() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => venueApi.permanentDeleteVenue(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-venues'] });
+      queryClient.invalidateQueries({ queryKey: queryKey.adminVenues() });
       setDeleteTarget(null);
       setDeleteError(null);
     },

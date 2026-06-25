@@ -381,12 +381,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
                 >
                   {venue.address}
                   <span className={mapIconWrapper}>
-                    <ArrowTopRightOnSquareIcon
-                      width={12}
-                      height={12}
-                      color="gray.400"
-                      aria-hidden="true"
-                    />
+                    <ArrowTopRightOnSquareIcon width={12} height={12} aria-hidden="true" />
                   </span>
                   <span className="sr-only">在 Google Maps 開啟（開新分頁）</span>
                 </a>
@@ -412,12 +407,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
                   >
                     {socialLink.text}
                     <span className={mapIconWrapper}>
-                      <ArrowTopRightOnSquareIcon
-                        width={12}
-                        height={12}
-                        color="gray.400"
-                        aria-hidden="true"
-                      />
+                      <ArrowTopRightOnSquareIcon width={12} height={12} aria-hidden="true" />
                     </span>
                     <span className="sr-only">（開新分頁）</span>
                   </a>
