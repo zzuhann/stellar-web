@@ -18,10 +18,10 @@ import VenueCard from './VenueCard';
 import type { Venue } from '@/types';
 
 const REGION_GROUPS = [
-  { label: '北部', cities: ['臺北', '新北', '基隆', '桃園', '新竹', '宜蘭'] },
-  { label: '中部', cities: ['苗栗', '臺中', '彰化', '南投', '雲林'] },
-  { label: '南部', cities: ['嘉義', '臺南', '高雄', '屏東'] },
-  { label: '東部', cities: ['花蓮', '臺東'] },
+  { label: '北部', cities: ['台北', '新北', '基隆', '桃園', '新竹', '宜蘭'] },
+  { label: '中部', cities: ['苗栗', '台中', '彰化', '南投', '雲林'] },
+  { label: '南部', cities: ['嘉義', '台南', '高雄', '屏東'] },
+  { label: '東部', cities: ['花蓮', '台東'] },
   { label: '外島', cities: ['澎湖', '金門', '連江'] },
 ] as const;
 

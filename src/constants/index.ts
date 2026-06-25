@@ -45,3 +45,28 @@ export const PAGINATION = {
 
 // CDN 域名
 export const CDN_DOMAIN = 'https://cdn.stellar-zone.com/';
+
+export const REGIONS = [
+  '台北',
+  '新北',
+  '桃園',
+  '台中',
+  '台南',
+  '高雄',
+  '基隆',
+  '新竹',
+  '嘉義',
+  '宜蘭',
+  '苗栗',
+  '彰化',
+  '南投',
+  '雲林',
+  '屏東',
+  '花蓮',
+  '台東',
+  '澎湖',
+  '金門',
+  '連江',
+] as const;
+
+export type Region = (typeof REGIONS)[number];

@@ -31,7 +31,9 @@ const body = css({
 
 const nameRow = css({
   display: 'flex',
+  justifyContent: 'space-between',
   alignItems: 'flex-start',
+  gap: '2',
 });
 
 const venueName = css({
@@ -39,21 +41,30 @@ const venueName = css({
   textStyle: 'bodySmall',
   fontWeight: 'bold',
   color: 'color.text.primary',
+  overflow: 'hidden',
+  display: '-webkit-box',
+  WebkitLineClamp: '2',
+  lineClamp: 2,
 });
 
-const locationRow = css({
+const regionBadge = css({
+  flexShrink: 0,
+  textStyle: 'caption',
+  background: 'stellarBlue.50',
+  color: 'stellarBlue.700',
+  borderRadius: '9999px',
+  paddingX: '2',
+  paddingY: '1',
+  whiteSpace: 'nowrap',
+});
+
+const mrtRow = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '1.5',
+  gap: '1',
   marginTop: '2',
   textStyle: 'caption',
   color: 'color.text.secondary',
-});
-
-const pinIcon = css({
-  color: 'color.primary',
-  display: 'inline-flex',
-  flexShrink: 0,
 });
 
 const mrtLabel = css({
@@ -61,57 +72,65 @@ const mrtLabel = css({
   fontWeight: 'semibold',
 });
 
-const divider = css({
-  color: 'gray.300',
+const hostTagsRow = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '2',
+  marginTop: '2',
 });
 
-const statsRow = css({
+const hostTagPill = css({
+  paddingY: '1',
+  paddingX: '2',
+  borderRadius: '9999px',
+  background: 'gray.100',
+  textStyle: 'caption',
+  color: 'gray.700',
+});
+
+const sectionDivider = css({
+  borderTop: '1px dashed',
+  borderColor: 'gray.200',
+  marginY: '2',
+});
+
+const bottomStats = css({
   display: 'flex',
-  flexDirection: 'row',
+  justifyContent: 'space-between',
   alignItems: 'center',
-  gap: '3',
-  marginTop: '1',
   textStyle: 'caption',
   color: 'color.text.secondary',
 });
 
-const statItem = css({
+const leftStat = css({
   display: 'inline-flex',
   alignItems: 'center',
   gap: '1',
 });
 
-const eventCount = css({
+const rightStat = css({
   display: 'inline-flex',
   alignItems: 'center',
   gap: '1',
 });
+
+const capacityTextCls = css({ color: 'color.text.primary', fontWeight: 'semibold' });
 
 const eventCountNum = css({
   color: 'color.primary',
   fontWeight: 'bold',
 });
 
-const SCROLL_KEY = 'venues_scrollY';
-
-const hostTagsRow = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '2',
-  marginTop: '2.5',
-});
-
-const hostTagPill = css({
-  paddingY: '1',
-  paddingX: '2.5',
-  borderRadius: '9999px',
-  background: 'stellarBlue.50',
-  textStyle: 'caption',
-  color: 'stellarBlue.700',
-});
-
 const starIconCls = css({ color: 'amber.500' });
-const capacityTextCls = css({ color: 'color.text.primary', fontWeight: 'semibold' });
+
+const CAPACITY_RANGE_LABEL: Record<string, string> = {
+  '20以下': '20人以下',
+  '20-40': '20-40人',
+  '40-60': '40-60人',
+  '60以上': '60人以上',
+};
+
+const SCROLL_KEY = 'venues_scrollY';
 
 interface VenueCardProps {
   venue: Venue;
@@ -138,9 +157,6 @@ function markViewedCardInSession(venueId: string): void {
 export default function VenueCard({ venue, listPosition, userId }: VenueCardProps) {
   const cardRef = useRef<HTMLAnchorElement>(null);
   const photos = [...(venue.coverPhoto ? [venue.coverPhoto] : []), ...(venue.otherPhotos ?? [])];
-  const mrtText = venue.nearestMrt
-    ? `${venue.nearestMrt}${venue.mrtWalkMinutes ? ` ${venue.mrtWalkMinutes} 分鐘` : ''}`
-    : null;
 
   useEffect(() => {
     const element = cardRef.current;
@@ -183,51 +199,18 @@ export default function VenueCard({ venue, listPosition, userId }: VenueCardProp
       <div className={body}>
         <div className={nameRow}>
           <h3 className={venueName}>{venue.name}</h3>
+          <span className={regionBadge}>{venue.region}</span>
         </div>
 
-        <div className={locationRow}>
-          <span className={pinIcon}>
-            <svg
-              aria-hidden="true"
-              width="14"
-              height="14"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12Z" />
-              <circle cx="12" cy="10" r="2.5" />
-            </svg>
-          </span>
-          <span>{venue.region}</span>
-          {mrtText && (
-            <>
-              <span className={divider}>·</span>
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                <span className={mrtLabel}>M</span> {mrtText}
-              </span>
-            </>
-          )}
-        </div>
-
-        <div className={statsRow}>
-          {venue.capacityRange && (
-            <>
-              <span className={statItem}>
-                <UsersIcon aria-hidden="true" width={14} height={14} />
-                可容納 <strong className={capacityTextCls}>{venue.capacityRange}</strong> 人
-              </span>
-              <span className={divider}>·</span>
-            </>
-          )}
-          <span className={eventCount}>
-            <StarIcon aria-hidden="true" width={14} height={14} className={starIconCls} />
-            <strong className={eventCountNum}>{venue.eventCount}</strong> 場生日應援紀錄
-          </span>
-        </div>
+        {venue.nearestMrt && (
+          <div className={mrtRow}>
+            <span className={mrtLabel}>M</span>
+            <span>
+              {venue.nearestMrt}
+              {venue.mrtWalkMinutes ? ` ${venue.mrtWalkMinutes} 分鐘` : ''}
+            </span>
+          </div>
+        )}
 
         {venue.hostTags && venue.hostTags.length > 0 && (
           <div className={hostTagsRow}>
@@ -238,6 +221,24 @@ export default function VenueCard({ venue, listPosition, userId }: VenueCardProp
             ))}
           </div>
         )}
+
+        {(venue.nearestMrt || (venue.hostTags && venue.hostTags.length > 0)) && (
+          <div className={sectionDivider} />
+        )}
+
+        <div className={bottomStats}>
+          <span className={leftStat}>
+            <UsersIcon aria-hidden="true" width={14} height={14} />
+            可容納{' '}
+            <strong className={capacityTextCls}>
+              {CAPACITY_RANGE_LABEL[venue.capacityRange ?? ''] ?? venue.capacityRange}
+            </strong>{' '}
+          </span>
+          <span className={rightStat}>
+            <StarIcon aria-hidden="true" width={14} height={14} className={starIconCls} />
+            <strong className={eventCountNum}>{venue.eventCount}</strong> 場生日應援紀錄
+          </span>
+        </div>
       </div>
     </Link>
   );
