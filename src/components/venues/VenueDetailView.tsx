@@ -16,7 +16,12 @@ import VenueGallery from './VenueGallery';
 import InfoRow from './InfoRow';
 import PastEventsStrip from './PastEventsStrip';
 import RelatedVenuesStrip from './RelatedVenuesStrip';
-import { ChevronLeftIcon } from '@heroicons/react/24/outline';
+import {
+  ChevronLeftIcon,
+  MapPinIcon,
+  ArrowTopRightOnSquareIcon,
+} from '@heroicons/react/24/outline';
+import { InstagramIcon, ThreadsIcon } from '@/components/ui/SocialMediaIcons';
 
 const pageOuter = css({
   minHeight: '100vh',
@@ -240,66 +245,8 @@ const bookingBtnWrap = css({
   display: 'flex',
 });
 
-function PinIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 22s7-7 7-12a7 7 0 0 0-14 0c0 5 7 12 7 12Z" />
-      <circle cx="12" cy="10" r="2.5" />
-    </svg>
-  );
-}
-
 function MrtIcon() {
   return <span className={mrtIconCls}>M</span>;
-}
-
-function InstagramIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-    >
-      <rect x="3" y="3" width="18" height="18" rx="4" />
-      <circle cx="12" cy="12" r="4" />
-      <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" />
-    </svg>
-  );
-}
-
-function MapExternalIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-      <polyline points="15 3 21 3 21 9" />
-      <line x1="10" y1="14" x2="21" y2="3" />
-    </svg>
-  );
 }
 
 interface BookingChannel {
@@ -336,12 +283,20 @@ function buildBookingChannel(venue: VenueDetail): BookingChannel | null {
   return null;
 }
 
-function buildSocialLink(venue: VenueDetail): { text: string; url: string } | null {
+function buildSocialLink(
+  venue: VenueDetail
+): { text: string; url: string; type: 'instagram' | 'threads' | 'line' } | null {
   const sm = venue.socialMedia;
   if (!sm) return null;
-  if (sm.instagram) return { text: sm.instagram, url: `https://www.instagram.com/${sm.instagram}` };
-  if (sm.threads) return { text: sm.threads, url: `https://www.threads.com/@${sm.threads}` };
-  if (sm.line) return { text: sm.line, url: sm.line };
+  if (sm.instagram)
+    return {
+      text: sm.instagram,
+      url: `https://www.instagram.com/${sm.instagram}`,
+      type: 'instagram',
+    };
+  if (sm.threads)
+    return { text: sm.threads, url: `https://www.threads.com/@${sm.threads}`, type: 'threads' };
+  if (sm.line) return { text: sm.line, url: sm.line, type: 'line' };
   return null;
 }
 
@@ -381,19 +336,6 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
         <div className={backBar}>
           <button type="button" className={backBtn} onClick={() => router.back()}>
             <ChevronLeftIcon width={16} height={16} aria-hidden="true" />
-            {/* <svg
-              aria-hidden="true"
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="m15 6-6 6 6 6" />
-            </svg> */}
             場地列表
           </button>
         </div>
@@ -427,7 +369,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
           <h2 className={sectionTitle}>基本資訊</h2>
           <div className={infoRowsWrap}>
             <InfoRow
-              icon={<PinIcon />}
+              icon={<MapPinIcon width={16} height={16} aria-hidden="true" />}
               label="地址"
               value={
                 <a
@@ -439,7 +381,12 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
                 >
                   {venue.address}
                   <span className={mapIconWrapper}>
-                    <MapExternalIcon />
+                    <ArrowTopRightOnSquareIcon
+                      width={12}
+                      height={12}
+                      color="gray.400"
+                      aria-hidden="true"
+                    />
                   </span>
                   <span className="sr-only">在 Google Maps 開啟（開新分頁）</span>
                 </a>
@@ -454,7 +401,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
             )}
             {socialLink && (
               <InfoRow
-                icon={<InstagramIcon />}
+                icon={socialLink.type === 'threads' ? <ThreadsIcon /> : <InstagramIcon />}
                 label="社群"
                 value={
                   <a
@@ -465,7 +412,12 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
                   >
                     {socialLink.text}
                     <span className={mapIconWrapper}>
-                      <MapExternalIcon />
+                      <ArrowTopRightOnSquareIcon
+                        width={12}
+                        height={12}
+                        color="gray.400"
+                        aria-hidden="true"
+                      />
                     </span>
                     <span className="sr-only">（開新分頁）</span>
                   </a>
