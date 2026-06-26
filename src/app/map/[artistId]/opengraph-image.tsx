@@ -1,10 +1,25 @@
 import { ImageResponse } from 'next/og';
-import { artistsApi } from '@/lib/api';
 
 export const runtime = 'nodejs';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
+
+async function fetchArtists(): Promise<{ id: string; slug?: string }[]> {
+  const res = await fetch(`${API_BASE}/artists?status=approved`).catch(() => null);
+  if (!res?.ok) return [];
+  return res.json();
+}
+
+async function fetchArtist(
+  id: string
+): Promise<{ stageName?: string; profileImage?: string } | null> {
+  const res = await fetch(`${API_BASE}/artists/${id}`).catch(() => null);
+  if (!res?.ok) return null;
+  return res.json();
+}
+
 export async function generateStaticParams() {
-  const artists = await artistsApi.getAll({ status: 'approved' }).catch(() => []);
+  const artists = await fetchArtists();
   return artists.map((a) => ({ artistId: a.slug ?? a.id }));
 }
 
@@ -25,7 +40,7 @@ type ImageProps = {
 
 export default async function Image({ params }: ImageProps) {
   const { artistId } = await params;
-  const artist = await artistsApi.getById(artistId).catch(() => null);
+  const artist = await fetchArtist(artistId);
   const artistImageUrl = artist?.profileImage || FALLBACK_OG_IMAGE_URL;
   const artistStageName = artist?.stageName || 'STELLAR';
   const title = artist ? `${artistStageName} 生日應援` : 'STELLAR 台灣生日應援地圖';
