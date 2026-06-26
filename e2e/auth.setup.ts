@@ -10,6 +10,7 @@ import { test as setup, expect } from '@playwright/test';
 const authFile = 'e2e/.auth/user.json';
 
 setup('authenticate with Google', async ({ page }) => {
+  setup.setTimeout(90_000);
   await page.goto('/');
   const headerButton = page.getByRole('button', { name: '登入 / 註冊' });
   await headerButton.click();
@@ -31,7 +32,9 @@ setup('authenticate with Google', async ({ page }) => {
   await signInButton.click();
   await popup.waitForEvent('close', { timeout: 120_000 });
 
-  await page.waitForLoadState('networkidle', { timeout: 30_000 });
-  await expect(page.getByRole('main')).toBeVisible({ timeout: 30_000 });
+  // Wait until the login button disappears, meaning Firebase auth state has been picked up
+  await expect(page.getByRole('button', { name: '登入 / 註冊' })).not.toBeVisible({
+    timeout: 30_000,
+  });
   await page.context().storageState({ path: authFile });
 });
