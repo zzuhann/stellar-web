@@ -7,6 +7,7 @@ import {
   signInAnonymously as firebaseSignInAnonymously,
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import * as Sentry from '@sentry/nextjs';
 import { auth, db } from './firebase';
 import { User as AppUser } from '@/types';
 import { FIREBASE_ERROR_MESSAGES } from '@/constants';
@@ -23,6 +24,10 @@ export async function signInWithGoogle(): Promise<
     return { user: result.user, error: null };
   } catch (error) {
     const authError = error as AuthError;
+    const ignoredCodes = ['auth/popup-closed-by-user', 'auth/cancelled-popup-request'];
+    if (!ignoredCodes.includes(authError.code)) {
+      Sentry.captureException(error, { tags: { context: 'google_sign_in' } });
+    }
     return {
       user: null,
       error: FIREBASE_ERROR_MESSAGES[authError.code] || 'Google 登入失敗',
