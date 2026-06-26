@@ -18,7 +18,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Cache Firebase emulators
         uses: actions/cache@v4
@@ -45,7 +45,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Start Firebase emulators
-        run: npx firebase emulators:start --only auth,firestore &
+        run: npx firebase emulators:start --only auth,firestore --project demo-stellar &
 
       - name: Wait for emulators
         run: npx wait-on http://localhost:9099 http://localhost:8080
