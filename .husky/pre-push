@@ -1,0 +1,6 @@
+echo "🧪 Running E2E tests before push..."
+
+npx firebase emulators:exec --only auth,firestore --project demo-stellar \
+  "npm run test:e2e:auth && npm run test:e2e:ci"
+
+echo "✅ E2E tests passed!"

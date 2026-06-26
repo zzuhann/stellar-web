@@ -1,6 +1,7 @@
 import { cva } from '@/styled-system/css';
 import Loading from '../Loading';
 import { useState } from 'react';
+import * as Sentry from '@sentry/nextjs';
 import { useAuth } from '@/lib/auth-context';
 import { signInWithGoogle } from '@/lib/auth';
 import showToast from '@/lib/toast';
@@ -73,7 +74,8 @@ const GoogleLoginButton = ({ onSuccess }: GoogleLoginButtonProps) => {
         showToast.success('登入成功');
         onSuccess?.();
       }
-    } catch {
+    } catch (error) {
+      Sentry.captureException(error, { tags: { context: 'google_sign_in_unexpected' } });
       showToast.error('Google 登入失敗');
     } finally {
       setIsGoogleLoading(false);

@@ -1,8 +1,13 @@
 // Firebase 配置與初始化
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import {
+  browserLocalPersistence,
+  connectAuthEmulator,
+  getAuth,
+  setPersistence,
+} from 'firebase/auth';
+import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 
 // Firebase 配置
 const firebaseConfig = {
@@ -16,11 +21,15 @@ const firebaseConfig = {
 
 // 初始化 Firebase App（singleton guard 避免 hot reload 重複初始化）
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-
-export const auth = getAuth(app);
-
 // 初始化 Firestore
 export const db = getFirestore(app);
+
+export const auth = getAuth(app);
+if (process.env.NEXT_PUBLIC_USE_AUTH_EMULATOR === 'true') {
+  connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+  connectFirestoreEmulator(db, '127.0.0.1', 8080);
+  setPersistence(auth, browserLocalPersistence);
+}
 
 // 開發環境連接模擬器（目前停用，使用正式 Firebase 服務）
 // if (process.env.NODE_ENV === 'development') {

@@ -10,7 +10,10 @@ import { test as setup, expect } from '@playwright/test';
 const authFile = 'e2e/.auth/user.json';
 
 setup('authenticate with Google', async ({ page }) => {
-  await page.goto('/my-favorite');
+  setup.setTimeout(90_000);
+  await page.goto('/');
+  const headerButton = page.getByRole('button', { name: '登入 / 註冊' });
+  await headerButton.click();
 
   const googleButton = page.getByRole('button', { name: '使用 Google 登入' });
   await expect(googleButton).toBeVisible({ timeout: 10_000 });
@@ -20,8 +23,18 @@ setup('authenticate with Google', async ({ page }) => {
     googleButton.click(),
   ]);
 
+  await popup.waitForLoadState();
+  const addNewAccountButton = popup.getByRole('button', { name: 'Add new account' });
+  await addNewAccountButton.click();
+  const autoGenerateButton = popup.locator('#autogen-button');
+  await autoGenerateButton.click();
+  const signInButton = popup.locator('#sign-in');
+  await signInButton.click();
   await popup.waitForEvent('close', { timeout: 120_000 });
 
-  await expect(page.getByRole('main')).toBeVisible({ timeout: 10_000 });
+  // Wait until the login button disappears, meaning Firebase auth state has been picked up
+  await expect(page.getByRole('button', { name: '登入 / 註冊' })).not.toBeVisible({
+    timeout: 30_000,
+  });
   await page.context().storageState({ path: authFile });
 });
