@@ -12,6 +12,8 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "test:e2e:auth": "playwright test --project=setup --headed",
+    "test:e2e:auth:ci": "playwright test --project=setup",
+    "test:e2e:ci": "playwright test --project=chromium --project=chromium-authenticated",
     "lint": "next lint --fix",
     "lint:check": "next lint",
     "type-check": "tsc -p tsconfig.json --noEmit",
