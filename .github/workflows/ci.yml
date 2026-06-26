@@ -44,20 +44,8 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Start Firebase emulators
-        run: npx firebase emulators:start --only auth,firestore --project demo-stellar &
-
-      - name: Wait for emulators
-        run: npx wait-on http://localhost:9099 http://localhost:8080
-
-      - name: E2E auth setup
-        run: npm run test:e2e:auth:ci
-        env:
-          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
-          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
-
       - name: E2E tests
-        run: npm run test:e2e:ci
+        run: npx firebase emulators:exec --only auth,firestore --project demo-stellar "npm run test:e2e:auth:ci && npm run test:e2e:ci"
         env:
           NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
