@@ -69,6 +69,7 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-unused-imports": "^4.4.1",
+    "firebase-tools": "^15.22.3",
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "lint-staged": "^16.4.0",
@@ -76,7 +77,8 @@
     "prettier": "^3.8.3",
     "typescript": "^5.9.3",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.7",
+    "wait-on": "^9.0.10"
   },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx}": [

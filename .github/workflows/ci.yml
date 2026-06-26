@@ -41,14 +41,11 @@ jobs:
       - name: Unit tests
         run: npm run test:run
 
-      - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
       - name: Start Firebase emulators
-        run: firebase emulators:start --only auth,firestore &
+        run: npx firebase emulators:start --only auth,firestore &
 
       - name: Wait for emulators
         run: npx wait-on http://localhost:9099 http://localhost:8080
