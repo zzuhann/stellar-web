@@ -31,6 +31,7 @@ setup('authenticate with Google', async ({ page }) => {
   await signInButton.click();
   await popup.waitForEvent('close', { timeout: 120_000 });
 
-  await expect(page.getByRole('main')).toBeVisible({ timeout: 10_000 });
+  await page.waitForLoadState('networkidle', { timeout: 30_000 });
+  await expect(page.getByRole('main')).toBeVisible({ timeout: 30_000 });
   await page.context().storageState({ path: authFile });
 });
