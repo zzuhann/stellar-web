@@ -573,7 +573,11 @@ export const venueApi = {
   batchReviewVenues: async (
     updates: Array<{ venueId: string; status: 'active' | 'rejected' }>
   ): Promise<{ message: string }> => {
-    const response = await api.patch<{ message: string }>('/venues/batch-review', { updates });
+    const response = await api.patch<{ message: string }>(
+      '/venues/batch-review',
+      { updates },
+      { timeout: 60000 }
+    );
     return response.data;
   },
 
