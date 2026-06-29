@@ -75,7 +75,10 @@ export default async function MapPage({ params }: MapPageProps) {
     notFound();
   }
 
-  const artist = await artistsApi.getById(artistId).catch(() => null);
+  const artist = await artistsApi.getById(artistId).catch((err) => {
+    if (err?.response?.status === 404) return null;
+    throw err;
+  });
 
   if (artist?.slug && artistId !== artist.slug) {
     permanentRedirect(`/map/${artist.slug}`);

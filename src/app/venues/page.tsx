@@ -19,7 +19,7 @@ export const metadata = {
 };
 
 export default async function VenuesPage() {
-  const data = await venueApi.getVenues({ status: 'active' }).catch(() => ({ venues: [] }));
+  const data = await venueApi.getVenues({ status: 'active' });
   const venues = data.venues ?? [];
 
   return (

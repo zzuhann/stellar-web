@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { venueApi } from '@/lib/api';
 import type { Venue } from '@/types';
@@ -40,7 +41,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function VenueDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const venue = await venueApi.getVenueById(id).catch(() => null);
+  const venue = await venueApi.getVenueById(id).catch((err) => {
+    if (err?.response?.status === 404) return null;
+    throw err;
+  });
+  if (!venue) notFound();
 
   const relatedVenues: Venue[] = venue
     ? await venueApi

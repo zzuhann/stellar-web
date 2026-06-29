@@ -101,7 +101,11 @@ export default async function EventDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const event = await eventsApi.getById(eventId).catch(() => null);
+  const event = await eventsApi.getById(eventId).catch((err) => {
+    if (err?.response?.status === 404) return null;
+    throw err;
+  });
+  if (!event) notFound();
 
   if (event?.slug && eventId !== event.slug) {
     permanentRedirect(`/event/${event.slug}`);
