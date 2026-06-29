@@ -4,7 +4,7 @@ import { eventsApi } from '@/lib/api';
 import EventDetail from '@/components/EventDetail';
 import type { CoffeeEvent, FirebaseTimestamp } from '@/types';
 
-export const revalidate = 7200; // ISR: 1 hour
+export const revalidate = 7200; // ISR: 2 hours
 
 interface PageProps {
   params: Promise<{

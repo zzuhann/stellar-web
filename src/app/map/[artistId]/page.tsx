@@ -5,7 +5,7 @@ import { Artist } from '@/types';
 import { artistsApi, eventsApi } from '@/lib/api';
 import MapPageClient from '@/components/map/MapPage';
 
-export const revalidate = 86400; // ISR: 1 hour
+export const revalidate = 86400; // ISR: 24 hours
 
 interface MapPageProps {
   params: Promise<{
