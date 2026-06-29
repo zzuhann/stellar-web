@@ -186,9 +186,7 @@ const uploadArrow = css({
 });
 
 const errorMessage = css({
-  marginTop: '2',
-  marginX: '0',
-  marginBottom: '0',
+  margin: '0',
   textStyle: 'caption',
   color: 'color.status.color',
 });
@@ -199,6 +197,20 @@ const helperText = css({
   marginBottom: '0',
   textStyle: 'caption',
   color: 'color.text.secondary',
+});
+
+const retryBtn = css({
+  marginTop: '1',
+  paddingY: '1',
+  paddingX: '2.5',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.md',
+  background: 'white',
+  color: 'color.text.primary',
+  textStyle: 'caption',
+  cursor: 'pointer',
+  '&:hover': { background: 'color.background.secondary' },
 });
 
 interface ImageUploadProps {
@@ -250,6 +262,7 @@ export default function ImageUpload({
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [showCropper, setShowCropper] = useState(false);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [lastCropArea, setLastCropArea] = useState<{
@@ -312,6 +325,7 @@ export default function ImageUpload({
         onFileReady?.(compressedFile);
       } else {
         // 立即上傳模式：直接上傳
+        setPendingFile(compressedFile);
         await uploadImage(compressedFile);
       }
     } catch {
@@ -376,6 +390,7 @@ export default function ImageUpload({
       onFileReady?.(croppedFile);
     } else {
       // 立即上傳模式：直接上傳
+      setPendingFile(croppedFile);
       await uploadImage(croppedFile);
     }
   };
@@ -412,6 +427,7 @@ export default function ImageUpload({
   const handleRemove = () => {
     setPreviewUrl(null);
     setError(null);
+    setPendingFile(null);
     setHasCroppedImage(false); // 重置裁切狀態
     setConfirmedImageUrl(null); // 重置確認的圖片URL
     if (fileInputRef.current) {
@@ -526,7 +542,18 @@ export default function ImageUpload({
         )}
       </div>
 
-      {error && <p className={errorMessage}>{error}</p>}
+      {error && (
+        <div className={css({ display: 'flex', alignItems: 'center', gap: '2', marginTop: '2' })}>
+          <p className={errorMessage} style={{ margin: 0 }}>
+            {error}
+          </p>
+          {pendingFile && (
+            <button type="button" className={retryBtn} onClick={() => uploadImage(pendingFile)}>
+              點擊重新上傳圖片
+            </button>
+          )}
+        </div>
+      )}
 
       <p className={helperText}>
         圖片會自動壓縮至適當大小
