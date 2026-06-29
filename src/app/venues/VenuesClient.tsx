@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { css } from '@/styled-system/css';
 import { venueApi } from '@/lib/api';
@@ -118,22 +118,20 @@ export default function VenuesClient({ initialVenues }: VenuesClientProps) {
   const venues = data?.venues ?? [];
   const filtered = applyCapacityFilter(venues, capacity);
 
-  // Restore scroll position when navigating back from a venue detail page
-  useLayoutEffect(() => {
-    const savedY = sessionStorage.getItem(SCROLL_KEY);
-    if (savedY !== null) {
-      sessionStorage.removeItem(SCROLL_KEY);
-      requestAnimationFrame(() => {
-        window.scrollTo({ top: parseInt(savedY, 10), behavior: 'instant' });
-      });
-    }
-  }, []);
-
-  // Save scroll position when navigating away
+  // Restore scroll position on back navigation (popstate fires even when component is cached)
   useEffect(() => {
-    return () => {
-      sessionStorage.setItem(SCROLL_KEY, window.scrollY.toString());
+    const restore = () => {
+      const savedY = sessionStorage.getItem(SCROLL_KEY);
+      if (savedY !== null) {
+        sessionStorage.removeItem(SCROLL_KEY);
+        requestAnimationFrame(() => {
+          window.scrollTo({ top: parseInt(savedY, 10), behavior: 'instant' });
+        });
+      }
     };
+    restore();
+    window.addEventListener('popstate', restore);
+    return () => window.removeEventListener('popstate', restore);
   }, []);
 
   useEffect(() => {
