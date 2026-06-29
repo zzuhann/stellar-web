@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
+import { revalidatePaths } from '@/lib/revalidate';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import type { CoffeeEvent } from '@/types';
 
@@ -19,6 +20,13 @@ export default function DeleteEventDialog({ event, onClose, onSuccess }: DeleteE
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminApi.deleteEvent(id),
     onSuccess: () => {
+      if (event) {
+        revalidatePaths([
+          `/event/${event.slug ?? event.id}`,
+          '/',
+          ...(event.artists?.map((a) => `/map/${a.slug ?? a.id}`) ?? []),
+        ]);
+      }
       queryClient.invalidateQueries({ queryKey: ['admin-events'] });
       onSuccess();
     },

@@ -7,6 +7,7 @@ import VerticalEventCard from '@/components/EventCard/VerticalEventCard';
 import { UseMutationResult } from '@tanstack/react-query';
 import { EyeIcon, PencilIcon, TrashIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
 import SubmissionsPagination from './SubmissionsPagination';
+import type { DeleteEventVariables } from '../hooks/useDeleteEventMutation';
 import type {
   CoffeeEvent,
   UserSubmissionResourceSummary,
@@ -60,7 +61,7 @@ type EventSubmissionsProps = {
   pagination: UserSubmissionsPagination;
   currentPage: number;
   onPageChange: (page: number) => void;
-  deleteEventMutation: UseMutationResult<void, Error, string>;
+  deleteEventMutation: UseMutationResult<void, Error, DeleteEventVariables>;
   setPreviewingEvent: (event: CoffeeEvent | null) => void;
   setDeleteConfirmModal: (modal: { isOpen: boolean; event: CoffeeEvent | null }) => void;
 };

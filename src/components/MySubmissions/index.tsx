@@ -101,7 +101,11 @@ function MySubmissions() {
 
   const handleConfirmDelete = () => {
     if (deleteConfirmModal.event) {
-      deleteEventMutation.mutate(deleteConfirmModal.event.id);
+      deleteEventMutation.mutate({
+        eventId: deleteConfirmModal.event.id,
+        slug: deleteConfirmModal.event.slug,
+        artistSlugs: deleteConfirmModal.event.artists?.map((a) => a.slug ?? a.id) ?? [],
+      });
       setDeleteConfirmModal({ isOpen: false, event: null });
     }
   };

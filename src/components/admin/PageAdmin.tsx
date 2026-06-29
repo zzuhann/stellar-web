@@ -520,6 +520,7 @@ export default function AdminPage() {
     onSuccess: (event) => {
       revalidatePaths([
         `/event/${event.slug ?? event.id}`,
+        '/',
         ...event.artists.map((a) => `/map/${a.slug ?? a.id}`),
       ]);
       queryClient.invalidateQueries({ queryKey: ['admin-pending-events'] });
@@ -537,6 +538,7 @@ export default function AdminPage() {
     onSuccess: (event) => {
       revalidatePaths([
         `/event/${event.slug ?? event.id}`,
+        '/',
         ...event.artists.map((a) => `/map/${a.slug ?? a.id}`),
       ]);
       queryClient.invalidateQueries({ queryKey: ['admin-pending-events'] });
@@ -558,10 +560,13 @@ export default function AdminPage() {
       }>
     ) => eventsApi.admin.batchReview(updates),
     onSuccess: (events) => {
-      const paths = events.flatMap((e) => [
-        `/event/${e.slug ?? e.id}`,
-        ...e.artists.map((a) => `/map/${a.slug ?? a.id}`),
-      ]);
+      const paths = [
+        '/',
+        ...events.flatMap((e) => [
+          `/event/${e.slug ?? e.id}`,
+          ...e.artists.map((a) => `/map/${a.slug ?? a.id}`),
+        ]),
+      ];
       revalidatePaths(paths);
       queryClient.invalidateQueries({ queryKey: ['admin-pending-events'] });
       queryClient.invalidateQueries({ queryKey: ['top-artists'] });

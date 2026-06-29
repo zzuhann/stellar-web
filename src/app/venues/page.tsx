@@ -3,7 +3,7 @@ import { venueApi } from '@/lib/api';
 import { QueryStateProvider } from '@/hooks/useQueryStateContext';
 import VenuesClient from './VenuesClient';
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 export const metadata = {
   title: '生咖、生日應援場地列表',
