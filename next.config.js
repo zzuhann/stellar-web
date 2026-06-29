@@ -67,6 +67,9 @@ module.exports = withSentryConfig(module.exports, {
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
 
+  // Don't fail the build if Sentry sourcemap upload fails
+  errorHandler: (err) => console.warn('[Sentry] sourcemap upload failed:', err),
+
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
