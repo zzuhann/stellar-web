@@ -2,7 +2,7 @@ import type { MetadataRoute } from 'next';
 import { artistsApi, eventsApi, venueApi } from '@/lib/api';
 import type { FirebaseTimestamp } from '@/types';
 
-export const revalidate = 3600;
+export const revalidate = 86400;
 
 const BASE_URL = 'https://www.stellar-zone.com';
 
