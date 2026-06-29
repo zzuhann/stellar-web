@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
-export const revalidate = 86400; // ponytail: 24h cache; shorten if OG needs to reflect real-time artist updates
+export const runtime = 'nodejs';
+export const revalidate = 86400; // ponytail: only applies to artists added after last build; pre-built ones are static CDN files
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001/api';
 
