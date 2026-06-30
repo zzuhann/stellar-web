@@ -118,6 +118,22 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png?v=2" />
       </head>
       <body className={`antialiased ${notoSansTC.variable}`}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'STELLAR',
+              url: 'https://www.stellar-zone.com',
+              logo: 'https://cdn.stellar-zone.com/images/og-image.png',
+              sameAs: [
+                'https://www.instagram.com/stellar_tw',
+                'https://www.threads.net/@stellar_tw',
+              ],
+            }),
+          }}
+        />
         <a href="#main-content" className="skip-link">
           跳至主內容
         </a>
