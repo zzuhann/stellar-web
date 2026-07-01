@@ -22,6 +22,7 @@ const drawerContainer = css({
   overflow: 'hidden',
   zIndex: '10',
   pointerEvents: 'none',
+  height: '90dvh',
 });
 
 const drawerInner = css({
@@ -32,6 +33,10 @@ const drawerInner = css({
   flexDirection: 'column',
   paddingX: '4',
   pointerEvents: 'auto',
+  // ponytail: default peek position via CSS — keeps SSR HTML in peek state before JS hydrates,
+  // eliminating CLS from the JS-computed translateY jumping from 0 to (maxHeight-120).
+  // Must use 90dvh (container height) not 100% (inner div's own height).
+  transform: 'translateY(calc(90dvh - 120px))',
 });
 
 const handleBarArea = css({
@@ -290,13 +295,10 @@ const MapBottomSheet = ({
 
   if (isLoading) {
     return (
-      <div
-        className={drawerContainer}
-        style={{ height: maxHeight > 0 ? `${maxHeight}px` : undefined }}
-      >
+      <div className={drawerContainer}>
         <div
           className={drawerInner}
-          style={{ transform: `translateY(${maxHeight > 0 ? maxHeight - 120 : 0}px)` }}
+          style={maxHeight > 0 ? { transform: `translateY(${maxHeight - 120}px)` } : undefined}
         >
           <div ref={innerRef} style={{ paddingBottom: '16px' }}>
             <div className={handleBarArea} {...handleBarBind}>
@@ -355,19 +357,19 @@ const MapBottomSheet = ({
     : `transform ${isAnimating ? 250 : 200}ms ${transitionEasing}`;
 
   return (
-    <div
-      className={drawerContainer}
-      data-testid="bottom-sheet"
-      style={{ height: maxHeight > 0 ? `${maxHeight}px` : undefined }}
-    >
+    <div className={drawerContainer} data-testid="bottom-sheet">
       {/* Inner sheet slides up/down via translateY; transition removed during drag */}
       <div
         ref={drawerInnerRef}
         className={drawerInner}
-        style={{
-          transform: `translateY(${translateY}px)`,
-          transition: isAnimating ? transitionStyle : 'none',
-        }}
+        style={
+          maxHeight > 0
+            ? {
+                transform: `translateY(${translateY}px)`,
+                transition: isAnimating ? transitionStyle : 'none',
+              }
+            : undefined
+        }
         onTransitionEnd={onTransitionEnd}
       >
         {/* paddingBottom ensures scrollHeight naturally includes bottom spacing */}
