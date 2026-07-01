@@ -188,7 +188,6 @@ interface ImageCropperProps {
   imageUrl: string;
   onCropComplete: (blob: Blob, cropState: CropState) => void;
   onCancel: () => void;
-  aspectRatio?: number;
   outputSize?: number;
   initialCropState?: CropState | null;
 }
@@ -197,7 +196,6 @@ export default function ImageCropper({
   imageUrl,
   onCropComplete,
   onCancel,
-  aspectRatio = 1,
   outputSize = 400,
   initialCropState = null,
 }: ImageCropperProps) {
@@ -252,7 +250,7 @@ export default function ImageCropper({
             image={imageUrl}
             crop={crop}
             zoom={zoom}
-            aspect={aspectRatio}
+            aspect={1}
             cropShape="round"
             onCropChange={setCrop}
             onZoomChange={setZoom}

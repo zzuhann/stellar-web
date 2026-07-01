@@ -688,7 +688,6 @@ export default function ArtistSubmissionForm({
               }
               authToken={token || undefined}
               enableCrop
-              cropAspectRatio={1}
               cropOutputSize={400}
             />
             <input type="hidden" {...register('profileImage')} aria-hidden="true" />

@@ -223,8 +223,6 @@ interface ImageUploadProps {
   authToken?: string;
   // 是否啟用裁切功能
   enableCrop?: boolean;
-  // 裁切比例 (1 = 正方形)
-  cropAspectRatio?: number;
   // 裁切輸出尺寸
   cropOutputSize?: number;
   // 裁切取消時的 callback
@@ -252,7 +250,7 @@ export default function ImageUpload({
   disabled = false,
   authToken,
   enableCrop = false,
-  cropAspectRatio = 1,
+
   cropOutputSize = 400,
   onCropCancel,
   delayUpload = false,
@@ -555,7 +553,6 @@ export default function ImageUpload({
           imageUrl={URL.createObjectURL(originalFile)}
           onCropComplete={handleCropComplete}
           onCancel={handleCropCancel}
-          aspectRatio={cropAspectRatio}
           outputSize={cropOutputSize}
           initialCropState={lastCropArea}
         />
