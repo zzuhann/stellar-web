@@ -75,9 +75,10 @@ const countEmptyRow = css({
 
 interface WeekArtistCardProps {
   artist: Artist;
+  isFirst?: boolean;
 }
 
-export default function WeekArtistCard({ artist }: WeekArtistCardProps) {
+export default function WeekArtistCard({ artist, isFirst }: WeekArtistCardProps) {
   const { user } = useAuth();
   const href = `/map/${artist.slug ?? artist.id}`;
   const birthday = formatBirthdayShort(artist.birthday ?? '');
@@ -105,6 +106,7 @@ export default function WeekArtistCard({ artist }: WeekArtistCardProps) {
           fill
           sizes="80px"
           style={{ objectFit: 'cover' }}
+          priority={isFirst}
         />
       </div>
 

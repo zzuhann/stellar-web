@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 
 import { CoffeeEvent } from '@/types';
 
-import EventPreviewModal from '@/components/events/EventPreviewModal';
+import dynamic from 'next/dynamic';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { showToast } from '@/lib/toast';
 import Loading from '../Loading';
@@ -16,6 +16,8 @@ import ArtistSubmissions from './components/ArtistSubmissions';
 import EventSubmissions from './components/EventSubmissions';
 import TabNav from './components/TabNav';
 import { useQueryState, parseAsInt } from '@/hooks/useQueryState';
+
+const EventPreviewModal = dynamic(() => import('@/components/events/EventPreviewModal'));
 import { useQueryStateContext } from '@/hooks/useQueryStateContext';
 import { useMySubmittedArtists, useMySubmittedEvents } from './hooks/useUserSubmissions';
 import useDeleteEventMutation from './hooks/useDeleteEventMutation';

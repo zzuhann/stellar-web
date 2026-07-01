@@ -59,9 +59,9 @@ export default function BirthdayTab({
         </div>
       ) : artists.length > 0 ? (
         <div className={artistListContainer}>
-          {artists.map((artist) => {
+          {artists.map((artist, index) => {
             if (!artist.birthday) return null;
-            return <WeekArtistCard key={artist.id} artist={artist} />;
+            return <WeekArtistCard key={artist.id} artist={artist} isFirst={index === 0} />;
           })}
         </div>
       ) : (
