@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { PhotoIcon, XMarkIcon, ArrowUpTrayIcon, ScissorsIcon } from '@heroicons/react/24/outline';
 import { uploadImageToAPI, compressImage } from '@/lib/r2-upload';
 import { CDN_DOMAIN } from '@/constants';
-import ImageCropper from './ImageCropper';
+import ImageCropper, { type CropState } from './ImageCropper';
 import { css, cva } from '@/styled-system/css';
 import Loading from '../Loading';
 import Image from 'next/image';
@@ -223,8 +223,6 @@ interface ImageUploadProps {
   authToken?: string;
   // 是否啟用裁切功能
   enableCrop?: boolean;
-  // 裁切比例 (1 = 正方形)
-  cropAspectRatio?: number;
   // 裁切輸出尺寸
   cropOutputSize?: number;
   // 裁切取消時的 callback
@@ -252,7 +250,7 @@ export default function ImageUpload({
   disabled = false,
   authToken,
   enableCrop = false,
-  cropAspectRatio = 1,
+
   cropOutputSize = 400,
   onCropCancel,
   delayUpload = false,
@@ -265,12 +263,7 @@ export default function ImageUpload({
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [showCropper, setShowCropper] = useState(false);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
-  const [lastCropArea, setLastCropArea] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null>(null);
+  const [lastCropArea, setLastCropArea] = useState<CropState | null>(null);
   const [hasCroppedImage, setHasCroppedImage] = useState(false);
   const [confirmedImageUrl, setConfirmedImageUrl] = useState<string | null>(
     currentImageUrl || null
@@ -360,14 +353,9 @@ export default function ImageUpload({
     }
   };
 
-  const handleCropComplete = async (
-    croppedBlob: Blob,
-    cropArea?: { x: number; y: number; width: number; height: number }
-  ) => {
-    // 保存裁切區域，用於下次重新裁切時維持範圍
-    if (cropArea) {
-      setLastCropArea(cropArea);
-    }
+  const handleCropComplete = async (croppedBlob: Blob, cropState: CropState) => {
+    // Save crop state so re-opening the cropper restores the previous position
+    setLastCropArea(cropState);
 
     // 將 Blob 轉換為 File
     const croppedFile = new File([croppedBlob], `cropped-${Date.now()}.jpg`, {
@@ -565,9 +553,8 @@ export default function ImageUpload({
           imageUrl={URL.createObjectURL(originalFile)}
           onCropComplete={handleCropComplete}
           onCancel={handleCropCancel}
-          aspectRatio={cropAspectRatio}
           outputSize={cropOutputSize}
-          initialCropArea={lastCropArea}
+          initialCropState={lastCropArea}
         />
       )}
     </div>
