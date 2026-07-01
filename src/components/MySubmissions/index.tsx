@@ -7,7 +7,9 @@ import { useRouter } from 'next/navigation';
 
 import { CoffeeEvent } from '@/types';
 
-import EventPreviewModal from '@/components/events/EventPreviewModal';
+import dynamic from 'next/dynamic';
+
+const EventPreviewModal = dynamic(() => import('@/components/events/EventPreviewModal'));
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { showToast } from '@/lib/toast';
 import Loading from '../Loading';

@@ -20,7 +20,9 @@ import { artistsApi, eventsApi } from '@/lib/api';
 import showToast from '@/lib/toast';
 import { revalidatePaths } from '@/lib/revalidate';
 import { css, cva } from '@/styled-system/css';
-import EventPreviewModal from '@/components/events/EventPreviewModal';
+import dynamic from 'next/dynamic';
+
+const EventPreviewModal = dynamic(() => import('@/components/events/EventPreviewModal'));
 import RejectModal from '@/components/admin/RejectModal';
 import GroupNameModal from '@/components/admin/GroupNameModal';
 import BatchGroupNameModal from '@/components/admin/BatchGroupNameModal';
