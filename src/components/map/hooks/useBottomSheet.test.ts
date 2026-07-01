@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useBottomSheet } from './useBottomSheet';
 
@@ -12,6 +12,7 @@ describe('useBottomSheet', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    cleanup();
   });
 
   describe('初始狀態', () => {
@@ -76,7 +77,7 @@ describe('useBottomSheet', () => {
       });
 
       // dragDistance = |130 - 120| = 10, NOT < 10 → drag snap
-      // midPoint = 120 + (440 - 120) * 0.5 = 280；130 < 280 → snap to peek
+      // midPoint = 120 + (440 - 120) * 0.3 = 216；130 < 216 → snap to peek
       expect(result.current.height).toBe(PEEK_HEIGHT);
       expect(result.current.isHalfOpen).toBe(false);
     });
@@ -196,6 +197,70 @@ describe('useBottomSheet', () => {
 
       expect(result.current.isHalfOpen).toBe(false);
       expect(result.current.height).toBe(PEEK_HEIGHT);
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // TC-027：onExpandToHalf callback 觸發時機
+  // ─────────────────────────────────────────────────────────────
+  describe('TC-027：onExpandToHalf callback', () => {
+    it('drag 超過中點放手，應呼叫 onExpandToHalf("drag")', () => {
+      const onExpandToHalf = vi.fn();
+      const { result } = renderHook(() => useBottomSheet({ onExpandToHalf }));
+
+      // halfHeight = 440, midPoint = 120 + (440 - 120) * 0.3 = 216
+      // delta = 500 - 200 = 300 → newHeight = 420 > 216 → snap to half
+      act(() => {
+        result.current.handleBarBind.onMouseDown({ clientY: 500 } as React.MouseEvent);
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientY: 200 }));
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      });
+
+      expect(onExpandToHalf).toHaveBeenCalledTimes(1);
+      expect(onExpandToHalf).toHaveBeenCalledWith('drag');
+    });
+
+    it('tap 從 peek 開啟，應呼叫 onExpandToHalf("tap_handle")', () => {
+      const onExpandToHalf = vi.fn();
+      const { result } = renderHook(() => useBottomSheet({ onExpandToHalf }));
+
+      act(() => {
+        result.current.handleBarBind.onMouseDown({ clientY: 500 } as React.MouseEvent);
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      });
+
+      expect(onExpandToHalf).toHaveBeenCalledTimes(1);
+      expect(onExpandToHalf).toHaveBeenCalledWith('tap_handle');
+    });
+
+    it('tap 從 half-open 收起，不應呼叫 onExpandToHalf', () => {
+      const onExpandToHalf = vi.fn();
+      const { result } = renderHook(() => useBottomSheet({ onExpandToHalf }));
+
+      // First tap: peek → half-open
+      act(() => {
+        result.current.handleBarBind.onMouseDown({ clientY: 500 } as React.MouseEvent);
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      });
+      onExpandToHalf.mockClear();
+
+      // Second tap: half-open → peek
+      act(() => {
+        result.current.handleBarBind.onMouseDown({ clientY: 500 } as React.MouseEvent);
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      });
+
+      expect(onExpandToHalf).not.toHaveBeenCalled();
     });
   });
 });

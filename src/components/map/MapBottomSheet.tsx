@@ -180,6 +180,7 @@ export interface MapBottomSheetProps {
   initialCarouselScrollLeft?: number;
   onBeforeNavigate?: (sheetHeight: number, carouselScrollLeft: number) => void;
   onRestoredStateConsumed?: () => void;
+  onDragMove?: (height: number) => void;
 }
 
 const MapBottomSheet = ({
@@ -193,9 +194,11 @@ const MapBottomSheet = ({
   initialCarouselScrollLeft,
   onBeforeNavigate,
   onRestoredStateConsumed,
+  onDragMove,
 }: MapBottomSheetProps) => {
   const { user } = useAuth();
   const innerRef = useRef<HTMLDivElement>(null);
+  const drawerInnerRef = useRef<HTMLDivElement>(null);
   const locationChipRef = useRef<HTMLDivElement>(null);
   const carouselContainerRef = useRef<HTMLDivElement>(null);
   const [measuredHeight, setMeasuredHeight] = useState<number | undefined>(undefined);
@@ -248,6 +251,12 @@ const MapBottomSheet = ({
     halfHeight: measuredHeight,
     excludeRef: locationChipRef,
     initialHeight,
+    containerRef: drawerInnerRef,
+    getTransform: useCallback(
+      (h: number) => `translateY(${maxHeight > 0 ? maxHeight - h : 0}px)`,
+      [maxHeight]
+    ),
+    onDragMove,
   });
 
   // Stable ref so onBeforeNavigate callback doesn't go stale when height updates
@@ -353,6 +362,7 @@ const MapBottomSheet = ({
     >
       {/* Inner sheet slides up/down via translateY; transition removed during drag */}
       <div
+        ref={drawerInnerRef}
         className={drawerInner}
         style={{
           transform: `translateY(${translateY}px)`,
