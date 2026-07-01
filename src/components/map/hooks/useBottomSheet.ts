@@ -73,12 +73,6 @@ export function useBottomSheet({
     return Math.round(window.innerHeight * HALF_FRACTION);
   }, [halfHeightProp]);
 
-  const snapTo = useCallback((targetHeight: number) => {
-    setIsAnimating(true);
-    setHeight(targetHeight);
-    heightRef.current = targetHeight;
-  }, []);
-
   // Mutates the DOM directly during drag to skip React re-render; falls back to
   // only updating the ref when containerRef/getTransform are not provided.
   const applyDragHeight = useCallback(
@@ -90,6 +84,15 @@ export function useBottomSheet({
       onDragMoveRef.current?.(newHeight);
     },
     [containerRef]
+  );
+
+  const snapTo = useCallback(
+    (targetHeight: number) => {
+      setIsAnimating(true);
+      setHeight(targetHeight);
+      applyDragHeight(targetHeight);
+    },
+    [applyDragHeight]
   );
 
   const handleDragEnd = useCallback(() => {
