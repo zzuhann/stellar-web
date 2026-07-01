@@ -86,8 +86,8 @@ describe('useBottomSheet', () => {
       const { result } = renderHook(() => useBottomSheet({}));
 
       // halfHeight = round(800 * 0.55) = 440
-      // midPoint = 120 + (440 - 120) * 0.5 = 280
-      // Need height > 280 → deltaY > 160
+      // midPoint = 120 + (440 - 120) * 0.3 = 216
+      // Need height > 216 → deltaY > 96
       act(() => {
         result.current.handleBarBind.onMouseDown({ clientY: 500 } as React.MouseEvent);
       });
@@ -98,7 +98,7 @@ describe('useBottomSheet', () => {
         document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
       });
 
-      // newHeight = 120 + 200 = 320 > midPoint 280 → snap to half-open (440)
+      // newHeight = 120 + 200 = 320 > midPoint 216 → snap to half-open (440)
       expect(result.current.height).toBe(Math.round(VIEWPORT_HEIGHT * 0.55));
       expect(result.current.isHalfOpen).toBe(true);
     });
