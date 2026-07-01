@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { PhotoIcon, XMarkIcon, ArrowUpTrayIcon, ScissorsIcon } from '@heroicons/react/24/outline';
 import { uploadImageToAPI, compressImage } from '@/lib/r2-upload';
 import { CDN_DOMAIN } from '@/constants';
-import ImageCropper from './ImageCropper';
+import ImageCropper, { type CropState } from './ImageCropper';
 import { css, cva } from '@/styled-system/css';
 import Loading from '../Loading';
 import Image from 'next/image';
@@ -265,12 +265,7 @@ export default function ImageUpload({
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [showCropper, setShowCropper] = useState(false);
   const [originalFile, setOriginalFile] = useState<File | null>(null);
-  const [lastCropArea, setLastCropArea] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null>(null);
+  const [lastCropArea, setLastCropArea] = useState<CropState | null>(null);
   const [hasCroppedImage, setHasCroppedImage] = useState(false);
   const [confirmedImageUrl, setConfirmedImageUrl] = useState<string | null>(
     currentImageUrl || null
@@ -360,14 +355,9 @@ export default function ImageUpload({
     }
   };
 
-  const handleCropComplete = async (
-    croppedBlob: Blob,
-    cropArea?: { x: number; y: number; width: number; height: number }
-  ) => {
-    // 保存裁切區域，用於下次重新裁切時維持範圍
-    if (cropArea) {
-      setLastCropArea(cropArea);
-    }
+  const handleCropComplete = async (croppedBlob: Blob, cropState: CropState) => {
+    // Save crop state so re-opening the cropper restores the previous position
+    setLastCropArea(cropState);
 
     // 將 Blob 轉換為 File
     const croppedFile = new File([croppedBlob], `cropped-${Date.now()}.jpg`, {
@@ -567,7 +557,7 @@ export default function ImageUpload({
           onCancel={handleCropCancel}
           aspectRatio={cropAspectRatio}
           outputSize={cropOutputSize}
-          initialCropArea={lastCropArea}
+          initialCropState={lastCropArea}
         />
       )}
     </div>
