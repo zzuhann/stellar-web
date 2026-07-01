@@ -104,9 +104,10 @@ const cityBadge = css({
 
 interface WeekEventCardProps {
   event: CoffeeEvent;
+  isFirst?: boolean;
 }
 
-export default function WeekEventCard({ event }: WeekEventCardProps) {
+export default function WeekEventCard({ event, isFirst }: WeekEventCardProps) {
   const { user } = useAuth();
   const dateRange = formatEventDateShort(
     event.datetime.start as FirebaseTimestamp,
@@ -138,6 +139,7 @@ export default function WeekEventCard({ event }: WeekEventCardProps) {
             fill
             sizes="(max-width: 600px) 45vw, 200px"
             style={{ objectFit: 'cover' }}
+            priority={isFirst}
           />
         ) : (
           <div className={imagePlaceholder} />

@@ -65,8 +65,8 @@ export default function EventsTab({ events, loading }: EventsTabProps) {
         </div>
       ) : events.length > 0 ? (
         <div className={eventListContainer}>
-          {events.map((event) => (
-            <WeekEventCard key={event.id} event={event} />
+          {events.map((event, index) => (
+            <WeekEventCard key={event.id} event={event} isFirst={index === 0} />
           ))}
         </div>
       ) : (
