@@ -148,10 +148,9 @@ const ChooseArtistSection = ({
                   <div className={imageContainer}>
                     <Image
                       src={artist.profileImage ?? ''}
-                      alt=""
+                      alt={artist.stageName}
                       width={48}
                       height={48}
-                      aria-hidden="true"
                     />
                   </div>
                   <div>

@@ -40,6 +40,7 @@ const mapArea = css({
 const locateButton = css({
   position: 'absolute',
   right: '4',
+  bottom: '28px',
   width: '44px',
   height: '44px',
   borderRadius: 'radius.circle',
@@ -72,6 +73,12 @@ export default function MapPage({ artistId }: MapPageProps) {
   const [restoredState, setRestoredState] = useState(() => consumeRestoredState());
   const [sheetHeight, setSheetHeight] = useState(120);
 
+  const mapRef = useRef<L.Map | null>(null);
+  const locateButtonRef = useRef<HTMLButtonElement>(null);
+
+  const { selectedEvent, selectedLocationEvents, selectEvent, selectLocation, clearSelection } =
+    useMapNewState();
+
   const handleMapBeforeNavigate = useCallback(
     (savedSheetHeight: number, carouselScrollLeft: number) => {
       saveState({ sheetHeight: savedSheetHeight, carouselScrollLeft });
@@ -79,9 +86,11 @@ export default function MapPage({ artistId }: MapPageProps) {
     [saveState]
   );
 
-  const { selectedEvent, selectedLocationEvents, selectEvent, selectLocation, clearSelection } =
-    useMapNewState();
-  const mapRef = useRef<L.Map | null>(null);
+  const handleDragMove = useCallback((h: number) => {
+    if (locateButtonRef.current) {
+      locateButtonRef.current.style.transform = `translateY(-${h}px)`;
+    }
+  }, []);
 
   const handleMapReady = (map: L.Map) => {
     mapRef.current = map;
@@ -147,9 +156,10 @@ export default function MapPage({ artistId }: MapPageProps) {
           />
         </div>
         <button
+          ref={locateButtonRef}
           type="button"
           className={locateButton}
-          style={{ bottom: `${selectedEvent ? 148 : sheetHeight + 28}px` }}
+          style={{ transform: `translateY(-${selectedEvent ? 120 : sheetHeight}px)` }}
           aria-label="查看全部活動"
           onClick={() => {
             sendGAEvent('event', 'map_reset_view', {
@@ -181,6 +191,7 @@ export default function MapPage({ artistId }: MapPageProps) {
             onBeforeNavigate={handleMapBeforeNavigate}
             onRestoredStateConsumed={() => setRestoredState(null)}
             onHeightChange={setSheetHeight}
+            onDragMove={handleDragMove}
           />
         )}
       </div>

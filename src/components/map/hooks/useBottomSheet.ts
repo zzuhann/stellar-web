@@ -12,6 +12,12 @@ export interface UseBottomSheetOptions {
   /** Touch/mouse events targeting this element (or its descendants) will not start a drag */
   excludeRef?: RefObject<HTMLElement | null>;
   initialHeight?: number;
+  /** Ref to the DOM element that will have its transform mutated directly during drag */
+  containerRef?: RefObject<HTMLElement | null>;
+  /** Returns the CSS transform string for a given height value */
+  getTransform?: (height: number) => string;
+  /** Called on every drag frame with the current height; use a ref-stable callback to avoid stale closures */
+  onDragMove?: (height: number) => void;
 }
 
 export interface UseBottomSheetReturn {
@@ -31,14 +37,28 @@ export function useBottomSheet({
   halfHeight: halfHeightProp,
   excludeRef,
   initialHeight,
+  containerRef,
+  getTransform,
+  onDragMove,
 }: UseBottomSheetOptions): UseBottomSheetReturn {
   const [height, setHeight] = useState(initialHeight ?? PEEK_HEIGHT);
   const [isAnimating, setIsAnimating] = useState(false);
 
   const heightRef = useRef(initialHeight ?? PEEK_HEIGHT);
-  useEffect(() => {
-    heightRef.current = height;
-  }, [height]);
+  // Keep a stable ref to getTransform to avoid stale closures when maxHeight changes
+  const getTransformRef = useRef(getTransform);
+  const onDragMoveRef = useRef(onDragMove);
+  const dragStateRef = useRef({
+    isDragging: false,
+    startY: 0,
+    startHeight: 0,
+  });
+  // Prevent synthesized mouse events that fire after touchend from double-triggering
+  const lastTouchEndTimeRef = useRef(0);
+  // Stable ref so the native touch listener closure doesn't go stale
+  const handleDragEndRef = useRef<() => void>(() => {});
+  const handleBarElementRef = useRef<HTMLElement | null>(null);
+  const touchStartHandlerRef = useRef<((e: TouchEvent) => void) | null>(null);
 
   const onTransitionEnd = useCallback(() => {
     setIsAnimating(false);
@@ -59,14 +79,18 @@ export function useBottomSheet({
     heightRef.current = targetHeight;
   }, []);
 
-  const dragStateRef = useRef({
-    isDragging: false,
-    startY: 0,
-    startHeight: 0,
-  });
-
-  // Prevent synthesized mouse events that fire after touchend from double-triggering
-  const lastTouchEndTimeRef = useRef(0);
+  // Mutates the DOM directly during drag to skip React re-render; falls back to
+  // only updating the ref when containerRef/getTransform are not provided.
+  const applyDragHeight = useCallback(
+    (newHeight: number) => {
+      heightRef.current = newHeight;
+      if (containerRef?.current && getTransformRef.current) {
+        containerRef.current.style.transform = getTransformRef.current(newHeight);
+      }
+      onDragMoveRef.current?.(newHeight);
+    },
+    [containerRef]
+  );
 
   const handleDragEnd = useCallback(() => {
     const { startHeight } = dragStateRef.current;
@@ -109,8 +133,7 @@ export function useBottomSheet({
           PEEK_HEIGHT,
           Math.min(getHalfHeight(), dragStateRef.current.startHeight + deltaY)
         );
-        setHeight(newHeight);
-        heightRef.current = newHeight;
+        applyDragHeight(newHeight);
       };
 
       const onEnd = () => {
@@ -122,17 +145,8 @@ export function useBottomSheet({
       document.addEventListener('mousemove', onMove, { passive: false });
       document.addEventListener('mouseup', onEnd);
     },
-    [excludeRef, getHalfHeight, handleDragEnd]
+    [excludeRef, getHalfHeight, handleDragEnd, applyDragHeight]
   );
-
-  // Keep stable refs so the native listener closure doesn't go stale
-  const handleDragEndRef = useRef(handleDragEnd);
-  useEffect(() => {
-    handleDragEndRef.current = handleDragEnd;
-  }, [handleDragEnd]);
-
-  const handleBarElementRef = useRef<HTMLElement | null>(null);
-  const touchStartHandlerRef = useRef<((e: TouchEvent) => void) | null>(null);
 
   // Callback ref: attach native touchstart (passive:false) when element mounts, detach on unmount.
   // Using a callback ref instead of useEffect because ref mutation doesn't trigger re-render.
@@ -167,8 +181,7 @@ export function useBottomSheet({
             PEEK_HEIGHT,
             Math.min(getHalfHeight(), dragStateRef.current.startHeight + deltaY)
           );
-          setHeight(newHeight);
-          heightRef.current = newHeight;
+          applyDragHeight(newHeight);
         };
 
         const onEnd = () => {
@@ -185,7 +198,7 @@ export function useBottomSheet({
       touchStartHandlerRef.current = handler;
       el.addEventListener('touchstart', handler, { passive: false });
     },
-    [excludeRef, getHalfHeight]
+    [excludeRef, getHalfHeight, applyDragHeight]
   );
 
   const snapToHalf = useCallback(() => {
@@ -193,6 +206,22 @@ export function useBottomSheet({
   }, [snapTo, getHalfHeight]);
 
   const isHalfOpen = height > PEEK_HEIGHT;
+
+  useEffect(() => {
+    heightRef.current = height;
+  }, [height]);
+
+  useEffect(() => {
+    getTransformRef.current = getTransform;
+  }, [getTransform]);
+
+  useEffect(() => {
+    onDragMoveRef.current = onDragMove;
+  }, [onDragMove]);
+
+  useEffect(() => {
+    handleDragEndRef.current = handleDragEnd;
+  }, [handleDragEnd]);
 
   return {
     height,

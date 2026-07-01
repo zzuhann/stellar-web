@@ -67,7 +67,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const eventTitle = event?.title;
     const artistName = event?.artists?.[0]?.name;
     const title = artistName ? `${eventTitle} | ${artistName} 生咖、生日應援活動` : eventTitle;
-    const description = event?.description;
+    const description = event ? buildEventDescription(event) : undefined;
     return {
       title,
       description,
@@ -89,7 +89,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   } catch {
     return {
       title: '生日應援詳情',
-      description: '',
+      description: '在 STELLAR 查看台灣各地的生咖（生日應援）活動資訊。',
     };
   }
 }

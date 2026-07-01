@@ -80,6 +80,8 @@ export default async function MapPage({ params }: MapPageProps) {
     throw err;
   });
 
+  if (!artist) notFound();
+
   if (artist?.slug && artistId !== artist.slug) {
     permanentRedirect(`/map/${artist.slug}`);
   }
