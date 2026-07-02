@@ -3,7 +3,6 @@ const nextConfig = {
   reactCompiler: true,
   allowedDevOrigins: ['zzuhann-dev.stellar-zone.com'],
   images: {
-    unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     remotePatterns: [
       {
