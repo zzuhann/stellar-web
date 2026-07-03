@@ -281,14 +281,14 @@ const EventInfoSection = ({
         <div
           id="description-count"
           className={characterCount({
-            isOverLimit: (description?.length || 0) > 1500,
+            isOverLimit: description.length > 1500,
           })}
           aria-live="polite"
           aria-atomic="true"
         >
           <span className="sr-only">目前字數：</span>
-          {description?.length || 0} / 1500
-          {(description?.length || 0) > 1500 && <span className="sr-only">，已超過字數限制</span>}
+          {description.length} / 1500
+          {description.length > 1500 && <span className="sr-only">，已超過字數限制</span>}
         </div>
         {errors.description && (
           <p id="description-error" className={errorText} role="alert">
