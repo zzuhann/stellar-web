@@ -10,7 +10,7 @@ import { css, cva } from '@/styled-system/css';
 import DatePicker from '../DatePicker';
 import PlaceAutocomplete from '../forms/PlaceAutocomplete';
 import MultiImageUpload from '../images/MultiImageUpload';
-import { FieldErrors, UseFormRegister, UseFormWatch } from 'react-hook-form';
+import { FieldErrors, UseFormRegister } from 'react-hook-form';
 import { EventSubmissionFormData } from '@/lib/validations';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import { dateToLocalDateString } from '@/utils';
@@ -98,7 +98,9 @@ type EventInfoSectionProps = {
   }) => void;
   handleChangeImages: (images: string[]) => void;
   detailImageUrls: string[];
-  watch: UseFormWatch<EventSubmissionFormData>;
+  startDate: string;
+  endDate: string;
+  description: string;
   existingEventLocationName: string;
 };
 
@@ -113,7 +115,9 @@ const EventInfoSection = ({
   handlePlaceSelect,
   handleChangeImages,
   detailImageUrls,
-  watch,
+  startDate,
+  endDate,
+  description,
   existingEventLocationName,
 }: EventInfoSectionProps) => {
   const { token } = useAuthToken();
@@ -186,7 +190,7 @@ const EventInfoSection = ({
             </div>
           </label>
           <DatePicker
-            value={watch('startDate') || ''}
+            value={startDate}
             onChange={handleChangeStartDate}
             placeholder="選擇開始日期"
             disabled={isPending}
@@ -210,14 +214,14 @@ const EventInfoSection = ({
             </div>
           </label>
           <DatePicker
-            value={watch('endDate') || ''}
+            value={endDate}
             onChange={handleChangeEndDate}
-            min={watch('startDate')}
+            min={startDate}
             placeholder="選擇結束日期"
-            disabled={isPending || !watch('startDate')}
+            disabled={isPending || !startDate}
             error={!!errors.endDate}
           />
-          {!watch('startDate') && (
+          {!startDate && (
             <p className={helperTextWarning} role="alert">
               <ExclamationTriangleIcon style={{ width: '14px', height: '14px', flexShrink: 0 }} />
               請先選擇開始日期
@@ -277,16 +281,14 @@ const EventInfoSection = ({
         <div
           id="description-count"
           className={characterCount({
-            isOverLimit: (watch('description')?.length || 0) > 1500,
+            isOverLimit: (description?.length || 0) > 1500,
           })}
           aria-live="polite"
           aria-atomic="true"
         >
           <span className="sr-only">目前字數：</span>
-          {watch('description')?.length || 0} / 1500
-          {(watch('description')?.length || 0) > 1500 && (
-            <span className="sr-only">，已超過字數限制</span>
-          )}
+          {description?.length || 0} / 1500
+          {(description?.length || 0) > 1500 && <span className="sr-only">，已超過字數限制</span>}
         </div>
         {errors.description && (
           <p id="description-error" className={errorText} role="alert">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { css } from '@/styled-system/css';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
@@ -199,8 +199,8 @@ function EventSubmissionForm({
     register,
     handleSubmit,
     formState: { errors, isDirty },
-    watch,
     setValue,
+    control,
   } = useForm<EventSubmissionFormData>({
     resolver: zodResolver(eventSubmissionSchema),
     defaultValues: existingEvent
@@ -222,6 +222,10 @@ function EventSubmissionForm({
         }
       : undefined,
   });
+
+  const startDate = useWatch({ control, name: 'startDate' }) ?? '';
+  const endDate = useWatch({ control, name: 'endDate' }) ?? '';
+  const description = useWatch({ control, name: 'description' }) ?? '';
 
   const createEventMutation = useCreateEventMutation({ onSuccess });
   const updateEventMutation = useUpdateEventMutation({ onSuccess });
@@ -301,7 +305,6 @@ function EventSubmissionForm({
   const handleChangeStartDate = (date: string) => {
     setValue('startDate', date, { shouldValidate: true, shouldDirty: true });
     // 如果結束日期早於新的開始日期，自動設為開始日期
-    const endDate = watch('endDate');
     if (endDate && new Date(endDate) < new Date(date)) {
       setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
     }
@@ -571,7 +574,9 @@ function EventSubmissionForm({
             handlePlaceSelect={handlePlaceSelect}
             handleChangeImages={handleChangeImages}
             detailImageUrls={detailImageUrls}
-            watch={watch}
+            startDate={startDate}
+            endDate={endDate}
+            description={description}
             existingEventLocationName={existingEvent?.location.name || ''}
           />
         )}

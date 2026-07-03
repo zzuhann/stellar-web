@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UserIcon, CalendarIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
@@ -328,8 +328,8 @@ export default function ArtistSubmissionForm({
     register,
     handleSubmit,
     formState: { errors, isDirty },
-    watch,
     setValue,
+    control,
   } = useForm<ArtistSubmissionFormData>({
     resolver: zodResolver(artistSubmissionSchema),
     defaultValues: existingArtist
@@ -348,6 +348,8 @@ export default function ArtistSubmissionForm({
           profileImage: '',
         },
   });
+
+  const birthday = useWatch({ control, name: 'birthday' });
 
   // 新增藝人 mutation
   const createArtistMutation = useMutation({
@@ -603,7 +605,7 @@ export default function ArtistSubmissionForm({
             </div>
           </label>
           <DatePicker
-            value={watch('birthday') || ''}
+            value={birthday || ''}
             onChange={(date) =>
               setValue('birthday', date, { shouldValidate: true, shouldDirty: true })
             }

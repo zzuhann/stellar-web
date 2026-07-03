@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/lib/auth-context';
@@ -223,12 +223,12 @@ export default function DisplayNamePage() {
     setValue,
     reset,
     getValues,
-    watch,
+    control,
   } = useForm<DisplayNameFormData>({
     resolver: zodResolver(displayNameSchema),
   });
 
-  const currentDisplayName = watch('displayName');
+  const currentDisplayName = useWatch({ control, name: 'displayName' });
   const hasChanges = currentDisplayName !== userData?.displayName;
 
   // 更新用戶資料的 mutation
