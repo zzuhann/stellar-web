@@ -89,8 +89,6 @@ function HomePageContent() {
     <main className={pageContainer} id="main-content">
       <div className={mainContainer}>
         <section className={contentWrapper} aria-label="首頁">
-          {/* <IOSInstallBanner /> */}
-
           {/* 熱門生咖、生日應援 */}
           <TrendingEventsSection />
 

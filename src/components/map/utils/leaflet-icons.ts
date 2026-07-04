@@ -22,7 +22,9 @@ export const initializeLeafletIcons = () => {
       iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
       shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
     });
-  } catch {}
+  } catch {
+    // Best-effort icon patch; safe to ignore if Leaflet's internals change
+  }
 };
 
 // 創建一個安全的默認圖標

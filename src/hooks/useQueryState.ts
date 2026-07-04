@@ -48,7 +48,7 @@ export function useQueryState<T = string>(
     [defaultMethod, name, setState]
   );
 
-  return [value as any, setValue];
+  return [value as UseQueryStateReturn<T, typeof defaultValue>[0], setValue];
 }
 
 // Parse functions

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
 
 interface ShareData {
@@ -24,12 +24,9 @@ const getDefaultShareData = (): ShareData => ({
 });
 
 export function ShareProvider({ children }: { children: ReactNode }) {
-  const [shareData, setShareDataState] = useState<ShareData>(() => ({
-    title: 'STELLAR 台灣生日應援地圖',
-    text: '',
-    url: '', // 初始值為空，會在 useEffect 中更新
-  }));
+  const [shareData, setShareDataState] = useState<ShareData>(getDefaultShareData);
   const pathname = usePathname();
+  const [prevPathname, setPrevPathname] = useState(pathname);
 
   const setShareData = useCallback((data: ShareData) => {
     setShareDataState((prev) => ({
@@ -44,12 +41,11 @@ export function ShareProvider({ children }: { children: ReactNode }) {
     setShareDataState(getDefaultShareData());
   }, []);
 
-  // 在客戶端初始化時設定正確的 URL
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      resetShareData();
-    }
-  }, [pathname, resetShareData]);
+  // 換頁時 reset shareData：在 render 期間比較 pathname，不用 effect
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setShareDataState(getDefaultShareData());
+  }
 
   return (
     <ShareContext.Provider value={{ shareData, setShareData, resetShareData }}>

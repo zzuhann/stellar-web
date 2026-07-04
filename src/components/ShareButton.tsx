@@ -5,7 +5,6 @@ import { css } from '../../styled-system/css';
 import { ArrowUpOnSquareIcon } from '@heroicons/react/24/outline';
 import { useWebShare } from '@/hooks/useWebShare';
 import { useShare } from '@/context/ShareContext';
-import { isPWAMode } from '@/utils/pwa';
 import { useAuth } from '@/lib/auth-context';
 import { sendGAEvent } from '@next/third-parties/google';
 
@@ -15,8 +14,7 @@ export default function ShareButton() {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  const shouldShow =
-    isPWAMode() && (/^\/map\/[^/]+$/.test(pathname) || /^\/event\/[^/]+$/.test(pathname));
+  const shouldShow = /^\/map\/[^/]+$/.test(pathname) || /^\/event\/[^/]+$/.test(pathname);
 
   const handleShare = () => {
     // 從 pathname 取得 contentId

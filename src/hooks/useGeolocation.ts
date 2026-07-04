@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 
 interface GeolocationState {
   latitude: number | null;
@@ -27,12 +27,15 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     hasPermission: false,
   });
 
-  const defaultOptions: PositionOptions = {
-    enableHighAccuracy: false,
-    timeout: 10000,
-    maximumAge: 600000,
-    ...options,
-  };
+  const defaultOptions: PositionOptions = useMemo(
+    () => ({
+      enableHighAccuracy: false,
+      timeout: 10000,
+      maximumAge: 600000,
+      ...options,
+    }),
+    [options]
+  );
 
   const getCurrentPosition = useCallback(() => {
     if (!state.isSupported) return;
@@ -66,12 +69,7 @@ export function useGeolocation(options: GeolocationOptions = {}) {
       },
       defaultOptions
     );
-  }, [
-    state.isSupported,
-    defaultOptions.enableHighAccuracy,
-    defaultOptions.timeout,
-    defaultOptions.maximumAge,
-  ]);
+  }, [state.isSupported, defaultOptions]);
 
   const checkPermission = useCallback(async () => {
     if (!state.isSupported) return;

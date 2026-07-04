@@ -1,4 +1,4 @@
-import { eventsApi } from '@/lib/api';
+import { eventsApi, handleApiError } from '@/lib/api';
 import showToast from '@/lib/toast';
 import { CoffeeEvent, CreateEventRequest } from '@/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -35,9 +35,8 @@ const useCreateEventMutation = ({ onSuccess }: UseCreateEventMutationProps) => {
         router.push('/my-submissions?tab=event');
       }
     },
-    onError: (error: any) => {
-      const errorMessage = error?.response?.data?.error || '投稿失敗';
-      showToast.error(errorMessage);
+    onError: (error) => {
+      showToast.error(handleApiError(error, '投稿失敗'));
     },
   });
 };

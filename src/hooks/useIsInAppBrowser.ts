@@ -24,6 +24,9 @@ export function useIsInAppBrowser() {
 
     const isIAB = inAppBrowserPatterns.some((pattern) => pattern.test(userAgent));
 
+    // Detection needs `navigator`, unavailable during SSR — must run post-mount,
+    // so lazy-init state can't replace this effect without a hydration mismatch.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsInAppBrowser(isIAB);
     setLoading(false);
   }, []);
