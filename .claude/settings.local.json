@@ -10,5 +10,6 @@
   "sandbox": {
     "enabled": true,
     "autoAllowBashIfSandboxed": true
-  }
+  },
+  "enabledMcpjsonServers": ["gscServer", "analytics-mcp", "clarity-STELLAR"]
 }
