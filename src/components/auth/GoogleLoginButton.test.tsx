@@ -1,6 +1,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { User } from 'firebase/auth';
 import GoogleLoginButton from './GoogleLoginButton';
 import { signInWithGoogle } from '@/lib/auth';
 import showToast from '@/lib/toast';
@@ -41,7 +42,7 @@ describe('GoogleLoginButton', () => {
     render(<GoogleLoginButton />);
     const button = screen.getByRole('button', { name: '使用 Google 登入' });
     vi.mocked(signInWithGoogle).mockResolvedValue({
-      user: { uid: 'test-uid' } as any,
+      user: { uid: 'test-uid' } as unknown as User,
       error: null,
     });
     await userEvent.click(button);
@@ -53,7 +54,7 @@ describe('GoogleLoginButton', () => {
     render(<GoogleLoginButton onSuccess={onSuccess} />);
     const button = screen.getByRole('button', { name: '使用 Google 登入' });
     vi.mocked(signInWithGoogle).mockResolvedValue({
-      user: { uid: 'test-uid' } as any,
+      user: { uid: 'test-uid' } as unknown as User,
       error: null,
     });
     await userEvent.click(button);

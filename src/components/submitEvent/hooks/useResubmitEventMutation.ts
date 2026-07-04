@@ -1,4 +1,4 @@
-import { eventsApi } from '@/lib/api';
+import { eventsApi, handleApiError } from '@/lib/api';
 import showToast from '@/lib/toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
@@ -17,9 +17,8 @@ const useResubmitEventMutation = () => {
 
       router.push(`/my-submissions?tab=event`);
     },
-    onError: (error: any) => {
-      const errorMessage = error?.response?.data?.error || '重新送出審核時發生錯誤';
-      showToast.error(errorMessage);
+    onError: (error) => {
+      showToast.error(handleApiError(error));
     },
   });
 };

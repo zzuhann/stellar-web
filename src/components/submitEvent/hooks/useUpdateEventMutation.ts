@@ -1,4 +1,4 @@
-import { eventsApi } from '@/lib/api';
+import { eventsApi, handleApiError } from '@/lib/api';
 import showToast from '@/lib/toast';
 import { revalidatePaths } from '@/lib/revalidate';
 import { CoffeeEvent, UpdateEventRequest } from '@/types';
@@ -24,10 +24,8 @@ const useUpdateEventMutation = ({ onSuccess }: UseUpdateEventMutationProps) => {
       showToast.success('更新成功');
       onSuccess?.(updatedEvent);
     },
-    onError: (error: any) => {
-      // 從後端錯誤回應中提取錯誤訊息
-      const errorMessage = error?.response?.data?.error || '更新失敗';
-      showToast.error(errorMessage);
+    onError: (error) => {
+      showToast.error(handleApiError(error));
     },
   });
 };

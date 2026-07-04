@@ -13,8 +13,8 @@ import ImageUpload from '@/components/images/ImageUpload';
 import DatePicker from '@/components/DatePicker';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
-import { Artist } from '@/types';
-import { artistsApi } from '@/lib/api';
+import { Artist, UpdateArtistRequest } from '@/types';
+import { artistsApi, handleApiError } from '@/lib/api';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import showToast from '@/lib/toast';
 import { uploadImageToAPI } from '@/lib/r2-upload';
@@ -369,16 +369,14 @@ export default function ArtistSubmissionForm({
         router.push('/my-submissions?tab=artist');
       }
     },
-    onError: (error: any) => {
-      // 從後端錯誤回應中提取錯誤訊息
-      const errorMessage = error?.response?.data?.error || '投稿失敗';
-      showToast.error(errorMessage);
+    onError: (error) => {
+      showToast.error(handleApiError(error));
     },
   });
 
   // 編輯藝人 mutation
   const updateArtistMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+    mutationFn: async ({ id, data }: { id: string; data: UpdateArtistRequest }) => {
       // 先更新藝人資料
       const updatedArtist = await artistsApi.update(id, data);
       // 只有在狀態是 rejected 時才重新送審
@@ -392,10 +390,8 @@ export default function ArtistSubmissionForm({
       showToast.success('更新成功');
       onSuccess?.();
     },
-    onError: (error: any) => {
-      // 從後端錯誤回應中提取錯誤訊息
-      const errorMessage = error?.response?.data?.error || '藝人更新失敗';
-      showToast.error(errorMessage);
+    onError: (error) => {
+      showToast.error(handleApiError(error));
     },
   });
 

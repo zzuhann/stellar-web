@@ -158,7 +158,8 @@ async function getCroppedBlob(
   const canvas = document.createElement('canvas');
   canvas.width = outputSize;
   canvas.height = outputSize;
-  const ctx = canvas.getContext('2d')!;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('無法取得 canvas context');
   ctx.drawImage(
     image,
     pixelCrop.x,

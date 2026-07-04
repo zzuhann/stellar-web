@@ -240,29 +240,23 @@ export default function MultiImageUpload({
 
   const uploadImage = useCallback(
     async (file: File): Promise<string | null> => {
-      try {
-        // 使用自定義壓縮參數
-        const compressedFile = await compressImage(
-          file,
-          compressionParams.maxWidth,
-          compressionParams.maxHeight,
-          compressionParams.quality
-        );
+      // 使用自定義壓縮參數
+      const compressedFile = await compressImage(
+        file,
+        compressionParams.maxWidth,
+        compressionParams.maxHeight,
+        compressionParams.quality
+      );
 
-        let uploadResult;
-        if (authToken) {
-          uploadResult = await uploadImageToAPI(compressedFile, authToken);
-          if (uploadResult.success && uploadResult.filename) {
-            return CDN_DOMAIN + uploadResult.filename;
-          } else {
-            throw new Error(uploadResult.error || '上傳失敗');
-          }
-        } else {
-          throw new Error('請先登入');
-        }
-      } catch (error) {
-        throw error;
+      if (!authToken) {
+        throw new Error('請先登入');
       }
+
+      const uploadResult = await uploadImageToAPI(compressedFile, authToken);
+      if (uploadResult.success && uploadResult.filename) {
+        return CDN_DOMAIN + uploadResult.filename;
+      }
+      throw new Error(uploadResult.error || '上傳失敗');
     },
     [authToken, compressionParams]
   );
