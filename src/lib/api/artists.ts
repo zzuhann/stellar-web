@@ -125,13 +125,13 @@ export const artistsApi = {
       createdBy: artist.createdBy,
       createdAt:
         typeof artist.createdAt === 'object' &&
-        ' _seconds' in artist.createdAt &&
+        '_seconds' in artist.createdAt &&
         artist.createdAt?._seconds
           ? new Date(artist.createdAt._seconds * 1000).toISOString()
           : new Date().toISOString(),
       updatedAt:
         typeof artist.updatedAt === 'object' &&
-        ' _seconds' in artist.updatedAt &&
+        '_seconds' in artist.updatedAt &&
         artist.updatedAt?._seconds
           ? new Date(artist.updatedAt._seconds * 1000).toISOString()
           : new Date().toISOString(),
