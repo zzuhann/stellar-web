@@ -370,7 +370,7 @@ export default function ArtistSubmissionForm({
       }
     },
     onError: (error) => {
-      showToast.error(handleApiError(error));
+      showToast.error(handleApiError(error, '投稿失敗'));
     },
   });
 
@@ -391,7 +391,7 @@ export default function ArtistSubmissionForm({
       onSuccess?.();
     },
     onError: (error) => {
-      showToast.error(handleApiError(error));
+      showToast.error(handleApiError(error, '藝人更新失敗'));
     },
   });
 

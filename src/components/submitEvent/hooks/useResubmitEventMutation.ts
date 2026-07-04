@@ -18,7 +18,7 @@ const useResubmitEventMutation = () => {
       router.push(`/my-submissions?tab=event`);
     },
     onError: (error) => {
-      showToast.error(handleApiError(error));
+      showToast.error(handleApiError(error, '重新送出審核時發生錯誤'));
     },
   });
 };

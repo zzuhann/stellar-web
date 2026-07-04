@@ -3,7 +3,7 @@ import { PlacePrediction, PlaceDetails } from '@/types';
 import api from './client';
 
 // 統一錯誤處理函數
-export function handleApiError(error: unknown): string {
+export function handleApiError(error: unknown, fallbackMessage = '發生未知錯誤'): string {
   if (axios.isAxiosError(error)) {
     if (error.response?.data?.message) {
       return error.response.data.message;
@@ -20,11 +20,8 @@ export function handleApiError(error: unknown): string {
     if (error.response?.status === 400) {
       return '格式錯誤';
     }
-    if (error.message) {
-      return error.message;
-    }
   }
-  return '發生未知錯誤';
+  return fallbackMessage;
 }
 
 export type ContactRequest = {

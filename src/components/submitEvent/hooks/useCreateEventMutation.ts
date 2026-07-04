@@ -36,7 +36,7 @@ const useCreateEventMutation = ({ onSuccess }: UseCreateEventMutationProps) => {
       }
     },
     onError: (error) => {
-      showToast.error(handleApiError(error));
+      showToast.error(handleApiError(error, '投稿失敗'));
     },
   });
 };

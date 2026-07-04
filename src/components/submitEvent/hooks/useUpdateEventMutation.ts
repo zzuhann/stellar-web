@@ -25,7 +25,7 @@ const useUpdateEventMutation = ({ onSuccess }: UseUpdateEventMutationProps) => {
       onSuccess?.(updatedEvent);
     },
     onError: (error) => {
-      showToast.error(handleApiError(error));
+      showToast.error(handleApiError(error, '更新失敗'));
     },
   });
 };
