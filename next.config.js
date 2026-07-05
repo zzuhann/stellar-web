@@ -3,7 +3,7 @@ const nextConfig = {
   reactCompiler: true,
   allowedDevOrigins: ['zzuhann-dev.stellar-zone.com'],
   images: {
-    formats: ['image/avif', 'image/webp'],
+    formats: ['image/webp'],
     remotePatterns: [
       {
         protocol: 'https',
@@ -18,7 +18,7 @@ const nextConfig = {
         hostname: 'cdn.stellar-zone.com',
       },
     ],
-    minimumCacheTTL: 1 * 60 * 60 * 24, // 24 hours
+    minimumCacheTTL: 2678400, // 31 days
   },
   async headers() {
     return [
