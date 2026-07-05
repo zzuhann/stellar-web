@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { Metadata } from 'next';
 import { eventsApi } from '@/lib/api';
@@ -11,6 +12,10 @@ interface PageProps {
     eventId: string;
   }>;
 }
+
+// Request-scoped memoization: generateMetadata and page body both need this
+// data, so cache() ensures the axios call only fires once per request.
+const getEvent = cache((eventId: string) => eventsApi.getById(eventId));
 
 function tsToIso(ts: FirebaseTimestamp): string {
   return new Date(ts._seconds * 1000).toISOString();
@@ -63,7 +68,7 @@ function buildEventJsonLd(event: CoffeeEvent) {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { eventId } = await params;
   try {
-    const event = await eventsApi.getById(eventId);
+    const event = await getEvent(eventId);
     const eventTitle = event?.title;
     const artistName = event?.artists?.[0]?.name;
     const title = artistName ? `${eventTitle} | ${artistName} 生咖、生日應援活動` : eventTitle;
@@ -101,7 +106,7 @@ export default async function EventDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const event = await eventsApi.getById(eventId).catch((err) => {
+  const event = await getEvent(eventId).catch((err) => {
     if (err?.response?.status === 404) return null;
     throw err;
   });
