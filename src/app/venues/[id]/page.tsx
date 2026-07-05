@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { venueApi } from '@/lib/api';
@@ -10,10 +11,14 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+// Request-scoped memoization: generateMetadata and page body both need this
+// data, so cache() ensures the axios call only fires once per request.
+const getVenue = cache((id: string) => venueApi.getVenueById(id));
+
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { id } = await params;
   try {
-    const venue = await venueApi.getVenueById(id);
+    const venue = await getVenue(id);
     const title = `${venue.name} | 場地詳情`;
     const description = `適合辦生咖、生日應援的場地：位於${venue.region}的${venue.name}，平台已收錄${venue.eventCount}場生咖、生日應援活動。`;
     const url = `https://www.stellar-zone.com/venues/${id}`;
@@ -41,7 +46,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function VenueDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const venue = await venueApi.getVenueById(id).catch((err) => {
+  const venue = await getVenue(id).catch((err) => {
     if (err?.response?.status === 404) return null;
     throw err;
   });
