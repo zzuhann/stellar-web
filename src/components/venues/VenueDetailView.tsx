@@ -331,11 +331,24 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
     });
   };
 
+  const handleBackToList = () => {
+    // ponytail: referrer only reflects the last hard navigation, not client-side
+    // routing — good enough to catch "opened this page directly" (external link,
+    // new tab, search result), which is the case that would otherwise back() off-site.
+    const isSameOriginReferrer =
+      document.referrer && new URL(document.referrer).origin === window.location.origin;
+    if (isSameOriginReferrer) {
+      router.back();
+    } else {
+      router.push('/venues');
+    }
+  };
+
   return (
     <div className={pageOuter}>
       <div className={page}>
         <div className={backBar}>
-          <button type="button" className={backBtn} onClick={() => router.back()}>
+          <button type="button" className={backBtn} onClick={handleBackToList}>
             <ChevronLeftIcon width={16} height={16} aria-hidden="true" />
             場地列表
           </button>
