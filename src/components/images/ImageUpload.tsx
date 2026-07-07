@@ -330,6 +330,7 @@ export default function ImageUpload({
   const uploadImage = async (file: File) => {
     if (!onUploadComplete) return;
 
+    setError(null);
     setIsLoading(true);
 
     try {
