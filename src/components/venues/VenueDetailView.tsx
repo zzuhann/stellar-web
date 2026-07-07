@@ -22,6 +22,7 @@ import {
   ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon } from '@/components/ui/SocialMediaIcons';
+import { cleanSocialMediaHandle } from '@/utils/socialMedia';
 
 const pageOuter = css({
   minHeight: '100vh',
@@ -266,7 +267,7 @@ function buildBookingChannel(venue: VenueDetail): BookingChannel | null {
       if (venue.socialMedia?.instagram)
         return {
           label: '前往 Instagram 主頁',
-          url: `https://www.instagram.com/${venue.socialMedia.instagram}`,
+          url: `https://www.instagram.com/${cleanSocialMediaHandle(venue.socialMedia.instagram)}`,
         };
       break;
     case 'threads':
@@ -291,7 +292,7 @@ function buildSocialLink(
   if (sm.instagram)
     return {
       text: sm.instagram,
-      url: `https://www.instagram.com/${sm.instagram}`,
+      url: `https://www.instagram.com/${cleanSocialMediaHandle(sm.instagram)}`,
       type: 'instagram',
     };
   if (sm.threads)
