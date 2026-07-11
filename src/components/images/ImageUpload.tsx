@@ -221,6 +221,8 @@ interface ImageUploadProps {
   placeholder?: string;
   disabled?: boolean;
   authToken?: string;
+  uploadImage?: (file: File) => Promise<import('@/lib/r2-upload').UploadResponse>;
+  onUploadError?: (error: Error, file: File) => void;
   // 是否啟用裁切功能
   enableCrop?: boolean;
   // 裁切輸出尺寸
@@ -249,6 +251,8 @@ export default function ImageUpload({
   placeholder = '點擊上傳圖片',
   disabled = false,
   authToken,
+  uploadImage: uploadImageOverride,
+  onUploadError,
   enableCrop = false,
 
   cropOutputSize = 400,
@@ -334,21 +338,25 @@ export default function ImageUpload({
     setIsLoading(true);
 
     try {
-      let uploadResult;
-      if (authToken) {
-        uploadResult = await uploadImageToAPI(file, authToken);
+      if (authToken || uploadImageOverride) {
+        const uploadResult = uploadImageOverride
+          ? await uploadImageOverride(file)
+          : await uploadImageToAPI(file, authToken);
         if (uploadResult.success && uploadResult.filename) {
           const fullImageUrl = CDN_DOMAIN + uploadResult.filename;
           setConfirmedImageUrl(fullImageUrl);
           onUploadComplete(fullImageUrl);
         } else {
-          setError(uploadResult.error || '上傳失敗');
+          const uploadError = new Error(uploadResult.error || '上傳失敗');
+          setError(uploadError.message);
+          onUploadError?.(uploadError, file);
         }
       } else {
         setError('請先登入');
       }
-    } catch {
+    } catch (error) {
       setError('上傳失敗，請重試');
+      onUploadError?.(error instanceof Error ? error : new Error('上傳失敗'), file);
     } finally {
       setIsLoading(false);
     }

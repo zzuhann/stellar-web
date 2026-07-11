@@ -21,6 +21,7 @@ interface PlaceAutocompleteProps {
   }) => void;
   placeholder?: string;
   defaultValue?: string;
+  api?: typeof placesApi;
 }
 
 const container = css({
@@ -208,6 +209,7 @@ const errorMessage = css({
 export default function PlaceAutocomplete({
   onPlaceSelect,
   defaultValue = '',
+  api = placesApi,
 }: PlaceAutocompleteProps) {
   const [query, setQuery] = useState(defaultValue);
   const [selectedPlace, setSelectedPlace] = useState<PlacePrediction | null>(null);
@@ -221,7 +223,7 @@ export default function PlaceAutocomplete({
     isError,
   } = useQuery({
     queryKey: ['places-autocomplete', debouncedQuery],
-    queryFn: () => placesApi.autocomplete(debouncedQuery),
+    queryFn: () => api.autocomplete(debouncedQuery),
     enabled: debouncedQuery.length >= 2 && !isSelectedState,
     staleTime: 1000 * 60 * 5,
     retry: 2,
@@ -239,7 +241,7 @@ export default function PlaceAutocomplete({
     setQuery(prediction.structured_formatting?.main_text || prediction.description);
 
     try {
-      const result = await placesApi.getDetails(prediction.place_id);
+      const result = await api.getDetails(prediction.place_id);
 
       if (result.geometry?.location?.lat && result.geometry?.location?.lng) {
         onPlaceSelect({

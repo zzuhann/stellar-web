@@ -198,6 +198,8 @@ interface MultiImageUploadProps {
   placeholder?: string;
   disabled?: boolean;
   authToken?: string;
+  uploadImage?: (file: File) => Promise<import('@/lib/r2-upload').UploadResponse>;
+  onUploadError?: (error: Error, file: File) => void;
   // 壓縮參數
   compressionParams?: {
     maxWidth?: number;
@@ -216,6 +218,8 @@ export default function MultiImageUpload({
   placeholder = '點擊新增圖片',
   disabled = false,
   authToken,
+  uploadImage: uploadImageOverride,
+  onUploadError,
   compressionParams = { maxWidth: 800, maxHeight: 800, quality: 0.8 }, // 預設值
 }: MultiImageUploadProps) {
   const [images, setImages] = useState<string[]>(currentImages);
@@ -248,17 +252,19 @@ export default function MultiImageUpload({
         compressionParams.quality
       );
 
-      if (!authToken) {
+      if (!authToken && !uploadImageOverride) {
         throw new Error('請先登入');
       }
 
-      const uploadResult = await uploadImageToAPI(compressedFile, authToken);
+      const uploadResult = uploadImageOverride
+        ? await uploadImageOverride(compressedFile)
+        : await uploadImageToAPI(compressedFile, authToken);
       if (uploadResult.success && uploadResult.filename) {
         return CDN_DOMAIN + uploadResult.filename;
       }
       throw new Error(uploadResult.error || '上傳失敗');
     },
-    [authToken, compressionParams]
+    [authToken, compressionParams, uploadImageOverride]
   );
 
   // 處理多檔案選擇
@@ -293,7 +299,8 @@ export default function MultiImageUpload({
         try {
           const imageUrl = await uploadImage(file);
           return imageUrl;
-        } catch {
+        } catch (error) {
+          onUploadError?.(error instanceof Error ? error : new Error('上傳失敗'), file);
           return null;
         } finally {
           setLoadingStates((prev) => {
@@ -321,7 +328,7 @@ export default function MultiImageUpload({
         setError('圖片上傳失敗，請重試');
       }
     },
-    [images, maxImages, validateFile, uploadImage, onImagesChange]
+    [images, maxImages, validateFile, uploadImage, onImagesChange, onUploadError]
   );
 
   const removeImage = useCallback(
