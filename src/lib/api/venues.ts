@@ -6,6 +6,26 @@ import {
   CreateVenueData,
 } from '@/types';
 import api from './client';
+import type { PlaceDetails, PlacePrediction } from '@/types';
+
+export const venueSubmissionApi = {
+  create: async (data: CreateVenueData): Promise<void> => {
+    await api.post('/venue-submissions', data);
+  },
+
+  autocomplete: async (input: string): Promise<PlacePrediction[]> => {
+    const response = await api.post<{ predictions: PlacePrediction[] }>(
+      '/venue-submissions/places/autocomplete',
+      { input }
+    );
+    return response.data.predictions ?? [];
+  },
+
+  getPlaceDetails: async (placeId: string): Promise<PlaceDetails> => {
+    const response = await api.get<PlaceDetails>(`/venue-submissions/places/${placeId}`);
+    return response.data;
+  },
+};
 
 export const venueApi = {
   createVenue: async (data: CreateVenueData): Promise<VenueDetail> => {

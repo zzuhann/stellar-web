@@ -8,7 +8,10 @@ import ImageUpload from '@/components/images/ImageUpload';
 import MultiImageUpload from '@/components/images/MultiImageUpload';
 import PlaceAutocomplete from '@/components/forms/PlaceAutocomplete';
 import type { CreateVenueData, UpdateVenueData, CapacityRange } from '@/types';
+import type { UploadResponse } from '@/lib/r2-upload';
+import type { placesApi } from '@/lib/api';
 import { REGIONS } from '@/constants';
+import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
@@ -65,7 +68,7 @@ const numberInputStyle = css({
 
 const textareaStyle = css({
   width: '100%',
-  minHeight: '100px',
+  minHeight: '300px',
   paddingY: '2.5',
   paddingX: '3',
   border: '1px solid',
@@ -347,8 +350,7 @@ const MAX_HOST_TAGS = 5;
 
 type PreferredContact = 'instagram' | 'threads' | 'line' | 'form' | 'other';
 
-const PREFERRED_CONTACT_OPTIONS: { value: PreferredContact | ''; label: string }[] = [
-  { value: '', label: '不填寫' },
+const PREFERRED_CONTACT_OPTIONS: { value: PreferredContact; label: string }[] = [
   { value: 'instagram', label: 'IG 私訊' },
   { value: 'threads', label: 'Threads 私訊' },
   { value: 'line', label: 'Line' },
@@ -371,9 +373,17 @@ interface SelectDropdownProps {
   options: string[];
   placeholder: string;
   invalid?: boolean;
+  labels?: Record<string, string>;
 }
 
-function SelectDropdown({ value, onChange, options, placeholder, invalid }: SelectDropdownProps) {
+function SelectDropdown({
+  value,
+  onChange,
+  options,
+  placeholder,
+  invalid,
+  labels,
+}: SelectDropdownProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -390,7 +400,7 @@ function SelectDropdown({ value, onChange, options, placeholder, invalid }: Sele
           if (!e.currentTarget.parentElement?.contains(e.relatedTarget)) setOpen(false);
         }}
       >
-        <span>{value || placeholder}</span>
+        <span>{value ? (labels?.[value] ?? value) : placeholder}</span>
         <ChevronDownIcon
           className={css({
             width: '14px',
@@ -416,7 +426,7 @@ function SelectDropdown({ value, onChange, options, placeholder, invalid }: Sele
                 setOpen(false);
               }}
             >
-              {opt}
+              {labels?.[opt] ?? opt}
             </button>
           ))}
         </div>
@@ -434,7 +444,8 @@ interface PreferredContactDropdownProps {
 
 function PreferredContactDropdown({ value, onChange }: PreferredContactDropdownProps) {
   const [open, setOpen] = useState(false);
-  const selectedLabel = PREFERRED_CONTACT_OPTIONS.find((o) => o.value === value)?.label ?? '不填寫';
+  const selectedLabel =
+    PREFERRED_CONTACT_OPTIONS.find((o) => o.value === value)?.label ?? '尚未設定';
 
   return (
     <div className={dropdownContainer}>
@@ -465,7 +476,7 @@ function PreferredContactDropdown({ value, onChange }: PreferredContactDropdownP
         <div className={dropdownMenu} role="listbox">
           {PREFERRED_CONTACT_OPTIONS.map(({ value: optVal, label }) => (
             <button
-              key={optVal || 'empty'}
+              key={optVal}
               type="button"
               role="option"
               aria-selected={value === optVal}
@@ -518,7 +529,7 @@ const EMPTY_VALUES: VenueFormValues = {
   threads: '',
   instagram: '',
   line: '',
-  preferredContact: '',
+  preferredContact: 'instagram',
   contactUrl: '',
 };
 
@@ -526,6 +537,10 @@ interface FormErrors {
   name?: string;
   address?: string;
   region?: string;
+  preferredContact?: string;
+  capacityRange?: string;
+  socialMedia?: string;
+  coverPhoto?: string;
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -534,6 +549,11 @@ interface VenueFormBaseProps {
   isSubmitting: boolean;
   submitError: string | null;
   authToken?: string;
+  cancelHref?: string;
+  submitLabel?: string;
+  placeApi?: typeof placesApi;
+  uploadImage?: (file: File) => Promise<UploadResponse>;
+  onImageUploadError?: (error: Error, file: File, category: 'cover' | 'other') => void;
 }
 
 interface VenueFormCreateProps extends VenueFormBaseProps {
@@ -557,7 +577,16 @@ export type VenueFormProps = VenueFormCreateProps | VenueFormEditProps;
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function VenueForm(props: VenueFormProps) {
-  const { isSubmitting, submitError, authToken } = props;
+  const {
+    isSubmitting,
+    submitError,
+    authToken,
+    cancelHref = '/admin-new/venues',
+    submitLabel,
+    placeApi,
+    uploadImage,
+    onImageUploadError,
+  } = props;
 
   const [form, setForm] = useState<VenueFormValues>(() =>
     props.mode === 'edit' ? props.initialValues : EMPTY_VALUES
@@ -575,6 +604,18 @@ export default function VenueForm(props: VenueFormProps) {
     if (!form.name.trim()) next.name = '請填寫場地名稱';
     if (!form.address.trim()) next.address = '請填寫地址';
     if (!form.region) next.region = '請選擇地區';
+    if (props.mode === 'create' && !form.preferredContact) {
+      next.preferredContact = '請選擇偏好聯繫方式';
+    }
+    if (props.mode === 'create' && !form.capacityRange) {
+      next.capacityRange = '請選擇容納人數';
+    }
+    if (props.mode === 'create' && !form.instagram.trim() && !form.threads.trim()) {
+      next.socialMedia = '請至少填寫 Instagram 或 Threads';
+    }
+    if (props.mode === 'create' && !form.coverPhoto) {
+      next.coverPhoto = '請上傳封面圖片';
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -659,9 +700,9 @@ export default function VenueForm(props: VenueFormProps) {
 
   function handleAddHostTag() {
     const tag = hostTagInput.trim();
+    setHostTagInput('');
     if (!tag || form.hostTags.includes(tag) || form.hostTags.length >= MAX_HOST_TAGS) return;
     setForm((prev) => ({ ...prev, hostTags: [...prev.hostTags, tag] }));
-    setHostTagInput('');
   }
 
   function handleRemoveHostTag(tag: string) {
@@ -669,7 +710,7 @@ export default function VenueForm(props: VenueFormProps) {
   }
 
   function handleHostTagKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
       e.preventDefault();
       handleAddHostTag();
     }
@@ -687,6 +728,7 @@ export default function VenueForm(props: VenueFormProps) {
               <PlaceAutocomplete
                 onPlaceSelect={handlePlaceSelect}
                 placeholder="輸入地點名稱或地址..."
+                api={placeApi}
               />
               {coordinates.lat !== null && <p className={fieldHint}>✓ 已取得座標</p>}
             </div>
@@ -791,18 +833,31 @@ export default function VenueForm(props: VenueFormProps) {
 
         {/* capacityRange */}
         <div className={fieldGroup}>
-          <span className={label}>容納人數</span>
+          <span className={label}>
+            容納人數
+            {props.mode === 'create' && <span className={requiredMark}>*</span>}
+          </span>
           <SelectDropdown
             value={form.capacityRange}
             onChange={(v) => setField('capacityRange', v)}
             options={CAPACITY_OPTIONS}
             placeholder="請選擇容納人數範圍"
+            labels={CAPACITY_RANGE_LABEL}
+            invalid={!!errors.capacityRange}
           />
+          {errors.capacityRange && (
+            <span className={fieldError} role="alert">
+              {errors.capacityRange}
+            </span>
+          )}
         </div>
 
         {/* socialMedia */}
         <div className={fieldGroup}>
-          <span className={label}>社群帳號</span>
+          <span className={label}>
+            社群帳號：填寫主要經營的即可
+            {props.mode === 'create' && <span className={requiredMark}>*</span>}
+          </span>
           <div className={fieldRow}>
             <div className={fieldGroup}>
               <label htmlFor="venue-threads" className={labelSub}>
@@ -814,7 +869,10 @@ export default function VenueForm(props: VenueFormProps) {
                 className={inputStyle}
                 placeholder="@username"
                 value={form.threads}
-                onChange={(e) => setField('threads', e.target.value)}
+                onChange={(e) => {
+                  setField('threads', e.target.value);
+                  setErrors((prev) => ({ ...prev, socialMedia: undefined }));
+                }}
               />
             </div>
             <div className={fieldGroup}>
@@ -827,32 +885,38 @@ export default function VenueForm(props: VenueFormProps) {
                 className={inputStyle}
                 placeholder="@username"
                 value={form.instagram}
-                onChange={(e) => setField('instagram', e.target.value)}
+                onChange={(e) => {
+                  setField('instagram', e.target.value);
+                  setErrors((prev) => ({ ...prev, socialMedia: undefined }));
+                }}
               />
             </div>
           </div>
-          <div className={fieldGroup}>
-            <label htmlFor="venue-line" className={labelSub}>
-              Line
-            </label>
-            <input
-              id="venue-line"
-              type="text"
-              className={inputStyle}
-              placeholder="Line ID 或連結"
-              value={form.line}
-              onChange={(e) => setField('line', e.target.value)}
-            />
-          </div>
+          {errors.socialMedia && (
+            <span className={fieldError} role="alert">
+              {errors.socialMedia}
+            </span>
+          )}
         </div>
 
         {/* preferredContact */}
         <div className={fieldGroup}>
-          <span className={label}>偏好聯絡方式</span>
+          <span className={label}>
+            偏好聯繫方式
+            {props.mode === 'create' && <span className={requiredMark}>*</span>}
+          </span>
           <PreferredContactDropdown
             value={form.preferredContact}
-            onChange={(v) => setForm((prev) => ({ ...prev, preferredContact: v }))}
+            onChange={(v) => {
+              setForm((prev) => ({ ...prev, preferredContact: v }));
+              setErrors((prev) => ({ ...prev, preferredContact: undefined }));
+            }}
           />
+          {errors.preferredContact && (
+            <span className={fieldError} role="alert">
+              {errors.preferredContact}
+            </span>
+          )}
         </div>
 
         {/* contactUrl — shown for line / form / other */}
@@ -876,15 +940,28 @@ export default function VenueForm(props: VenueFormProps) {
 
         {/* coverPhoto */}
         <div className={fieldGroup}>
-          <span className={label}>封面圖片</span>
+          <span className={label}>
+            封面圖片
+            {props.mode === 'create' && <span className={requiredMark}>*</span>}
+          </span>
           <ImageUpload
             currentImageUrl={form.coverPhoto || undefined}
-            onUploadComplete={(url) => setForm((prev) => ({ ...prev, coverPhoto: url }))}
+            onUploadComplete={(url) => {
+              setForm((prev) => ({ ...prev, coverPhoto: url }));
+              setErrors((prev) => ({ ...prev, coverPhoto: undefined }));
+            }}
             onImageRemove={() => setForm((prev) => ({ ...prev, coverPhoto: '' }))}
             authToken={authToken}
+            uploadImage={uploadImage}
+            onUploadError={(error, file) => onImageUploadError?.(error, file, 'cover')}
             placeholder="點擊上傳封面圖片"
             compressionParams={{ maxWidth: 1200, maxHeight: 800, quality: 0.85 }}
           />
+          {errors.coverPhoto && (
+            <span className={fieldError} role="alert">
+              {errors.coverPhoto}
+            </span>
+          )}
         </div>
 
         {/* otherPhotos */}
@@ -894,6 +971,8 @@ export default function VenueForm(props: VenueFormProps) {
             currentImages={form.otherPhotos}
             onImagesChange={(urls) => setForm((prev) => ({ ...prev, otherPhotos: urls }))}
             authToken={authToken}
+            uploadImage={uploadImage}
+            onUploadError={(error, file) => onImageUploadError?.(error, file, 'other')}
             maxImages={9}
             placeholder="新增照片"
             compressionParams={{ maxWidth: 1200, maxHeight: 900, quality: 0.85 }}
@@ -1001,12 +1080,12 @@ export default function VenueForm(props: VenueFormProps) {
         )}
 
         <div className={submitRow}>
-          <Link href="/admin-new/venues" className={cancelBtn}>
+          <Link href={cancelHref} className={cancelBtn}>
             取消
           </Link>
           <button type="submit" className={submitBtn} disabled={isSubmitting}>
             {isSubmitting && <div className={spinner} aria-hidden="true" />}
-            {props.mode === 'create' ? '新增場地' : '儲存變更'}
+            {submitLabel ?? (props.mode === 'create' ? '新增場地' : '儲存變更')}
           </button>
         </div>
 

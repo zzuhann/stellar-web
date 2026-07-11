@@ -15,7 +15,11 @@ export interface DeleteResponse {
 }
 
 // 上傳圖片到後端 API
-export async function uploadImageToAPI(file: File, authToken: string): Promise<UploadResponse> {
+export async function uploadImageToAPI(
+  file: File,
+  authToken?: string,
+  endpoint = '/images/upload'
+): Promise<UploadResponse> {
   try {
     // 先壓縮圖片
     const compressedFile = await compressImage(file);
@@ -24,9 +28,9 @@ export async function uploadImageToAPI(file: File, authToken: string): Promise<U
     const formData = new FormData();
     formData.append('image', compressedFile);
 
-    const response = await api.post('/images/upload', formData, {
+    const response = await api.post(endpoint, formData, {
       headers: {
-        Authorization: `Bearer ${authToken}`,
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         'Content-Type': 'multipart/form-data',
       },
     });
