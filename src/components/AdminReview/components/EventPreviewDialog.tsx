@@ -7,25 +7,14 @@ import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline
 import SwiperBanner from '@/components/SwiperBanner';
 import { InstagramIcon, ThreadsIcon } from '@/components/ui/SocialMediaIcons';
 import { useScrollLock } from '@/hooks/useScrollLock';
-import type { CoffeeEvent, FirebaseTimestamp } from '@/types';
-import { firebaseTimestampToDate } from '@/utils';
+import type { CoffeeEvent } from '@/types';
+import { formatEventDate } from '@/utils';
 import { parseSocialMediaHandles } from '@/utils/socialMedia';
 
 interface EventPreviewDialogProps {
   event: CoffeeEvent;
   onClose: () => void;
 }
-
-const formatEventDate = (startDate: FirebaseTimestamp, endDate: FirebaseTimestamp) => {
-  const options: Intl.DateTimeFormatOptions = {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  };
-  const start = firebaseTimestampToDate(startDate).toLocaleDateString('zh-TW', options);
-  const end = firebaseTimestampToDate(endDate).toLocaleDateString('zh-TW', options);
-  return start === end ? start : `${start} - ${end}`;
-};
 
 export default function EventPreviewDialog({ event, onClose }: EventPreviewDialogProps) {
   useScrollLock(true);
