@@ -40,7 +40,7 @@ export default function ArtistEditDialog({ artist, busy, onClose, onSave }: Arti
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  });
+  }, [busy, dirty, onClose]);
 
   const field = (key: keyof typeof form, label: string, type = 'text') => (
     <label className="block text-sm font-medium text-content">
