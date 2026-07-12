@@ -1,5 +1,64 @@
-@layer reset, base, tokens, recipes, utilities;
+@layer theme, reset, base, tokens, recipes, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities) source('../');
 @import '../styles/marker-cluster.css';
+
+@theme inline {
+  --color-brand: var(--colors-stellar-blue-500);
+  --color-brand-hover: var(--colors-stellar-blue-600);
+  --color-brand-active: var(--colors-stellar-blue-700);
+  --color-brand-subtle: var(--colors-stellar-blue-50);
+  --color-surface: var(--colors-gray-0);
+  --color-surface-muted: var(--colors-gray-50);
+  --color-neutral-subtle: var(--colors-gray-100);
+  --color-content: var(--colors-gray-700);
+  --color-content-muted: var(--colors-gray-600);
+  --color-content-disabled: var(--colors-gray-400);
+  --color-line: var(--colors-gray-200);
+  --color-line-strong: var(--colors-gray-300);
+  --color-success: var(--colors-green-600);
+  --color-success-hover: var(--colors-green-700);
+  --color-success-subtle: var(--colors-green-50);
+  --color-warning: var(--colors-amber-500);
+  --color-warning-hover: var(--colors-amber-600);
+  --color-warning-subtle: var(--colors-amber-50);
+  --color-warning-content: var(--colors-amber-800);
+  --color-danger: var(--colors-red-600);
+  --color-danger-hover: var(--colors-red-700);
+  --color-danger-subtle: var(--colors-red-50);
+  --color-danger-line: var(--colors-red-200);
+  --color-overlay: var(--colors-alpha-black-50);
+  --radius-stellar-sm: var(--radii-radius-sm);
+  --radius-stellar-md: var(--radii-radius-md);
+  --radius-stellar-lg: var(--radii-radius-lg);
+  --radius-stellar-xl: var(--radii-radius-xl);
+  --radius-stellar-circle: var(--radii-radius-circle);
+  --shadow-stellar-sm: var(--shadows-shadow-sm);
+  --shadow-stellar-md: var(--shadows-shadow-md);
+  --shadow-stellar-lg: var(--shadows-shadow-lg);
+  --shadow-stellar-xl: var(--shadows-shadow-xl);
+}
+
+@layer components {
+  .review-secondary-button,
+  .review-approve-button,
+  .review-exists-button,
+  .review-reject-button {
+    @apply inline-flex min-h-11 items-center justify-center gap-1.5 rounded-stellar-xl px-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .review-secondary-button {
+    @apply border border-line bg-surface text-content hover:bg-surface-muted;
+  }
+  .review-approve-button {
+    @apply bg-success text-surface hover:bg-success-hover;
+  }
+  .review-exists-button {
+    @apply bg-warning-subtle text-warning-content hover:bg-warning;
+  }
+  .review-reject-button {
+    @apply bg-danger-subtle text-danger hover:bg-danger-line;
+  }
+}
 
 :root {
   /* 品牌色彩系統 - 引用 Panda CSS tokens */
