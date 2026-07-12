@@ -1,6 +1,5 @@
 'use client';
 
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 
 const container = css({
@@ -12,12 +11,6 @@ const container = css({
   flexDirection: 'column',
   gap: '4',
   padding: '5',
-});
-
-const icon = css({
-  width: '48px',
-  height: '48px',
-  color: 'color.text.tertiary',
 });
 
 const title = css({
@@ -64,7 +57,6 @@ interface VenueErrorProps {
 export default function VenueError({ reset }: VenueErrorProps) {
   return (
     <div className={container}>
-      <ArrowPathIcon className={icon} />
       <h1 className={title}>暫時無法載入場地資訊</h1>
       <p className={description}>可能是網路不穩或伺服器忙線中，可以稍後再試</p>
       <button type="button" className={retryButton} onClick={() => reset()}>
