@@ -32,10 +32,12 @@ export default defineConfig({
   projects: [
     // Run manually: npx playwright test --project=setup (headed, then sign in with Google)
     { name: 'setup', testMatch: /auth\.setup\.ts/ },
+    // Run manually: npx playwright test --project=admin-setup (headed, saves an admin session)
+    { name: 'admin-setup', testMatch: /admin\.setup\.ts/ },
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: /auth\.setup\.ts/,
+      testIgnore: [/\.setup\.ts/, /\.auth\.spec\.ts/, /\.admin\.spec\.ts/],
     },
     {
       name: 'chromium-authenticated',
@@ -44,7 +46,16 @@ export default defineConfig({
         storageState: 'e2e/.auth/user.json',
       },
       testMatch: /.*\.auth\.spec\.ts/,
-      testIgnore: /auth\.setup\.ts/,
+      testIgnore: /\.setup\.ts/,
+    },
+    {
+      name: 'chromium-admin',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'e2e/.auth/admin.json',
+      },
+      testMatch: /.*\.admin\.spec\.ts/,
+      testIgnore: /\.setup\.ts/,
     },
   ],
   webServer: {

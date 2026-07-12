@@ -67,6 +67,12 @@ const queryKey = {
 
 ---
 
+## Utils（`src/utils/`）
+
+寫任何新的 util function 前，先看 `src/utils/index.ts`（和同目錄其他檔案）是否已經有相同或相近的邏輯，尤其是日期格式化、字串處理這類容易各寫一份的工具。已有就直接 import 用，不要在 component 或 feature 目錄裡各自重寫一份。若確定需要新增，優先加進 `src/utils/`，不要留在 component 檔案內部。
+
+---
+
 ## 目錄結構
 
 ```
