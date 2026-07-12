@@ -43,9 +43,10 @@ describe('AdminReview', () => {
     render(<AdminReview />);
     await user.click(screen.getByRole('button', { name: '已存在' }));
 
-    expect(mutate).toHaveBeenCalledWith([
-      { artistId: 'artist-1', status: 'exists', reason: '藝人已存在' },
-    ]);
+    expect(mutate).toHaveBeenCalledWith(
+      [{ artistId: 'artist-1', status: 'exists', reason: '藝人已存在' }],
+      { onSuccess: expect.any(Function) }
+    );
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
