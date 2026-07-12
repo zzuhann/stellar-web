@@ -30,7 +30,7 @@ export default function BatchGroupNameDialog({
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  });
+  }, [busy, dirty, onClose]);
 
   return (
     <div

@@ -50,6 +50,13 @@ export default function AdminReview() {
     setDialog(null);
     setSelected(new Set());
   };
+  const deselect = (id: string) =>
+    setSelected((current) => {
+      if (!current.has(id)) return current;
+      const next = new Set(current);
+      next.delete(id);
+      return next;
+    });
 
   return (
     <div className="flex min-h-dvh bg-surface-muted pt-[70px] text-content">
@@ -197,14 +204,17 @@ export default function AdminReview() {
                   onApprove={() =>
                     'stageName' in item
                       ? setDialog({ kind: 'groups', item })
-                      : eventMutation.mutate([{ eventId: item.id, status: 'approved' }])
+                      : eventMutation.mutate([{ eventId: item.id, status: 'approved' }], {
+                          onSuccess: () => deselect(item.id),
+                        })
                   }
                   onExists={
                     'stageName' in item
                       ? () =>
-                          artistMutation.mutate([
-                            { artistId: item.id, status: 'exists', reason: '藝人已存在' },
-                          ])
+                          artistMutation.mutate(
+                            [{ artistId: item.id, status: 'exists', reason: '藝人已存在' }],
+                            { onSuccess: () => deselect(item.id) }
+                          )
                       : undefined
                   }
                   onReject={() => setDialog({ kind: 'reject', item })}

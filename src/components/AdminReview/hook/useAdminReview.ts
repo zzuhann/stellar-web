@@ -13,11 +13,13 @@ export default function useAdminReview(tab: 'artists' | 'events') {
     queryKey: artistKey,
     queryFn: () => artistsApi.getAll({ status: 'pending', sortBy: 'createdAt', sortOrder: 'asc' }),
     enabled: tab === 'artists',
+    staleTime: 30 * 1000,
   });
   const events = useQuery({
     queryKey: eventKey,
     queryFn: eventsApi.admin.getPending,
     enabled: tab === 'events',
+    staleTime: 30 * 1000,
   });
 
   const artistMutation = useMutation({
