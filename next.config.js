@@ -62,7 +62,7 @@ module.exports = withSentryConfig(module.exports, {
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
   org: 'stellar-4b',
-  project: 'javascript-nextjs',
+  project: 'stellar-web',
 
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
