@@ -18,6 +18,9 @@ Sentry.init({
     'Invalid call to runtime.sendMessage()',
     /chrome-extension:\/\//,
     /moz-extension:\/\//,
+    // Safari/iOS IndexedDB quirk inside Firebase Auth's internal persistence
+    // sync — connection closes mid-transaction, no user-facing effect.
+    "Failed to execute 'transaction' on 'IDBDatabase': The database connection is closing.",
   ],
 });
 
