@@ -58,6 +58,7 @@ export default function MobileBackButton({ pathname }: MobileBackButtonProps) {
 
     if (appBack.current) {
       appBack.current = false;
+      nativeBack.current = false;
     } else if (nativeBack.current) {
       if (routeStack.current.at(-1) === pathname) routeStack.current.pop();
       else routeStack.current = [];
@@ -78,7 +79,12 @@ export default function MobileBackButton({ pathname }: MobileBackButtonProps) {
 
   const handleBack = () => {
     appBack.current = true;
-    router.push(routeStack.current.pop() ?? '/');
+    if (routeStack.current.length > 0) {
+      routeStack.current.pop();
+      router.back();
+    } else {
+      router.push('/');
+    }
   };
 
   return (
