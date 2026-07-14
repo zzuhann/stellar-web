@@ -9,6 +9,7 @@ import { useAuth } from '@/lib/auth-context';
 import { usePageView } from '@/hooks/usePageView';
 import { trackFilterVenues } from '@/lib/analytics/venues';
 import { useQueryState } from '@/hooks/useQueryState';
+import { REGIONS } from '@/constants';
 import type { Venue, CapacityRange } from '@/types';
 import VenueFilters, {
   type CapacityFilter,
@@ -97,9 +98,14 @@ export default function VenuesClient({ initialVenues }: VenuesClientProps) {
 
   usePageView({ eventPage: '/venues' });
 
-  // Derive available regions from SSR data (keeps only regions with actual venues)
+  // Derive available regions from SSR data (keeps only regions with actual venues),
+  // ordered north-to-south per REGIONS. Regions not in REGIONS are dropped (dirty data).
   const regions = useMemo(() => {
-    const unique = Array.from(new Set(initialVenues.map((v) => v.region))).sort();
+    const order: readonly string[] = REGIONS;
+    const unique = Array.from(new Set(initialVenues.map((v) => v.region))).filter((r) =>
+      order.includes(r)
+    );
+    unique.sort((a, b) => order.indexOf(a) - order.indexOf(b));
     return ['全部', ...unique];
   }, [initialVenues]);
 
