@@ -19,13 +19,18 @@ describe('MobileBackButton', () => {
 
   afterEach(cleanup);
 
-  it.each(['/', '/map/artist-1', '/admin', '/admin/venues', '/admin-new/review'])(
+  it.each(['/', '/admin', '/admin/venues', '/admin-new/review'])(
     '%s 不顯示全域返回鍵',
     (pathname) => {
       render(<MobileBackButton pathname={pathname} />);
       expect(screen.queryByRole('button', { name: '返回上一頁' })).toBeNull();
     }
   );
+
+  it('地圖頁跟其他一般頁面一樣顯示返回鍵', () => {
+    render(<MobileBackButton pathname="/map/artist-1" />);
+    expect(screen.getByRole('button', { name: '返回上一頁' })).not.toBeNull();
+  });
 
   it('一般非首頁顯示可存取的返回鍵', () => {
     render(<MobileBackButton pathname="/venues" />);
@@ -74,15 +79,16 @@ describe('MobileBackButton', () => {
     const user = userEvent.setup();
     const { rerender } = render(<MobileBackButton pathname="/" />);
     rerender(<MobileBackButton pathname="/event/wonwoo-2026-07-BWwLJk" />);
-    // 麵包屑導覽到地圖頁：/map/* 不顯示按鈕,但仍應被記進 routeStack
+    // 麵包屑導覽到地圖頁：/map/* 現在跟其他一般頁面一樣是可追蹤路徑
     rerender(<MobileBackButton pathname="/map/wonwoo" />);
     // 點地圖上的活動進入另一場活動詳情頁
     rerender(<MobileBackButton pathname="/event/wonwoo-2026-07-L17Kz6" />);
 
     await user.click(screen.getByRole('button', { name: '返回上一頁' }));
 
-    // 修正前:/map/* 被排除在 stack 追蹤外,導致 stack 被清空、fallback 呼叫 push('/')
-    // 修正後:/map/* 仍是合法的返回目的地,應呼叫 back() 回到 /map/wonwoo
+    // 這裡驗證的是 MobileBackButton 自身的 stack 邏輯；實際回報的 bug 根因是
+    // Header 在 /map/* 時整個 unmount 導致 routeStack 被銷毀歸零，
+    // 該根因的回歸測試在 Header/index.test.tsx（MobileBackButton 單獨渲染測不出 unmount 問題）。
     expect(back).toHaveBeenCalledTimes(1);
     expect(push).not.toHaveBeenCalled();
   });
