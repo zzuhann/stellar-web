@@ -2,6 +2,7 @@ import { css } from '@/styled-system/css';
 import { parseSocialMediaHandles } from '@/utils/socialMedia';
 import {
   ArrowTopRightOnSquareIcon,
+  BuildingStorefrontIcon,
   CalendarIcon,
   InformationCircleIcon,
   MapPinIcon,
@@ -22,6 +23,7 @@ import PageViewTracker from '@/components/PageViewTracker';
 import EventViewTracker from '@/components/EventViewTracker';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import MoreEventsCarousel from './MoreEventsCarousel';
+import EventLocationLink from './EventLocationLink';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -372,32 +374,26 @@ const EventDetail = ({ event }: EventDetailProps) => {
 
             <div className={detailItem}>
               <div className={detailIcon}>
-                <MapPinIcon
-                  width={20}
-                  height={20}
-                  color="var(--color-text-secondary)"
-                  aria-hidden="true"
-                />
+                {event.location.venueId && event.location.venueActive === true ? (
+                  <BuildingStorefrontIcon
+                    width={20}
+                    height={20}
+                    color="var(--color-text-secondary)"
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <MapPinIcon
+                    width={20}
+                    height={20}
+                    color="var(--color-text-secondary)"
+                    aria-hidden="true"
+                  />
+                )}
                 <span className="sr-only">活動地點</span>
               </div>
               <div className={detailContent}>
                 <div className={detailValue}>
-                  <ExternalLink
-                    href={`https://www.google.com/maps/search/?api=1&query=${event.location.coordinates.lat},${event.location.coordinates.lng}`}
-                    platform="location"
-                    eventPage="/event/[id]"
-                    contentId={event.id}
-                    style={{ color: 'var(--colors-stellar-blue-500)' }}
-                  >
-                    {event.location.name}({event.location.address})&nbsp;
-                    <ArrowTopRightOnSquareIcon
-                      style={{ display: 'inline', verticalAlign: 'middle' }}
-                      width={16}
-                      height={16}
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only">（在新視窗開啟 Google 地圖）</span>
-                  </ExternalLink>
+                  <EventLocationLink location={event.location} eventId={event.id} />
                 </div>
               </div>
             </div>

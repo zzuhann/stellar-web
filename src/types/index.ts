@@ -42,6 +42,7 @@ export interface CoffeeEvent {
     };
     placeId?: string;
     venueId?: string;
+    venueActive?: boolean;
   };
   datetime: {
     start: FirebaseTimestamp;

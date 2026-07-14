@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { css } from '@/styled-system/css';
 import type { Venue } from '@/types';
+import MrtIcon from './MrtIcon';
 
 const section = css({
   paddingTop: '5',
@@ -114,6 +115,9 @@ const cardMeta = css({
   marginTop: '1',
   textStyle: 'caption',
   color: 'color.text.secondary',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1',
   whiteSpace: 'nowrap',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
@@ -182,7 +186,10 @@ export default function RelatedVenuesStrip({ venues, region }: RelatedVenuesStri
               <div className={cardBody}>
                 <h3 className={cardName}>{venue.name}</h3>
                 {venue.nearestMrt ? (
-                  <div className={cardMeta}>M {venue.nearestMrt}</div>
+                  <div className={cardMeta}>
+                    <MrtIcon size={14} />
+                    {venue.nearestMrt}
+                  </div>
                 ) : venue.capacityRange ? (
                   <div className={cardMeta}>容納 {venue.capacityRange} 人</div>
                 ) : null}
