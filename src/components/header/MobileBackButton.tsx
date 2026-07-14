@@ -30,7 +30,6 @@ interface MobileBackButtonProps {
 export function shouldShowMobileBackButton(pathname: string) {
   return (
     pathname !== '/' &&
-    !pathname.startsWith('/map/') &&
     pathname !== '/admin' &&
     !pathname.startsWith('/admin/') &&
     pathname !== '/admin-new' &&
@@ -38,8 +37,8 @@ export function shouldShowMobileBackButton(pathname: string) {
   );
 }
 
-// history 追蹤排除清單跟按鈕顯示排除清單不同：地圖頁（/map/*）跟首頁（/）
-// 雖然不顯示全域返回鍵，但仍是合法的返回目的地，必須能被記進 routeStack。
+// history 追蹤排除清單跟按鈕顯示排除清單不同：首頁（/）不顯示全域返回鍵，
+// 但仍是合法的返回目的地，必須能被記進 routeStack。
 // 只有 admin 區域要跟公開頁面的返回歷史隔離，進出時清空 stack。
 function isTrackableRoute(pathname: string) {
   return (

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { usePathname } from 'next/navigation';
 import AuthModal from '../auth/AuthModal';
 import { css } from '@/styled-system/css';
+import { useHeaderTitleStore } from '@/store/useHeaderTitleStore';
 import DesktopNav from './DesktopNav';
 import BurgerButton from './BurgerButton';
 import MobileMenu from './MobileMenu';
@@ -67,14 +68,34 @@ const logoImage = css({
   display: 'block',
 });
 
+const titleContainer = css({
+  position: 'absolute',
+  left: '50%',
+  top: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 'min(260px, calc(100% - 200px))',
+  textAlign: 'center',
+  overflow: 'hidden',
+  pointerEvents: 'none',
+});
+
+const titleText = css({
+  fontWeight: 'semibold',
+  color: 'color.text.primary',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+  display: 'block',
+  fontSize: 'clamp(12px, 3.8vw, 15px)',
+});
+
 const Header = () => {
   const { authModalOpen, toggleAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const closeMobileMenu = () => setMobileMenuOpen(false);
   const pathname = usePathname();
   const showMobileBackButton = shouldShowMobileBackButton(pathname);
-
-  if (pathname.startsWith('/map/')) return null;
+  const title = useHeaderTitleStore((state) => state.title);
 
   return (
     <>
@@ -82,23 +103,31 @@ const Header = () => {
         <h1 className={srOnly}>STELLAR | 台灣生日應援地圖平台</h1>
         <div className={leftSlot}>
           <MobileBackButton pathname={pathname} />
-          <Link
-            href="/"
-            className={`${logoLink} ${showMobileBackButton ? hideLogoOnMobile : ''}`}
-            aria-label="STELLAR 首頁"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/icon-with-text.png"
-              alt="STELLAR"
-              width={120}
-              height={120}
-              className={logoImage}
-              loading="eager"
-              decoding="async"
-            />
-          </Link>
+          {!title && (
+            <Link
+              href="/"
+              className={`${logoLink} ${showMobileBackButton ? hideLogoOnMobile : ''}`}
+              aria-label="STELLAR 首頁"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/icon-with-text.png"
+                alt="STELLAR"
+                width={120}
+                height={120}
+                className={logoImage}
+                loading="eager"
+                decoding="async"
+              />
+            </Link>
+          )}
         </div>
+
+        {title && (
+          <div className={titleContainer}>
+            <span className={titleText}>{title}</span>
+          </div>
+        )}
 
         {/* Desktop Navigation */}
         <DesktopNav />
