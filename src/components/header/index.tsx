@@ -10,6 +10,7 @@ import DesktopNav from './DesktopNav';
 import BurgerButton from './BurgerButton';
 import MobileMenu from './MobileMenu';
 import ShareButton from '../ShareButton';
+import MobileBackButton, { shouldShowMobileBackButton } from './MobileBackButton';
 
 const headerContainer = css({
   height: '70px',
@@ -49,6 +50,17 @@ const logoLink = css({
   minHeight: '44px',
 });
 
+const leftSlot = css({
+  display: 'flex',
+  alignItems: 'center',
+});
+
+const hideLogoOnMobile = css({
+  '@media (max-width: 768px)': {
+    display: 'none',
+  },
+});
+
 const logoImage = css({
   width: '120px',
   height: 'auto',
@@ -60,6 +72,7 @@ const Header = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const closeMobileMenu = () => setMobileMenuOpen(false);
   const pathname = usePathname();
+  const showMobileBackButton = shouldShowMobileBackButton(pathname);
 
   if (pathname.startsWith('/map/')) return null;
 
@@ -67,18 +80,25 @@ const Header = () => {
     <>
       <header className={headerContainer}>
         <h1 className={srOnly}>STELLAR | 台灣生日應援地圖平台</h1>
-        <Link href="/" className={logoLink} aria-label="STELLAR 首頁">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/icon-with-text.png"
-            alt="STELLAR"
-            width={120}
-            height={120}
-            className={logoImage}
-            loading="eager"
-            decoding="async"
-          />
-        </Link>
+        <div className={leftSlot}>
+          <MobileBackButton pathname={pathname} />
+          <Link
+            href="/"
+            className={`${logoLink} ${showMobileBackButton ? hideLogoOnMobile : ''}`}
+            aria-label="STELLAR 首頁"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/icon-with-text.png"
+              alt="STELLAR"
+              width={120}
+              height={120}
+              className={logoImage}
+              loading="eager"
+              decoding="async"
+            />
+          </Link>
+        </div>
 
         {/* Desktop Navigation */}
         <DesktopNav />
