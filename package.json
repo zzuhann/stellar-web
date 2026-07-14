@@ -15,6 +15,7 @@
     "test:e2e:auth": "playwright test --project=setup --project=admin-setup --headed",
     "test:e2e:auth:ci": "playwright test --project=setup --project=admin-setup",
     "test:e2e:ci": "playwright test --project=chromium --project=chromium-authenticated --project=chromium-admin --pass-with-no-tests",
+    "capture-card": "node scripts/capture-card.mjs",
     "lint": "eslint src --fix",
     "lint:check": "eslint src",
     "type-check": "tsc -p tsconfig.json --noEmit",
