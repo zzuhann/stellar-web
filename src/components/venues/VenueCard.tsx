@@ -8,6 +8,7 @@ import { trackClickVenueDetail, trackViewVenueCard } from '@/lib/analytics/venue
 import type { Venue } from '@/types';
 import { CAPACITY_RANGE_LABEL } from './venueCapacity';
 import VenueCardPhotos from './VenueCardPhotos';
+import MrtIcon from './MrtIcon';
 
 const card = css({
   display: 'block',
@@ -65,11 +66,6 @@ const mrtRow = css({
   marginTop: '2',
   textStyle: 'caption',
   color: 'color.text.secondary',
-});
-
-const mrtLabel = css({
-  color: 'color.primary',
-  fontWeight: 'semibold',
 });
 
 const hostTagsRow = css({
@@ -193,7 +189,7 @@ export default function VenueCard({ venue, listPosition, userId }: VenueCardProp
 
         {venue.nearestMrt && (
           <div className={mrtRow}>
-            <span className={mrtLabel}>M</span>
+            <MrtIcon size={14} />
             <span>
               {venue.nearestMrt}
               {venue.mrtWalkMinutes ? ` ${venue.mrtWalkMinutes} 分鐘` : ''}

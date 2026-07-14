@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { css } from '@/styled-system/css';
 import { useAuth } from '@/lib/auth-context';
 import { usePageView } from '@/hooks/usePageView';
@@ -16,11 +15,9 @@ import VenueGallery from './VenueGallery';
 import InfoRow from './InfoRow';
 import PastEventsStrip from './PastEventsStrip';
 import RelatedVenuesStrip from './RelatedVenuesStrip';
-import {
-  ChevronLeftIcon,
-  MapPinIcon,
-  ArrowTopRightOnSquareIcon,
-} from '@heroicons/react/24/outline';
+import VenueMapEmbed from './VenueMapEmbed';
+import MrtIcon from './MrtIcon';
+import { MapPinIcon, ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon } from '@/components/ui/SocialMediaIcons';
 import { cleanSocialMediaHandle } from '@/utils/socialMedia';
 
@@ -36,30 +33,6 @@ const page = css({
   background: 'color.background.primary',
   paddingBottom: '10',
   boxShadow: 'shadow.md',
-});
-
-const backBar = css({
-  paddingTop: '3',
-  paddingX: '4',
-  paddingBottom: '2',
-});
-
-const backBtn = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1',
-  textStyle: 'bodySmall',
-  color: 'color.text.primary',
-  textDecoration: 'none',
-  paddingY: '1',
-  paddingX: '0',
-  cursor: 'pointer',
-  background: 'none',
-  border: 'none',
-  fontWeight: 'medium',
-  '&:hover': {
-    color: 'color.primary',
-  },
 });
 
 const titleSection = css({
@@ -210,20 +183,6 @@ const venueListBtn = css({
   },
 });
 
-const mrtIconCls = css({
-  width: '18px',
-  height: '18px',
-  borderRadius: 'radius.sm',
-  background: 'stellarBlue.500',
-  color: 'white',
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  textStyle: 'caption',
-  fontWeight: 'bold',
-  flexShrink: 0,
-});
-
 const mapIconWrapper = css({
   color: 'gray.400',
   display: 'inline-flex',
@@ -245,10 +204,6 @@ const bookingBtnWrap = css({
   marginTop: '2.5',
   display: 'flex',
 });
-
-function MrtIcon() {
-  return <span className={mrtIconCls}>M</span>;
-}
 
 interface BookingChannel {
   label: string;
@@ -307,7 +262,6 @@ interface VenueDetailViewProps {
 }
 
 export default function VenueDetailView({ venue, relatedVenues }: VenueDetailViewProps) {
-  const router = useRouter();
   const { user } = useAuth();
   const photos = [venue.coverPhoto, ...(venue.otherPhotos ?? [])].filter(Boolean) as string[];
   const socialLink = buildSocialLink(venue);
@@ -331,29 +285,9 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
     });
   };
 
-  const handleBackToList = () => {
-    // ponytail: referrer only reflects the last hard navigation, not client-side
-    // routing — good enough to catch "opened this page directly" (external link,
-    // new tab, search result), which is the case that would otherwise back() off-site.
-    const isSameOriginReferrer =
-      document.referrer && new URL(document.referrer).origin === window.location.origin;
-    if (isSameOriginReferrer) {
-      router.back();
-    } else {
-      router.push('/venues');
-    }
-  };
-
   return (
     <div className={pageOuter}>
       <div className={page}>
-        <div className={backBar}>
-          <button type="button" className={backBtn} onClick={handleBackToList}>
-            <ChevronLeftIcon width={16} height={16} aria-hidden="true" />
-            場地列表
-          </button>
-        </div>
-
         <VenueGallery photos={photos} venueName={venue.name} />
 
         <section className={titleSection}>
@@ -401,6 +335,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
                 </a>
               }
             />
+            <VenueMapEmbed placeId={venue.placeId} venueName={venue.name} />
             {venue.nearestMrt && (
               <InfoRow
                 icon={<MrtIcon />}
