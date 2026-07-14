@@ -37,22 +37,10 @@ export function shouldShowMobileBackButton(pathname: string) {
   );
 }
 
-// history 追蹤排除清單跟按鈕顯示排除清單不同：首頁（/）不顯示全域返回鍵，
-// 但仍是合法的返回目的地，必須能被記進 routeStack。
-// 只有 admin 區域要跟公開頁面的返回歷史隔離，進出時清空 stack。
-function isTrackableRoute(pathname: string) {
-  return (
-    pathname !== '/admin' &&
-    !pathname.startsWith('/admin/') &&
-    pathname !== '/admin-new' &&
-    !pathname.startsWith('/admin-new/')
-  );
-}
-
 export default function MobileBackButton({ pathname }: MobileBackButtonProps) {
   const router = useRouter();
   const currentPath = useRef(pathname);
-  const routeStack = useRef<string[]>([]);
+  const inSiteDepth = useRef(0);
   const nativeBack = useRef(false);
   const appBack = useRef(false);
 
@@ -71,13 +59,10 @@ export default function MobileBackButton({ pathname }: MobileBackButtonProps) {
       appBack.current = false;
       nativeBack.current = false;
     } else if (nativeBack.current) {
-      if (routeStack.current.at(-1) === pathname) routeStack.current.pop();
-      else routeStack.current = [];
+      inSiteDepth.current = Math.max(0, inSiteDepth.current - 1);
       nativeBack.current = false;
-    } else if (isTrackableRoute(currentPath.current) && isTrackableRoute(pathname)) {
-      routeStack.current.push(currentPath.current);
     } else {
-      routeStack.current = [];
+      inSiteDepth.current += 1;
     }
 
     currentPath.current = pathname;
@@ -87,8 +72,8 @@ export default function MobileBackButton({ pathname }: MobileBackButtonProps) {
 
   const handleBack = () => {
     appBack.current = true;
-    if (routeStack.current.length > 0) {
-      routeStack.current.pop();
+    if (inSiteDepth.current > 0) {
+      inSiteDepth.current -= 1;
       router.back();
     } else {
       router.push('/');

@@ -14,7 +14,6 @@ describe('MobileBackButton', () => {
   beforeEach(() => {
     back.mockClear();
     push.mockClear();
-    Object.defineProperty(document, 'referrer', { configurable: true, value: '' });
   });
 
   afterEach(cleanup);
@@ -37,7 +36,7 @@ describe('MobileBackButton', () => {
     expect(screen.getByRole('button', { name: '返回上一頁' })).not.toBeNull();
   });
 
-  it('站內導覽後回到上一頁', async () => {
+  it('站內導覽後點返回鍵呼叫 back(),不呼叫 push', async () => {
     const user = userEvent.setup();
     const { rerender } = render(<MobileBackButton pathname="/" />);
     rerender(<MobileBackButton pathname="/venues" />);
@@ -49,7 +48,52 @@ describe('MobileBackButton', () => {
     expect(push).not.toHaveBeenCalled();
   });
 
-  it('app 返回鍵觸發 back() 後緊接收到 popstate,不會污染下一次前進導覽的 stack', async () => {
+  it('沒有站內導覽紀錄(例如直接進入)時點返回鍵 fallback 回首頁', async () => {
+    const user = userEvent.setup();
+    render(<MobileBackButton pathname="/venues" />);
+
+    await user.click(screen.getByRole('button', { name: '返回上一頁' }));
+
+    expect(push).toHaveBeenCalledWith('/');
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it('真實 popstate(使用者按系統返回鍵)發生後,inSiteDepth 正確減少', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<MobileBackButton pathname="/" />);
+    // 兩次站內前進導覽,inSiteDepth = 2
+    rerender(<MobileBackButton pathname="/venues" />);
+    rerender(<MobileBackButton pathname="/venues/venue-1" />);
+
+    // 模擬使用者按了一次真實瀏覽器返回鍵/系統手勢:先觸發 popstate,
+    // 接著 pathname 變回上一頁,讓 effect 判斷為 nativeBack 分支,inSiteDepth 減 1 -> 剩 1
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    rerender(<MobileBackButton pathname="/venues" />);
+
+    // 深度還剩 1,點返回鍵應呼叫 back(),而不是 fallback 到 push('/')
+    await user.click(screen.getByRole('button', { name: '返回上一頁' }));
+
+    expect(back).toHaveBeenCalledTimes(1);
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('inSiteDepth 耗盡後(連續 native back 直到歸零)點返回鍵 fallback 回首頁', async () => {
+    const user = userEvent.setup();
+    // 從 /venues 掛載(不計入深度),前進一次到 /venues/venue-1,inSiteDepth = 1
+    const { rerender } = render(<MobileBackButton pathname="/venues" />);
+    rerender(<MobileBackButton pathname="/venues/venue-1" />);
+
+    // 一次真實 popstate,回到 /venues,inSiteDepth 減 1 -> 歸零(夾在 0 下限,不會變負數)
+    window.dispatchEvent(new PopStateEvent('popstate'));
+    rerender(<MobileBackButton pathname="/venues" />);
+
+    await user.click(screen.getByRole('button', { name: '返回上一頁' }));
+
+    expect(push).toHaveBeenCalledWith('/');
+    expect(back).not.toHaveBeenCalled();
+  });
+
+  it('app 返回鍵觸發 back() 後緊接收到 popstate,不會污染下一次前進導覽的深度計數', async () => {
     const user = userEvent.setup();
     const { rerender } = render(<MobileBackButton pathname="/" />);
     rerender(<MobileBackButton pathname="/venues" />);
@@ -60,7 +104,8 @@ describe('MobileBackButton', () => {
     back.mockClear();
     push.mockClear();
 
-    // router.back() 本身會觸發真實瀏覽器的 popstate 事件
+    // router.back() 本身會觸發真實瀏覽器的 popstate 事件;appBack 分支已把 nativeBack 重置,
+    // 這裡再次派發 popstate 模擬瀏覽器行為,驗證它不會被下一次的一般前進導覽誤判成 nativeBack 分支
     window.dispatchEvent(new PopStateEvent('popstate'));
     rerender(<MobileBackButton pathname="/venues" />);
 
@@ -69,68 +114,9 @@ describe('MobileBackButton', () => {
 
     await user.click(screen.getByRole('button', { name: '返回上一頁' }));
 
-    // 若 nativeBack.current 殘留為 true,上面的前進導覽會被誤判、stack 遭清空,
-    // 導致這裡因 stack 為空而 fallback 呼叫 push('/')。正確行為應是 stack 仍有紀錄並呼叫 back()。
+    // 若 nativeBack.current 殘留為 true,上面的前進導覽會被誤判、深度被扣減,
+    // 可能導致這裡因深度不足而 fallback 呼叫 push('/')。正確行為應是深度仍足夠並呼叫 back()。
     expect(back).toHaveBeenCalledTimes(1);
     expect(push).not.toHaveBeenCalled();
-  });
-
-  it('活動頁經麵包屑到地圖頁,再點地圖進入另一活動頁後,返回鍵應回到地圖頁而非首頁', async () => {
-    const user = userEvent.setup();
-    const { rerender } = render(<MobileBackButton pathname="/" />);
-    rerender(<MobileBackButton pathname="/event/wonwoo-2026-07-BWwLJk" />);
-    // 麵包屑導覽到地圖頁：/map/* 現在跟其他一般頁面一樣是可追蹤路徑
-    rerender(<MobileBackButton pathname="/map/wonwoo" />);
-    // 點地圖上的活動進入另一場活動詳情頁
-    rerender(<MobileBackButton pathname="/event/wonwoo-2026-07-L17Kz6" />);
-
-    await user.click(screen.getByRole('button', { name: '返回上一頁' }));
-
-    // 這裡驗證的是 MobileBackButton 自身的 stack 邏輯；實際回報的 bug 根因是
-    // Header 在 /map/* 時整個 unmount 導致 routeStack 被銷毀歸零，
-    // 該根因的回歸測試在 Header/index.test.tsx（MobileBackButton 單獨渲染測不出 unmount 問題）。
-    expect(back).toHaveBeenCalledTimes(1);
-    expect(push).not.toHaveBeenCalled();
-  });
-
-  it('admin 區域進出仍會清空 stack(刻意保留的隔離行為)', async () => {
-    const user = userEvent.setup();
-    const { rerender } = render(<MobileBackButton pathname="/" />);
-    rerender(<MobileBackButton pathname="/venues" />);
-    rerender(<MobileBackButton pathname="/admin" />);
-    rerender(<MobileBackButton pathname="/venues/venue-1" />);
-
-    await user.click(screen.getByRole('button', { name: '返回上一頁' }));
-
-    expect(push).toHaveBeenCalledWith('/');
-    expect(back).not.toHaveBeenCalled();
-  });
-
-  it('直接進入或由外站進入時回首頁', async () => {
-    const user = userEvent.setup();
-    Object.defineProperty(document, 'referrer', {
-      configurable: true,
-      value: 'https://www.google.com/search?q=%E5%8F%B0%E7%81%A3%E5%9C%B0%E5%9C%96',
-    });
-    render(<MobileBackButton pathname="/venues" />);
-
-    await user.click(screen.getByRole('button', { name: '返回上一頁' }));
-
-    expect(push).toHaveBeenCalledWith('/');
-    expect(back).not.toHaveBeenCalled();
-  });
-
-  it('沒有站內路徑紀錄時不依賴同網域 referrer', async () => {
-    const user = userEvent.setup();
-    Object.defineProperty(document, 'referrer', {
-      configurable: true,
-      value: `${window.location.origin}/venues`,
-    });
-    render(<MobileBackButton pathname="/venues/venue-1" />);
-
-    await user.click(screen.getByRole('button', { name: '返回上一頁' }));
-
-    expect(push).toHaveBeenCalledWith('/');
-    expect(back).not.toHaveBeenCalled();
   });
 });
