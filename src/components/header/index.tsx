@@ -73,7 +73,7 @@ const titleContainer = css({
   left: '50%',
   top: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 'min(260px, calc(100% - 200px))',
+  width: 'min(260px, calc(100% - 260px))',
   textAlign: 'center',
   overflow: 'hidden',
   pointerEvents: 'none',
@@ -103,24 +103,22 @@ const Header = () => {
         <h1 className={srOnly}>STELLAR | 台灣生日應援地圖平台</h1>
         <div className={leftSlot}>
           <MobileBackButton pathname={pathname} />
-          {!title && (
-            <Link
-              href="/"
-              className={`${logoLink} ${showMobileBackButton ? hideLogoOnMobile : ''}`}
-              aria-label="STELLAR 首頁"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/icon-with-text.png"
-                alt="STELLAR"
-                width={120}
-                height={120}
-                className={logoImage}
-                loading="eager"
-                decoding="async"
-              />
-            </Link>
-          )}
+          <Link
+            href="/"
+            className={`${logoLink} ${showMobileBackButton ? hideLogoOnMobile : ''}`}
+            aria-label="STELLAR 首頁"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/icon-with-text.png"
+              alt="STELLAR"
+              width={120}
+              height={120}
+              className={logoImage}
+              loading="eager"
+              decoding="async"
+            />
+          </Link>
         </div>
 
         {title && (
