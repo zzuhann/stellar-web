@@ -11,6 +11,7 @@ import {
 } from '@/lib/analytics/venues';
 import type { Venue, VenueDetail } from '@/types';
 import { CAPACITY_RANGE_LABEL } from './venueCapacity';
+import Breadcrumb from '@/components/ui/Breadcrumb';
 import VenueGallery from './VenueGallery';
 import InfoRow from './InfoRow';
 import PastEventsStrip from './PastEventsStrip';
@@ -288,6 +289,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
   return (
     <div className={pageOuter}>
       <div className={page}>
+        <Breadcrumb items={[{ label: '全部場地', href: '/venues' }, { label: venue.name }]} />
         <VenueGallery photos={photos} venueName={venue.name} />
 
         <section className={titleSection}>
