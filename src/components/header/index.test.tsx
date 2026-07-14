@@ -61,7 +61,7 @@ describe('Header', () => {
     rerender(<Header />);
 
     // 修正前:pathname 進入 /map/* 時 Header 直接 return null 整個 unmount,
-    // MobileBackButton 用 useRef 記錄的 routeStack 因此被銷毀歸零。
+    // MobileBackButton 用 useRef 記錄的 inSiteDepth 因此被銷毀歸零。
     mockPathname = '/map/wonwoo';
     rerender(<Header />);
 
@@ -70,7 +70,7 @@ describe('Header', () => {
 
     await user.click(screen.getByRole('button', { name: '返回上一頁' }));
 
-    // 修正後:Header 在地圖頁仍保持掛載,routeStack 沒有被清空,
+    // 修正後:Header 在地圖頁仍保持掛載,inSiteDepth 沒有被清空,
     // 應該呼叫 back() 回到 /map/wonwoo,而不是 fallback push('/')
     expect(back).toHaveBeenCalledTimes(1);
     expect(push).not.toHaveBeenCalled();
