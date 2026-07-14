@@ -38,6 +38,18 @@ export function shouldShowMobileBackButton(pathname: string) {
   );
 }
 
+// history 追蹤排除清單跟按鈕顯示排除清單不同：地圖頁（/map/*）跟首頁（/）
+// 雖然不顯示全域返回鍵，但仍是合法的返回目的地，必須能被記進 routeStack。
+// 只有 admin 區域要跟公開頁面的返回歷史隔離，進出時清空 stack。
+function isTrackableRoute(pathname: string) {
+  return (
+    pathname !== '/admin' &&
+    !pathname.startsWith('/admin/') &&
+    pathname !== '/admin-new' &&
+    !pathname.startsWith('/admin-new/')
+  );
+}
+
 export default function MobileBackButton({ pathname }: MobileBackButtonProps) {
   const router = useRouter();
   const currentPath = useRef(pathname);
@@ -63,10 +75,7 @@ export default function MobileBackButton({ pathname }: MobileBackButtonProps) {
       if (routeStack.current.at(-1) === pathname) routeStack.current.pop();
       else routeStack.current = [];
       nativeBack.current = false;
-    } else if (
-      (currentPath.current === '/' || shouldShowMobileBackButton(currentPath.current)) &&
-      (pathname === '/' || shouldShowMobileBackButton(pathname))
-    ) {
+    } else if (isTrackableRoute(currentPath.current) && isTrackableRoute(pathname)) {
       routeStack.current.push(currentPath.current);
     } else {
       routeStack.current = [];

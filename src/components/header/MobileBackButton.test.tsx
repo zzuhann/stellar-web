@@ -70,6 +70,36 @@ describe('MobileBackButton', () => {
     expect(push).not.toHaveBeenCalled();
   });
 
+  it('活動頁經麵包屑到地圖頁,再點地圖進入另一活動頁後,返回鍵應回到地圖頁而非首頁', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<MobileBackButton pathname="/" />);
+    rerender(<MobileBackButton pathname="/event/wonwoo-2026-07-BWwLJk" />);
+    // 麵包屑導覽到地圖頁：/map/* 不顯示按鈕,但仍應被記進 routeStack
+    rerender(<MobileBackButton pathname="/map/wonwoo" />);
+    // 點地圖上的活動進入另一場活動詳情頁
+    rerender(<MobileBackButton pathname="/event/wonwoo-2026-07-L17Kz6" />);
+
+    await user.click(screen.getByRole('button', { name: '返回上一頁' }));
+
+    // 修正前:/map/* 被排除在 stack 追蹤外,導致 stack 被清空、fallback 呼叫 push('/')
+    // 修正後:/map/* 仍是合法的返回目的地,應呼叫 back() 回到 /map/wonwoo
+    expect(back).toHaveBeenCalledTimes(1);
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('admin 區域進出仍會清空 stack(刻意保留的隔離行為)', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<MobileBackButton pathname="/" />);
+    rerender(<MobileBackButton pathname="/venues" />);
+    rerender(<MobileBackButton pathname="/admin" />);
+    rerender(<MobileBackButton pathname="/venues/venue-1" />);
+
+    await user.click(screen.getByRole('button', { name: '返回上一頁' }));
+
+    expect(push).toHaveBeenCalledWith('/');
+    expect(back).not.toHaveBeenCalled();
+  });
+
   it('直接進入或由外站進入時回首頁', async () => {
     const user = userEvent.setup();
     Object.defineProperty(document, 'referrer', {
