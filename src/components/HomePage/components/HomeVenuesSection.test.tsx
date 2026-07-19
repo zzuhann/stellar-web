@@ -114,16 +114,27 @@ describe('HomeVenuesSection', () => {
     expect(trackClickVenueListCta).toHaveBeenCalledOnce();
   });
 
-  it('API 失敗時保留查看全部入口且不顯示卡片列', () => {
+  it('API 失敗時整個區塊不渲染（含標題與查看全部）', () => {
     vi.mocked(useRandomVenuesQuery).mockReturnValue({
       data: undefined,
       isPending: false,
       isError: true,
     } as ReturnType<typeof useRandomVenuesQuery>);
 
-    render(<HomeVenuesSection />);
+    const { container } = render(<HomeVenuesSection />);
 
-    expect(screen.getByRole('link', { name: '查看全部場地' }).getAttribute('href')).toBe('/venues');
-    expect(screen.queryByRole('list', { name: '隨機推薦場地' })).toBeNull();
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('回傳空清單時整個區塊不渲染', () => {
+    vi.mocked(useRandomVenuesQuery).mockReturnValue({
+      data: [],
+      isPending: false,
+      isError: false,
+    } as unknown as ReturnType<typeof useRandomVenuesQuery>);
+
+    const { container } = render(<HomeVenuesSection />);
+
+    expect(container.firstChild).toBeNull();
   });
 });
