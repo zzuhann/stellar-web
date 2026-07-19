@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import api from './client';
-import { venueSubmissionApi } from './venues';
+import { venueApi, venueSubmissionApi } from './venues';
 
 vi.mock('./client', () => ({
   default: { get: vi.fn(), post: vi.fn() },
@@ -28,5 +28,15 @@ describe('venueSubmissionApi', () => {
     expect(api.get).toHaveBeenCalledWith('/venue-submissions/places/place-1');
     expect(predictions).toEqual([{ place_id: 'place-1' }]);
     expect(details).toEqual({ name: '測試場地' });
+  });
+});
+
+describe('venueApi', () => {
+  it('送出首頁 random 10 查詢參數', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { venues: [] } });
+
+    await venueApi.getVenues({ sort: 'random', limit: 10 });
+
+    expect(api.get).toHaveBeenCalledWith('/venues?sort=random&limit=10');
   });
 });

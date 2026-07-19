@@ -3,6 +3,7 @@ const queryKey = {
   weeklyEvents: (startDate: string, endDate: string) => ['weekly-events', startDate, endDate],
   trendingEvents: (limit: number) => ['trending-events', limit],
   topArtists: (limit: number) => ['top-artists', limit],
+  homeVenues: (limit: number) => ['home-venues', limit],
   adminVenues: (params?: { search?: string; status?: string; page?: number; limit?: number }) =>
     params !== undefined ? ['admin-venues', params] : ['admin-venues'],
   venueDetail: (venueId: string) => ['venue-detail', venueId],

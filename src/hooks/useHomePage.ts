@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { artistsApi, eventsApi } from '@/lib/api';
+import { artistsApi, eventsApi, venueApi } from '@/lib/api';
 import queryKey from './queryKey';
 
 export const useBirthdayArtistsQuery = (
@@ -39,6 +39,16 @@ export const useTopArtistsQuery = (limit = 10) => {
     queryFn: () => artistsApi.getTop(limit),
     staleTime: 1000 * 60 * 60 * 6, // 6 小時快取
     gcTime: 1000 * 60 * 60 * 7,
+  });
+};
+
+export const useRandomVenuesQuery = (limit = 10) => {
+  return useQuery({
+    queryKey: queryKey.homeVenues(limit),
+    queryFn: () => venueApi.getVenues({ sort: 'random', limit }),
+    select: (data) => data.venues,
+    staleTime: 0,
+    gcTime: 0,
   });
 };
 
