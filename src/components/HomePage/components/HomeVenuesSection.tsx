@@ -50,6 +50,11 @@ const skeleton = css({
 const HomeVenuesSection = () => {
   const { data: venues = [], isPending, isError } = useRandomVenuesQuery(10);
 
+  // hide the whole section (title included) when the API fails or returns nothing
+  if (isError || (!isPending && venues.length === 0)) {
+    return null;
+  }
+
   return (
     <section className={section} aria-labelledby="home-venues-heading">
       <div className={headingRow}>
@@ -76,7 +81,7 @@ const HomeVenuesSection = () => {
         </div>
       )}
 
-      {!isPending && !isError && venues.length > 0 && (
+      {!isPending && (
         <ul className={list} aria-label="隨機推薦場地">
           {venues.map((venue, index) => (
             <li key={venue.id}>
