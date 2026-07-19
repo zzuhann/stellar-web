@@ -49,6 +49,8 @@ export const useRandomVenuesQuery = (limit = 10) => {
     select: (data) => data.venues,
     staleTime: 0,
     gcTime: 0,
+    // reshuffle only on mount/navigation, not on tab focus (avoids card jumps + inflated view events)
+    refetchOnWindowFocus: false,
   });
 };
 
