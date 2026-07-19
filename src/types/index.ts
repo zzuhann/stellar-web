@@ -447,7 +447,8 @@ export interface CreateVenueData {
 export interface VenueFilterParams {
   region?: string[];
   capacityRange?: CapacityRange;
-  sort?: 'eventCount' | 'name' | 'newest';
+  sort?: 'eventCount' | 'name' | 'newest' | 'random';
+  limit?: number;
   status?: 'active' | 'inactive' | 'pending' | 'rejected' | 'all';
 }
 

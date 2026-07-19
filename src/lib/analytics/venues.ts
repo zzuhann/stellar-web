@@ -15,6 +15,8 @@ interface VenueCardEventParams extends VenueEventBaseParams {
   listPosition: number;
 }
 
+type HomeVenueCardEventParams = Omit<VenueCardEventParams, 'userId'>;
+
 interface VenueFilterEventParams extends VenueEventBaseParams {
   filterRegion: string;
   filterCapacity: string;
@@ -65,6 +67,41 @@ export function trackClickVenueDetail({
     content_id: toVenueContentId(venueId),
     venue_region: venueRegion,
     list_position: listPosition,
+  });
+}
+
+export function trackViewHomeVenueCard({
+  venueId,
+  venueRegion,
+  listPosition,
+}: HomeVenueCardEventParams) {
+  trackVenueEvent('view_venue_card', {
+    event_page: '/',
+    placement: 'homepage_random',
+    content_id: toVenueContentId(venueId),
+    venue_region: venueRegion,
+    list_position: listPosition,
+  });
+}
+
+export function trackClickHomeVenueDetail({
+  venueId,
+  venueRegion,
+  listPosition,
+}: HomeVenueCardEventParams) {
+  trackVenueEvent('click_venue_detail', {
+    event_page: '/',
+    placement: 'homepage_random',
+    content_id: toVenueContentId(venueId),
+    venue_region: venueRegion,
+    list_position: listPosition,
+  });
+}
+
+export function trackClickVenueListCta() {
+  trackVenueEvent('click_venue_list_cta', {
+    event_page: '/',
+    placement: 'homepage_random',
   });
 }
 

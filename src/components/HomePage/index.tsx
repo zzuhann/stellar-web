@@ -13,6 +13,7 @@ import useBirthdayArtists from './hook/useBirthdayArtists';
 import { css } from '@/styled-system/css';
 import TrendingEventsSection from '@/components/HomePage/components/TrendingEventsSection';
 import TopArtistsSection from '@/components/HomePage/components/TopArtistsSection';
+import HomeVenuesSection from '@/components/HomePage/components/HomeVenuesSection';
 import { usePageView } from '@/hooks/usePageView';
 
 const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearchModal'), {
@@ -94,6 +95,9 @@ function HomePageContent() {
 
           {/* 擁有最多生咖的藝人 */}
           <TopArtistsSection />
+
+          {/* 隨機探索生咖場地 */}
+          <HomeVenuesSection />
 
           <section aria-label="每週壽星與生日應援" ref={weekSectionRef}>
             <WeekNavigation

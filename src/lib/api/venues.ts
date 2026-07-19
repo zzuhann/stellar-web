@@ -70,6 +70,9 @@ export const venueApi = {
     if (params.sort) {
       searchParams.set('sort', params.sort);
     }
+    if (params.limit !== undefined) {
+      searchParams.set('limit', String(params.limit));
+    }
     if (params.status) {
       searchParams.set('status', params.status);
     }
