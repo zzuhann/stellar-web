@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { venueApi } from '@/lib/api';
 import type { Venue } from '@/types';
+import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
 import VenueDetailClient from './VenueDetailClient';
 
 export const revalidate = 86400;
@@ -20,7 +21,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const venue = await getVenue(id);
     const title = `${venue.name} | 場地詳情`;
-    const description = `適合辦生咖、生日應援的場地：位於${venue.region}的${venue.name}，平台已收錄${venue.eventCount}場生咖、生日應援活動。`;
+    const details = [
+      venue.nearestMrt && `鄰近${venue.nearestMrt.replace(/站$/, '')}站`,
+      venue.capacityRange &&
+        `可容納${CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}`,
+    ]
+      .filter(Boolean)
+      .join('，');
+    const description = `${venue.name}是位於${venue.region}的生咖與生日應援場地${details ? `，${details}` : ''}。透過 STELLAR 查看場地照片、聯絡方式${venue.eventCount > 0 ? `，以及已收錄的 ${venue.eventCount} 場生日應援活動紀錄` : ''}。`;
     const url = `https://www.stellar-zone.com/venues/${id}`;
     return {
       title,

@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { css } from '@/styled-system/css';
 import type { Venue } from '@/types';
 import MrtIcon from './MrtIcon';
+import { CAPACITY_RANGE_LABEL } from './venueCapacity';
 
 const section = css({
   paddingTop: '5',
@@ -185,14 +186,20 @@ export default function RelatedVenuesStrip({ venues, region }: RelatedVenuesStri
               </div>
               <div className={cardBody}>
                 <h3 className={cardName}>{venue.name}</h3>
-                {venue.nearestMrt ? (
+                {venue.nearestMrt && (
                   <div className={cardMeta}>
                     <MrtIcon size={14} />
                     {venue.nearestMrt}
                   </div>
-                ) : venue.capacityRange ? (
-                  <div className={cardMeta}>容納 {venue.capacityRange} 人</div>
-                ) : null}
+                )}
+                {venue.capacityRange && (
+                  <div className={cardMeta}>
+                    容納 {CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}
+                  </div>
+                )}
+                {venue.eventCount > 0 && (
+                  <div className={cardMeta}>{venue.eventCount} 場生日應援紀錄</div>
+                )}
               </div>
             </Link>
           ))}

@@ -156,21 +156,28 @@ const HomeVenueCard = ({ venue, listPosition }: HomeVenueCardProps) => {
           <span className={regionBadge}>{venue.region}</span>
         </div>
 
-        <div className={sectionDivider} />
-
-        <div className={bottomStats}>
-          <span className={statItem}>
-            <UsersIcon aria-hidden="true" width={14} height={14} />
-            可容納{' '}
-            <strong className={capacityText}>
-              {CAPACITY_RANGE_LABEL[venue.capacityRange ?? ''] ?? venue.capacityRange}
-            </strong>
-          </span>
-          <span className={statItem}>
-            <StarIcon aria-hidden="true" width={14} height={14} className={starIcon} />
-            <strong className={eventCount}>{venue.eventCount}</strong> 場生日應援紀錄
-          </span>
-        </div>
+        {(venue.capacityRange || venue.eventCount > 0) && (
+          <>
+            <div className={sectionDivider} />
+            <div className={bottomStats}>
+              {venue.capacityRange && (
+                <span className={statItem}>
+                  <UsersIcon aria-hidden="true" width={14} height={14} />
+                  可容納{' '}
+                  <strong className={capacityText}>
+                    {CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}
+                  </strong>
+                </span>
+              )}
+              {venue.eventCount > 0 && (
+                <span className={statItem}>
+                  <StarIcon aria-hidden="true" width={14} height={14} className={starIcon} />
+                  <strong className={eventCount}>{venue.eventCount}</strong> 場生日應援紀錄
+                </span>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </Link>
   );
