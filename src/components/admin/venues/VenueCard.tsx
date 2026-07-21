@@ -5,6 +5,7 @@ import { PencilSquareIcon, TrashIcon, ArrowPathIcon } from '@heroicons/react/24/
 import { MapPinIcon, UserGroupIcon, CalendarDaysIcon } from '@heroicons/react/24/solid';
 import type { Venue } from '@/types';
 import Image from 'next/image';
+import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
 
 const card = css({
   background: 'color.background.secondary',
@@ -280,18 +281,22 @@ export default function VenueCard({
           </span>
         </div>
 
-        <div className={statsRow}>
-          {venue.capacityRange !== null && (
-            <div className={statItem}>
-              <UserGroupIcon />
-              <span>{venue.capacityRange} 人</span>
-            </div>
-          )}
-          <div className={statItem}>
-            <CalendarDaysIcon />
-            <span>{venue.eventCount} 場生咖</span>
+        {(venue.capacityRange !== null || venue.eventCount > 0) && (
+          <div className={statsRow}>
+            {venue.capacityRange !== null && (
+              <div className={statItem}>
+                <UserGroupIcon />
+                <span>{CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}</span>
+              </div>
+            )}
+            {venue.eventCount > 0 && (
+              <div className={statItem}>
+                <CalendarDaysIcon />
+                <span>{venue.eventCount} 場生咖</span>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
 
       <div className={actions}>

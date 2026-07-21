@@ -295,24 +295,26 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
         <section className={titleSection}>
           <h1 className={venueName}>{venue.name}</h1>
 
-          <div className={statsGrid}>
-            <div className={statBox}>
-              <div className={statLabel}>容納人數</div>
-              <div className={statValue}>
-                {venue.capacityRange ? (
-                  (CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange)
-                ) : (
-                  <span className={statUnit}>未提供</span>
-                )}
-              </div>
+          {(venue.capacityRange || venue.eventCount > 0) && (
+            <div className={statsGrid}>
+              {venue.capacityRange && (
+                <div className={statBox}>
+                  <div className={statLabel}>容納人數</div>
+                  <div className={statValue}>
+                    {CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}
+                  </div>
+                </div>
+              )}
+              {venue.eventCount > 0 && (
+                <div className={statBox}>
+                  <div className={statLabel}>生日應援紀錄</div>
+                  <div className={statValue}>
+                    {venue.eventCount} <span className={statUnit}>場</span>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className={statBox}>
-              <div className={statLabel}>生日應援紀錄</div>
-              <div className={statValue}>
-                {venue.eventCount} <span className={statUnit}>場</span>
-              </div>
-            </div>
-          </div>
+          )}
         </section>
 
         <section aria-label="基本資訊" className={infoSection}>

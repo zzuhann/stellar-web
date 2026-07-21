@@ -13,6 +13,7 @@ import { showToast } from '@/lib/toast';
 import { useCreateVenueMutation } from './hook/useCreateVenueMutation';
 import { useUpdateVenueMutation } from './hook/useUpdateVenueMutation';
 import { REGIONS } from '@/constants';
+import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
 
 const pageContainer = css({
   maxWidth: '640px',
@@ -779,7 +780,7 @@ export default function VenueFormClient(props: Props) {
               aria-haspopup="listbox"
               aria-expanded={capacityOpen}
             >
-              <span>{formState.capacityRange || '不填寫'}</span>
+              <span>{CAPACITY_RANGE_LABEL[formState.capacityRange] || '不填寫'}</span>
               <ChevronDownIcon
                 className={`${formDropdownArrow} ${capacityOpen ? formDropdownArrowOpen : ''}`}
               />
@@ -798,7 +799,7 @@ export default function VenueFormClient(props: Props) {
                     role="option"
                     aria-selected={formState.capacityRange === range}
                   >
-                    <span>{range}</span>
+                    <span>{CAPACITY_RANGE_LABEL[range]}</span>
                     {formState.capacityRange === range && <span>✓</span>}
                   </button>
                 ))}

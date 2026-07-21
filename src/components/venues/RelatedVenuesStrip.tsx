@@ -1,8 +1,10 @@
 import Link from 'next/link';
 import Image from 'next/image';
+import { StarIcon, UsersIcon } from '@heroicons/react/24/solid';
 import { css } from '@/styled-system/css';
 import type { Venue } from '@/types';
 import MrtIcon from './MrtIcon';
+import { CAPACITY_RANGE_LABEL } from './venueCapacity';
 
 const section = css({
   paddingTop: '5',
@@ -118,9 +120,7 @@ const cardMeta = css({
   display: 'flex',
   alignItems: 'center',
   gap: '1',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
+  whiteSpace: 'normal',
 });
 
 const fadeRight = css({
@@ -185,14 +185,24 @@ export default function RelatedVenuesStrip({ venues, region }: RelatedVenuesStri
               </div>
               <div className={cardBody}>
                 <h3 className={cardName}>{venue.name}</h3>
-                {venue.nearestMrt ? (
+                {venue.nearestMrt && (
                   <div className={cardMeta}>
                     <MrtIcon size={14} />
-                    {venue.nearestMrt}
+                    鄰近{venue.nearestMrt}
                   </div>
-                ) : venue.capacityRange ? (
-                  <div className={cardMeta}>容納 {venue.capacityRange} 人</div>
-                ) : null}
+                )}
+                {venue.capacityRange && (
+                  <div className={cardMeta}>
+                    <UsersIcon aria-hidden="true" width={14} height={14} />
+                    容納 {CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}
+                  </div>
+                )}
+                {venue.eventCount > 0 && (
+                  <div className={cardMeta}>
+                    <StarIcon aria-hidden="true" width={14} height={14} />
+                    {venue.eventCount} 場生日應援紀錄
+                  </div>
+                )}
               </div>
             </Link>
           ))}
