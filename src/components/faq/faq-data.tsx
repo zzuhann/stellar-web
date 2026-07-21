@@ -149,6 +149,38 @@ export const faqs: FAQSection[] = [
     ],
   },
   {
+    label: '生咖場地',
+    items: [
+      {
+        question: '如何尋找適合辦生咖的場地？',
+        answer: (
+          <>
+            可以前往
+            <Link href="/venues" className={inlineLink}>
+              場地頁面
+            </Link>
+            ，依地區和容納人數篩選，並查看鄰近捷運、基本資訊、聯絡方式及平台收錄的過往生日應援。
+          </>
+        ),
+        answerText:
+          '可以前往場地頁面（https://www.stellar-zone.com/venues），依地區和容納人數篩選，並查看鄰近捷運、基本資訊、聯絡方式及平台收錄的過往生日應援。',
+      },
+      {
+        question: 'STELLAR 的場地生日應援紀錄完整嗎？',
+        answer: '場地頁面只會顯示目前已收錄於 STELLAR 的活動，店家實際舉辦過的生日應援可能更多。',
+        answerText:
+          '場地頁面只會顯示目前已收錄於 STELLAR 的活動，店家實際舉辦過的生日應援可能更多。',
+      },
+      {
+        question: '可以直接在 STELLAR 預約場地嗎？',
+        answer:
+          '目前不行。STELLAR 提供場地資訊與聯絡入口，實際檔期、費用及合作細節仍需直接向店家確認。',
+        answerText:
+          '目前不行。STELLAR 提供場地資訊與聯絡入口，實際檔期、費用及合作細節仍需直接向店家確認。',
+      },
+    ],
+  },
+  {
     label: '帳號・平台',
     items: [
       {

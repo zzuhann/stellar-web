@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import * as Sentry from '@sentry/nextjs';
 import { css } from '@/styled-system/css';
@@ -24,6 +25,17 @@ const description = css({
   color: 'color.text.secondary',
   marginBottom: '6',
 });
+const legalNotice = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+  marginBottom: '6',
+  lineHeight: '1.6',
+  '& a': {
+    color: 'color.primary',
+    textDecoration: 'underline',
+    textUnderlineOffset: '2px',
+  },
+});
 const successCard = css({
   maxWidth: '560px',
   marginX: 'auto',
@@ -43,7 +55,7 @@ const publicPlaceApi = {
 };
 
 const SUBMISSION_NOTICE =
-  '資料送出後會由 STELLAR 審核，審核通過後，平台上就可以看見你們的場地資訊囉～！ 投稿後如需修改，請聯絡 STELLAR 平台（IG 或是 Threads 皆可）。';
+  '資料送出後會由 STELLAR 審核，通常會在 1–3 個工作天內完成。審核通過後，平台上就可以看見你們的場地資訊囉～！ 投稿後如需修改，請聯絡 STELLAR 平台（IG 或是 Threads 皆可）。';
 
 export default function SubmitVenueClient() {
   const [submitted, setSubmitted] = useState(false);
@@ -71,6 +83,11 @@ export default function SubmitVenueClient() {
       <div className={container}>
         <h1 className={title}>投稿場地</h1>
         <p className={description}>{SUBMISSION_NOTICE}</p>
+        <p className={legalNotice}>
+          送出即表示你確認有權提供上述資料與圖片，並同意我們依
+          <Link href="/terms">服務條款</Link>及<Link href="/privacy">隱私權政策</Link>
+          處理及公開顯示。
+        </p>
         <VenueForm
           mode="create"
           onSubmit={(data) => {
