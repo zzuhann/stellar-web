@@ -55,7 +55,7 @@ const publicPlaceApi = {
 };
 
 const SUBMISSION_NOTICE =
-  '資料送出後會由 STELLAR 審核，審核通過後，平台上就可以看見你們的場地資訊囉～！ 投稿後如需修改，請聯絡 STELLAR 平台（IG 或是 Threads 皆可）。';
+  '資料送出後會由 STELLAR 審核，通常會在 1–3 個工作天內完成。審核通過後，平台上就可以看見你們的場地資訊囉～！ 投稿後如需修改，請聯絡 STELLAR 平台（IG 或是 Threads 皆可）。';
 
 export default function SubmitVenueClient() {
   const [submitted, setSubmitted] = useState(false);
