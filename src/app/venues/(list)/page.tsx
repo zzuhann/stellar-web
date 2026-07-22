@@ -19,7 +19,9 @@ export const metadata = {
 };
 
 export default async function VenuesPage() {
-  const data = await venueApi.getVenues({ status: 'active' }).catch(() => ({ venues: [] }));
+  const data = await venueApi
+    .getVenues({ status: 'active', sort: 'newest' })
+    .catch(() => ({ venues: [] }));
   const venues = data.venues ?? [];
 
   return (
