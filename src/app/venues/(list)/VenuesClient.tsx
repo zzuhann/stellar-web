@@ -83,7 +83,7 @@ interface VenuesClientProps {
 const VALID_SORT_VALUES: VenueSort[] = ['eventCount', 'newest'];
 
 function parseAsSort(value: string): VenueSort {
-  return VALID_SORT_VALUES.includes(value as VenueSort) ? (value as VenueSort) : 'eventCount';
+  return VALID_SORT_VALUES.includes(value as VenueSort) ? (value as VenueSort) : 'newest';
 }
 
 export default function VenuesClient({ initialVenues }: VenuesClientProps) {
@@ -92,7 +92,7 @@ export default function VenuesClient({ initialVenues }: VenuesClientProps) {
   const [capacity, setCapacity] = useState<CapacityFilter>('all');
   const [sort, setSort] = useQueryState<VenueSort>('sort', {
     parse: parseAsSort,
-    defaultValue: 'eventCount',
+    defaultValue: 'newest',
   });
   const shouldTrackFilterChange = useRef(false);
 
@@ -115,9 +115,9 @@ export default function VenuesClient({ initialVenues }: VenuesClientProps) {
       venueApi.getVenues({
         region: region === '全部' ? undefined : [region],
         status: 'active',
-        sort: sort === 'eventCount' ? undefined : sort,
+        sort,
       }),
-    initialData: region === '全部' && sort === 'eventCount' ? { venues: initialVenues } : undefined,
+    initialData: region === '全部' && sort === 'newest' ? { venues: initialVenues } : undefined,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -173,7 +173,7 @@ export default function VenuesClient({ initialVenues }: VenuesClientProps) {
     if (nextSort === sort) return;
 
     sessionStorage.removeItem(SCROLL_KEY);
-    setSort(nextSort === 'eventCount' ? null : nextSort);
+    setSort(nextSort === 'newest' ? null : nextSort);
   };
 
   return (
