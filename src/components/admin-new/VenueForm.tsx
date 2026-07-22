@@ -1031,7 +1031,7 @@ export default function VenueForm(props: VenueFormProps) {
           <textarea
             id="venue-description"
             className={textareaStyle}
-            placeholder="場地說明、特色、注意事項…"
+            placeholder="場地說明、特色、注意事項、給 STELLAR 使用者的秘密優惠(非強制)…"
             value={form.description}
             onChange={(e) => setField('description', e.target.value)}
           />
