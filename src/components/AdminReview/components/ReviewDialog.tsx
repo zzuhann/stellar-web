@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { css, cva } from '@/styled-system/css';
+import ModalOverlay from '@/components/ui/ModalOverlay';
 
 interface ReviewDialogProps {
   open: boolean;
@@ -14,6 +16,166 @@ interface ReviewDialogProps {
   onClose: () => void;
   onConfirm?: (value: string | string[]) => void;
 }
+
+const dialogSection = css({
+  width: '100%',
+  maxWidth: '512px',
+  maxHeight: '90dvh',
+  overflowY: 'auto',
+  background: 'white',
+  borderRadius: 'radius.xl',
+  boxShadow: 'shadow.xl',
+});
+
+const dialogHeader = css({
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+  gap: '4',
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+  paddingX: '6',
+  paddingY: '5',
+});
+
+const dialogTitle = css({
+  fontSize: 'lg',
+  fontWeight: 'semibold',
+  color: 'color.text.primary',
+});
+
+const dialogDesc = css({
+  marginTop: '1',
+  fontSize: 'sm',
+  lineHeight: '1.5rem',
+  color: 'color.text.secondary',
+});
+
+const closeButton = css({
+  display: 'flex',
+  flexShrink: 0,
+  width: '44px',
+  height: '44px',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 'radius.xl',
+  color: 'color.text.disabled',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  '&:hover': { background: 'gray.100' },
+  '&:focus-visible': { outline: 'none', background: 'gray.100' },
+});
+
+const iconSize = css({ width: '20px', height: '20px' });
+
+const bodyContainer = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4',
+  paddingX: '6',
+  paddingY: '5',
+});
+
+const fieldLabel = css({
+  display: 'block',
+  fontSize: 'sm',
+  fontWeight: 'medium',
+  color: 'color.text.primary',
+});
+
+const textareaField = css({
+  marginTop: '2',
+  minHeight: '128px',
+  width: '100%',
+  borderRadius: 'radius.xl',
+  border: '1px solid',
+  borderColor: 'color.border.medium',
+  paddingX: '3',
+  paddingY: '2',
+  fontSize: 'base',
+  color: 'color.text.primary',
+  '&:focus-visible': { outline: 'none', borderColor: 'color.primary' },
+});
+
+const errorText = css({
+  marginTop: '2',
+  display: 'block',
+  fontSize: 'sm',
+  color: 'color.status.error',
+});
+
+const inputField = css({
+  marginTop: '2',
+  height: '44px',
+  width: '100%',
+  borderRadius: 'radius.xl',
+  border: '1px solid',
+  borderColor: 'color.border.medium',
+  paddingX: '3',
+  color: 'color.text.primary',
+  '&:focus-visible': { outline: 'none', borderColor: 'color.primary' },
+});
+
+const addGroupButton = css({
+  minHeight: '44px',
+  fontSize: 'sm',
+  fontWeight: 'medium',
+  color: 'color.primary',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+});
+
+const footerRow = css({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: '3',
+  borderTop: '1px solid',
+  borderTopColor: 'color.border.light',
+  paddingX: '6',
+  paddingY: '4',
+});
+
+const cancelButton = css({
+  minHeight: '44px',
+  borderRadius: 'radius.xl',
+  paddingX: '4',
+  fontSize: 'sm',
+  fontWeight: 'medium',
+  color: 'color.text.primary',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  '&:hover': { background: 'gray.100' },
+  '&:disabled': { cursor: 'not-allowed', opacity: 0.5 },
+});
+
+const confirmButton = cva({
+  base: {
+    minHeight: '44px',
+    borderRadius: 'radius.xl',
+    paddingX: '5',
+    fontSize: 'sm',
+    fontWeight: 'semibold',
+    color: 'white',
+    border: 'none',
+    cursor: 'pointer',
+    '&:disabled': { cursor: 'not-allowed', background: 'color.text.disabled' },
+  },
+  variants: {
+    kind: {
+      reject: {
+        background: 'color.status.error',
+        '&:hover:not(:disabled)': { background: 'red.700' },
+      },
+      groups: {
+        background: 'color.primary',
+        '&:hover:not(:disabled)': { background: 'color.primaryHover' },
+      },
+    },
+  },
+});
 
 export default function ReviewDialog({
   open,
@@ -53,52 +215,46 @@ export default function ReviewDialog({
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-overlay p-4"
-      onMouseDown={(event) => event.target === event.currentTarget && close()}
-    >
+    <ModalOverlay isOpen zIndex={1000} padding="16px" onClick={close}>
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="review-dialog-title"
-        className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-stellar-xl bg-surface shadow-stellar-xl"
+        className={dialogSection}
+        onClick={(mouseEvent) => mouseEvent.stopPropagation()}
       >
-        <header className="flex items-start justify-between gap-4 border-b border-line px-6 py-5">
+        <header className={dialogHeader}>
           <div>
-            <h2 id="review-dialog-title" className="text-lg font-semibold text-content">
+            <h2 id="review-dialog-title" className={dialogTitle}>
               {title}
             </h2>
-            {description && (
-              <p className="mt-1 text-sm leading-6 text-content-muted">{description}</p>
-            )}
+            {description && <p className={dialogDesc}>{description}</p>}
           </div>
           <button
             type="button"
             onClick={close}
             disabled={busy}
             aria-label="關閉"
-            className="flex size-11 shrink-0 items-center justify-center rounded-stellar-xl text-content-disabled hover:bg-neutral-subtle focus-visible:ring-2 focus-visible:ring-brand"
+            className={closeButton}
           >
-            <XMarkIcon className="size-5" />
+            <XMarkIcon className={iconSize} />
           </button>
         </header>
-        <div className="space-y-4 px-6 py-5">
+        <div className={bodyContainer}>
           {kind === 'reject' && (
-            <label className="block text-sm font-medium text-content">
+            <label className={fieldLabel}>
               拒絕原因
               <textarea
                 value={value}
                 onChange={(event) => setValue(event.target.value)}
-                className="mt-2 min-h-32 w-full rounded-stellar-xl border border-line-strong px-3 py-2 text-base focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-subtle"
+                className={textareaField}
               />
-              {!value.trim() && (
-                <span className="mt-2 block text-sm text-danger">請輸入拒絕原因</span>
-              )}
+              {!value.trim() && <span className={errorText}>請輸入拒絕原因</span>}
             </label>
           )}
           {kind === 'groups' &&
             groups.map((group, index) => (
-              <label key={index} className="block text-sm font-medium text-content">
+              <label key={index} className={fieldLabel}>
                 團名 {index + 1}
                 <input
                   value={group}
@@ -109,7 +265,7 @@ export default function ReviewDialog({
                       )
                     )
                   }
-                  className="mt-2 h-11 w-full rounded-stellar-xl border border-line-strong px-3 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-subtle"
+                  className={inputField}
                 />
               </label>
             ))}
@@ -117,7 +273,7 @@ export default function ReviewDialog({
             <button
               type="button"
               onClick={() => setGroups((current) => [...current, ''])}
-              className="min-h-11 text-sm font-medium text-brand"
+              className={addGroupButton}
             >
               ＋ 新增團名
             </button>
@@ -125,13 +281,8 @@ export default function ReviewDialog({
           {children}
         </div>
         {kind !== 'preview' && (
-          <footer className="flex justify-end gap-3 border-t border-line px-6 py-4">
-            <button
-              type="button"
-              onClick={close}
-              disabled={busy}
-              className="min-h-11 rounded-stellar-xl px-4 text-sm font-medium text-content hover:bg-neutral-subtle"
-            >
+          <footer className={footerRow}>
+            <button type="button" onClick={close} disabled={busy} className={cancelButton}>
               取消
             </button>
             <button
@@ -144,13 +295,13 @@ export default function ReviewDialog({
                     : groups.map((group) => group.trim()).filter(Boolean)
                 )
               }
-              className={`min-h-11 rounded-stellar-xl px-5 text-sm font-semibold text-surface disabled:cursor-not-allowed disabled:bg-content-disabled ${kind === 'reject' ? 'bg-danger hover:bg-danger-hover' : 'bg-brand hover:bg-brand-hover'}`}
+              className={confirmButton({ kind: kind === 'reject' ? 'reject' : 'groups' })}
             >
               {busy ? '處理中…' : kind === 'reject' ? '確認拒絕' : '確認通過'}
             </button>
           </footer>
         )}
       </section>
-    </div>
+    </ModalOverlay>
   );
 }
