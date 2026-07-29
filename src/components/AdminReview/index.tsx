@@ -273,6 +273,7 @@ export default function AdminReview() {
                 key={value}
                 role="tab"
                 aria-selected={tab === value}
+                disabled={busy}
                 onClick={() => changeTab(value)}
                 className={tabButton({ active: tab === value })}
               >
