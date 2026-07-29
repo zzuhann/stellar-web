@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { css } from '@/styled-system/css';
+import ModalOverlay from '@/components/ui/ModalOverlay';
 import type { Artist } from '@/types';
 
 interface BatchGroupNameDialogProps {
@@ -11,6 +13,147 @@ interface BatchGroupNameDialogProps {
   onConfirm: (values: Record<string, string>) => void;
 }
 
+const dialogSection = css({
+  width: '100%',
+  maxWidth: '512px',
+  maxHeight: '90dvh',
+  overflowY: 'auto',
+  background: 'white',
+  borderRadius: 'radius.xl',
+  boxShadow: 'shadow.xl',
+});
+
+const dialogHeader = css({
+  position: 'sticky',
+  top: 0,
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+  gap: '4',
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+  background: 'white',
+  paddingX: '6',
+  paddingY: '5',
+});
+
+const dialogTitle = css({
+  fontSize: 'lg',
+  fontWeight: 'semibold',
+  color: 'color.text.primary',
+});
+
+const dialogDesc = css({
+  marginTop: '1',
+  fontSize: 'sm',
+  color: 'color.text.secondary',
+});
+
+const closeButton = css({
+  display: 'flex',
+  flexShrink: 0,
+  width: '44px',
+  height: '44px',
+  alignItems: 'center',
+  justifyContent: 'center',
+  borderRadius: 'radius.xl',
+  color: 'color.text.disabled',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  '&:hover': { background: 'gray.100' },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
+  '&:disabled': { cursor: 'not-allowed', opacity: 0.5 },
+});
+
+const iconSize = css({ width: '20px', height: '20px' });
+
+const bodyContainer = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '4',
+  paddingX: '6',
+  paddingY: '5',
+});
+
+const fieldLabel = css({
+  display: 'block',
+  fontSize: 'sm',
+  fontWeight: 'medium',
+  color: 'color.text.primary',
+});
+
+const inputField = css({
+  marginTop: '2',
+  height: '44px',
+  width: '100%',
+  borderRadius: 'radius.xl',
+  border: '1px solid',
+  borderColor: 'color.border.medium',
+  paddingX: '3',
+  color: 'color.text.primary',
+  '&:focus-visible': {
+    outline: 'none',
+    borderColor: 'color.primary',
+    boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
+  },
+});
+
+const dialogFooter = css({
+  position: 'sticky',
+  bottom: 0,
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: '3',
+  borderTop: '1px solid',
+  borderTopColor: 'color.border.light',
+  background: 'white',
+  paddingX: '6',
+  paddingY: '4',
+});
+
+const cancelButton = css({
+  minHeight: '44px',
+  borderRadius: 'radius.xl',
+  paddingX: '4',
+  fontSize: 'sm',
+  fontWeight: 'medium',
+  color: 'color.text.primary',
+  background: 'none',
+  border: 'none',
+  cursor: 'pointer',
+  '&:hover': { background: 'gray.100' },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
+  '&:disabled': { cursor: 'not-allowed', opacity: 0.5 },
+});
+
+const confirmButton = css({
+  minHeight: '44px',
+  borderRadius: 'radius.xl',
+  paddingX: '5',
+  fontSize: 'sm',
+  fontWeight: 'semibold',
+  color: 'white',
+  background: 'color.primary',
+  border: 'none',
+  cursor: 'pointer',
+  '&:hover:not(:disabled)': { background: 'color.primaryHover' },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
+  '&:disabled': { cursor: 'not-allowed', background: 'color.text.disabled' },
+});
+
 export default function BatchGroupNameDialog({
   artists,
   busy,
@@ -18,7 +161,17 @@ export default function BatchGroupNameDialog({
   onConfirm,
 }: BatchGroupNameDialogProps) {
   const [values, setValues] = useState<Record<string, string>>({});
-  const dirty = Object.values(values).some((value) => value.trim());
+  // 每位藝人的預填初始值快照，dirty 判斷只比較「目前值」是否偏離初始值，
+  // 預填但未被使用者改動的團名不算 dirty（與 ArtistEditDialog 的 dirty 判斷方式一致）。
+  const initialValues = useMemo(
+    () =>
+      Object.fromEntries(artists.map((artist) => [artist.id, artist.groupNames?.join('、') ?? ''])),
+    [artists]
+  );
+  const dirty = artists.some((artist) => {
+    const current = (values[artist.id] ?? initialValues[artist.id]).trim();
+    return current !== initialValues[artist.id].trim();
+  });
   const close = () => {
     if (dirty && !window.confirm('有未送出的內容，確定要離開嗎？')) return;
     onClose();
@@ -33,69 +186,60 @@ export default function BatchGroupNameDialog({
   }, [busy, dirty, onClose]);
 
   return (
-    <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-overlay p-4"
-      onMouseDown={(event) => event.target === event.currentTarget && close()}
-    >
+    <ModalOverlay isOpen zIndex={1000} padding="16px" onClick={close}>
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="batch-group-dialog-title"
-        className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-stellar-xl bg-surface shadow-stellar-xl"
+        className={dialogSection}
+        onClick={(mouseEvent) => mouseEvent.stopPropagation()}
       >
-        <header className="sticky top-0 flex items-start justify-between gap-4 border-b border-line bg-surface px-6 py-5">
+        <header className={dialogHeader}>
           <div>
-            <h2 id="batch-group-dialog-title" className="text-lg font-semibold text-content">
+            <h2 id="batch-group-dialog-title" className={dialogTitle}>
               批次設定團名
             </h2>
-            <p className="mt-1 text-sm text-content-muted">
-              可分別為每位藝人設定團名，留空也能通過。
-            </p>
+            <p className={dialogDesc}>可分別為每位藝人設定團名，留空也能通過。</p>
           </div>
           <button
             type="button"
             onClick={close}
             disabled={busy}
             aria-label="關閉"
-            className="flex size-11 shrink-0 items-center justify-center rounded-stellar-xl text-content-disabled hover:bg-neutral-subtle focus-visible:ring-2 focus-visible:ring-brand"
+            className={closeButton}
           >
-            <XMarkIcon className="size-5" />
+            <XMarkIcon className={iconSize} />
           </button>
         </header>
-        <div className="space-y-4 px-6 py-5">
+        <div className={bodyContainer}>
           {artists.map((artist) => (
-            <label key={artist.id} className="block text-sm font-medium text-content">
+            <label key={artist.id} className={fieldLabel}>
               {artist.stageNameZh || artist.stageName}
               <input
-                value={values[artist.id] ?? artist.groupNames?.join('、') ?? ''}
+                value={values[artist.id] ?? initialValues[artist.id]}
                 onChange={(event) =>
                   setValues((current) => ({ ...current, [artist.id]: event.target.value }))
                 }
                 placeholder="多個團名請用頓號分隔"
-                className="mt-2 h-11 w-full rounded-stellar-xl border border-line-strong px-3 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand-subtle"
+                className={inputField}
               />
             </label>
           ))}
         </div>
-        <footer className="sticky bottom-0 flex justify-end gap-3 border-t border-line bg-surface px-6 py-4">
-          <button
-            type="button"
-            onClick={close}
-            disabled={busy}
-            className="min-h-11 rounded-stellar-xl px-4 text-sm font-medium text-content hover:bg-neutral-subtle"
-          >
+        <footer className={dialogFooter}>
+          <button type="button" onClick={close} disabled={busy} className={cancelButton}>
             取消
           </button>
           <button
             type="button"
             disabled={busy}
             onClick={() => onConfirm(values)}
-            className="min-h-11 rounded-stellar-xl bg-brand px-5 text-sm font-semibold text-surface hover:bg-brand-hover disabled:bg-content-disabled"
+            className={confirmButton}
           >
             {busy ? '處理中…' : '確認通過'}
           </button>
         </footer>
       </section>
-    </div>
+    </ModalOverlay>
   );
 }

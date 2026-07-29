@@ -3,13 +3,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { css, cva } from '@/styled-system/css';
 import type { Artist, CoffeeEvent } from '@/types';
 import AdminSidebar from '@/components/admin-new/AdminSidebar';
+import Skeleton from '@/components/ui/Skeleton';
 import ReviewCard from './components/ReviewCard';
 import ReviewDialog from './components/ReviewDialog';
 import BatchGroupNameDialog from './components/BatchGroupNameDialog';
 import ArtistEditDialog from './components/ArtistEditDialog';
 import EventPreviewDialog from './components/EventPreviewDialog';
+import { reviewButton } from './components/reviewButtonStyles';
 import useAdminReview from './hook/useAdminReview';
 
 type DialogState =
@@ -19,6 +22,199 @@ type DialogState =
   | { kind: 'edit'; item: Artist }
   | { kind: 'preview'; item: CoffeeEvent }
   | null;
+
+const pageWrapper = css({
+  display: 'flex',
+  minHeight: '100dvh',
+  background: 'gray.50',
+  paddingTop: '70px',
+  color: 'color.text.primary',
+});
+
+const mainContent = css({
+  minWidth: 0,
+  flex: 1,
+  paddingX: '4',
+  paddingY: '8',
+  md: { paddingX: '8' },
+});
+
+const contentInner = css({
+  marginX: 'auto',
+  maxWidth: '1152px',
+});
+
+const backLink = css({
+  marginBottom: '3',
+  display: 'inline-flex',
+  minHeight: '44px',
+  alignItems: 'center',
+  fontSize: 'sm',
+  fontWeight: 'medium',
+  color: 'color.text.secondary',
+  '&:hover': { color: 'color.primary' },
+  md: { display: 'none' },
+});
+
+const headerSection = css({ marginBottom: '6' });
+
+const eyebrowText = css({
+  fontSize: 'sm',
+  fontWeight: 'medium',
+  color: 'color.primary',
+});
+
+const pageTitle = css({
+  marginTop: '1',
+  textStyle: 'h1',
+  color: 'color.text.primary',
+});
+
+const pageDesc = css({
+  marginTop: '2',
+  fontSize: 'sm',
+  color: 'color.text.secondary',
+});
+
+const tabList = css({
+  marginBottom: '6',
+  display: 'inline-flex',
+  borderRadius: 'radius.xl',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'white',
+  padding: '1',
+  boxShadow: 'shadow.sm',
+});
+
+const tabButton = cva({
+  base: {
+    minHeight: '44px',
+    borderRadius: 'radius.lg',
+    paddingX: '5',
+    fontSize: 'sm',
+    fontWeight: 'semibold',
+    transition: 'background 0.15s ease, color 0.15s ease',
+    cursor: 'pointer',
+    border: 'none',
+    background: 'none',
+  },
+  variants: {
+    active: {
+      true: { background: 'gray.700', color: 'white' },
+      false: {
+        color: 'color.text.secondary',
+        '&:hover': { background: 'gray.100' },
+      },
+    },
+  },
+});
+
+const bulkActionsBar = css({
+  marginBottom: '5',
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '3',
+  borderRadius: 'radius.xl',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'white',
+  paddingX: '4',
+  paddingY: '3',
+});
+
+const selectAllLabel = css({
+  display: 'flex',
+  minHeight: '44px',
+  alignItems: 'center',
+  gap: '3',
+  fontSize: 'sm',
+  fontWeight: 'medium',
+  cursor: 'pointer',
+});
+
+const selectAllCheckbox = css({
+  width: '20px',
+  height: '20px',
+  accentColor: 'color.primary',
+});
+
+const bulkButtonsRow = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '2',
+});
+
+const loadingGrid = css({
+  display: 'grid',
+  gap: '5',
+  gridTemplateColumns: '1fr',
+  sm: { gridTemplateColumns: 'repeat(2, 1fr)' },
+  xl: { gridTemplateColumns: 'repeat(3, 1fr)' },
+});
+
+const loadingCard = css({
+  aspectRatio: '4 / 3',
+});
+
+const errorBox = css({
+  borderRadius: 'radius.xl',
+  border: '1px solid',
+  borderColor: 'red.200',
+  background: 'white',
+  padding: '8',
+  textAlign: 'center',
+});
+
+const errorTitle = css({
+  fontWeight: 'semibold',
+  color: 'color.text.primary',
+});
+
+const retryButton = css({
+  marginTop: '4',
+  minHeight: '44px',
+  borderRadius: 'radius.xl',
+  background: 'gray.700',
+  paddingX: '5',
+  fontSize: 'sm',
+  fontWeight: 'semibold',
+  color: 'white',
+  cursor: 'pointer',
+  border: 'none',
+});
+
+const emptyBox = css({
+  borderRadius: 'radius.xl',
+  border: '1px dashed',
+  borderColor: 'color.border.medium',
+  background: 'white',
+  paddingX: '6',
+  paddingY: '16',
+  textAlign: 'center',
+});
+
+const emptyTitle = css({
+  fontSize: 'lg',
+  fontWeight: 'semibold',
+  color: 'color.text.primary',
+});
+
+const emptyDesc = css({
+  marginTop: '2',
+  fontSize: 'sm',
+  color: 'color.text.secondary',
+});
+
+const itemsGrid = css({
+  display: 'grid',
+  gap: '5',
+  gridTemplateColumns: '1fr',
+  sm: { gridTemplateColumns: 'repeat(2, 1fr)' },
+  xl: { gridTemplateColumns: 'repeat(3, 1fr)' },
+});
 
 export default function AdminReview() {
   const router = useRouter();
@@ -32,7 +228,7 @@ export default function AdminReview() {
   const loading = tab === 'artists' ? artists.isLoading : events.isLoading;
   const error = tab === 'artists' ? artists.isError : events.isError;
   const busy = artistMutation.isPending || eventMutation.isPending;
-  const batchBusy = busy && selected.size > 1;
+  const batchBusy = busy;
   const rejectItem = dialog?.kind === 'reject' ? dialog.item : null;
 
   const changeTab = (next: 'artists' | 'events') => {
@@ -59,41 +255,35 @@ export default function AdminReview() {
     });
 
   return (
-    <div className="flex min-h-dvh bg-surface-muted pt-[70px] text-content">
+    <div className={pageWrapper}>
       <AdminSidebar />
-      <main className="min-w-0 flex-1 px-4 py-8 md:px-8">
-        <div className="mx-auto max-w-6xl">
-          <Link
-            href="/admin-new"
-            className="mb-3 inline-flex min-h-11 items-center text-sm font-medium text-content-muted hover:text-brand md:hidden"
-          >
+      <main className={mainContent}>
+        <div className={contentInner}>
+          <Link href="/admin-new" className={backLink}>
             ← 管理後台
           </Link>
-          <div className="mb-6">
-            <p className="text-sm font-medium text-brand">內容審核</p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight text-content">待審核</h1>
-            <p className="mt-2 text-sm text-content-muted">確認投稿內容後，通過或退回給投稿者。</p>
+          <div className={headerSection}>
+            <p className={eyebrowText}>內容審核</p>
+            <h1 className={pageTitle}>待審核</h1>
+            <p className={pageDesc}>確認投稿內容後，通過或退回給投稿者。</p>
           </div>
-          <div
-            role="tablist"
-            aria-label="審核類型"
-            className="mb-6 inline-flex rounded-stellar-xl border border-line bg-surface p-1 shadow-stellar-sm"
-          >
+          <div role="tablist" aria-label="審核類型" className={tabList}>
             {(['artists', 'events'] as const).map((value) => (
               <button
                 key={value}
                 role="tab"
                 aria-selected={tab === value}
+                disabled={busy}
                 onClick={() => changeTab(value)}
-                className={`min-h-11 rounded-stellar-lg px-5 text-sm font-semibold transition-colors ${tab === value ? 'bg-content text-surface' : 'text-content-muted hover:bg-neutral-subtle'}`}
+                className={tabButton({ active: tab === value })}
               >
                 {value === 'artists' ? '待審藝人' : '待審生咖'}
               </button>
             ))}
           </div>
           {!loading && !error && items.length > 0 && (
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-stellar-xl border border-line bg-surface px-4 py-3">
-              <label className="flex min-h-11 items-center gap-3 text-sm font-medium">
+            <div className={bulkActionsBar}>
+              <label className={selectAllLabel}>
                 <input
                   type="checkbox"
                   disabled={busy}
@@ -103,15 +293,16 @@ export default function AdminReview() {
                       event.target.checked ? new Set(items.map(({ id }) => id)) : new Set()
                     )
                   }
-                  className="size-5 accent-brand"
+                  className={selectAllCheckbox}
                 />
                 全選（{selected.size}/{items.length}）
               </label>
               {selected.size > 0 && (
-                <div className="flex flex-wrap gap-2">
+                <div className={bulkButtonsRow}>
                   <button
                     type="button"
-                    className="review-approve-button"
+                    disabled={busy}
+                    className={reviewButton({ kind: 'approve' })}
                     onClick={() =>
                       tab === 'artists'
                         ? setDialog({ kind: 'batch-groups' })
@@ -129,7 +320,8 @@ export default function AdminReview() {
                   {tab === 'artists' && (
                     <button
                       type="button"
-                      className="review-exists-button"
+                      disabled={busy}
+                      className={reviewButton({ kind: 'exists' })}
                       onClick={() =>
                         artistMutation.mutate(
                           Array.from(selected).map((artistId) => ({
@@ -146,7 +338,8 @@ export default function AdminReview() {
                   )}
                   <button
                     type="button"
-                    className="review-reject-button"
+                    disabled={busy}
+                    className={reviewButton({ kind: 'reject' })}
                     onClick={() => setDialog({ kind: 'reject', item: 'batch' })}
                   >
                     批次拒絕
@@ -156,40 +349,38 @@ export default function AdminReview() {
             </div>
           )}
           {loading && (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className={loadingGrid}>
               {Array.from({ length: 6 }).map((_, index) => (
-                <div
+                <Skeleton
                   key={index}
-                  className="aspect-[4/3] animate-pulse rounded-stellar-xl bg-line motion-reduce:animate-none"
+                  className={loadingCard}
+                  width="100%"
+                  height="auto"
+                  borderRadius="12px"
                 />
               ))}
             </div>
           )}
           {error && (
-            <div
-              role="alert"
-              className="rounded-stellar-xl border border-danger-line bg-surface p-8 text-center"
-            >
-              <p className="font-semibold text-content">載入待審資料失敗</p>
+            <div role="alert" className={errorBox}>
+              <p className={errorTitle}>載入待審資料失敗</p>
               <button
                 type="button"
                 onClick={() => (tab === 'artists' ? artists.refetch() : events.refetch())}
-                className="mt-4 min-h-11 rounded-stellar-xl bg-content px-5 text-sm font-semibold text-surface"
+                className={retryButton}
               >
                 重試
               </button>
             </div>
           )}
           {!loading && !error && items.length === 0 && (
-            <div className="rounded-stellar-xl border border-dashed border-line-strong bg-surface px-6 py-16 text-center">
-              <h2 className="text-lg font-semibold text-content">
-                沒有待審核{tab === 'artists' ? '藝人' : '生咖'}
-              </h2>
-              <p className="mt-2 text-sm text-content-muted">所有投稿都已處理完成。</p>
+            <div className={emptyBox}>
+              <h2 className={emptyTitle}>沒有待審核{tab === 'artists' ? '藝人' : '生咖'}</h2>
+              <p className={emptyDesc}>所有投稿都已處理完成。</p>
             </div>
           )}
           {!loading && !error && (
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <div className={itemsGrid}>
               {items.map((item) => (
                 <ReviewCard
                   key={item.id}
@@ -250,6 +441,11 @@ export default function AdminReview() {
         }}
       />
       <ReviewDialog
+        // 這個 dialog 常駐掛載、不會隨審核目標切換而卸載，內部 groups state 只在
+        // mount 時從 initialValues 初始化過一次。用 key 讓切換到不同藝人時強制
+        // remount，避免殘留上一位藝人的團名（架構與 ArtistEditDialog/EventPreviewDialog
+        // 依 target 切換即重新掛載的做法一致）。
+        key={dialog?.kind === 'groups' ? dialog.item.id : 'groups-dialog-idle'}
         open={dialog?.kind === 'groups'}
         kind="groups"
         title="設定團名"

@@ -4,7 +4,9 @@ import { useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { css } from '@/styled-system/css';
 import SwiperBanner from '@/components/SwiperBanner';
+import ModalOverlay from '@/components/ui/ModalOverlay';
 import { InstagramIcon, ThreadsIcon } from '@/components/ui/SocialMediaIcons';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import type { CoffeeEvent } from '@/types';
@@ -15,6 +17,201 @@ interface EventPreviewDialogProps {
   event: CoffeeEvent;
   onClose: () => void;
 }
+
+const modalContent = css({
+  background: 'white',
+  borderRadius: 'radius.lg',
+  boxShadow: 'shadow.lg',
+  maxWidth: '500px',
+  width: '100%',
+  maxHeight: '90dvh',
+  overflowY: 'auto',
+  position: 'relative',
+});
+
+const modalHeader = css({
+  position: 'sticky',
+  top: 0,
+  background: 'white',
+  paddingY: '4',
+  paddingX: '5',
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  zIndex: 10,
+});
+
+const modalTitle = css({
+  textStyle: 'h4',
+  fontWeight: 'semibold',
+  color: 'color.text.primary',
+  margin: '0',
+});
+
+const closeButton = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '44px',
+  height: '44px',
+  background: 'none',
+  border: 'none',
+  color: 'color.text.primary',
+  cursor: 'pointer',
+  borderRadius: 'radius.md',
+  transition: 'background 0.2s ease',
+  '&:hover': {
+    background: 'color.background.secondary',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
+  '& svg': {
+    width: '24px',
+    height: '24px',
+  },
+});
+
+const contentSection = css({
+  background: 'gray.0',
+  paddingTop: '0',
+  paddingX: '5',
+  paddingBottom: '4',
+  marginBottom: '6',
+});
+
+const eventTitle = css({
+  textStyle: 'h3',
+  color: 'color.text.primary',
+  marginBottom: '4',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+  '@media (min-width: 768px)': {
+    textStyle: 'h2',
+  },
+});
+
+const artistSection = css({
+  display: 'flex',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  gap: '2',
+  marginBottom: '4',
+  paddingBottom: '4',
+  borderBottom: '1px solid',
+  borderBottomColor: 'color.border.light',
+});
+
+const artistLink = css({
+  display: 'inline-flex',
+  borderRadius: 'radius.md',
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
+});
+
+const artistItem = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1.5',
+});
+
+const artistAvatar = css({
+  width: '24px',
+  height: '24px',
+  borderRadius: 'radius.circle',
+  overflow: 'hidden',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  backgroundColor: 'color.background.secondary',
+  flexShrink: 0,
+});
+
+const artistName = css({
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
+  color: 'color.text.primary',
+});
+
+const artistSeparator = css({
+  textStyle: 'bodySmall',
+  color: 'color.text.secondary',
+  marginX: '1',
+});
+
+const eventDetailsSection = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1',
+});
+
+const detailItem = css({
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: '3',
+  padding: '1',
+});
+
+const detailIcon = css({
+  width: '20px',
+  height: '20px',
+  color: 'color.text.secondary',
+  flexShrink: 0,
+  marginTop: '0.5',
+});
+
+const detailContent = css({
+  flex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1',
+});
+
+const detailValue = css({
+  textStyle: 'bodySmall',
+  color: 'color.text.secondary',
+});
+
+const descriptionSection = css({
+  marginTop: '6',
+  paddingTop: '6',
+  borderTop: '1px solid',
+  borderTopColor: 'color.border.light',
+  wordBreak: 'break-word',
+});
+
+const descriptionTitle = css({
+  textStyle: 'h4',
+  fontWeight: 'semibold',
+  color: 'color.text.primary',
+  marginBottom: '4',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '2',
+});
+
+const descriptionContent = css({
+  textStyle: 'bodySmall',
+  color: 'color.text.secondary',
+  lineHeight: 1.6,
+  whiteSpace: 'pre-wrap',
+});
+
+const bottomImagesContainer = css({
+  marginTop: '6',
+});
+
+const link = css({
+  color: 'color.link',
+});
 
 export default function EventPreviewDialog({ event, onClose }: EventPreviewDialogProps) {
   useScrollLock(true);
@@ -39,139 +236,143 @@ export default function EventPreviewDialog({ event, onClose }: EventPreviewDialo
   ];
 
   return (
-    <div
-      className="fixed inset-0 z-[1000] flex items-center justify-center bg-overlay p-4"
-      onMouseDown={(mouseEvent) => mouseEvent.target === mouseEvent.currentTarget && onClose()}
-    >
+    <ModalOverlay isOpen zIndex={1000} padding="16px" onClick={onClose}>
       <section
         role="dialog"
         aria-modal="true"
         aria-labelledby="event-preview-title"
-        className="relative max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-stellar-lg bg-surface shadow-stellar-lg"
+        className={modalContent}
+        onClick={(mouseEvent) => mouseEvent.stopPropagation()}
       >
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-line bg-surface px-5 py-4">
-          <h2 id="event-preview-title" className="text-lg font-semibold text-content">
+        <header className={modalHeader}>
+          <h2 id="event-preview-title" className={modalTitle}>
             預覽
           </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="關閉預覽"
-            className="flex size-11 items-center justify-center rounded-stellar-md text-content hover:bg-surface-muted focus-visible:ring-2 focus-visible:ring-brand"
-          >
-            <XMarkIcon className="size-6" />
+          <button type="button" onClick={onClose} aria-label="關閉預覽" className={closeButton}>
+            <XMarkIcon />
           </button>
         </header>
 
         {bannerItems.length > 0 && <SwiperBanner items={bannerItems} />}
 
-        <div className="mb-6 bg-surface px-5 pb-4 pt-0">
-          <h2 className="mb-4 flex items-center gap-2 text-2xl font-bold text-content md:text-3xl">
-            {event.title}
-          </h2>
+        <div className={contentSection}>
+          <h2 className={eventTitle}>{event.title}</h2>
 
-          <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-line pb-4">
+          <div className={artistSection}>
             {event.artists.map((artist, index) => (
-              <div key={artist.id || index} className="flex items-center">
-                {index > 0 && <span className="mx-1 text-sm text-content-muted">/</span>}
-                <Link
-                  href={`/map/${artist.slug ?? artist.id}`}
-                  className="flex items-center gap-1.5 text-sm font-medium text-content"
-                >
-                  <span
-                    className="size-6 shrink-0 rounded-stellar-circle bg-neutral-subtle bg-cover bg-center"
-                    style={{
-                      backgroundImage: artist.profileImage
-                        ? `url(${artist.profileImage})`
-                        : undefined,
-                    }}
-                  />
-                  {artist.name || 'Unknown Artist'}
+              <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
+                {index > 0 && <span className={artistSeparator}>/</span>}
+                <Link href={`/map/${artist.slug ?? artist.id}`} className={artistLink}>
+                  <div className={artistItem}>
+                    <div
+                      className={artistAvatar}
+                      style={{
+                        backgroundImage: artist.profileImage
+                          ? `url(${artist.profileImage})`
+                          : undefined,
+                      }}
+                    />
+                    <span className={artistName}>{artist.name || 'Unknown Artist'}</span>
+                  </div>
                 </Link>
               </div>
             ))}
           </div>
 
-          <h3 className="mb-4 text-lg font-semibold text-content">主辦</h3>
-          <div className="flex flex-col gap-1">
+          <h3 className={descriptionTitle}>主辦</h3>
+          <div className={eventDetailsSection}>
             {event.socialMedia.instagram && (
-              <div className="flex items-start gap-3 p-1">
+              <div className={detailItem}>
                 <InstagramIcon size={20} color="var(--color-text-secondary)" />
-                <div className="text-sm text-content-muted">
-                  {parseSocialMediaHandles(event.socialMedia.instagram).map(
-                    (handle, index, handles) => (
-                      <span key={handle}>
-                        <a
-                          href={`https://www.instagram.com/${handle}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-brand"
-                        >
-                          @{handle}
-                        </a>
-                        {index < handles.length - 1 && '、'}
-                      </span>
-                    )
-                  )}
+                <div className={detailContent}>
+                  <div className={detailValue}>
+                    {parseSocialMediaHandles(event.socialMedia.instagram).map(
+                      (handle, index, handles) => (
+                        <span key={handle}>
+                          <a
+                            href={`https://www.instagram.com/${handle}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={link}
+                          >
+                            @{handle}
+                          </a>
+                          {index < handles.length - 1 && '、'}
+                        </span>
+                      )
+                    )}
+                  </div>
                 </div>
               </div>
             )}
+
             {event.socialMedia.threads && (
-              <div className="flex items-start gap-3 p-1">
+              <div className={detailItem}>
                 <ThreadsIcon size={20} color="var(--color-text-secondary)" />
-                <div className="text-sm text-content-muted">
-                  {parseSocialMediaHandles(event.socialMedia.threads).map(
-                    (handle, index, handles) => (
-                      <span key={handle}>
-                        <a
-                          href={`https://www.threads.net/@${handle}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-brand"
-                        >
-                          @{handle}
-                        </a>
-                        {index < handles.length - 1 && '、'}
-                      </span>
-                    )
-                  )}
+                <div className={detailContent}>
+                  <div className={detailValue}>
+                    {parseSocialMediaHandles(event.socialMedia.threads).map(
+                      (handle, index, handles) => (
+                        <span key={handle}>
+                          <a
+                            href={`https://www.threads.net/@${handle}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={link}
+                          >
+                            @{handle}
+                          </a>
+                          {index < handles.length - 1 && '、'}
+                        </span>
+                      )
+                    )}
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="mt-6 border-t border-line pt-6">
-            <h3 className="mb-4 text-lg font-semibold text-content">時間/地點</h3>
-            <div className="flex items-start gap-3 p-1">
-              <CalendarIcon className="mt-0.5 size-5 shrink-0 text-content-muted" />
-              <span className="text-sm text-content-muted">
-                {formatEventDate(event.datetime.start, event.datetime.end)}
-              </span>
+          <div className={descriptionSection}>
+            <h3 className={descriptionTitle}>時間/地點</h3>
+            <div className={detailItem}>
+              <div className={detailIcon}>
+                <CalendarIcon />
+              </div>
+              <div className={detailContent}>
+                <div className={detailValue}>
+                  {formatEventDate(event.datetime.start, event.datetime.end)}
+                </div>
+              </div>
             </div>
-            <div className="flex items-start gap-3 p-1">
-              <MapPinIcon className="mt-0.5 size-5 shrink-0 text-content-muted" />
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${event.location.coordinates.lat},${event.location.coordinates.lng}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-brand"
-              >
-                {event.location.name}({event.location.address})
-              </a>
+
+            <div className={detailItem}>
+              <div className={detailIcon}>
+                <MapPinIcon />
+              </div>
+              <div className={detailContent}>
+                <div className={detailValue}>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${event.location.coordinates.lat},${event.location.coordinates.lng}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={link}
+                  >
+                    {event.location.name}({event.location.address})
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
 
           {event.description && (
-            <div className="mt-6 break-words border-t border-line pt-6">
-              <h3 className="mb-4 text-lg font-semibold text-content">詳細說明</h3>
-              <div className="whitespace-pre-wrap text-sm leading-relaxed text-content-muted">
-                {event.description}
-              </div>
+            <div className={descriptionSection}>
+              <h3 className={descriptionTitle}>詳細說明</h3>
+              <div className={descriptionContent}>{event.description}</div>
             </div>
           )}
         </div>
 
-        <div className="mt-6">
+        <div className={bottomImagesContainer}>
           {bannerItems.map((item, index) => (
             <Image
               key={item.id}
@@ -182,11 +383,11 @@ export default function EventPreviewDialog({ event, onClose }: EventPreviewDialo
               quality={95}
               priority={index === 0}
               sizes="500px"
-              className="block h-auto w-full"
+              style={{ width: '100%', height: 'auto', display: 'block' }}
             />
           ))}
         </div>
       </section>
-    </div>
+    </ModalOverlay>
   );
 }
