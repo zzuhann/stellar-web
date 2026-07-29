@@ -54,6 +54,11 @@ const closeButton = css({
   border: 'none',
   cursor: 'pointer',
   '&:hover': { background: 'gray.100' },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
   '&:disabled': { cursor: 'not-allowed', opacity: 0.5 },
 });
 
@@ -86,7 +91,11 @@ const inputField = css({
   paddingX: '3',
   fontSize: 'base',
   color: 'color.text.primary',
-  '&:focus-visible': { outline: 'none', borderColor: 'color.primary' },
+  '&:focus-visible': {
+    outline: 'none',
+    borderColor: 'color.primary',
+    boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
+  },
   '&:disabled': { background: 'gray.100' },
 });
 

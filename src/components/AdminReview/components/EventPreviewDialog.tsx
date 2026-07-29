@@ -65,6 +65,11 @@ const closeButton = css({
   '&:hover': {
     background: 'color.background.secondary',
   },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
   '& svg': {
     width: '24px',
     height: '24px',

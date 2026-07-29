@@ -35,6 +35,11 @@ const card = css({
     transform: 'translateY(-2px)',
     boxShadow: 'shadow.md',
   },
+  '@media (prefers-reduced-motion: reduce)': {
+    '&:hover': {
+      transform: 'none',
+    },
+  },
 });
 
 const imageWrapper = css({

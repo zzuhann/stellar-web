@@ -64,7 +64,12 @@ const closeButton = css({
   border: 'none',
   cursor: 'pointer',
   '&:hover': { background: 'gray.100' },
-  '&:focus-visible': { outline: 'none', background: 'gray.100' },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+    background: 'gray.100',
+  },
 });
 
 const iconSize = css({ width: '20px', height: '20px' });
@@ -95,7 +100,11 @@ const textareaField = css({
   paddingY: '2',
   fontSize: 'base',
   color: 'color.text.primary',
-  '&:focus-visible': { outline: 'none', borderColor: 'color.primary' },
+  '&:focus-visible': {
+    outline: 'none',
+    borderColor: 'color.primary',
+    boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
+  },
 });
 
 const errorText = css({
@@ -114,7 +123,11 @@ const inputField = css({
   borderColor: 'color.border.medium',
   paddingX: '3',
   color: 'color.text.primary',
-  '&:focus-visible': { outline: 'none', borderColor: 'color.primary' },
+  '&:focus-visible': {
+    outline: 'none',
+    borderColor: 'color.primary',
+    boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
+  },
 });
 
 const addGroupButton = css({

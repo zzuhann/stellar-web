@@ -228,7 +228,7 @@ export default function AdminReview() {
   const loading = tab === 'artists' ? artists.isLoading : events.isLoading;
   const error = tab === 'artists' ? artists.isError : events.isError;
   const busy = artistMutation.isPending || eventMutation.isPending;
-  const batchBusy = busy && selected.size > 1;
+  const batchBusy = busy;
   const rejectItem = dialog?.kind === 'reject' ? dialog.item : null;
 
   const changeTab = (next: 'artists' | 'events') => {

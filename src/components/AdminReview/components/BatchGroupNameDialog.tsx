@@ -62,6 +62,11 @@ const closeButton = css({
   border: 'none',
   cursor: 'pointer',
   '&:hover': { background: 'gray.100' },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
   '&:disabled': { cursor: 'not-allowed', opacity: 0.5 },
 });
 
@@ -91,7 +96,11 @@ const inputField = css({
   borderColor: 'color.border.medium',
   paddingX: '3',
   color: 'color.text.primary',
-  '&:focus-visible': { outline: 'none', borderColor: 'color.primary' },
+  '&:focus-visible': {
+    outline: 'none',
+    borderColor: 'color.primary',
+    boxShadow: '0 0 0 3px var(--colors-alpha-primary-10)',
+  },
 });
 
 const dialogFooter = css({
@@ -142,7 +151,11 @@ export default function BatchGroupNameDialog({
   onConfirm,
 }: BatchGroupNameDialogProps) {
   const [values, setValues] = useState<Record<string, string>>({});
-  const dirty = Object.values(values).some((value) => value.trim());
+  // 依畫面上實際顯示的值判斷 dirty（含未被使用者改動的預填團名），
+  // 與 ReviewDialog（GroupNameModal）的 dirty 判斷方式一致：欄位非空即視為有未送出內容。
+  const dirty = artists.some(
+    (artist) => (values[artist.id] ?? artist.groupNames?.join('、') ?? '').trim() !== ''
+  );
   const close = () => {
     if (dirty && !window.confirm('有未送出的內容，確定要離開嗎？')) return;
     onClose();
