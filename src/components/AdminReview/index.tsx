@@ -230,17 +230,6 @@ export default function AdminReview() {
   const busy = artistMutation.isPending || eventMutation.isPending;
   const batchBusy = busy;
   const rejectItem = dialog?.kind === 'reject' ? dialog.item : null;
-  // 只鎖定「正在被目前 mutation 處理」的那幾筆項目，其餘未選中的卡片仍可操作。
-  // mutation.variables 是 react-query 內建、當下呼叫 mutate() 時傳入的參數，
-  // isPending 時即代表目前正在處理的項目 id，不需另外自建狀態管理。
-  const busyArtistIds = new Set(
-    artistMutation.isPending
-      ? (artistMutation.variables ?? []).map((update) => update.artistId)
-      : []
-  );
-  const busyEventIds = new Set(
-    eventMutation.isPending ? (eventMutation.variables ?? []).map((update) => update.eventId) : []
-  );
 
   const changeTab = (next: 'artists' | 'events') => {
     setSelected(new Set());
@@ -396,7 +385,7 @@ export default function AdminReview() {
                   key={item.id}
                   item={item}
                   selected={selected.has(item.id)}
-                  busy={tab === 'artists' ? busyArtistIds.has(item.id) : busyEventIds.has(item.id)}
+                  busy={busy}
                   onSelect={(checked) => toggle(item.id, checked)}
                   onEdit={'stageName' in item ? () => setDialog({ kind: 'edit', item }) : undefined}
                   onPreview={
