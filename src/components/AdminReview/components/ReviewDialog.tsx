@@ -138,6 +138,11 @@ const addGroupButton = css({
   background: 'none',
   border: 'none',
   cursor: 'pointer',
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
 });
 
 const footerRow = css({
@@ -161,6 +166,11 @@ const cancelButton = css({
   border: 'none',
   cursor: 'pointer',
   '&:hover': { background: 'gray.100' },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
   '&:disabled': { cursor: 'not-allowed', opacity: 0.5 },
 });
 
@@ -174,6 +184,11 @@ const confirmButton = cva({
     color: 'white',
     border: 'none',
     cursor: 'pointer',
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '2px',
+    },
     '&:disabled': { cursor: 'not-allowed', background: 'color.text.disabled' },
   },
   variants: {
@@ -204,7 +219,14 @@ export default function ReviewDialog({
   const [value, setValue] = useState('');
   const [groups, setGroups] = useState<string[]>(initialValues.length ? initialValues : ['']);
 
-  const dirty = kind === 'reject' ? value.trim().length > 0 : groups.some((group) => group.trim());
+  // dirty 只看「目前值」是否偏離初始預填值（trim 後、忽略新增的空白欄位），
+  // 團名欄位預填但未被使用者改動時不算 dirty，與 ArtistEditDialog 的 dirty 判斷方式一致。
+  const meaningfulGroups = (list: string[]) => list.map((group) => group.trim()).filter(Boolean);
+  const dirty =
+    kind === 'reject'
+      ? value.trim().length > 0
+      : JSON.stringify(meaningfulGroups(groups)) !==
+        JSON.stringify(meaningfulGroups(initialValues));
   const close = () => {
     if (dirty && !window.confirm('有未送出的內容，確定要離開嗎？')) return;
     setValue('');

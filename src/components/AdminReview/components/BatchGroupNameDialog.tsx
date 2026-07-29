@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import ModalOverlay from '@/components/ui/ModalOverlay';
@@ -127,6 +127,11 @@ const cancelButton = css({
   border: 'none',
   cursor: 'pointer',
   '&:hover': { background: 'gray.100' },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
   '&:disabled': { cursor: 'not-allowed', opacity: 0.5 },
 });
 
@@ -141,6 +146,11 @@ const confirmButton = css({
   border: 'none',
   cursor: 'pointer',
   '&:hover:not(:disabled)': { background: 'color.primaryHover' },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
   '&:disabled': { cursor: 'not-allowed', background: 'color.text.disabled' },
 });
 
@@ -151,11 +161,17 @@ export default function BatchGroupNameDialog({
   onConfirm,
 }: BatchGroupNameDialogProps) {
   const [values, setValues] = useState<Record<string, string>>({});
-  // 依畫面上實際顯示的值判斷 dirty（含未被使用者改動的預填團名），
-  // 與 ReviewDialog（GroupNameModal）的 dirty 判斷方式一致：欄位非空即視為有未送出內容。
-  const dirty = artists.some(
-    (artist) => (values[artist.id] ?? artist.groupNames?.join('、') ?? '').trim() !== ''
+  // 每位藝人的預填初始值快照，dirty 判斷只比較「目前值」是否偏離初始值，
+  // 預填但未被使用者改動的團名不算 dirty（與 ArtistEditDialog 的 dirty 判斷方式一致）。
+  const initialValues = useMemo(
+    () =>
+      Object.fromEntries(artists.map((artist) => [artist.id, artist.groupNames?.join('、') ?? ''])),
+    [artists]
   );
+  const dirty = artists.some((artist) => {
+    const current = (values[artist.id] ?? initialValues[artist.id]).trim();
+    return current !== initialValues[artist.id].trim();
+  });
   const close = () => {
     if (dirty && !window.confirm('有未送出的內容，確定要離開嗎？')) return;
     onClose();
@@ -200,7 +216,7 @@ export default function BatchGroupNameDialog({
             <label key={artist.id} className={fieldLabel}>
               {artist.stageNameZh || artist.stageName}
               <input
-                value={values[artist.id] ?? artist.groupNames?.join('、') ?? ''}
+                value={values[artist.id] ?? initialValues[artist.id]}
                 onChange={(event) =>
                   setValues((current) => ({ ...current, [artist.id]: event.target.value }))
                 }

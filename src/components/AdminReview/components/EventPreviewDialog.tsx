@@ -107,6 +107,16 @@ const artistSection = css({
   borderBottomColor: 'color.border.light',
 });
 
+const artistLink = css({
+  display: 'inline-flex',
+  borderRadius: 'radius.md',
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
+});
+
 const artistItem = css({
   display: 'flex',
   alignItems: 'center',
@@ -252,7 +262,7 @@ export default function EventPreviewDialog({ event, onClose }: EventPreviewDialo
             {event.artists.map((artist, index) => (
               <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
                 {index > 0 && <span className={artistSeparator}>/</span>}
-                <Link href={`/map/${artist.slug ?? artist.id}`}>
+                <Link href={`/map/${artist.slug ?? artist.id}`} className={artistLink}>
                   <div className={artistItem}>
                     <div
                       className={artistAvatar}

@@ -36,4 +36,47 @@ describe('ReviewDialog', () => {
     await user.click(screen.getByRole('button', { name: '關閉' }));
     expect(onClose).toHaveBeenCalledOnce();
   });
+
+  it('kind=groups 時，預填團名未被改動時關閉不彈確認離開提示', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const confirm = vi.spyOn(window, 'confirm');
+    render(
+      <ReviewDialog
+        open
+        kind="groups"
+        title="設定團名"
+        initialValues={['既有團名']}
+        onClose={onClose}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: '關閉' }));
+
+    expect(confirm).not.toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('kind=groups 時，使用者真的改過團名欄位才會要求確認離開', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    render(
+      <ReviewDialog
+        open
+        kind="groups"
+        title="設定團名"
+        initialValues={['既有團名']}
+        onClose={onClose}
+      />
+    );
+
+    const input = screen.getByRole('textbox', { name: /團名 1/ });
+    await user.clear(input);
+    await user.type(input, '改過的團名');
+    await user.click(screen.getByRole('button', { name: '關閉' }));
+
+    expect(confirm).toHaveBeenCalledWith('有未送出的內容，確定要離開嗎？');
+    expect(onClose).toHaveBeenCalledOnce();
+  });
 });

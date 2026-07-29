@@ -123,6 +123,11 @@ const cancelButton = css({
   border: 'none',
   cursor: 'pointer',
   '&:hover': { background: 'gray.100' },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
   '&:disabled': { cursor: 'not-allowed', opacity: 0.5 },
 });
 
@@ -137,6 +142,11 @@ const saveButton = css({
   border: 'none',
   cursor: 'pointer',
   '&:hover:not(:disabled)': { background: 'color.primaryHover' },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
   '&:disabled': { cursor: 'not-allowed', background: 'color.text.disabled' },
 });
 
