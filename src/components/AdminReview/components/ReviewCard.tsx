@@ -170,12 +170,22 @@ export default function ReviewCard({
       </div>
       <div className={actionsRow}>
         {artist ? (
-          <button type="button" onClick={onEdit} className={reviewButton({ kind: 'secondary' })}>
+          <button
+            type="button"
+            onClick={onEdit}
+            disabled={busy}
+            className={reviewButton({ kind: 'secondary' })}
+          >
             <PencilSquareIcon className={iconSize} />
             編輯
           </button>
         ) : (
-          <button type="button" onClick={onPreview} className={reviewButton({ kind: 'secondary' })}>
+          <button
+            type="button"
+            onClick={onPreview}
+            disabled={busy}
+            className={reviewButton({ kind: 'secondary' })}
+          >
             <EyeIcon className={iconSize} />
             預覽
           </button>

@@ -451,6 +451,11 @@ export default function AdminReview() {
         }}
       />
       <ReviewDialog
+        // 這個 dialog 常駐掛載、不會隨審核目標切換而卸載，內部 groups state 只在
+        // mount 時從 initialValues 初始化過一次。用 key 讓切換到不同藝人時強制
+        // remount，避免殘留上一位藝人的團名（架構與 ArtistEditDialog/EventPreviewDialog
+        // 依 target 切換即重新掛載的做法一致）。
+        key={dialog?.kind === 'groups' ? dialog.item.id : 'groups-dialog-idle'}
         open={dialog?.kind === 'groups'}
         kind="groups"
         title="設定團名"
