@@ -127,6 +127,13 @@ export default function EventImportForm() {
   const [detectedArtistName, setDetectedArtistName] = useState<string | null>(null);
   const parseCaptionMutation = useParseCaptionMutation();
 
+  // 管理員修改文字內容時清除常駐錯誤文字（design-frontend.md〈畫面規格〉第 6 點）；
+  // 再次觸發解析的清除邏輯見 handleParseCaption。
+  const handleCaptionChange = useCallback((value: string) => {
+    setCaptionValue(value);
+    setCaptionErrorMessage(null);
+  }, []);
+
   const applyParsedCaption = useCallback(
     (parsed: ParsedCaptionData, rawCaption: string) => {
       const { updates, filledFieldLabels } = mergeParsedCaptionIntoForm(
@@ -189,7 +196,10 @@ export default function EventImportForm() {
     [getValues, setValue]
   );
 
+  // design-frontend.md〈畫面規格〉第 6 點：常駐錯誤文字要「直到管理員修改文字內容或
+  // 再次觸發解析才清除」——這裡涵蓋後者，修改文字內容的清除邏輯見 handleCaptionChange。
   const handleParseCaption = (caption: string) => {
+    setCaptionErrorMessage(null);
     parseCaptionMutation.mutate(caption, {
       onSuccess: (response) => {
         setCaptionErrorMessage(resolveParseCaptionError(response, undefined));
@@ -318,7 +328,7 @@ export default function EventImportForm() {
 
       <CaptionParseSection
         value={captionValue}
-        onChange={setCaptionValue}
+        onChange={handleCaptionChange}
         onParse={handleParseCaption}
         isParsing={parseCaptionMutation.isPending}
         errorMessage={captionErrorMessage}
