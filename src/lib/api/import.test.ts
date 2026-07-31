@@ -57,6 +57,7 @@ describe('importApi.parseCaption', () => {
       'response.data 有其他無關欄位，但沒有 success/error/message',
       axiosError(500, { statusCode: 500 }),
     ],
+    ['error 完全沒有 response（例如 request 被中止）', { isAxiosError: true, response: undefined }],
   ])('%s 時回傳通用失敗物件，不 throw、不噴例外', async (_label, error) => {
     vi.mocked(api.post).mockRejectedValueOnce(error);
 

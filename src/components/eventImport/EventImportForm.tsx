@@ -585,7 +585,10 @@ export default function EventImportForm() {
         <MultiImageUpload
           currentImages={uploadedDetailImages}
           onImagesChange={setUploadedDetailImages}
-          maxImages={10 - detailImageQueue.successUrls.length}
+          maxImages={Math.max(
+            0,
+            10 - uploadedDetailImages.length - detailImageQueue.successUrls.length
+          )}
           placeholder="或點擊上傳圖片檔案"
           maxSizeMB={5}
           authToken={token || undefined}
