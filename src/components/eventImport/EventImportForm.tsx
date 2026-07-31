@@ -70,6 +70,8 @@ const submitButton = css({
   '&:disabled': { background: 'color.text.disabled', cursor: 'not-allowed' },
 });
 
+const formLayout = css({ display: 'flex', flexDirection: 'column', gap: '6' });
+
 type AutoFillKey =
   | 'title'
   | 'description'
@@ -335,11 +337,7 @@ export default function EventImportForm() {
         detectedArtistName={detectedArtistName}
       />
 
-      <form
-        className={css({ display: 'flex', flexDirection: 'column', gap: '6' })}
-        aria-label="活動貼文匯入表單"
-        onSubmit={handleSubmit(onSubmit)}
-      >
+      <form className={formLayout} aria-label="活動貼文匯入表單" onSubmit={handleSubmit(onSubmit)}>
         <ChooseArtistSection
           mode="create"
           selectedArtists={selectedArtists}
