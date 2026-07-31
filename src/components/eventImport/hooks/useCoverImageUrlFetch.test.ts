@@ -86,6 +86,38 @@ describe('useCoverImageUrlFetch', () => {
     expect(result.current.errorMessage).toBeNull();
   });
 
+  it('reset 後，稍早那次仍在飛行中的請求回應時不會再套用（例如管理員先移除了封面圖）', async () => {
+    let resolvePending!: (value: { success: true; imageUrl: string; filename: string }) => void;
+    fetchImageMock.mockImplementationOnce(
+      () => new Promise((resolve) => (resolvePending = resolve))
+    );
+
+    const onApply = vi.fn();
+    const { result } = renderHook(() => useCoverImageUrlFetch(() => true, onApply));
+
+    act(() => {
+      result.current.fetchUrl('https://source.jpg');
+    });
+    expect(result.current.status).toBe('loading');
+
+    act(() => {
+      result.current.reset(); // 管理員在抓取完成前移除了封面圖
+    });
+    expect(result.current.status).toBe('idle');
+
+    await act(async () => {
+      resolvePending({
+        success: true,
+        imageUrl: 'https://cdn.example.com/late.jpg',
+        filename: 'late.jpg',
+      });
+      await Promise.resolve();
+    });
+
+    expect(onApply).not.toHaveBeenCalled();
+    expect(result.current.status).toBe('idle');
+  });
+
   it('連續觸發兩次抓取時，較舊、較晚回應的請求不會覆蓋較新一次的結果', async () => {
     let resolveFirst!: (value: { success: true; imageUrl: string; filename: string }) => void;
     let resolveSecond!: (value: { success: true; imageUrl: string; filename: string }) => void;

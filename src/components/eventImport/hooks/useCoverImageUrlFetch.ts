@@ -56,6 +56,9 @@ export function useCoverImageUrlFetch(
   );
 
   const reset = useCallback(() => {
+    // 讓任何仍在飛行中的舊請求失效：管理員移除封面圖時，若稍早那次抓取還沒回應，
+    // 不應該等它回來後才把已經被移除的圖片透過 onApply 重新套回去。
+    requestSeqRef.current += 1;
     setStatus('idle');
     setErrorMessage(null);
   }, []);

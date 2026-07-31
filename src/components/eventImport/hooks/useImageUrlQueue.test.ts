@@ -166,6 +166,31 @@ describe('useImageUrlQueue', () => {
     expect(result.current.items[0].id).toBe(second.id);
   });
 
+  it('同一個事件處理常式內先 remove 再 retry 同一個 id：不會為已移除的項目發送請求', async () => {
+    fetchImageMock.mockResolvedValue({
+      success: true,
+      imageUrl: 'https://cdn.example.com/x.jpg',
+      filename: 'x.jpg',
+    });
+
+    const { result } = renderHook(() => useImageUrlQueue());
+
+    act(() => {
+      result.current.enqueue(['https://removed.jpg']);
+    });
+    await waitFor(() => expect(result.current.items[0].status).toBe('success'));
+    const id = result.current.items[0].id;
+    fetchImageMock.mockClear();
+
+    act(() => {
+      result.current.remove(id);
+      result.current.retry(id); // retry 讀到的應該是 remove 之後、已經不存在這個 id 的最新狀態
+    });
+
+    expect(result.current.items).toHaveLength(0);
+    expect(fetchImageMock).not.toHaveBeenCalled();
+  });
+
   it('沒有輸入任何網址時不建立佇列項目', () => {
     const { result } = renderHook(() => useImageUrlQueue());
 

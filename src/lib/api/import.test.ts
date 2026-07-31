@@ -47,6 +47,22 @@ describe('importApi.parseCaption', () => {
     const result = await importApi.parseCaption('文案');
     expect(result).toEqual({ success: false });
   });
+
+  it.each([
+    ['response.data 是字串', axiosError(500, 'Internal Server Error')],
+    ['response.data 是 null', axiosError(500, null)],
+    ['response.data 是 undefined', axiosError(500, undefined)],
+    ['response.data 是空物件（沒有 success/error/message）', axiosError(500, {})],
+    [
+      'response.data 有其他無關欄位，但沒有 success/error/message',
+      axiosError(500, { statusCode: 500 }),
+    ],
+  ])('%s 時回傳通用失敗物件，不 throw、不噴例外', async (_label, error) => {
+    vi.mocked(api.post).mockRejectedValueOnce(error);
+
+    const result = await importApi.parseCaption('文案');
+    expect(result).toEqual({ success: false });
+  });
 });
 
 describe('importApi.fetchImage', () => {
@@ -83,6 +99,19 @@ describe('importApi.fetchImage', () => {
 
   it('沒有可用的 response body（純網路層錯誤）時回傳通用失敗物件，不 throw', async () => {
     vi.mocked(api.post).mockRejectedValueOnce(new Error('network error'));
+
+    const result = await importApi.fetchImage('https://source.jpg');
+    expect(result).toEqual({ success: false, error: '圖片抓取失敗，請重試' });
+  });
+
+  it.each([
+    ['response.data 是字串', axiosError(500, 'Internal Server Error')],
+    ['response.data 是 null', axiosError(500, null)],
+    ['response.data 是 undefined', axiosError(500, undefined)],
+    ['response.data 是空物件（沒有 success/error/message）', axiosError(500, {})],
+    ['error 完全沒有 response（例如 request 被中止）', { isAxiosError: true, response: undefined }],
+  ])('%s 時回傳通用失敗物件，不 throw、不噴例外', async (_label, error) => {
+    vi.mocked(api.post).mockRejectedValueOnce(error);
 
     const result = await importApi.fetchImage('https://source.jpg');
     expect(result).toEqual({ success: false, error: '圖片抓取失敗，請重試' });
