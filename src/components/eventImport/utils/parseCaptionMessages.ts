@@ -11,8 +11,6 @@ export function isParsedEmpty(parsed: ParsedCaptionData): boolean {
     !parsed.artistName &&
     !parsed.eventDateStart &&
     !parsed.eventDateEnd &&
-    !parsed.timeStart &&
-    !parsed.timeEnd &&
     !parsed.location &&
     !parsed.socialMedia &&
     !parsed.redemptionCondition

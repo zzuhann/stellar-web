@@ -12,8 +12,6 @@ const emptyParsed: ParsedCaptionData = {
   artistName: null,
   eventDateStart: null,
   eventDateEnd: null,
-  timeStart: null,
-  timeEnd: null,
   location: null,
   socialMedia: null,
   redemptionCondition: null,

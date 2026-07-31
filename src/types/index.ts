@@ -471,8 +471,6 @@ export interface ParsedCaptionData {
   artistName: string | null;
   eventDateStart: string | null; // YYYY-MM-DD
   eventDateEnd: string | null; // YYYY-MM-DD
-  timeStart: string | null; // HH:mm
-  timeEnd: string | null; // HH:mm
   location: ParsedCaptionLocation | null;
   socialMedia: { instagram?: string; threads?: string } | null;
   redemptionCondition: string | null;

@@ -1,15 +1,9 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  CalendarIcon,
-  ClockIcon,
-  MapPinIcon,
-  PhotoIcon,
-  UserIcon,
-} from '@heroicons/react/24/outline';
+import { CalendarIcon, MapPinIcon, PhotoIcon, UserIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
 import { useAuthToken } from '@/hooks/useAuthToken';
@@ -37,7 +31,6 @@ import {
   buildParsedFieldsToastMessage,
 } from './utils/mergeParsedCaption';
 import { resolveParseCaptionError, isParsedEmpty } from './utils/parseCaptionMessages';
-import { buildEventStart, buildEventEnd } from './utils/buildEventDateTime';
 
 const pageContainer = css({
   width: '100%',
@@ -54,25 +47,6 @@ const pageHeader = css({
 });
 
 const gridContainer = css({ display: 'grid', gridTemplateColumns: '1fr', gap: '4' });
-
-const timeGrid = css({
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-  gap: '4',
-});
-
-const timeInput = css({
-  width: '100%',
-  paddingY: '3',
-  paddingX: '4',
-  minHeight: '44px',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  borderRadius: 'radius.lg',
-  background: 'color.background.primary',
-  color: 'color.text.primary',
-  textStyle: 'body',
-});
 
 const submitRow = css({
   display: 'flex',
@@ -101,8 +75,6 @@ type AutoFillKey =
   | 'description'
   | 'startDate'
   | 'endDate'
-  | 'timeStart'
-  | 'timeEnd'
   | 'location'
   | 'socialMedia'
   | 'mainImage';
@@ -138,20 +110,7 @@ export default function EventImportForm() {
   const [locationAutoFillVersion, setLocationAutoFillVersion] = useState(0);
   const [mainImageUrl, setMainImageUrl] = useState('');
   const [uploadedDetailImages, setUploadedDetailImages] = useState<string[]>([]);
-  const [timeStart, setTimeStart] = useState('');
-  const [timeEnd, setTimeEnd] = useState('');
   const [autoFilledFields, setAutoFilledFields] = useState<Set<AutoFillKey>>(new Set());
-
-  // 回應當下的合併判斷需要「當下最新值」，plain state 的 closure 在請求期間可能過期，
-  // 用 ref 鏡射最新值（design-frontend.md〈Edge Cases〉：以回應當下為準，不是發送當下）。
-  const timeStartRef = useRef(timeStart);
-  const timeEndRef = useRef(timeEnd);
-  useEffect(() => {
-    timeStartRef.current = timeStart;
-  }, [timeStart]);
-  useEffect(() => {
-    timeEndRef.current = timeEnd;
-  }, [timeEnd]);
 
   const clearAutoFill = useCallback((key: AutoFillKey) => {
     setAutoFilledFields((prev) => {
@@ -176,8 +135,6 @@ export default function EventImportForm() {
           description: getValues('description') || '',
           startDate: getValues('startDate') || '',
           endDate: getValues('endDate') || '',
-          timeStart: timeStartRef.current,
-          timeEnd: timeEndRef.current,
           addressName: getValues('addressName') || '',
           instagram: getValues('instagram') || '',
           threads: getValues('threads') || '',
@@ -202,14 +159,6 @@ export default function EventImportForm() {
       if (updates.endDate !== undefined) {
         setValue('endDate', updates.endDate, { shouldValidate: true, shouldDirty: true });
         filledKeys.push('endDate');
-      }
-      if (updates.timeStart !== undefined) {
-        setTimeStart(updates.timeStart);
-        filledKeys.push('timeStart');
-      }
-      if (updates.timeEnd !== undefined) {
-        setTimeEnd(updates.timeEnd);
-        filledKeys.push('timeEnd');
       }
       if (updates.instagram !== undefined) {
         setValue('instagram', updates.instagram, { shouldDirty: true });
@@ -329,8 +278,16 @@ export default function EventImportForm() {
       artistIds: selectedArtists.map((a) => a.id),
       description: data.description || '',
       datetime: {
-        start: buildEventStart(data.startDate, timeStart),
-        end: buildEventEnd(data.endDate, timeEnd),
+        // 比照 EventSubmissionForm 既有作法：固定套用當天 00:00:00 / 23:59:59，
+        // 這個頁面不提供活動時段欄位。
+        start: {
+          _seconds: Math.floor(new Date(data.startDate + 'T00:00:00').getTime() / 1000),
+          _nanoseconds: 0,
+        },
+        end: {
+          _seconds: Math.floor(new Date(data.endDate + 'T23:59:59').getTime() / 1000),
+          _nanoseconds: 0,
+        },
       },
       location: {
         name: data.addressName,
@@ -492,43 +449,6 @@ export default function EventImportForm() {
                 {errors.endDate.message}
               </p>
             )}
-          </div>
-        </div>
-
-        {/* 活動時段（選填） */}
-        <div className={formGroup} role="group" aria-labelledby="event-time-label">
-          <label id="event-time-label" className={label}>
-            <ClockIcon aria-hidden="true" />
-            活動時段（選填）
-          </label>
-          <p className={helperText}>只有貼文明確標示活動時段時才需要填寫，一般營業時間不算</p>
-          <div className={timeGrid}>
-            <div>
-              <input
-                type="time"
-                className={timeInput}
-                value={timeStart}
-                onChange={(e) => {
-                  setTimeStart(e.target.value);
-                  clearAutoFill('timeStart');
-                }}
-                aria-label="開始時段"
-              />
-              <AutoFillHint show={autoFilledFields.has('timeStart')} />
-            </div>
-            <div>
-              <input
-                type="time"
-                className={timeInput}
-                value={timeEnd}
-                onChange={(e) => {
-                  setTimeEnd(e.target.value);
-                  clearAutoFill('timeEnd');
-                }}
-                aria-label="結束時段"
-              />
-              <AutoFillHint show={autoFilledFields.has('timeEnd')} />
-            </div>
           </div>
         </div>
 

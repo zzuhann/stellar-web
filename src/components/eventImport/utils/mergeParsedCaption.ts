@@ -7,8 +7,6 @@ export interface ImportFormSnapshot {
   description: string;
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
-  timeStart: string; // HH:mm
-  timeEnd: string; // HH:mm
   addressName: string; // 地點名稱，作為「地點欄位是否已填」的判斷依據
   instagram: string;
   threads: string;
@@ -19,8 +17,6 @@ export interface ImportFormUpdates {
   description?: string; // 承接 redemptionCondition（見 design-backend.md：由前端決定放哪）
   startDate?: string;
   endDate?: string;
-  timeStart?: string;
-  timeEnd?: string;
   location?: ParsedCaptionLocation;
   instagram?: string;
   threads?: string;
@@ -60,16 +56,6 @@ export function mergeParsedCaptionIntoForm(
   if (isEmptyValue(current.endDate) && parsed.eventDateEnd) {
     updates.endDate = parsed.eventDateEnd;
     filledFieldLabels.push('結束日期');
-  }
-
-  if (isEmptyValue(current.timeStart) && parsed.timeStart) {
-    updates.timeStart = parsed.timeStart;
-    filledFieldLabels.push('開始時段');
-  }
-
-  if (isEmptyValue(current.timeEnd) && parsed.timeEnd) {
-    updates.timeEnd = parsed.timeEnd;
-    filledFieldLabels.push('結束時段');
   }
 
   if (isEmptyValue(current.addressName) && parsed.location) {
