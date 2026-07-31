@@ -171,23 +171,32 @@ export const tileImage = css({
   objectFit: 'cover',
 });
 
+// 視覺上是小圖示，但可點擊範圍維持 44×44（design-frontend.md〈畫面規格〉第 5 點、
+// 專案 mobile-first 規範：所有可點擊元素最小 44×44px）。
 export const tileRemoveButton = css({
   position: 'absolute',
-  top: '1',
-  right: '1',
-  width: '28px',
-  height: '28px',
-  minWidth: '28px',
-  minHeight: '28px',
-  borderRadius: 'radius.circle',
+  top: '0',
+  right: '0',
+  width: '44px',
+  height: '44px',
+  minWidth: '44px',
+  minHeight: '44px',
   border: 'none',
-  background: 'alpha.black.70',
+  background: 'transparent',
   color: 'white',
   display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
+  alignItems: 'flex-start',
+  justifyContent: 'flex-end',
+  padding: '1',
   cursor: 'pointer',
-  '&:hover': { background: 'alpha.black.90' },
+  '& svg': {
+    width: '20px',
+    height: '20px',
+    padding: '2px',
+    borderRadius: 'radius.circle',
+    background: 'alpha.black.70',
+  },
+  '&:hover svg': { background: 'alpha.black.90' },
 });
 
 export const tileErrorOverlay = css({
@@ -216,7 +225,7 @@ export const tileErrorActions = css({
 export const tileSmallButton = cva({
   base: {
     flex: '1',
-    minHeight: '28px',
+    minHeight: '44px',
     paddingY: '1',
     paddingX: '1',
     border: 'none',
