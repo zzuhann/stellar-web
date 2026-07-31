@@ -455,3 +455,46 @@ export interface VenueFilterParams {
 export interface VenuesResponse {
   venues: Venue[];
 }
+
+// ─── 活動貼文匯入（Phase A，admin-only） ──────────────────────────────────
+
+export interface ParsedCaptionLocation {
+  name: string;
+  address: string;
+  city: string;
+  coordinates: { lat: number; lng: number };
+  placeId: string;
+}
+
+export interface ParsedCaptionData {
+  title: string | null;
+  artistName: string | null;
+  eventDateStart: string | null; // YYYY-MM-DD
+  eventDateEnd: string | null; // YYYY-MM-DD
+  timeStart: string | null; // HH:mm
+  timeEnd: string | null; // HH:mm
+  location: ParsedCaptionLocation | null;
+  socialMedia: { instagram?: string; threads?: string } | null;
+  redemptionCondition: string | null;
+}
+
+export type ParseCaptionReason =
+  | 'quota_exceeded'
+  | 'gemini_unavailable'
+  | 'parse_failed'
+  | 'service_unavailable';
+
+export type ParseCaptionResponse =
+  | { success: true; parsed: ParsedCaptionData }
+  | { success: false; reason?: ParseCaptionReason; message?: string; error?: string };
+
+export type FetchImageReason =
+  | 'fetch_failed'
+  | 'invalid_content_type'
+  | 'unsupported_format'
+  | 'size_out_of_range'
+  | 'blocked_host';
+
+export type FetchImageResponse =
+  | { success: true; imageUrl: string; filename: string }
+  | { success: false; error: string; reason?: FetchImageReason };
