@@ -43,18 +43,18 @@ describe('resolveParseCaptionError', () => {
     );
   });
 
-  it('success:false 且有 message 時優先使用該 message', () => {
+  it('success:false 且後端有帶 message 時，仍顯示統一的系統性錯誤訊息，不透出後端原始訊息', () => {
     expect(
       resolveParseCaptionError(
         { success: false, reason: 'parse_failed', message: '自訂錯誤訊息' },
         undefined
       )
-    ).toBe('自訂錯誤訊息');
+    ).toBe(PARSE_SYSTEM_ERROR_MESSAGE);
   });
 
-  it('success:false 沒有 message 但有 error 時（例如 400 驗證錯誤）改用 error', () => {
+  it('success:false 且後端只帶 error 時（例如 400 驗證錯誤），仍顯示統一的系統性錯誤訊息', () => {
     expect(resolveParseCaptionError({ success: false, error: '文案內容過長' }, undefined)).toBe(
-      '文案內容過長'
+      PARSE_SYSTEM_ERROR_MESSAGE
     );
   });
 
