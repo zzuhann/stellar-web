@@ -55,6 +55,12 @@ describe('resolveParseCaptionError', () => {
     ).toBe('自訂錯誤訊息');
   });
 
+  it('success:false 沒有 message 但有 error 時（例如 400 驗證錯誤）改用 error', () => {
+    expect(resolveParseCaptionError({ success: false, error: '文案內容過長' }, undefined)).toBe(
+      '文案內容過長'
+    );
+  });
+
   it('success:true 但所有欄位皆為 null → 無法判斷內容訊息', () => {
     expect(resolveParseCaptionError({ success: true, parsed: emptyParsed }, undefined)).toBe(
       PARSE_NO_CONTENT_MESSAGE

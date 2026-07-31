@@ -34,6 +34,9 @@ export function resolveParseCaptionError(
 ): string | null {
   if (requestError) return PARSE_SYSTEM_ERROR_MESSAGE;
   if (!response) return null;
-  if (!response.success) return response.message || PARSE_SYSTEM_ERROR_MESSAGE;
+  // 後端不同來源的失敗訊息落在不同欄位：200 success:false／503 用 `message`／`error`，
+  // 400（validateRequest 中介層攔截）只有 `error`（lib/api/import.ts 會把中介層的
+  // `{ error, code, field }` 正規化進同一個 union，欄位名稱維持原樣，不強制改名）。
+  if (!response.success) return response.message || response.error || PARSE_SYSTEM_ERROR_MESSAGE;
   return isParsedEmpty(response.parsed) ? PARSE_NO_CONTENT_MESSAGE : null;
 }

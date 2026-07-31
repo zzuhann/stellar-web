@@ -86,6 +86,48 @@ describe('useCoverImageUrlFetch', () => {
     expect(result.current.errorMessage).toBeNull();
   });
 
+  it('連續觸發兩次抓取時，較舊、較晚回應的請求不會覆蓋較新一次的結果', async () => {
+    let resolveFirst!: (value: { success: true; imageUrl: string; filename: string }) => void;
+    let resolveSecond!: (value: { success: true; imageUrl: string; filename: string }) => void;
+
+    fetchImageMock
+      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirst = resolve)))
+      .mockImplementationOnce(() => new Promise((resolve) => (resolveSecond = resolve)));
+
+    const onApply = vi.fn();
+    const { result } = renderHook(() => useCoverImageUrlFetch(() => true, onApply));
+
+    act(() => {
+      result.current.fetchUrl('https://first.jpg');
+    });
+    act(() => {
+      result.current.fetchUrl('https://second.jpg'); // 管理員在第一次還沒回應前就貼了第二個網址
+    });
+
+    await act(async () => {
+      resolveSecond({
+        success: true,
+        imageUrl: 'https://cdn.example.com/second.jpg',
+        filename: 'second.jpg',
+      });
+      await Promise.resolve();
+    });
+    expect(onApply).toHaveBeenCalledTimes(1);
+    expect(onApply).toHaveBeenCalledWith('https://cdn.example.com/second.jpg');
+
+    await act(async () => {
+      resolveFirst({
+        success: true,
+        imageUrl: 'https://cdn.example.com/first.jpg',
+        filename: 'first.jpg',
+      });
+      await Promise.resolve();
+    });
+    // 較舊的回應姍姍來遲，不應該再次套用、覆蓋掉較新的結果
+    expect(onApply).toHaveBeenCalledTimes(1);
+    expect(result.current.status).toBe('success');
+  });
+
   it('空字串不會觸發抓取', () => {
     const { result } = renderHook(() => useCoverImageUrlFetch(() => true, vi.fn()));
     act(() => {

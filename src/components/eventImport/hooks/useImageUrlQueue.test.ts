@@ -105,6 +105,48 @@ describe('useImageUrlQueue', () => {
     expect(fetchImageMock).toHaveBeenCalledTimes(2);
   });
 
+  it('連續重試時，較舊、較晚回應的請求不會覆蓋較新一次重試的結果', async () => {
+    let resolveFirst!: (value: { success: true; imageUrl: string; filename: string }) => void;
+    let resolveSecond!: (value: { success: true; imageUrl: string; filename: string }) => void;
+
+    fetchImageMock
+      .mockImplementationOnce(() => new Promise((resolve) => (resolveFirst = resolve)))
+      .mockImplementationOnce(() => new Promise((resolve) => (resolveSecond = resolve)));
+
+    const { result } = renderHook(() => useImageUrlQueue());
+
+    act(() => {
+      result.current.enqueue(['https://race.jpg']);
+    });
+    const id = result.current.items[0].id;
+
+    act(() => {
+      result.current.retry(id); // 第二次請求（第一次 enqueue 本身就是第一次請求）
+    });
+
+    // 第二次（較新）請求先回應
+    await act(async () => {
+      resolveSecond({
+        success: true,
+        imageUrl: 'https://cdn.example.com/second.jpg',
+        filename: 'second.jpg',
+      });
+      await Promise.resolve();
+    });
+    expect(result.current.items[0].resultUrl).toBe('https://cdn.example.com/second.jpg');
+
+    // 第一次（較舊）請求才姍姍來遲地回應，不應覆蓋掉較新的結果
+    await act(async () => {
+      resolveFirst({
+        success: true,
+        imageUrl: 'https://cdn.example.com/first.jpg',
+        filename: 'first.jpg',
+      });
+      await Promise.resolve();
+    });
+    expect(result.current.items[0].resultUrl).toBe('https://cdn.example.com/second.jpg');
+  });
+
   it('移除項目：不影響其他仍在處理中或已成功的項目', async () => {
     fetchImageMock.mockImplementation(() => new Promise(() => {})); // 永遠 pending
 
