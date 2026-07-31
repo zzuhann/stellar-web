@@ -14,7 +14,7 @@ export interface ImportFormSnapshot {
 
 export interface ImportFormUpdates {
   title?: string;
-  description?: string; // 承接 redemptionCondition（見 design-backend.md：由前端決定放哪）
+  description?: string; // 貼上的文案原文整段，見下方 mergeParsedCaptionIntoForm 的說明
   startDate?: string;
   endDate?: string;
   location?: ParsedCaptionLocation;
@@ -35,10 +35,16 @@ function isEmptyValue(value: string): boolean {
  * 多篇貼文合併規則（requirements.md）：只填目前為空的欄位，已有值的欄位一律不覆蓋。
  * 呼叫端必須傳入「回應當下」的表單快照（不是發送請求當下），對應 design-frontend.md
  * 〈Edge Cases〉：解析請求還在進行中、管理員手動編輯了某個欄位時，以回應當下為準。
+ *
+ * `rawCaption`：這次觸發解析的貼文文案「原文整段、一字不差」。`description` 欄位不是從
+ * Gemini 抽出來的任何欄位組成的，而是直接承接管理員貼進「貼上貼文文案」文字框的原始文字——
+ * 只要當下 `description` 是空的，文案解析成功就會整段填入，跟 Gemini 這次實際抽出了哪些
+ * 欄位無關（使用者拍板決定，2026-07-31）。
  */
 export function mergeParsedCaptionIntoForm(
   current: ImportFormSnapshot,
-  parsed: ParsedCaptionData
+  parsed: ParsedCaptionData,
+  rawCaption: string
 ): MergeParsedCaptionResult {
   const updates: ImportFormUpdates = {};
   const filledFieldLabels: string[] = [];
@@ -71,9 +77,9 @@ export function mergeParsedCaptionIntoForm(
     if (fillsInstagram || fillsThreads) filledFieldLabels.push('社群帳號');
   }
 
-  if (isEmptyValue(current.description) && parsed.redemptionCondition) {
-    updates.description = parsed.redemptionCondition;
-    filledFieldLabels.push('領取條件');
+  if (isEmptyValue(current.description) && rawCaption.trim() !== '') {
+    updates.description = rawCaption;
+    filledFieldLabels.push('描述');
   }
 
   return { updates, filledFieldLabels };

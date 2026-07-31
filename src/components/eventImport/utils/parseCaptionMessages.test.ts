@@ -14,7 +14,6 @@ const emptyParsed: ParsedCaptionData = {
   eventDateEnd: null,
   location: null,
   socialMedia: null,
-  redemptionCondition: null,
 };
 
 describe('isParsedEmpty', () => {

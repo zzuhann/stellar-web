@@ -5,6 +5,9 @@ export const PARSE_NO_CONTENT_MESSAGE =
   '無法從這段文字判斷任何活動資訊，請確認貼上的是完整貼文文案，或直接手動填寫下方欄位。';
 export const PARSE_SYSTEM_ERROR_MESSAGE = '解析發生錯誤，請稍後再試。';
 
+// 注意：這裡刻意不看 `description`——`description` 現在是「文案原文整段」，只要有貼上
+// 文案就一定有內容，跟 Gemini 這次有沒有抽到任何活動資訊無關，不該拿來判斷「解析有沒有
+// 抽出東西」（否則這個判斷永遠是 false，(a) 的錯誤文案就再也不會出現）。
 export function isParsedEmpty(parsed: ParsedCaptionData): boolean {
   return (
     !parsed.title &&
@@ -12,8 +15,7 @@ export function isParsedEmpty(parsed: ParsedCaptionData): boolean {
     !parsed.eventDateStart &&
     !parsed.eventDateEnd &&
     !parsed.location &&
-    !parsed.socialMedia &&
-    !parsed.redemptionCondition
+    !parsed.socialMedia
   );
 }
 

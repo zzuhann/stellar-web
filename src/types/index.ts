@@ -473,7 +473,6 @@ export interface ParsedCaptionData {
   eventDateEnd: string | null; // YYYY-MM-DD
   location: ParsedCaptionLocation | null;
   socialMedia: { instagram?: string; threads?: string } | null;
-  redemptionCondition: string | null;
 }
 
 export type ParseCaptionReason =

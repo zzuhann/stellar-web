@@ -30,7 +30,7 @@ import {
   mergeParsedCaptionIntoForm,
   buildParsedFieldsToastMessage,
 } from './utils/mergeParsedCaption';
-import { resolveParseCaptionError, isParsedEmpty } from './utils/parseCaptionMessages';
+import { resolveParseCaptionError } from './utils/parseCaptionMessages';
 
 const pageContainer = css({
   width: '100%',
@@ -128,7 +128,7 @@ export default function EventImportForm() {
   const parseCaptionMutation = useParseCaptionMutation();
 
   const applyParsedCaption = useCallback(
-    (parsed: ParsedCaptionData) => {
+    (parsed: ParsedCaptionData, rawCaption: string) => {
       const { updates, filledFieldLabels } = mergeParsedCaptionIntoForm(
         {
           title: getValues('title') || '',
@@ -139,7 +139,8 @@ export default function EventImportForm() {
           instagram: getValues('instagram') || '',
           threads: getValues('threads') || '',
         },
-        parsed
+        parsed,
+        rawCaption
       );
 
       const filledKeys: AutoFillKey[] = [];
@@ -194,9 +195,10 @@ export default function EventImportForm() {
         setCaptionErrorMessage(resolveParseCaptionError(response, undefined));
         if (response.success) {
           setDetectedArtistName(response.parsed.artistName);
-          if (!isParsedEmpty(response.parsed)) {
-            applyParsedCaption(response.parsed);
-          }
+          // description（文案原文整段）不管 Gemini 這次抽出了什麼都會嘗試套用，
+          // 不像其他欄位受限於 Gemini 有沒有抽到東西——所以這裡不再用
+          // isParsedEmpty 擋（那個判斷只用來決定要不要顯示 (a) 常駐錯誤文案）。
+          applyParsedCaption(response.parsed, caption);
         } else {
           setDetectedArtistName(null);
         }
@@ -479,7 +481,7 @@ export default function EventImportForm() {
             詳細說明
           </label>
           <p className={helperText}>
-            可填入應援禮說明、預約/號碼牌規則、場地注意事項等；若文案有解析出領取／兌換條件，會自動帶入此欄位
+            可填入應援禮說明、預約/號碼牌規則、場地注意事項等；若已貼上文案，會自動帶入文案原文整段，可直接修改
           </p>
           <textarea
             className={input}
