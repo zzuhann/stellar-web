@@ -117,7 +117,7 @@ useEffect 在最下面（return 之上）
 
 **不使用原生 `<select>`**，一律用 custom dropdown button + 浮動選單實作，視覺風格才能統一控制。
 
-標準 pattern（參考 `src/components/admin/venues/PageVenues.tsx`、`src/components/admin/VenueForm/index.tsx`）：
+標準 pattern（參考 `src/components/admin-new/VenueForm.tsx`）：
 
 ```typescript
 // CSS

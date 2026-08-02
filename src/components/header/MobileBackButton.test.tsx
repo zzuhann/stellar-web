@@ -18,13 +18,10 @@ describe('MobileBackButton', () => {
 
   afterEach(cleanup);
 
-  it.each(['/', '/admin', '/admin/venues', '/admin-new/review'])(
-    '%s 不顯示全域返回鍵',
-    (pathname) => {
-      render(<MobileBackButton pathname={pathname} />);
-      expect(screen.queryByRole('button', { name: '返回上一頁' })).toBeNull();
-    }
-  );
+  it.each(['/', '/admin-new', '/admin-new/review'])('%s 不顯示全域返回鍵', (pathname) => {
+    render(<MobileBackButton pathname={pathname} />);
+    expect(screen.queryByRole('button', { name: '返回上一頁' })).toBeNull();
+  });
 
   it('地圖頁跟其他一般頁面一樣顯示返回鍵', () => {
     render(<MobileBackButton pathname="/map/artist-1" />);
