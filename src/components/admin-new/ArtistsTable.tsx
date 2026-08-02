@@ -7,6 +7,7 @@ import { css, cva } from '@/styled-system/css';
 import Skeleton from '@/components/ui/Skeleton';
 import type { AdminPagination } from '@/lib/api';
 import type { Artist } from '@/types';
+import { formatBirthdayFull } from '@/utils/birthdayHelpers';
 
 // ─── Table CSS ────────────────────────────────────────────────────────────────
 
@@ -501,6 +502,9 @@ function SkeletonTableRows() {
             <Skeleton width="60px" height="16px" />
           </td>
           <td className={td}>
+            <Skeleton width="60px" height="16px" />
+          </td>
+          <td className={td}>
             <Skeleton width="120px" height="16px" />
           </td>
           <td className={td}>
@@ -686,6 +690,9 @@ export default function ArtistsTable({
               <th className={th} style={{ minWidth: '100px' }}>
                 本名
               </th>
+              <th className={th} style={{ width: '100px' }}>
+                生日
+              </th>
               <th className={th} style={{ width: '260px' }}>
                 Slug
               </th>
@@ -718,6 +725,9 @@ export default function ArtistsTable({
                   <td className={tdName}>{artist.stageName}</td>
                   <td className={tdNameSecondary}>{artist.stageNameZh ?? '—'}</td>
                   <td className={tdNameSecondary}>{artist.realName ?? '—'}</td>
+                  <td className={tdDate}>
+                    {artist.birthday ? formatBirthdayFull(artist.birthday) : '—'}
+                  </td>
                   <td className={tdSlug}>{artist.slug ?? '—'}</td>
                   <td className={td}>
                     <span
@@ -806,6 +816,12 @@ export default function ArtistsTable({
                 </div>
                 <div className={mobileRowLine2}>
                   <span className={mobileRowSlug}>{artist.slug ?? '—'}</span>
+                  {artist.birthday && (
+                    <>
+                      <span>·</span>
+                      <span>生日 {formatBirthdayFull(artist.birthday)}</span>
+                    </>
+                  )}
                   <span>·</span>
                   <span>{formatDate(artist.createdAt)}</span>
                 </div>

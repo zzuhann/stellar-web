@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { CheckIcon, EyeIcon, PencilSquareIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import type { Artist, CoffeeEvent } from '@/types';
+import { formatBirthdayFull } from '@/utils/birthdayHelpers';
 import { reviewButton } from './reviewButtonStyles';
 
 interface ReviewCardProps {
@@ -103,6 +104,12 @@ const cardSubtitle = css({
   color: 'color.text.secondary',
 });
 
+const cardBirthday = css({
+  fontSize: 'sm',
+  fontVariantNumeric: 'tabular-nums',
+  color: 'color.text.secondary',
+});
+
 const cardMeta = css({
   paddingTop: '1',
   fontSize: 'xs',
@@ -137,6 +144,7 @@ export default function ReviewCard({
   const name = artist ? item.stageNameZh || item.stageName : item.title;
   const subtitle = artist ? item.stageName : item.artists.map(({ name }) => name).join('、');
   const image = artist ? item.profileImage : item.mainImage;
+  const birthdayText = artist ? formatBirthdayFull(item.birthday ?? '') : '';
 
   return (
     <article className={card}>
@@ -166,6 +174,7 @@ export default function ReviewCard({
       <div className={cardBody}>
         <h3 className={cardName}>{name}</h3>
         <p className={cardSubtitle}>{subtitle}</p>
+        {birthdayText && <p className={cardBirthday}>生日 {birthdayText}</p>}
         <p className={cardMeta}>投稿於 {formatCreatedAt(item.createdAt)}</p>
       </div>
       <div className={actionsRow}>
