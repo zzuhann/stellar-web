@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import Link from 'next/link';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { useQueryState, parseAsInt } from '@/hooks/useQueryState';
@@ -49,6 +50,30 @@ const pageTitle = css({
   textStyle: 'h3',
   color: 'color.text.primary',
   margin: 0,
+});
+
+const titleRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  flexWrap: 'wrap',
+  gap: '2',
+});
+
+const importLinkButton = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  minHeight: '44px',
+  paddingY: '2',
+  paddingX: '4',
+  border: '1px solid',
+  borderColor: 'color.primary',
+  borderRadius: 'radius.md',
+  color: 'color.primary',
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
+  textDecoration: 'none',
+  '&:hover': { background: 'alpha.primary.10' },
 });
 
 const controlRow = css({
@@ -185,7 +210,12 @@ function AdminEventsInner() {
 
       <main className={mainContent}>
         <div className={topBar}>
-          <h1 className={pageTitle}>活動列表</h1>
+          <div className={titleRow}>
+            <h1 className={pageTitle}>活動列表</h1>
+            <Link href="/admin-new/events/import" className={importLinkButton}>
+              貼文匯入
+            </Link>
+          </div>
           <div className={controlRow}>
             <SearchFieldDropdown value={field} onChange={handleFieldChange} />
             <div className={searchWrapper}>
