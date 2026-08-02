@@ -2,6 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Header from './index';
+import { useHeaderTitleStore } from '@/store/useHeaderTitleStore';
 
 const back = vi.fn();
 const push = vi.fn();
@@ -80,5 +81,22 @@ describe('Header', () => {
     mockPathname = '/map/wonwoo';
     render(<Header />);
     expect(screen.getByRole('button', { name: '返回上一頁' })).not.toBeNull();
+  });
+
+  describe('title 顯示（useHeaderTitleStore）', () => {
+    afterEach(() => {
+      useHeaderTitleStore.getState().setTitle(null);
+    });
+
+    it('title 為 null（非 map 頁）→ 不渲染 title 容器', () => {
+      render(<Header />);
+      expect(screen.queryByText(/的生日應援地圖/)).toBeNull();
+    });
+
+    it('title 有值（map 頁設定後）→ 顯示完整文字，不截斷 DOM 內容', () => {
+      useHeaderTitleStore.getState().setTitle('Freen Sarocha Chankimha 的生日應援地圖');
+      render(<Header />);
+      expect(screen.getByText('Freen Sarocha Chankimha 的生日應援地圖')).not.toBeNull();
+    });
   });
 });

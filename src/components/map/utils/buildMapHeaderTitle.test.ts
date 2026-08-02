@@ -21,6 +21,14 @@ describe('buildMapHeaderTitle', () => {
     expect(buildMapHeaderTitle('BLACKPINK', '')).toBe('BLACKPINK 的生日應援地圖');
   });
 
+  it('stageNameZh 為純空白字串 "   " → 同樣視為不存在，不出現多餘空白', () => {
+    expect(buildMapHeaderTitle('BLACKPINK', '   ')).toBe('BLACKPINK 的生日應援地圖');
+  });
+
+  it('stageName 為純空白字串 "   " → 視為不存在，回傳空字串', () => {
+    expect(buildMapHeaderTitle('   ', '李知恩')).toBe('');
+  });
+
   it('stageName 不存在（尚未載入） → 回傳空字串，不組出殘缺標題', () => {
     expect(buildMapHeaderTitle('', undefined)).toBe('');
     expect(buildMapHeaderTitle(undefined, '中文名')).toBe('');

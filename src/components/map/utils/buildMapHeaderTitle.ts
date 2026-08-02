@@ -7,7 +7,7 @@ export const buildMapHeaderTitle = (
   const normalizedStageName = stageName?.trim() ? stageName : '';
   if (!normalizedStageName) return '';
 
-  const normalizedStageNameZh = stageNameZh || undefined;
+  const normalizedStageNameZh = stageNameZh?.trim() ? stageNameZh : undefined;
 
   return normalizedStageNameZh
     ? `${normalizedStageName} ${normalizedStageNameZh}的生日應援地圖`
