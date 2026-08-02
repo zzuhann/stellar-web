@@ -30,7 +30,7 @@ import {
   mergeParsedCaptionIntoForm,
   buildParsedFieldsToastMessage,
 } from './utils/mergeParsedCaption';
-import { resolveParseCaptionError } from './utils/parseCaptionMessages';
+import { resolveParseCaptionError, shouldApplyParsedCaption } from './utils/parseCaptionMessages';
 
 const pageContainer = css({
   width: '100%',
@@ -207,10 +207,13 @@ export default function EventImportForm() {
         setCaptionErrorMessage(resolveParseCaptionError(response, undefined));
         if (response.success) {
           setDetectedArtistName(response.parsed.artistName);
-          // description（文案原文整段）不管 Gemini 這次抽出了什麼都會嘗試套用，
-          // 不像其他欄位受限於 Gemini 有沒有抽到東西——所以這裡不再用
-          // isParsedEmpty 擋（那個判斷只用來決定要不要顯示 (a) 常駐錯誤文案）。
-          applyParsedCaption(response.parsed, caption);
+          // Gemini 判定完全解析不出任何內容時（所有欄位皆為 null），description 也要維持
+          // 原樣、不套用原文——這種情況會走 resolveParseCaptionError 的 (a) 常駐錯誤文案，
+          // 不是「這段文字是有效活動貼文但沒有 description 相關內容」。只有 Gemini 確實抽出
+          // 至少一個有效欄位時，才代表這段文字是有效活動貼文，description 才套用原文整段。
+          if (shouldApplyParsedCaption(response)) {
+            applyParsedCaption(response.parsed, caption);
+          }
         } else {
           setDetectedArtistName(null);
         }

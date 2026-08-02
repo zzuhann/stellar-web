@@ -40,3 +40,13 @@ export function resolveParseCaptionError(
   if (!response.success) return PARSE_SYSTEM_ERROR_MESSAGE;
   return isParsedEmpty(response.parsed) ? PARSE_NO_CONTENT_MESSAGE : null;
 }
+
+/**
+ * 判斷這次解析結果要不要套用到表單欄位（含 description 原文整段）。
+ * `success:true` 但所有欄位皆為 null，代表這段文案完全解析不出任何活動資訊——
+ * 這種情況所有欄位（含 description）都應維持原樣，改走 resolveParseCaptionError
+ * 的 (a) 常駐錯誤文案，不應該連 description 都被原文覆蓋。
+ */
+export function shouldApplyParsedCaption(response: ParseCaptionResponse): boolean {
+  return response.success && !isParsedEmpty(response.parsed);
+}

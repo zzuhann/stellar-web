@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   isParsedEmpty,
   resolveParseCaptionError,
+  shouldApplyParsedCaption,
   PARSE_NO_CONTENT_MESSAGE,
   PARSE_SYSTEM_ERROR_MESSAGE,
 } from './parseCaptionMessages';
@@ -75,5 +76,21 @@ describe('resolveParseCaptionError', () => {
 
   it('尚未有回應也沒有錯誤時 → 不顯示', () => {
     expect(resolveParseCaptionError(undefined, undefined)).toBeNull();
+  });
+});
+
+describe('shouldApplyParsedCaption', () => {
+  it('success:true 但所有欄位皆為 null（完全解析不出內容）→ 不套用，description 不應被原文覆蓋', () => {
+    expect(shouldApplyParsedCaption({ success: true, parsed: emptyParsed })).toBe(false);
+  });
+
+  it('success:true 且至少一個欄位有值 → 套用', () => {
+    expect(
+      shouldApplyParsedCaption({ success: true, parsed: { ...emptyParsed, title: '活動標題' } })
+    ).toBe(true);
+  });
+
+  it('success:false → 不套用', () => {
+    expect(shouldApplyParsedCaption({ success: false, reason: 'quota_exceeded' })).toBe(false);
   });
 });
