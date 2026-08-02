@@ -100,7 +100,14 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
   const isFavorited = favoriteStatus?.isFavorited ?? false;
   const isPending = favoriteToggle.isPending;
 
-  const handleShare = () => {
+  const handleShare = (buttonLocation: 'bottom_bar' | 'bottom_sheet') => {
+    sendGAEvent('event', 'share_event', {
+      event_page: '/event/[id]',
+      user_id: user?.uid ?? '',
+      content_id: event.id,
+      button_location: buttonLocation,
+    });
+
     share({
       title: event.title,
       text: '我在 STELLAR 看到這個生日應援！',
@@ -132,7 +139,7 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
 
   const handleShareFromSheet = () => {
     setIsSheetOpen(false);
-    handleShare();
+    handleShare('bottom_sheet');
   };
 
   const isLoading = isFavoriteStatusLoading && !!user;
@@ -154,7 +161,7 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
         ) : (
           <button
             className={actionButton}
-            onClick={handleShare}
+            onClick={() => handleShare('bottom_bar')}
             aria-label="分享此活動"
             type="button"
           >

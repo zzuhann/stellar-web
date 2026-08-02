@@ -25,6 +25,7 @@ export default function ShareButton() {
       event_page: pathname.startsWith('/event/') ? '/event/[id]' : '/map/[artistId]',
       user_id: user?.uid ?? '',
       content_id: contentId,
+      button_location: 'top_button',
     });
 
     share(shareData);
