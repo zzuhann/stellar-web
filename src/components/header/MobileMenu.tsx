@@ -171,7 +171,7 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
 
         <div className={mobileMenuContent}>
           {!loading && user && userData?.role === 'admin' && (
-            <Link href="/admin" className={mobileMenuButton} onClick={closeMobileMenu}>
+            <Link href="/admin-new" className={mobileMenuButton} onClick={closeMobileMenu}>
               管理員審核
             </Link>
           )}

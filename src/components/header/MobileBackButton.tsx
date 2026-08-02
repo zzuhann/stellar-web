@@ -28,13 +28,7 @@ interface MobileBackButtonProps {
 }
 
 export function shouldShowMobileBackButton(pathname: string) {
-  return (
-    pathname !== '/' &&
-    pathname !== '/admin' &&
-    !pathname.startsWith('/admin/') &&
-    pathname !== '/admin-new' &&
-    !pathname.startsWith('/admin-new/')
-  );
+  return pathname !== '/' && pathname !== '/admin-new' && !pathname.startsWith('/admin-new/');
 }
 
 export default function MobileBackButton({ pathname }: MobileBackButtonProps) {

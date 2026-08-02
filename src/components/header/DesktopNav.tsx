@@ -58,7 +58,7 @@ const DesktopNav = () => {
       {user ? (
         <div className={rightSection}>
           {userData?.role === 'admin' && (
-            <Link className={styledLink} href="/admin">
+            <Link className={styledLink} href="/admin-new">
               管理員審核
             </Link>
           )}
