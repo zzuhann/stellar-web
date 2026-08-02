@@ -100,12 +100,12 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
   const isFavorited = favoriteStatus?.isFavorited ?? false;
   const isPending = favoriteToggle.isPending;
 
-  const handleShare = () => {
+  const handleShare = (buttonLocation: 'bottom_bar' | 'bottom_sheet') => {
     sendGAEvent('event', 'share_event', {
       event_page: '/event/[id]',
       user_id: user?.uid ?? '',
       content_id: event.id,
-      button_location: 'bottom_bar',
+      button_location: buttonLocation,
     });
 
     share({
@@ -139,7 +139,7 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
 
   const handleShareFromSheet = () => {
     setIsSheetOpen(false);
-    handleShare();
+    handleShare('bottom_sheet');
   };
 
   const isLoading = isFavoriteStatusLoading && !!user;
@@ -161,7 +161,7 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
         ) : (
           <button
             className={actionButton}
-            onClick={handleShare}
+            onClick={() => handleShare('bottom_bar')}
             aria-label="分享此活動"
             type="button"
           >
