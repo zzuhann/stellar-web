@@ -13,6 +13,7 @@ import useMapNewLocation from './hooks/useMapNewLocation';
 import { useMapNewState } from './hooks/useMapNewState';
 import { useMapStateStorage } from './hooks/useMapStateStorage';
 import { useHeaderTitleStore } from '@/store/useHeaderTitleStore';
+import { buildMapHeaderTitle } from './utils/buildMapHeaderTitle';
 import MapBottomSheet from './MapBottomSheet';
 import MapSingleEventCard from './MapSingleEventCard';
 import { MapEvent } from '@/types';
@@ -130,15 +131,15 @@ export default function MapPage({ artistId }: MapPageProps) {
     }
   }, [isMapLoading, isArtistLoading, artistData, router]);
 
-  const artistName = artistData?.stageNameZh ?? artistData?.stageName ?? '';
+  const headerTitle = buildMapHeaderTitle(artistData?.stageName, artistData?.stageNameZh);
 
   // 把藝人名稱灌進全域 Header 中間的標題區塊，離開地圖頁時清空避免殘留
   const setHeaderTitle = useHeaderTitleStore((state) => state.setTitle);
   useEffect(() => {
-    if (!artistName) return;
-    setHeaderTitle(`${artistName}的生日應援地圖`);
+    if (!headerTitle) return;
+    setHeaderTitle(headerTitle);
     return () => setHeaderTitle(null);
-  }, [artistName, setHeaderTitle]);
+  }, [headerTitle, setHeaderTitle]);
 
   if (!isMapLoading && !isArtistLoading && !artistData) return null;
 
