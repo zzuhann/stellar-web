@@ -75,18 +75,17 @@ const titleContainer = css({
   transform: 'translate(-50%, -50%)',
   width: 'min(260px, calc(100% - 260px))',
   textAlign: 'center',
-  overflow: 'hidden',
   pointerEvents: 'none',
 });
 
 const titleText = css({
   fontWeight: 'semibold',
   color: 'color.text.primary',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
+  whiteSpace: 'normal',
+  overflowWrap: 'break-word',
+  lineHeight: '1.3',
   display: 'block',
-  fontSize: 'clamp(12px, 3.8vw, 15px)',
+  fontSize: 'clamp(11px, 3.2vw, 14px)',
 });
 
 const Header = () => {

@@ -13,7 +13,7 @@ const topArtistItem = css({
   alignItems: 'center',
   gap: '1.5',
   flexShrink: 0,
-  width: '72px',
+  width: '88px',
   '&:focus-visible': {
     outline: '2px solid',
     outlineColor: 'color.primary',
@@ -41,6 +41,10 @@ const avatarInner = css({
   border: '2px solid',
   borderColor: 'color.background.primary',
   backgroundColor: 'color.background.secondary',
+});
+
+const artistNameWrapper = css({
+  width: '100%',
 });
 
 const artistName = css({
@@ -115,9 +119,13 @@ const TopArtistCard = ({ artist, onClick, isFirst = false }: TopArtistCardProps)
         </div>
         <BirthdayHat birthday={artist.birthday ?? ''} className={birthdayHat} />
       </div>
-      <div>
-        <p className={artistName}>{artist.stageName}</p>
-        <p className={artistName}>{artist.realName}</p>
+      <div className={artistNameWrapper}>
+        <p className={artistName} title={artist.stageName}>
+          {artist.stageName}
+        </p>
+        <p className={artistName} title={artist.realName}>
+          {artist.realName}
+        </p>
       </div>
       <div className={eventCountStyle}>
         <span>{eventCount} 個</span>
