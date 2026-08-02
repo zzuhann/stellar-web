@@ -101,6 +101,13 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
   const isPending = favoriteToggle.isPending;
 
   const handleShare = () => {
+    sendGAEvent('event', 'share_event', {
+      event_page: '/event/[id]',
+      user_id: user?.uid ?? '',
+      content_id: event.id,
+      button_location: 'bottom_bar',
+    });
+
     share({
       title: event.title,
       text: '我在 STELLAR 看到這個生日應援！',
