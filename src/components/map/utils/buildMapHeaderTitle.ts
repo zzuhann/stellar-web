@@ -4,10 +4,10 @@ export const buildMapHeaderTitle = (
   stageName: string | undefined | null,
   stageNameZh: string | undefined | null
 ): string => {
-  const normalizedStageName = stageName?.trim() ? stageName : '';
+  const normalizedStageName = stageName?.trim() || '';
   if (!normalizedStageName) return '';
 
-  const normalizedStageNameZh = stageNameZh?.trim() ? stageNameZh : undefined;
+  const normalizedStageNameZh = stageNameZh?.trim() || undefined;
 
   return normalizedStageNameZh
     ? `${normalizedStageName} ${normalizedStageNameZh}的生日應援地圖`
