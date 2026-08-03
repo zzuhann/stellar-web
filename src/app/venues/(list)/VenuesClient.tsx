@@ -261,7 +261,9 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
           ) : isLoading ? (
             Array.from({ length: 6 }, (_, i) => <VenueCardSkeleton key={i} />)
           ) : venues.length === 0 ? (
-            <div className={emptyState}>沒有符合條件的場地。試試調整地區或容納人數。</div>
+            <div className={emptyState}>
+              沒有符合條件的場地。試試調整地區、容納人數或搜尋關鍵字。
+            </div>
           ) : (
             venues.map((venue, index) => (
               <VenueCard key={venue.id} venue={venue} listPosition={index + 1} userId={user?.uid} />
