@@ -53,4 +53,16 @@ describe('parseVenuePage', () => {
     expect(parseVenuePage('abc')).toBe(1);
     expect(parseVenuePage('')).toBe(1);
   });
+
+  // Regression: parseInt() 對這類「前綴看起來像數字」或「有小數點」的字串太寬容
+  // （parseInt('2abc', 10) === 2、parseInt('1.5', 10) === 1），不是乾淨的正整數就該
+  // fallback 為 1，不能被靜默轉型成一個「看起來合理」但並非使用者/URL 原意的頁碼。
+  it('非乾淨的正整數字串（混雜字元、小數）fallback 為 1，不做寬鬆轉型', () => {
+    expect(parseVenuePage('2abc')).toBe(1);
+    expect(parseVenuePage('1.5')).toBe(1);
+  });
+
+  it('乾淨的正整數字串正確解析', () => {
+    expect(parseVenuePage('3')).toBe(3);
+  });
 });

@@ -27,8 +27,15 @@ export function parseVenueCapacity(value: string): CapacityFilter {
   return CAPACITY_OPTIONS.some((opt) => opt.id === value) ? (value as CapacityFilter) : 'all';
 }
 
-/** Non-positive-integer `page` URL values (missing, 0, negative, non-numeric) fall back to 1. */
+const POSITIVE_INTEGER_PATTERN = /^\d+$/;
+
+/**
+ * Non-positive-integer `page` URL values fall back to 1. Requires a *pure* positive
+ * integer string — parseInt would silently accept "2abc" (→ 2) or "1.5" (→ 1), which
+ * is too lenient for a URL param that should either be a clean page number or absent.
+ */
 export function parseVenuePage(value: string): number {
-  const n = parseInt(value, 10);
-  return Number.isFinite(n) && n >= 1 ? n : 1;
+  if (!POSITIVE_INTEGER_PATTERN.test(value)) return 1;
+  const n = Number(value);
+  return n >= 1 ? n : 1;
 }
