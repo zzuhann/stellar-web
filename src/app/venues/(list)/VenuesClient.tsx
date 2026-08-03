@@ -219,8 +219,6 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
     if (nextSort === sort) return;
 
     sessionStorage.removeItem(SCROLL_KEY);
-    // 2026-08-03 使用者裁定推翻原「排序切換不 scroll to top」的行為，統一為所有篩選
-    // 條件改變都 scroll to top。
     window.scrollTo({ top: 0, behavior: 'smooth' });
     mergeUpdates(() => {
       setSort(nextSort === 'newest' ? null : nextSort);

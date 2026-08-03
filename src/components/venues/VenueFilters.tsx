@@ -8,8 +8,6 @@ import { CAPACITY_OPTIONS, type CapacityFilter } from './venueCapacity';
 
 export type { CapacityFilter };
 
-// 800ms 對齊 PlaceAutocomplete.tsx / ArtistSearchModal.tsx 既有的搜尋 debounce，
-// 統一使用者對搜尋反應速度的預期（2026-08-03 使用者裁定，原 300ms 改為 800ms）。
 const SEARCH_DEBOUNCE_MS = 800;
 
 const filterBar = css({
@@ -292,9 +290,6 @@ const clearFiltersIcon = css({
 
 export type VenueSort = 'eventCount' | 'newest';
 
-// 2026-08-03 使用者裁定：`newest`/最新上架排第一、且為預設值，對齊正式上線既有行為
-// （design-frontend.md 先前寫的 eventCount 預設是文件與實作間的既有 drift，這次修正
-// 文件對齊實際行為，而非反向把實作改成文件寫的樣子）。
 const SORT_OPTIONS: { id: VenueSort; label: string }[] = [
   { id: 'newest', label: '最新上架' },
   { id: 'eventCount', label: '最多收錄生咖' },
