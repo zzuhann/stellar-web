@@ -20,12 +20,10 @@ export const metadata = {
 };
 
 export default async function VenuesPage() {
-  // This fetch exists solely to enumerate which regions currently have active venues
-  // (for the filter chip list), so it needs a large explicit limit to see everything —
-  // it is NOT reused as paginated initialData for the client query below. Reusing it
-  // would mean re-deriving pagination.total/totalPages on the frontend from a
-  // differently-shaped request, which drifts from the backend the moment either side
-  // changes. See design-frontend.md "SSR 地區清單 vs. 分頁的衝突".
+  // 這支 fetch 唯一目的是列舉目前有場地的地區（給地區 chip 用），所以要帶大 limit
+  // 一次拿到全部——不會拿來當下方 client 端分頁查詢的 initialData。若重用它，等於要
+  // 在前端根據一個形狀不同的請求反推 pagination.total/totalPages，兩邊邏輯遲早會對不上。
+  // 詳見 design-frontend.md「SSR 地區清單 vs. 分頁的衝突」。
   const data = await venueApi
     .getVenues({ status: 'active', limit: 1000 })
     .catch(() => ({ venues: [] }));

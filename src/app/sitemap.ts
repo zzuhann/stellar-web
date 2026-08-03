@@ -24,8 +24,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const [artists, eventsResponse, venuesResponse] = await Promise.all([
       artistsApi.getAll({ status: 'approved' }),
       eventsApi.getAll({ status: 'approved', limit: 1000 }),
-      // Explicit large limit: the backend now defaults to 20 for non-random queries,
-      // but the sitemap needs every active venue, not just the first page.
+      // 後端非 random 查詢現在預設分頁 20 筆，但 sitemap 需要列出全部 active 場地，
+      // 不能只拿第一頁，故明確帶大 limit。
       venueApi.getVenues({ status: 'active', limit: 1000 }),
     ]);
 
