@@ -447,13 +447,24 @@ export interface CreateVenueData {
 export interface VenueFilterParams {
   region?: string[];
   capacityRange?: CapacityRange;
+  search?: string;
   sort?: 'eventCount' | 'name' | 'newest' | 'random';
+  page?: number;
   limit?: number;
   status?: 'active' | 'inactive' | 'pending' | 'rejected' | 'all';
 }
 
+export interface VenuesPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
 export interface VenuesResponse {
   venues: Venue[];
+  // Absent for sort=random queries (backend does not paginate that mode).
+  pagination?: VenuesPagination;
 }
 
 // ─── 活動貼文匯入（Phase A，admin-only） ──────────────────────────────────

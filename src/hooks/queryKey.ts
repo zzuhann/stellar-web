@@ -7,7 +7,13 @@ const queryKey = {
   adminVenues: (params?: { search?: string; status?: string; page?: number; limit?: number }) =>
     params !== undefined ? ['admin-venues', params] : ['admin-venues'],
   venueDetail: (venueId: string) => ['venue-detail', venueId],
-  venues: (params?: unknown) => ['venues', params],
+  venues: (params?: {
+    region?: string;
+    capacityRange?: string;
+    search?: string;
+    sort?: string;
+    page?: number;
+  }) => ['venues', params],
   artistEvents: (artistId: string) => ['artist-events', artistId],
   adminEvents: (params: {
     search?: string;

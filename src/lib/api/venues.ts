@@ -67,8 +67,14 @@ export const venueApi = {
     if (params.capacityRange !== undefined) {
       searchParams.set('capacityRange', params.capacityRange);
     }
+    if (params.search) {
+      searchParams.set('search', params.search);
+    }
     if (params.sort) {
       searchParams.set('sort', params.sort);
+    }
+    if (params.page !== undefined) {
+      searchParams.set('page', String(params.page));
     }
     if (params.limit !== undefined) {
       searchParams.set('limit', String(params.limit));

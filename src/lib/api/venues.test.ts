@@ -39,4 +39,20 @@ describe('venueApi', () => {
 
     expect(api.get).toHaveBeenCalledWith('/venues?sort=random&limit=10');
   });
+
+  it('送出 search 與 page 查詢參數', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { venues: [] } });
+
+    await venueApi.getVenues({ search: 'ABC Mart', page: 2, limit: 20 });
+
+    expect(api.get).toHaveBeenCalledWith('/venues?search=ABC+Mart&page=2&limit=20');
+  });
+
+  it('未帶 search 時不附加 search 參數', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { venues: [] } });
+
+    await venueApi.getVenues({ search: '', page: 1 });
+
+    expect(api.get).toHaveBeenCalledWith('/venues?page=1');
+  });
 });
