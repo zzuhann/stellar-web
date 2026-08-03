@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import VerticalEventCard from '@/components/EventCard/VerticalEventCard';
 import { UseMutationResult } from '@tanstack/react-query';
 import { EyeIcon, PencilIcon, TrashIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
-import SubmissionsPagination from './SubmissionsPagination';
+import SubmissionsPagination from '@/components/ui/SubmissionsPagination';
 import type { DeleteEventVariables } from '../hooks/useDeleteEventMutation';
 import type {
   CoffeeEvent,

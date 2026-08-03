@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { css } from '@/styled-system/css';
 import { venueApi } from '@/lib/api';
@@ -9,14 +9,15 @@ import { useAuth } from '@/lib/auth-context';
 import { usePageView } from '@/hooks/usePageView';
 import { trackFilterVenues } from '@/lib/analytics/venues';
 import { useQueryState } from '@/hooks/useQueryState';
-import { REGIONS } from '@/constants';
-import type { Venue, CapacityRange } from '@/types';
+import { useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
+import { parseVenueCapacity, parseVenuePage, parseVenueSort } from '@/utils/venues';
 import VenueFilters, {
   type CapacityFilter,
   type VenueSort,
 } from '@/components/venues/VenueFilters';
 import VenueCard from '@/components/venues/VenueCard';
 import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
+import SubmissionsPagination from '@/components/ui/SubmissionsPagination';
 
 const SCROLL_KEY = 'venues_scrollY';
 
@@ -71,58 +72,81 @@ const emptyState = css({
   textStyle: 'bodySmall',
 });
 
-function applyCapacityFilter(venues: Venue[], cap: CapacityFilter): Venue[] {
-  if (cap === 'all') return venues;
-  return venues.filter((v) => v.capacityRange === (cap as CapacityRange));
-}
+const retryButton = css({
+  marginTop: '3',
+  paddingY: '2',
+  paddingX: '4',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'color.background.primary',
+  color: 'color.primary',
+  cursor: 'pointer',
+  textStyle: 'bodySmall',
+  fontWeight: 'semibold',
+});
 
 interface VenuesClientProps {
-  initialVenues: Venue[];
+  // Precomputed server-side (see page.tsx) from a large, unpaginated fetch — kept
+  // separate from the paginated list query so the two concerns don't get conflated.
+  regions: string[];
 }
 
-const VALID_SORT_VALUES: VenueSort[] = ['eventCount', 'newest'];
+const PAGE_LIMIT = 20;
 
-function parseAsSort(value: string): VenueSort {
-  return VALID_SORT_VALUES.includes(value as VenueSort) ? (value as VenueSort) : 'newest';
-}
-
-export default function VenuesClient({ initialVenues }: VenuesClientProps) {
+export default function VenuesClient({ regions }: VenuesClientProps) {
   const { user } = useAuth();
-  const [region, setRegion] = useState('全部');
-  const [capacity, setCapacity] = useState<CapacityFilter>('all');
-  const [sort, setSort] = useQueryState<VenueSort>('sort', {
-    parse: parseAsSort,
-    defaultValue: 'newest',
+  const { mergeUpdates } = useQueryStateContextMergeUpdates();
+
+  const [region, setRegion] = useQueryState('region', {
+    parse: (value: string) => value,
+    defaultValue: '全部',
   });
+  const [capacity, setCapacity] = useQueryState<CapacityFilter>('capacity', {
+    parse: parseVenueCapacity,
+    defaultValue: 'all',
+  });
+  const [search, setSearch] = useQueryState('q', {
+    parse: (value: string) => value,
+    defaultValue: '',
+  });
+  const [sort, setSort] = useQueryState<VenueSort>('sort', {
+    parse: parseVenueSort,
+    defaultValue: 'eventCount',
+  });
+  const [pageNum, setPageNum] = useQueryState<number>('page', {
+    parse: parseVenuePage,
+    defaultValue: 1,
+  });
+
   const shouldTrackFilterChange = useRef(false);
 
   usePageView({ eventPage: '/venues' });
 
-  // Derive available regions from SSR data (keeps only regions with actual venues),
-  // ordered north-to-south per REGIONS. Regions not in REGIONS are dropped (dirty data).
-  const regions = useMemo(() => {
-    const order: readonly string[] = REGIONS;
-    const unique = Array.from(new Set(initialVenues.map((v) => v.region))).filter((r) =>
-      order.includes(r)
-    );
-    unique.sort((a, b) => order.indexOf(a) - order.indexOf(b));
-    return ['全部', ...unique];
-  }, [initialVenues]);
+  const queryParams = {
+    region: region === '全部' ? undefined : [region],
+    capacityRange: capacity === 'all' ? undefined : capacity,
+    search: search || undefined,
+    sort,
+    page: pageNum,
+    limit: PAGE_LIMIT,
+    status: 'active' as const,
+  };
 
-  const { data, isLoading } = useQuery({
-    queryKey: queryKey.venues({ region, sort }),
-    queryFn: () =>
-      venueApi.getVenues({
-        region: region === '全部' ? undefined : [region],
-        status: 'active',
-        sort,
-      }),
-    initialData: region === '全部' && sort === 'newest' ? { venues: initialVenues } : undefined,
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: queryKey.venues({
+      region: region === '全部' ? undefined : region,
+      capacityRange: queryParams.capacityRange,
+      search: queryParams.search,
+      sort,
+      page: pageNum,
+    }),
+    queryFn: () => venueApi.getVenues(queryParams),
     staleTime: 5 * 60 * 1000,
   });
 
   const venues = data?.venues ?? [];
-  const filtered = applyCapacityFilter(venues, capacity);
+  const pagination = data?.pagination;
 
   // Restore scroll position on back navigation (popstate fires even when component is cached)
   useEffect(() => {
@@ -149,31 +173,55 @@ export default function VenuesClient({ initialVenues }: VenuesClientProps) {
       userId: user?.uid,
       filterRegion: region,
       filterCapacity: capacity,
-      resultCount: filtered.length,
+      searchQuery: search,
+      resultCount: venues.length,
     });
     shouldTrackFilterChange.current = false;
-  }, [capacity, filtered.length, isLoading, region, user?.uid]);
+  }, [capacity, isLoading, region, search, user?.uid, venues.length]);
 
   const handleRegionChange = (nextRegion: string) => {
     if (nextRegion === region && capacity === 'all') return;
 
     shouldTrackFilterChange.current = true;
-    setRegion(nextRegion);
-    setCapacity('all');
+    mergeUpdates(() => {
+      setRegion(nextRegion === '全部' ? null : nextRegion);
+      setCapacity(null);
+      setPageNum(null);
+    });
   };
 
   const handleCapacityChange = (nextCapacity: CapacityFilter) => {
     if (nextCapacity === capacity) return;
 
     shouldTrackFilterChange.current = true;
-    setCapacity(nextCapacity);
+    mergeUpdates(() => {
+      setCapacity(nextCapacity === 'all' ? null : nextCapacity);
+      setPageNum(null);
+    });
+  };
+
+  const handleSearchChange = (nextSearch: string) => {
+    if (nextSearch === search) return;
+
+    shouldTrackFilterChange.current = true;
+    mergeUpdates(() => {
+      setSearch(nextSearch || null);
+      setPageNum(null);
+    });
   };
 
   const handleSortChange = (nextSort: VenueSort) => {
     if (nextSort === sort) return;
 
     sessionStorage.removeItem(SCROLL_KEY);
-    setSort(nextSort === 'newest' ? null : nextSort);
+    mergeUpdates(() => {
+      setSort(nextSort === 'eventCount' ? null : nextSort);
+      setPageNum(null);
+    });
+  };
+
+  const handlePageChange = (nextPage: number) => {
+    setPageNum(nextPage === 1 ? null : nextPage);
   };
 
   return (
@@ -190,25 +238,44 @@ export default function VenuesClient({ initialVenues }: VenuesClientProps) {
           onRegionChange={handleRegionChange}
           capacity={capacity}
           onCapacityChange={handleCapacityChange}
+          search={search}
+          onSearchChange={handleSearchChange}
           sort={sort}
           onSortChange={handleSortChange}
         />
 
         <div aria-live="polite" aria-atomic="true" className="sr-only">
-          {isLoading ? '載入中' : `找到 ${filtered.length} 個場地`}
+          {isLoading ? '載入中' : `找到 ${venues.length} 個場地`}
         </div>
 
         <section aria-label="場地列表" className={listSection}>
-          {isLoading ? (
+          {isError ? (
+            <div className={emptyState}>
+              載入場地列表失敗，請重新整理頁面
+              <div>
+                <button type="button" className={retryButton} onClick={() => refetch()}>
+                  重試
+                </button>
+              </div>
+            </div>
+          ) : isLoading ? (
             Array.from({ length: 6 }, (_, i) => <VenueCardSkeleton key={i} />)
-          ) : filtered.length === 0 ? (
+          ) : venues.length === 0 ? (
             <div className={emptyState}>沒有符合條件的場地。試試調整地區或容納人數。</div>
           ) : (
-            filtered.map((venue, index) => (
+            venues.map((venue, index) => (
               <VenueCard key={venue.id} venue={venue} listPosition={index + 1} userId={user?.uid} />
             ))
           )}
         </section>
+
+        {!isLoading && !isError && pagination && (
+          <SubmissionsPagination
+            currentPage={pagination.page}
+            totalPages={pagination.totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ import {
   UserSubmissionsPagination,
 } from '@/types';
 import { actionButton, contentCard } from './styles';
-import SubmissionsPagination from './SubmissionsPagination';
+import SubmissionsPagination from '@/components/ui/SubmissionsPagination';
 
 const artistGrid = css({
   display: 'grid',

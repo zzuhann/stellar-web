@@ -62,7 +62,9 @@ export default async function VenueDetailPage({ params }: PageProps) {
 
   const relatedVenues: Venue[] = venue
     ? await venueApi
-        .getVenues({ region: [venue.region], status: 'active' })
+        // Explicit large limit: the backend now defaults to 20 for non-random queries,
+        // and we want every active venue in the region, not just the first page.
+        .getVenues({ region: [venue.region], status: 'active', limit: 1000 })
         .then((r) => r.venues.filter((v) => v.id !== id))
         .catch(() => [])
     : [];
