@@ -20,6 +20,7 @@ type HomeVenueCardEventParams = Omit<VenueCardEventParams, 'userId'>;
 interface VenueFilterEventParams extends VenueEventBaseParams {
   filterRegion: string;
   filterCapacity: string;
+  searchQuery: string;
   resultCount: number;
 }
 
@@ -109,6 +110,7 @@ export function trackFilterVenues({
   userId,
   filterRegion,
   filterCapacity,
+  searchQuery,
   resultCount,
 }: VenueFilterEventParams) {
   trackVenueEvent('filter_venues', {
@@ -117,6 +119,7 @@ export function trackFilterVenues({
     content_id: '',
     filter_region: filterRegion,
     filter_capacity: filterCapacity,
+    search_query: searchQuery,
     result_count: resultCount,
   });
 }

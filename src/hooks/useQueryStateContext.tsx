@@ -92,7 +92,12 @@ export function QueryStateProvider({ children }: { children: ReactNode }) {
         return next;
       });
 
-      const current = new URLSearchParams(searchParams.toString());
+      // 以 params（searchParams + 尚未回寫的 pendingOverrides）為底，而非直接讀
+      // searchParams —— router 的 searchParams 是非同步跟上 URL 的，若在它跟上前
+      // （例如 mergeUpdates 剛寫完 URL）又呼叫一次獨立的 setState，直接讀
+      // searchParams 會讀到舊值，把前一次已經寫入的欄位從 URL 洗掉。
+      const current = new URLSearchParams();
+      Object.entries(params).forEach(([k, v]) => current.set(k, v));
 
       if (isNonNullable(value)) {
         current.set(key, stringifyValue(value));
@@ -106,7 +111,7 @@ export function QueryStateProvider({ children }: { children: ReactNode }) {
         : (optionPathname ?? pathname);
       window.history[method === 'push' ? 'pushState' : 'replaceState'](null, '', newUrl);
     },
-    [searchParams, pathname]
+    [params, pathname]
   );
 
   const mergeUpdates: QueryStateContextValue['mergeUpdates'] = useCallback(
@@ -127,7 +132,10 @@ export function QueryStateProvider({ children }: { children: ReactNode }) {
         return next;
       });
 
-      const current = new URLSearchParams(searchParams.toString());
+      // 同上：以 params 為底，而非直接讀 searchParams，避免蓋掉前一次呼叫
+      // （setState 或另一次 mergeUpdates）已寫入、但 router 尚未同步回來的欄位。
+      const current = new URLSearchParams();
+      Object.entries(params).forEach(([k, v]) => current.set(k, v));
 
       // Apply all merged updates
       Object.entries(updates).forEach(([key, value]) => {
@@ -144,7 +152,7 @@ export function QueryStateProvider({ children }: { children: ReactNode }) {
 
       shouldMerge.current = false;
     },
-    [searchParams, pathname]
+    [params, pathname]
   );
 
   const value = useMemo(

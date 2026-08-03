@@ -1,10 +1,14 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
+import { ArrowPathIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
+import { useDebounce } from '@/hooks/useDebounce';
 import { CAPACITY_OPTIONS, type CapacityFilter } from './venueCapacity';
 
 export type { CapacityFilter };
+
+const SEARCH_DEBOUNCE_MS = 800;
 
 const filterBar = css({
   position: 'sticky',
@@ -16,6 +20,67 @@ const filterBar = css({
   borderBottomColor: 'color.border.light',
   paddingTop: '2.5',
   paddingBottom: '3',
+});
+
+const searchRow = css({
+  paddingX: '4',
+  marginBottom: '2.5',
+});
+
+const searchFieldWrap = css({
+  position: 'relative',
+});
+
+const searchFieldIcon = css({
+  position: 'absolute',
+  left: '12px',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  width: '16px',
+  height: '16px',
+  color: 'color.text.secondary',
+  pointerEvents: 'none',
+});
+
+const searchFieldInput = css({
+  width: '100%',
+  minHeight: '44px',
+  paddingLeft: '9',
+  paddingRight: '9',
+  paddingY: '2',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'color.background.primary',
+  color: 'color.text.primary',
+  textStyle: 'bodySmall',
+  '&::placeholder': {
+    color: 'color.text.tertiary',
+  },
+  '&:focus-visible': {
+    outline: 'none',
+    borderColor: 'color.primary',
+  },
+});
+
+const searchFieldClear = css({
+  position: 'absolute',
+  right: '4px',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  width: '36px',
+  height: '36px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
+  color: 'color.text.secondary',
+  borderRadius: 'radius.sm',
+  '&:hover': {
+    color: 'color.text.primary',
+  },
 });
 
 const regionWrap = css({
@@ -194,11 +259,40 @@ const checkmark = css({
   color: 'color.primary',
 });
 
+const clearFiltersRow = css({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  paddingX: '4',
+  marginTop: '1.5',
+});
+
+const clearFiltersButton = css({
+  minHeight: '44px',
+  paddingX: '3',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  background: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
+  color: 'stellarBlue.600',
+  textStyle: 'caption',
+  fontWeight: 'medium',
+  '&:hover': {
+    textDecoration: 'underline',
+  },
+});
+
+const clearFiltersIcon = css({
+  width: '14px',
+  height: '14px',
+});
+
 export type VenueSort = 'eventCount' | 'newest';
 
 const SORT_OPTIONS: { id: VenueSort; label: string }[] = [
   { id: 'newest', label: '最新上架' },
-  { id: 'eventCount', label: '最多生咖數' },
+  { id: 'eventCount', label: '最多收錄生咖' },
 ];
 
 interface VenueFiltersProps {
@@ -207,8 +301,11 @@ interface VenueFiltersProps {
   onRegionChange: (region: string) => void;
   capacity: CapacityFilter;
   onCapacityChange: (capacity: CapacityFilter) => void;
+  search: string;
+  onSearchChange: (search: string) => void;
   sort: VenueSort;
   onSortChange: (sort: VenueSort) => void;
+  onClearFilters: () => void;
 }
 
 export default function VenueFilters({
@@ -217,14 +314,44 @@ export default function VenueFilters({
   onRegionChange,
   capacity,
   onCapacityChange,
+  search,
+  onSearchChange,
   sort,
   onSortChange,
+  onClearFilters,
 }: VenueFiltersProps) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(true);
   const [capacityOpen, setCapacityOpen] = useState(false);
   const capacityRef = useRef<HTMLDivElement>(null);
+
+  // Raw input shown immediately; only the debounced value flows up to the URL/query.
+  const [searchInput, setSearchInput] = useState(search);
+  const debouncedSearch = useDebounce(searchInput, SEARCH_DEBOUNCE_MS);
+  const isFirstRender = useRef(true);
+  const onSearchChangeRef = useRef(onSearchChange);
+
+  // Sync when `search` changes externally (e.g. browser back/forward navigation).
+  // Adjusting state during render (React-endorsed pattern for derived-from-props
+  // state) instead of an effect, to avoid an extra render pass.
+  const [prevSearchProp, setPrevSearchProp] = useState(search);
+  if (prevSearchProp !== search) {
+    setPrevSearchProp(search);
+    setSearchInput(search);
+  }
+
+  useEffect(() => {
+    onSearchChangeRef.current = onSearchChange;
+  }, [onSearchChange]);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    onSearchChangeRef.current(debouncedSearch);
+  }, [debouncedSearch]);
 
   const updateFades = () => {
     const el = rowRef.current;
@@ -255,8 +382,36 @@ export default function VenueFilters({
   const selectedCapacityLabel =
     CAPACITY_OPTIONS.find((opt) => opt.id === capacity)?.label ?? '不限';
 
+  // 用即時的 searchInput（而非 debounce 後才寫入 URL 的 search prop），讓按鈕出現/
+  // 消失的時機跟輸入框本身一樣即時，不需要等 800ms debounce 結束。
+  const hasActiveFilters = region !== '全部' || capacity !== 'all' || searchInput !== '';
+
   return (
     <div className={filterBar}>
+      <div className={searchRow}>
+        <div className={searchFieldWrap}>
+          <MagnifyingGlassIcon className={searchFieldIcon} aria-hidden="true" />
+          <input
+            type="search"
+            className={searchFieldInput}
+            placeholder="搜尋場地名稱"
+            aria-label="搜尋場地名稱"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+          {searchInput && (
+            <button
+              type="button"
+              className={searchFieldClear}
+              aria-label="清除搜尋"
+              onClick={() => setSearchInput('')}
+            >
+              <XMarkIcon width={16} height={16} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      </div>
+
       <div className={regionWrap}>
         <div ref={rowRef} className={regionRow} onScroll={updateFades}>
           {regions.map((r) => (
@@ -354,6 +509,22 @@ export default function VenueFilters({
           ))}
         </div>
       </div>
+
+      {hasActiveFilters && (
+        <div className={clearFiltersRow}>
+          <button
+            type="button"
+            className={clearFiltersButton}
+            onClick={() => {
+              setSearchInput('');
+              onClearFilters();
+            }}
+          >
+            <ArrowPathIcon className={clearFiltersIcon} aria-hidden="true" />
+            清除篩選
+          </button>
+        </div>
+      )}
     </div>
   );
 }

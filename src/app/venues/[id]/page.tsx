@@ -62,7 +62,9 @@ export default async function VenueDetailPage({ params }: PageProps) {
 
   const relatedVenues: Venue[] = venue
     ? await venueApi
-        .getVenues({ region: [venue.region], status: 'active' })
+        // 後端非 random 查詢現在預設分頁 20 筆，這裡要拿到該地區的全部場地，
+        // 不能只拿第一頁，故明確帶大 limit。
+        .getVenues({ region: [venue.region], status: 'active', limit: 1000 })
         .then((r) => r.venues.filter((v) => v.id !== id))
         .catch(() => [])
     : [];
