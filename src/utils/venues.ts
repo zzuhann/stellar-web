@@ -17,9 +17,15 @@ export function deriveVenueRegions(venues: Pick<Venue, 'region'>[]): string[] {
 
 const VALID_SORT_VALUES: VenueSort[] = ['eventCount', 'newest'];
 
-/** Unknown/illegal `sort` URL values fall back to the default `eventCount`. */
+/**
+ * Unknown/illegal `sort` URL values fall back to the default `newest`. This matches
+ * what was actually live in production — design-frontend.md previously said the
+ * default should be `eventCount`, but that was stale doc drift, never actually
+ * shipped. 2026-08-03: doc corrected to match reality instead of reality being
+ * changed to match the doc.
+ */
 export function parseVenueSort(value: string): VenueSort {
-  return VALID_SORT_VALUES.includes(value as VenueSort) ? (value as VenueSort) : 'eventCount';
+  return VALID_SORT_VALUES.includes(value as VenueSort) ? (value as VenueSort) : 'newest';
 }
 
 /** Unknown/illegal `capacity` URL values fall back to the default `all`. */

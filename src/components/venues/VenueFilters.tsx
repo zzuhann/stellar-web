@@ -8,7 +8,9 @@ import { CAPACITY_OPTIONS, type CapacityFilter } from './venueCapacity';
 
 export type { CapacityFilter };
 
-const SEARCH_DEBOUNCE_MS = 300;
+// 800ms 對齊 PlaceAutocomplete.tsx / ArtistSearchModal.tsx 既有的搜尋 debounce，
+// 統一使用者對搜尋反應速度的預期（2026-08-03 使用者裁定，原 300ms 改為 800ms）。
+const SEARCH_DEBOUNCE_MS = 800;
 
 const filterBar = css({
   position: 'sticky',
@@ -259,11 +261,37 @@ const checkmark = css({
   color: 'color.primary',
 });
 
+const clearFiltersRow = css({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  paddingX: '4',
+  marginTop: '1.5',
+});
+
+const clearFiltersButton = css({
+  minHeight: '44px',
+  paddingX: '3',
+  display: 'inline-flex',
+  alignItems: 'center',
+  background: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
+  color: 'stellarBlue.600',
+  textStyle: 'caption',
+  fontWeight: 'medium',
+  '&:hover': {
+    textDecoration: 'underline',
+  },
+});
+
 export type VenueSort = 'eventCount' | 'newest';
 
+// 2026-08-03 使用者裁定：`newest`/最新上架排第一、且為預設值，對齊正式上線既有行為
+// （design-frontend.md 先前寫的 eventCount 預設是文件與實作間的既有 drift，這次修正
+// 文件對齊實際行為，而非反向把實作改成文件寫的樣子）。
 const SORT_OPTIONS: { id: VenueSort; label: string }[] = [
-  { id: 'eventCount', label: '最多收錄生咖' },
   { id: 'newest', label: '最新上架' },
+  { id: 'eventCount', label: '最多收錄生咖' },
 ];
 
 interface VenueFiltersProps {
@@ -276,6 +304,7 @@ interface VenueFiltersProps {
   onSearchChange: (search: string) => void;
   sort: VenueSort;
   onSortChange: (sort: VenueSort) => void;
+  onClearFilters: () => void;
 }
 
 export default function VenueFilters({
@@ -288,6 +317,7 @@ export default function VenueFilters({
   onSearchChange,
   sort,
   onSortChange,
+  onClearFilters,
 }: VenueFiltersProps) {
   const rowRef = useRef<HTMLDivElement>(null);
   const [showLeft, setShowLeft] = useState(false);
@@ -350,6 +380,10 @@ export default function VenueFilters({
 
   const selectedCapacityLabel =
     CAPACITY_OPTIONS.find((opt) => opt.id === capacity)?.label ?? '不限';
+
+  // 用即時的 searchInput（而非 debounce 後才寫入 URL 的 search prop），讓按鈕出現/
+  // 消失的時機跟輸入框本身一樣即時，不需要等 800ms debounce 結束。
+  const hasActiveFilters = region !== '全部' || capacity !== 'all' || searchInput !== '';
 
   return (
     <div className={filterBar}>
@@ -474,6 +508,21 @@ export default function VenueFilters({
           ))}
         </div>
       </div>
+
+      {hasActiveFilters && (
+        <div className={clearFiltersRow}>
+          <button
+            type="button"
+            className={clearFiltersButton}
+            onClick={() => {
+              setSearchInput('');
+              onClearFilters();
+            }}
+          >
+            清除篩選
+          </button>
+        </div>
+      )}
     </div>
   );
 }

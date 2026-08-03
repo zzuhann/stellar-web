@@ -23,9 +23,9 @@ describe('parseVenueSort', () => {
     expect(parseVenueSort('newest')).toBe('newest');
   });
 
-  it('不合法值 fallback 為預設值 eventCount', () => {
-    expect(parseVenueSort('random')).toBe('eventCount');
-    expect(parseVenueSort('')).toBe('eventCount');
+  it('不合法值 fallback 為預設值 newest（2026-08-03 對齊正式上線既有行為）', () => {
+    expect(parseVenueSort('random')).toBe('newest');
+    expect(parseVenueSort('')).toBe('newest');
   });
 });
 

@@ -112,7 +112,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
   });
   const [sort, setSort] = useQueryState<VenueSort>('sort', {
     parse: parseVenueSort,
-    defaultValue: 'eventCount',
+    defaultValue: 'newest',
   });
   const [pageNum, setPageNum] = useQueryState<number>('page', {
     parse: parseVenuePage,
@@ -179,13 +179,16 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
     shouldTrackFilterChange.current = false;
   }, [capacity, isLoading, region, search, user?.uid, venues.length]);
 
+  // Region and capacity are fully independent filters (2026-08-03 使用者裁定推翻
+  // 原「切換地區重置容納人數」的既有行為) — changing one never touches the other,
+  // only `page` resets on any single-filter change.
   const handleRegionChange = (nextRegion: string) => {
-    if (nextRegion === region && capacity === 'all') return;
+    if (nextRegion === region) return;
 
     shouldTrackFilterChange.current = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     mergeUpdates(() => {
       setRegion(nextRegion === '全部' ? null : nextRegion);
-      setCapacity(null);
       setPageNum(null);
     });
   };
@@ -194,6 +197,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
     if (nextCapacity === capacity) return;
 
     shouldTrackFilterChange.current = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     mergeUpdates(() => {
       setCapacity(nextCapacity === 'all' ? null : nextCapacity);
       setPageNum(null);
@@ -204,6 +208,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
     if (nextSearch === search) return;
 
     shouldTrackFilterChange.current = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     mergeUpdates(() => {
       setSearch(nextSearch || null);
       setPageNum(null);
@@ -214,14 +219,29 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
     if (nextSort === sort) return;
 
     sessionStorage.removeItem(SCROLL_KEY);
+    // 2026-08-03 使用者裁定推翻原「排序切換不 scroll to top」的行為，統一為所有篩選
+    // 條件改變都 scroll to top。
+    window.scrollTo({ top: 0, behavior: 'smooth' });
     mergeUpdates(() => {
-      setSort(nextSort === 'eventCount' ? null : nextSort);
+      setSort(nextSort === 'newest' ? null : nextSort);
       setPageNum(null);
     });
   };
 
   const handlePageChange = (nextPage: number) => {
     setPageNum(nextPage === 1 ? null : nextPage);
+  };
+
+  // 「清除篩選」：一次重置 region/capacity/q/page，sort 是使用者的瀏覽偏好不受影響。
+  const handleClearFilters = () => {
+    shouldTrackFilterChange.current = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    mergeUpdates(() => {
+      setRegion(null);
+      setCapacity(null);
+      setSearch(null);
+      setPageNum(null);
+    });
   };
 
   return (
@@ -242,6 +262,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
           onSearchChange={handleSearchChange}
           sort={sort}
           onSortChange={handleSortChange}
+          onClearFilters={handleClearFilters}
         />
 
         <div aria-live="polite" aria-atomic="true" className="sr-only">

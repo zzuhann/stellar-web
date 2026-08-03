@@ -236,6 +236,43 @@ describe('QueryStateProvider', () => {
       });
     });
 
+    // Regression test for qa.md Phase 2.7「先切換地區、再切換容納人數、再切換分頁」：
+    // region/capacity 現在完全獨立（2026-08-03 裁定推翻「切換地區重置容納人數」），
+    // VenuesClient 的 handleRegionChange 與 handleCapacityChange 各自呼叫一次獨立的
+    // mergeUpdates（不是合併成一次），緊接著切換分頁又是一次獨立的 setState —— 三次
+    // 操作都在 router 的 searchParams 還沒跟上時發生，驗證 region/capacity 都不會被
+    // 後續操作洗掉。
+    it('先切換地區（mergeUpdates）、再切換容納人數（mergeUpdates）、再切換分頁（setState）：三次操作後 region/capacity 都還在 URL 上', () => {
+      const { result } = renderHook(() => useQueryStateContext(), {
+        wrapper: createWrapper(),
+      });
+
+      act(() => {
+        result.current.mergeUpdates(() => {
+          result.current.setState('region', '台北');
+          result.current.setState('page', null);
+        });
+      });
+
+      act(() => {
+        result.current.mergeUpdates(() => {
+          result.current.setState('capacity', '20-40');
+          result.current.setState('page', null);
+        });
+      });
+
+      act(() => {
+        result.current.setState('page', '2');
+      });
+
+      const lastUrl = historyReplaceSpy.mock.calls.at(-1)?.[2] as string;
+      const search = new URLSearchParams(lastUrl.split('?')[1] ?? '');
+
+      expect(search.get('region')).toBe('台北');
+      expect(search.get('capacity')).toBe('20-40');
+      expect(search.get('page')).toBe('2');
+    });
+
     it('連續兩次獨立的 setState（searchParams 尚未同步）不應互相洗掉對方寫入的欄位', () => {
       const { result } = renderHook(() => useQueryStateContext(), {
         wrapper: createWrapper(),
