@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { useDebounce } from '@/hooks/useDebounce';
 import { CAPACITY_OPTIONS, type CapacityFilter } from './venueCapacity';
@@ -273,6 +273,7 @@ const clearFiltersButton = css({
   paddingX: '3',
   display: 'inline-flex',
   alignItems: 'center',
+  gap: '1',
   background: 'transparent',
   border: 'none',
   cursor: 'pointer',
@@ -282,6 +283,11 @@ const clearFiltersButton = css({
   '&:hover': {
     textDecoration: 'underline',
   },
+});
+
+const clearFiltersIcon = css({
+  width: '14px',
+  height: '14px',
 });
 
 export type VenueSort = 'eventCount' | 'newest';
@@ -519,6 +525,7 @@ export default function VenueFilters({
               onClearFilters();
             }}
           >
+            <ArrowPathIcon className={clearFiltersIcon} aria-hidden="true" />
             清除篩選
           </button>
         </div>
