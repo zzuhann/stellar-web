@@ -42,6 +42,10 @@ export default function TopArtistsSection() {
     });
   };
 
+  if (!isLoading && artists.length === 0) {
+    return null;
+  }
+
   return (
     <section className={container} aria-label="擁有最多即將到來的生咖的藝人或團體">
       <h2 className={heading}>🧚 擁有最多即將到來的生咖</h2>
