@@ -1,6 +1,8 @@
+import { Suspense } from 'react';
 import { css } from '@/styled-system/css';
 import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
 import Skeleton from '@/components/ui/Skeleton';
+import ClearFiltersRowSkeleton from './ClearFiltersRowSkeleton';
 
 const page = css({
   minHeight: '100vh',
@@ -96,11 +98,11 @@ export default function VenuesLoading() {
         </section>
 
         {/* 對照 VenueFilters 的 4 個區塊：搜尋列／地區 chips／容納人數+排序／
-            清除篩選（條件渲染）。清除篩選按鈕只在使用者已套用篩選時才出現，
-            首次進入頁面（無 query params）本來就不會顯示，這裡刻意不畫出來，
-            跟 VenueCardSkeleton 假設「資料齊全的常見情況」是同一種取捨方向：
-            skeleton 應該貼近「多數情況」的實際版面，而不是硬湊出一個真實元件
-            預設狀態下不會出現的區塊。 */}
+            清除篩選（條件渲染）。清除篩選列是否要保留高度，交給
+            ClearFiltersRowSkeleton 用 useSearchParams 判斷——首次進入頁面
+            （無 query params）不會顯示，但帶著 ?region=... 等篩選進頁面時會，
+            兩種情況都要跟真實 VenueFilters 的 hasActiveFilters 行為一致，
+            否則其中一種情境仍會在 skeleton 換成真實內容時造成 CLS。 */}
         <div className={filterBar}>
           <div className={searchRow}>
             <Skeleton width="100%" height="44px" borderRadius="8px" />
@@ -119,6 +121,10 @@ export default function VenuesLoading() {
             <div className={filterDivider} aria-hidden="true" />
             <Skeleton width="150px" height="40px" borderRadius="6px" />
           </div>
+
+          <Suspense fallback={null}>
+            <ClearFiltersRowSkeleton />
+          </Suspense>
         </div>
 
         <section className={listSection}>

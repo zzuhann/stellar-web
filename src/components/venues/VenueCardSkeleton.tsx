@@ -1,5 +1,6 @@
 import { css } from '@/styled-system/css';
 import Skeleton from '@/components/ui/Skeleton';
+import { VENUE_CARD_BODY_MIN_HEIGHT } from './venueCardLayout';
 
 const card = css({
   borderRadius: 'radius.lg',
@@ -14,6 +15,9 @@ const body = css({
   paddingTop: '3',
   paddingX: '3',
   paddingBottom: '3',
+  // 跟 VenueCard.tsx 共用同一個常數（見 venueCardLayout.ts），確保 skeleton 跟真實
+  // 卡片本身的最小高度永遠一致，而不只是碰巧算出差不多的數字。
+  minHeight: VENUE_CARD_BODY_MIN_HEIGHT,
 });
 
 const nameRow = css({
@@ -61,7 +65,10 @@ export default function VenueCardSkeleton() {
       <Skeleton height="220px" borderRadius="0" />
       <div className={body}>
         <div className={nameRow}>
-          <Skeleton width="60%" height="28px" borderRadius="4px" />
+          {/* 店名最多 2 行 clamp（見 VenueCard.tsx venueName），40px 對應兩行
+              bodySmall 文字的高度，比單行時稍高，跟 body 的 minHeight 一樣是
+              抓「最長情境」而非平均情況。 */}
+          <Skeleton width="60%" height="40px" borderRadius="4px" />
           <Skeleton width="40px" height="24px" borderRadius="9999px" />
         </div>
 
@@ -71,9 +78,10 @@ export default function VenueCardSkeleton() {
         </div>
 
         <div className={hostTagsRow}>
-          <Skeleton width="56px" height="22px" borderRadius="9999px" />
-          <Skeleton width="64px" height="22px" borderRadius="9999px" />
-          <Skeleton width="48px" height="22px" borderRadius="9999px" />
+          {/* 24px 對應真實 hostTagPill（paddingY 1 + caption 文字），不是 22px */}
+          <Skeleton width="56px" height="24px" borderRadius="9999px" />
+          <Skeleton width="64px" height="24px" borderRadius="9999px" />
+          <Skeleton width="48px" height="24px" borderRadius="9999px" />
         </div>
 
         <div className={sectionDivider} />

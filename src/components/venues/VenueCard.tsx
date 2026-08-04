@@ -7,6 +7,7 @@ import { css } from '@/styled-system/css';
 import { trackClickVenueDetail, trackViewVenueCard } from '@/lib/analytics/venues';
 import type { Venue } from '@/types';
 import { CAPACITY_RANGE_LABEL } from './venueCapacity';
+import { VENUE_CARD_BODY_MIN_HEIGHT } from './venueCardLayout';
 import VenueCardPhotos from './VenueCardPhotos';
 import MrtIcon from './MrtIcon';
 
@@ -29,6 +30,10 @@ const body = css({
   paddingTop: '3',
   paddingX: '3',
   paddingBottom: '3',
+  // 跟 VenueCardSkeleton 共用同一個最小高度常數（見 venueCardLayout.ts）：資料
+  // 條件渲染的卡片（沒有 MRT/主辦標籤等）會在底部留白，換取 skeleton 換成真實卡片
+  // 時不因資料多寡而長高/縮短，避免 CLS。
+  minHeight: VENUE_CARD_BODY_MIN_HEIGHT,
 });
 
 const nameRow = css({
