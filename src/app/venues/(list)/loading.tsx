@@ -1,6 +1,8 @@
+import { Suspense } from 'react';
 import { css } from '@/styled-system/css';
 import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
 import Skeleton from '@/components/ui/Skeleton';
+import ClearFiltersRowSkeleton from './ClearFiltersRowSkeleton';
 
 const page = css({
   minHeight: '100vh',
@@ -36,15 +38,45 @@ const subtitle = css({
   color: 'color.text.secondary',
 });
 
+// top/毛玻璃需與 VenueFilters.tsx 的 filterBar 一致，避免真實內容換入時版面跳動。
 const filterBar = css({
-  background: 'color.background.primary',
+  position: 'sticky',
+  top: '70px',
+  zIndex: 20,
+  background: 'alpha.white.90',
+  backdropFilter: 'saturate(180%) blur(10px)',
   borderBottom: '1px solid',
   borderBottomColor: 'color.border.light',
-  paddingY: '2.5',
+  paddingTop: '2.5',
+  paddingBottom: '3',
+});
+
+const searchRow = css({
   paddingX: '4',
+  marginBottom: '2.5',
+});
+
+const regionRow = css({
   display: 'flex',
-  flexDirection: 'column',
+  gap: '1.5',
+  overflow: 'hidden',
+  paddingX: '4',
+});
+
+const capacityRow = css({
+  display: 'flex',
+  alignItems: 'center',
   gap: '2',
+  paddingX: '4',
+  marginTop: '2.5',
+});
+
+const filterDivider = css({
+  width: '1px',
+  height: '24px',
+  background: 'color.border.light',
+  flexShrink: 0,
+  marginX: '1',
 });
 
 const listSection = css({
@@ -63,9 +95,29 @@ export default function VenuesLoading() {
           <p className={subtitle}>在 STELLAR 找到適合舉辦生咖、生日應援的空間！</p>
         </section>
 
+        {/* 清除篩選列是否保留高度交給 ClearFiltersRowSkeleton 用 useSearchParams 判斷，需與 VenueFilters 的 hasActiveFilters 行為一致 */}
         <div className={filterBar}>
-          <Skeleton width="100%" height="32px" borderRadius="20px" />
-          <Skeleton width="60%" height="32px" borderRadius="20px" />
+          <div className={searchRow}>
+            <Skeleton width="100%" height="44px" borderRadius="8px" />
+          </div>
+
+          <div className={regionRow}>
+            <Skeleton width="48px" height="36px" borderRadius="9999px" />
+            <Skeleton width="64px" height="36px" borderRadius="9999px" />
+            <Skeleton width="56px" height="36px" borderRadius="9999px" />
+            <Skeleton width="72px" height="36px" borderRadius="9999px" />
+          </div>
+
+          <div className={capacityRow}>
+            <Skeleton width="56px" height="16px" borderRadius="4px" />
+            <Skeleton width="90px" height="36px" borderRadius="6px" />
+            <div className={filterDivider} aria-hidden="true" />
+            <Skeleton width="150px" height="44px" borderRadius="6px" />
+          </div>
+
+          <Suspense fallback={null}>
+            <ClearFiltersRowSkeleton />
+          </Suspense>
         </div>
 
         <section className={listSection}>

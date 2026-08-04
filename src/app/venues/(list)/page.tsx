@@ -3,6 +3,7 @@ import { venueApi } from '@/lib/api';
 import { QueryStateProvider } from '@/hooks/useQueryStateContext';
 import { deriveVenueRegions } from '@/utils/venues';
 import VenuesClient from './VenuesClient';
+import VenuesLoading from './loading';
 
 export const revalidate = 86400;
 
@@ -19,21 +20,25 @@ export const metadata = {
   },
 };
 
-export default async function VenuesPage() {
-  // 這支 fetch 唯一目的是列舉目前有場地的地區（給地區 chip 用），所以要帶大 limit
-  // 一次拿到全部——不會拿來當下方 client 端分頁查詢的 initialData。若重用它，等於要
-  // 在前端根據一個形狀不同的請求反推 pagination.total/totalPages，兩邊邏輯遲早會對不上。
-  // 詳見 design-frontend.md「SSR 地區清單 vs. 分頁的衝突」。
+export default function VenuesPage() {
+  return (
+    <Suspense fallback={<VenuesLoading />}>
+      <VenuesContent />
+    </Suspense>
+  );
+}
+
+// await 若留在 VenuesPage 本體，Suspense fallback 不會被畫出來，故拆成子元件。
+async function VenuesContent() {
+  // limit 1000 僅為列舉地區 chip 用，不可重用為下方分頁查詢的 initialData（形狀不同，見 design-frontend.md）。
   const data = await venueApi
     .getVenues({ status: 'active', limit: 1000 })
     .catch(() => ({ venues: [] }));
   const regions = deriveVenueRegions(data.venues ?? []);
 
   return (
-    <Suspense>
-      <QueryStateProvider>
-        <VenuesClient regions={regions} />
-      </QueryStateProvider>
-    </Suspense>
+    <QueryStateProvider>
+      <VenuesClient regions={regions} />
+    </QueryStateProvider>
   );
 }

@@ -7,6 +7,7 @@ import { css } from '@/styled-system/css';
 import { trackClickVenueDetail, trackViewVenueCard } from '@/lib/analytics/venues';
 import type { Venue } from '@/types';
 import { CAPACITY_RANGE_LABEL } from './venueCapacity';
+import { VENUE_CARD_BODY_MIN_HEIGHT } from './venueCardLayout';
 import VenueCardPhotos from './VenueCardPhotos';
 import MrtIcon from './MrtIcon';
 
@@ -29,6 +30,8 @@ const body = css({
   paddingTop: '3',
   paddingX: '3',
   paddingBottom: '3',
+  // 與 VenueCardSkeleton 共用同一常數，避免資料量不同的卡片造成 CLS（見 venueCardLayout.ts）
+  minHeight: VENUE_CARD_BODY_MIN_HEIGHT,
 });
 
 const nameRow = css({
