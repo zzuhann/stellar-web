@@ -25,8 +25,8 @@ const clearFiltersRow = css({
 // region 沒有對應的白名單 parse function（VenuesClient.tsx 對 region 用的是 identity
 // parse，沒有驗證合法性），所以這裡直接比對 '全部'，跟正式的 hasActiveFilters 邏輯一致；
 // capacity 借用 parseVenueCapacity 做跟正式流程相同的白名單驗證與 fallback。
-// q 額外 trim 一下（真實邏輯沒有 trim，但只有「純空白搜尋字串」這種極端情境會跟這裡
-// 有微小落差，可接受）。
+// q 不 trim，跟 VenueFilters.tsx:387 的 hasActiveFilters 完全一致，避免 ?q=%20
+// 這種純空白搜尋字串被誤判為「沒有 active filter」。
 export default function ClearFiltersRowSkeleton() {
   const searchParams = useSearchParams();
 
@@ -37,7 +37,7 @@ export default function ClearFiltersRowSkeleton() {
   const hasActiveFilters =
     (region !== null && region !== '全部') ||
     (capacity !== null && parseVenueCapacity(capacity) !== 'all') ||
-    (q !== null && q.trim() !== '');
+    (q !== null && q !== '');
 
   if (!hasActiveFilters) return null;
 

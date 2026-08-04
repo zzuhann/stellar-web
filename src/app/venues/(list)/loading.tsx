@@ -119,7 +119,7 @@ export default function VenuesLoading() {
             <Skeleton width="56px" height="16px" borderRadius="4px" />
             <Skeleton width="90px" height="36px" borderRadius="6px" />
             <div className={filterDivider} aria-hidden="true" />
-            <Skeleton width="150px" height="40px" borderRadius="6px" />
+            <Skeleton width="150px" height="44px" borderRadius="6px" />
           </div>
 
           <Suspense fallback={null}>
