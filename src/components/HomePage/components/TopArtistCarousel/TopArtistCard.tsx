@@ -13,7 +13,7 @@ const topArtistItem = css({
   alignItems: 'center',
   gap: '1.5',
   flexShrink: 0,
-  width: '88px',
+  width: '72px',
   '&:focus-visible': {
     outline: '2px solid',
     outlineColor: 'color.primary',
