@@ -38,9 +38,7 @@ const subtitle = css({
   color: 'color.text.secondary',
 });
 
-// 對照 VenueFilters.tsx 的 filterBar：position sticky + top 70px（緊接在固定
-// header 下方）、同樣的毛玻璃背景，避免 skeleton 換成真正 filter bar 時整段
-// 版面往上跳。
+// top/毛玻璃需與 VenueFilters.tsx 的 filterBar 一致，避免真實內容換入時版面跳動。
 const filterBar = css({
   position: 'sticky',
   top: '70px',
@@ -97,12 +95,7 @@ export default function VenuesLoading() {
           <p className={subtitle}>在 STELLAR 找到適合舉辦生咖、生日應援的空間！</p>
         </section>
 
-        {/* 對照 VenueFilters 的 4 個區塊：搜尋列／地區 chips／容納人數+排序／
-            清除篩選（條件渲染）。清除篩選列是否要保留高度，交給
-            ClearFiltersRowSkeleton 用 useSearchParams 判斷——首次進入頁面
-            （無 query params）不會顯示，但帶著 ?region=... 等篩選進頁面時會，
-            兩種情況都要跟真實 VenueFilters 的 hasActiveFilters 行為一致，
-            否則其中一種情境仍會在 skeleton 換成真實內容時造成 CLS。 */}
+        {/* 清除篩選列是否保留高度交給 ClearFiltersRowSkeleton 用 useSearchParams 判斷，需與 VenueFilters 的 hasActiveFilters 行為一致 */}
         <div className={filterBar}>
           <div className={searchRow}>
             <Skeleton width="100%" height="44px" borderRadius="8px" />
