@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { css } from '@/styled-system/css';
 import Skeleton from '@/components/ui/Skeleton';
+import { parseVenueCapacity } from '@/utils/venues';
 
 const clearFiltersRow = css({
   display: 'flex',
@@ -11,20 +12,32 @@ const clearFiltersRow = css({
   marginTop: '1.5',
 });
 
-// 對照 VenueFilters.tsx 的 hasActiveFilters：region/capacity/q 只要有任一個出現
-// 在網址上，代表使用者是帶著已套用的篩選進頁面（分享連結、書籤、上一頁返回），
-// 真實 filter bar 會多渲染「清除篩選」這一列（約 50px）。loading.tsx 本身讀不到
-// searchParams（它不是 page.tsx，Next 不會傳 searchParams 給 loading UI），所以
-// 用這個 client 元件搭配 useSearchParams 直接讀網址，決定要不要保留這段高度，
-// 避免這種情境下 skeleton 換成真實 filter bar 時多長出一列造成 CLS。
+// 對照 VenueFilters.tsx:387 的 hasActiveFilters（region !== '全部' || capacity !==
+// 'all' || searchInput !== ''）：真實 filter bar 只在某個 filter 是「合法且非預設值」
+// 時才多渲染「清除篩選」這一列（約 50px）。loading.tsx 本身讀不到 searchParams（它不是
+// page.tsx，Next 不會傳 searchParams 給 loading UI），所以用這個 client 元件搭配
+// useSearchParams 直接讀網址，決定要不要保留這段高度。
 //
-// 注意：這邊只判斷「有沒有這個 query key」，不重新驗證合法性——不合法的值會被
-// useQueryState 的 parse function 擋掉、視同未設定，但那是之後 client 端的事，
-// 這裡只是為了 loading 階段的版面穩定，抓寬鬆一點的判斷即可。
+// 修正前的 bug：只判斷「有沒有這個 query key」，導致 ?region=全部、?capacity=all、
+// ?q=（空字串）這類「key 存在但仍是預設值」的網址，skeleton 誤判為有 active filter，
+// 多保留一列高度，但真實 VenueFilters 渲染後並不會顯示這顆按鈕，造成 CLS。
+//
+// region 沒有對應的白名單 parse function（VenuesClient.tsx 對 region 用的是 identity
+// parse，沒有驗證合法性），所以這裡直接比對 '全部'，跟正式的 hasActiveFilters 邏輯一致；
+// capacity 借用 parseVenueCapacity 做跟正式流程相同的白名單驗證與 fallback。
+// q 額外 trim 一下（真實邏輯沒有 trim，但只有「純空白搜尋字串」這種極端情境會跟這裡
+// 有微小落差，可接受）。
 export default function ClearFiltersRowSkeleton() {
   const searchParams = useSearchParams();
+
+  const region = searchParams.get('region');
+  const capacity = searchParams.get('capacity');
+  const q = searchParams.get('q');
+
   const hasActiveFilters =
-    searchParams.has('region') || searchParams.has('capacity') || searchParams.has('q');
+    (region !== null && region !== '全部') ||
+    (capacity !== null && parseVenueCapacity(capacity) !== 'all') ||
+    (q !== null && q.trim() !== '');
 
   if (!hasActiveFilters) return null;
 
