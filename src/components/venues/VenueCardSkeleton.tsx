@@ -41,15 +41,18 @@ export default function VenueCardSkeleton() {
       <Skeleton height="220px" borderRadius="0" />
       <div className={body}>
         <div className={nameRow}>
-          <Skeleton width="55%" height="16px" borderRadius="4px" />
-          <Skeleton width="48px" height="20px" borderRadius="4px" />
+          <Skeleton width="55%" height="32px" borderRadius="4px" />
+          <Skeleton width="48px" height="24px" borderRadius="4px" />
         </div>
         <div className={locationRow}>
-          <Skeleton width="45%" height="12px" borderRadius="4px" />
+          <Skeleton width="45%" height="16px" borderRadius="4px" />
+        </div>
+        <div className={locationRow}>
+          <Skeleton width="55%" height="16px" borderRadius="4px" />
         </div>
         <div className={statsRow}>
-          <Skeleton width="90px" height="12px" borderRadius="4px" />
-          <Skeleton width="60px" height="12px" borderRadius="4px" />
+          <Skeleton width="90px" height="16px" borderRadius="4px" />
+          <Skeleton width="80px" height="16px" borderRadius="4px" />
         </div>
       </div>
     </div>

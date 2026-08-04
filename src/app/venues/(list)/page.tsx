@@ -3,6 +3,7 @@ import { venueApi } from '@/lib/api';
 import { QueryStateProvider } from '@/hooks/useQueryStateContext';
 import { deriveVenueRegions } from '@/utils/venues';
 import VenuesClient from './VenuesClient';
+import VenuesLoading from './loading';
 
 export const revalidate = 86400;
 
@@ -30,7 +31,7 @@ export default async function VenuesPage() {
   const regions = deriveVenueRegions(data.venues ?? []);
 
   return (
-    <Suspense>
+    <Suspense fallback={<VenuesLoading />}>
       <QueryStateProvider>
         <VenuesClient regions={regions} />
       </QueryStateProvider>

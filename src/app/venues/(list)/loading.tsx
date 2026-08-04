@@ -64,8 +64,9 @@ export default function VenuesLoading() {
         </section>
 
         <div className={filterBar}>
-          <Skeleton width="100%" height="32px" borderRadius="20px" />
-          <Skeleton width="60%" height="32px" borderRadius="20px" />
+          <Skeleton width="100%" height="44px" borderRadius="8px" />
+          <Skeleton width="100%" height="36px" borderRadius="20px" />
+          <Skeleton width="40%" height="32px" borderRadius="6px" />
         </div>
 
         <section className={listSection}>
