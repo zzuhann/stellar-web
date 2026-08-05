@@ -52,7 +52,14 @@ export const eventSubmissionSchema = z
   .refine(
     (data) => {
       if (!data.reservationUrl) return true;
-      return /^https?:\/\//.test(data.reservationUrl);
+      if (!/^https?:\/\//.test(data.reservationUrl)) return false;
+      // 檢查是否為結構完整的網址（例如 https:// 這種殘缺字串會被擋下）
+      try {
+        new URL(data.reservationUrl);
+        return true;
+      } catch {
+        return false;
+      }
     },
     {
       message: '請輸入正確的網址格式（需以 http:// 或 https:// 開頭）',

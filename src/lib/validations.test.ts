@@ -101,6 +101,44 @@ describe('eventSubmissionSchema', () => {
       }
     });
 
+    it('殘缺網址（只有 protocol 沒有 host）驗證失敗', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        reservationUrl: 'https://',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(
+          result.error.issues.some(
+            (i) => i.message === '請輸入正確的網址格式（需以 http:// 或 https:// 開頭）'
+          )
+        ).toBe(true);
+      }
+    });
+
+    it('非 http(s) protocol（例如 javascript:）驗證失敗', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        reservationUrl: 'javascript:alert(1)',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(
+          result.error.issues.some(
+            (i) => i.message === '請輸入正確的網址格式（需以 http:// 或 https:// 開頭）'
+          )
+        ).toBe(true);
+      }
+    });
+
+    it('結構完整的合法網址通過驗證', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        reservationUrl: 'https://forms.gle/xxxx?query=1',
+      });
+      expect(result.success).toBe(true);
+    });
+
     it('只填預約日期沒填時間時驗證失敗', () => {
       const result = eventSubmissionSchema.safeParse({
         ...validData,
