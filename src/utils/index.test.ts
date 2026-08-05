@@ -5,6 +5,7 @@ import {
   formatEventDateShort,
   firebaseTimestampToDate,
   dateToLocalDateString,
+  generateGoogleCalendarUrlAtTime,
 } from './index';
 
 describe('formatEventDate', () => {
@@ -124,6 +125,43 @@ describe('firebaseTimestampToDate', () => {
     const result = firebaseTimestampToDate(timestamp);
     // 目前實作只使用 seconds，nanoseconds 被忽略
     expect(result.getTime()).toBe(1769443200000);
+  });
+});
+
+describe('generateGoogleCalendarUrlAtTime', () => {
+  const startAt = { _seconds: Date.UTC(2026, 7, 20, 12, 0, 0) / 1000, _nanoseconds: 0 }; // 2026/8/20 20:00 台灣時間
+
+  it('產生的 dates 區間固定為 5 分鐘', () => {
+    const url = generateGoogleCalendarUrlAtTime({
+      title: '[預約提醒] - 測試活動',
+      startAt,
+      eventId: 'event-1',
+    });
+    const params = new URL(url).searchParams;
+    const [start, end] = params.get('dates')!.split('/');
+    expect(start).toBe('20260820T120000Z');
+    expect(end).toBe('20260820T120500Z');
+  });
+
+  it('標題與活動網址正確帶入', () => {
+    const url = generateGoogleCalendarUrlAtTime({
+      title: '[預約提醒] - 測試活動',
+      startAt,
+      eventId: 'event-1',
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('text')).toBe('[預約提醒] - 測試活動');
+    expect(params.get('details')).toContain('https://www.stellar-zone.com/event/event-1');
+  });
+
+  it('未提供 location 時預設為空字串', () => {
+    const url = generateGoogleCalendarUrlAtTime({
+      title: '[預約提醒] - 測試活動',
+      startAt,
+      eventId: 'event-1',
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('location')).toBe('');
   });
 });
 

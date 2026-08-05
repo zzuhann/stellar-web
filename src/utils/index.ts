@@ -105,3 +105,38 @@ export const generateGoogleCalendarUrl = ({
   // 手動加上第二個 sprop（URLSearchParams 不支援重複 key）
   return `https://calendar.google.com/calendar/render?${params.toString()}&sprop=website:https://www.stellar-zone.com/`;
 };
+
+// 生成 Google Calendar 加入行事曆 URL（指定時間點的事件，固定 5 分鐘時長）
+export const generateGoogleCalendarUrlAtTime = ({
+  title,
+  startAt,
+  location = '',
+  eventId,
+}: {
+  title: string;
+  startAt: FirebaseTimestamp;
+  location?: string;
+  eventId: string;
+}): string => {
+  const start = firebaseTimestampToDate(startAt);
+  const end = new Date(start.getTime() + 5 * 60 * 1000);
+
+  // Google Calendar 指定時間格式：YYYYMMDDTHHmmssZ（UTC）
+  const formatToDateTime = (date: Date): string =>
+    date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+
+  const dates = `${formatToDateTime(start)}/${formatToDateTime(end)}`;
+  const eventUrl = `https://www.stellar-zone.com/event/${eventId}`;
+  const details = `活動名稱：${title}\n活動網址：${eventUrl}`;
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: dates,
+    location: location,
+    details: details,
+    sprop: 'name:STELLAR 台灣生咖地圖',
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}&sprop=website:https://www.stellar-zone.com/`;
+};
