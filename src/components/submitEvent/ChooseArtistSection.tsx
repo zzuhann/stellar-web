@@ -67,6 +67,9 @@ type ChooseArtistSectionProps = {
   removeArtist: (artistId: string) => void;
   register: UseFormRegister<EventSubmissionFormData>;
   errors: FieldErrors<EventSubmissionFormData>;
+  // 選填：只有 EventSubmissionForm 需要送出失敗時捲動到此欄位，其他重用此元件的表單
+  // （例如 eventImport/EventImportForm）不需要這個行為
+  setFieldRef?: (name: string) => (el: HTMLElement | null) => void;
 };
 
 const removeButtonStyle = css({
@@ -98,9 +101,15 @@ const ChooseArtistSection = ({
   removeArtist,
   register,
   errors,
+  setFieldRef,
 }: ChooseArtistSectionProps) => {
   return (
-    <div className={formGroup} role="group" aria-labelledby="artistIds-label">
+    <div
+      className={formGroup}
+      role="group"
+      aria-labelledby="artistIds-label"
+      ref={setFieldRef?.('artistIds')}
+    >
       <label id="artistIds-label" className={label}>
         <UserIcon aria-hidden="true" />
         <div>

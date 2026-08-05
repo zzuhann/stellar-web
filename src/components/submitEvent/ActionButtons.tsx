@@ -1,7 +1,7 @@
 import { EventSubmissionFormData } from '@/lib/validations';
 import { css, cva } from '@/styled-system/css';
 import { useRouter } from 'next/navigation';
-import { UseFormHandleSubmit } from 'react-hook-form';
+import { FieldErrors, UseFormHandleSubmit } from 'react-hook-form';
 
 const buttonGroup = css({
   display: 'flex',
@@ -82,6 +82,7 @@ type ActionButtonsProps = {
   resubmitEventPending: boolean;
   handleSubmit: UseFormHandleSubmit<EventSubmissionFormData>;
   onSubmit: (data: EventSubmissionFormData) => void;
+  onInvalidSubmit: (errors: FieldErrors<EventSubmissionFormData>) => void;
   existingEventStatus: 'approved' | 'rejected' | 'pending';
 };
 
@@ -96,6 +97,7 @@ const ActionButtons = ({
   resubmitEventPending,
   handleSubmit,
   onSubmit,
+  onInvalidSubmit,
   existingEventStatus,
 }: ActionButtonsProps) => {
   const router = useRouter();
@@ -130,7 +132,7 @@ const ActionButtons = ({
             className={button({ variant: 'primary' })}
             type="button"
             disabled={createEventPending}
-            onClick={handleSubmit(onSubmit)}
+            onClick={handleSubmit(onSubmit, onInvalidSubmit)}
           >
             {createEventPending ? (
               <>
@@ -158,7 +160,7 @@ const ActionButtons = ({
             className={button({ variant: 'primary' })}
             type="button"
             disabled={createEventPending}
-            onClick={handleSubmit(onSubmit)}
+            onClick={handleSubmit(onSubmit, onInvalidSubmit)}
           >
             {createEventPending ? (
               <>
@@ -186,7 +188,7 @@ const ActionButtons = ({
             className={button({ variant: 'primary' })}
             type="button"
             disabled={updateEventPending || resubmitEventPending}
-            onClick={handleSubmit(onSubmit)}
+            onClick={handleSubmit(onSubmit, onInvalidSubmit)}
           >
             {updateEventPending ? (
               <>

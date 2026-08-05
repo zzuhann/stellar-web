@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useState, useEffect, useRef } from 'react';
+import { useForm, useWatch, FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { css } from '@/styled-system/css';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation';
 import { CreateEventRequest, UpdateEventRequest, Artist, CoffeeEvent } from '@/types';
 import showToast from '@/lib/toast';
 import { firebaseTimestampToDate, dateToLocalDateString, dateToLocalTimeString } from '@/utils';
+import { scrollToFirstErrorField } from '@/utils/formHelpers';
 import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
 import EventInfoSection from './EventInfoSection';
@@ -203,6 +204,10 @@ function EventSubmissionForm({
     control,
   } = useForm<EventSubmissionFormData>({
     resolver: zodResolver(eventSubmissionSchema),
+    // 送出失敗時的捲動/聚焦改由 handleInvalidSubmit + fieldRefs 統一處理，
+    // 涵蓋 DatePicker/TimePicker/下拉選單等沒有原生 focus 目標的自訂元件，
+    // 關掉預設行為避免跟自訂邏輯搶著捲動
+    shouldFocusError: false,
     defaultValues: existingEvent
       ? {
           title: existingEvent.title,
@@ -328,12 +333,14 @@ function EventSubmissionForm({
     setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
   };
 
+  // 預約開始時間不做即時驗證（選日期/時間當下不檢查），只在送出時才驗證，
+  // 避免使用者只選了日期、還沒選時間時就先跳出「請同時選擇日期與時間」錯誤
   const handleChangeReservationDate = (date: string) => {
-    setValue('reservationDate', date, { shouldValidate: true, shouldDirty: true });
+    setValue('reservationDate', date, { shouldDirty: true });
   };
 
   const handleChangeReservationTime = (time: string) => {
-    setValue('reservationTime', time, { shouldValidate: true, shouldDirty: true });
+    setValue('reservationTime', time, { shouldDirty: true });
   };
 
   const handleChangeImages = (imageUrls: string[]) => {
@@ -442,6 +449,32 @@ function EventSubmissionForm({
       setValue('mainImage', mainImageUrl);
     }
   }, [detailImageUrls, mainImageUrl, selectedArtists, setValue]);
+
+  // 送出驗證失敗時捲動到第一個錯誤欄位，順序比照畫面由上到下排列
+  const fieldRefs = useRef<Record<string, HTMLElement | null>>({});
+  const setFieldRef = (name: string) => (el: HTMLElement | null) => {
+    fieldRefs.current[name] = el;
+  };
+  const FIELD_ORDER = [
+    'artistIds',
+    'title',
+    'mainImage',
+    'startDate',
+    'endDate',
+    'addressName',
+    'reservationUrl',
+    'reservationTime',
+    'description',
+    'detailImage',
+    'instagram',
+  ];
+  const handleInvalidSubmit = (errors: FieldErrors<EventSubmissionFormData>) => {
+    scrollToFirstErrorField(
+      FIELD_ORDER,
+      (name) => !!errors[name as keyof EventSubmissionFormData],
+      fieldRefs.current
+    );
+  };
 
   // 組合 reservationUrl/reservationDate/reservationTime 為 API 的 reservation 物件
   // 永遠回傳完整物件（不因為欄位為空就整個省略），讓 edit 模式清空欄位時後端能正確清除既有值
@@ -589,6 +622,7 @@ function EventSubmissionForm({
             removeArtist={removeArtist}
             register={register}
             errors={errors}
+            setFieldRef={setFieldRef}
           />
         )}
 
@@ -620,6 +654,7 @@ function EventSubmissionForm({
             reservationTime={reservationTime}
             handleChangeReservationDate={handleChangeReservationDate}
             handleChangeReservationTime={handleChangeReservationTime}
+            setFieldRef={setFieldRef}
           />
         )}
 
@@ -658,6 +693,7 @@ function EventSubmissionForm({
           resubmitEventPending={resubmitEventMutation.isPending}
           handleSubmit={handleSubmit}
           onSubmit={onSubmit}
+          onInvalidSubmit={handleInvalidSubmit}
           existingEventStatus={existingEvent?.status || 'pending'}
         />
       </form>

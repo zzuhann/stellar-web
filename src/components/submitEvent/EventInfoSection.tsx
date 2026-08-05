@@ -4,6 +4,7 @@ import {
   LinkIcon,
   MapPinIcon,
   PhotoIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { errorText, formGroup, helperText, helperTextWarning, input, label } from './styles';
 import ImageUpload from '../images/ImageUpload';
@@ -102,6 +103,37 @@ const captionLabel = css({
   color: 'color.text.secondary',
 });
 
+const reservationLabelRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '2',
+});
+
+const clearReservationButton = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  minHeight: '44px',
+  paddingX: '3',
+  border: 'none',
+  background: 'transparent',
+  color: 'color.text.secondary',
+  textStyle: 'caption',
+  cursor: 'pointer',
+  borderRadius: 'radius.md',
+  transition: 'color 0.2s ease, background 0.2s ease',
+  '&:hover': {
+    color: 'red.600',
+    background: 'color.background.secondary',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
+});
+
 type EventInfoSectionProps = {
   register: UseFormRegister<EventSubmissionFormData>;
   errors: FieldErrors<EventSubmissionFormData>;
@@ -127,6 +159,7 @@ type EventInfoSectionProps = {
   reservationTime: string;
   handleChangeReservationDate: (date: string) => void;
   handleChangeReservationTime: (time: string) => void;
+  setFieldRef: (name: string) => (el: HTMLElement | null) => void;
 };
 
 const EventInfoSection = ({
@@ -148,13 +181,14 @@ const EventInfoSection = ({
   reservationTime,
   handleChangeReservationDate,
   handleChangeReservationTime,
+  setFieldRef,
 }: EventInfoSectionProps) => {
   const { token } = useAuthToken();
 
   return (
     <>
       {/* 活動標題 */}
-      <div className={formGroup}>
+      <div className={formGroup} ref={setFieldRef('title')}>
         <label className={label} htmlFor="title">
           <div>
             主題名稱<span aria-hidden="true">*</span>
@@ -179,7 +213,12 @@ const EventInfoSection = ({
       </div>
 
       {/* 主視覺圖片 */}
-      <div className={formGroup} role="group" aria-labelledby="mainImage-label">
+      <div
+        className={formGroup}
+        role="group"
+        aria-labelledby="mainImage-label"
+        ref={setFieldRef('mainImage')}
+      >
         <label id="mainImage-label" className={label}>
           <PhotoIcon aria-hidden="true" />
           <div>
@@ -210,7 +249,7 @@ const EventInfoSection = ({
 
       {/* 活動時間 */}
       <div className={gridContainer}>
-        <div className={formGroup}>
+        <div className={formGroup} ref={setFieldRef('startDate')}>
           <label className={label} htmlFor="startDate">
             <CalendarIcon aria-hidden="true" />
             <div>
@@ -234,7 +273,7 @@ const EventInfoSection = ({
           )}
         </div>
 
-        <div className={formGroup}>
+        <div className={formGroup} ref={setFieldRef('endDate')}>
           <label className={label} htmlFor="endDate">
             <CalendarIcon aria-hidden="true" />
             <div>
@@ -266,7 +305,12 @@ const EventInfoSection = ({
       </div>
 
       {/* 活動地址 */}
-      <div className={formGroup} role="group" aria-labelledby="addressName-label">
+      <div
+        className={formGroup}
+        role="group"
+        aria-labelledby="addressName-label"
+        ref={setFieldRef('addressName')}
+      >
         <label id="addressName-label" className={label}>
           <MapPinIcon aria-hidden="true" />
           <div>
@@ -298,14 +342,15 @@ const EventInfoSection = ({
           若此活動需要預約或報名，可提供預約網址與開始預約日期、時間，不需預約則可略過。
         </p>
 
-        <div className={formGroup} style={{ marginTop: '12px' }}>
+        <div
+          className={formGroup}
+          style={{ marginTop: '12px' }}
+          ref={setFieldRef('reservationUrl')}
+        >
           <label className={label} htmlFor="reservationUrl">
             <LinkIcon aria-hidden="true" />
             預約網址
           </label>
-          <p id="reservationUrl-hint" className={helperText}>
-            提供粉絲預約、報名活動的連結
-          </p>
           <input
             className={input}
             id="reservationUrl"
@@ -314,9 +359,7 @@ const EventInfoSection = ({
             placeholder="https://forms.gle/xxxx 或預約頁面網址"
             {...register('reservationUrl')}
             aria-invalid={!!errors.reservationUrl}
-            aria-describedby={
-              errors.reservationUrl ? 'reservationUrl-error' : 'reservationUrl-hint'
-            }
+            aria-describedby={errors.reservationUrl ? 'reservationUrl-error' : undefined}
           />
           {errors.reservationUrl && (
             <p id="reservationUrl-error" className={errorText} role="alert">
@@ -330,14 +373,28 @@ const EventInfoSection = ({
           style={{ marginTop: '12px' }}
           role="group"
           aria-labelledby="reservationStartAt-label"
+          ref={setFieldRef('reservationTime')}
         >
-          <label id="reservationStartAt-label" className={label}>
-            <CalendarIcon aria-hidden="true" />
-            預約開始時間
-          </label>
-          <p id="reservationStartAt-hint" className={helperText}>
-            例如：售票／預約開賣時間
-          </p>
+          <div className={reservationLabelRow}>
+            <label id="reservationStartAt-label" className={label}>
+              <CalendarIcon aria-hidden="true" />
+              預約開始時間
+            </label>
+            {(reservationDate || reservationTime) && (
+              <button
+                type="button"
+                className={clearReservationButton}
+                aria-label="清空預約開始時間"
+                onClick={() => {
+                  handleChangeReservationDate('');
+                  handleChangeReservationTime('');
+                }}
+              >
+                <XMarkIcon width={14} height={14} aria-hidden="true" />
+                清空
+              </button>
+            )}
+          </div>
           <div className={reservationTimeRow}>
             <div className={reservationTimeField}>
               <span className={captionLabel} id="reservationDate-label">
@@ -375,7 +432,7 @@ const EventInfoSection = ({
       </div>
 
       {/* 活動描述 */}
-      <div className={formGroup}>
+      <div className={`${sectionDivider} ${formGroup}`} ref={setFieldRef('description')}>
         <label className={label} htmlFor="description">
           詳細說明
         </label>
@@ -412,7 +469,12 @@ const EventInfoSection = ({
       </div>
 
       {/* 詳細說明圖片 */}
-      <div className={formGroup} role="group" aria-labelledby="detailImage-label">
+      <div
+        className={formGroup}
+        role="group"
+        aria-labelledby="detailImage-label"
+        ref={setFieldRef('detailImage')}
+      >
         <label id="detailImage-label" className={label}>
           <PhotoIcon aria-hidden="true" />
           詳細說明圖片
@@ -439,7 +501,12 @@ const EventInfoSection = ({
       </div>
 
       {/* 聯絡資訊 */}
-      <div className={sectionDivider} role="group" aria-labelledby="social-media-title">
+      <div
+        className={sectionDivider}
+        role="group"
+        aria-labelledby="social-media-title"
+        ref={setFieldRef('instagram')}
+      >
         <h3 id="social-media-title" className={sectionTitle}>
           社群媒體（請填寫 ID 即可，而非完整網址）
         </h3>
