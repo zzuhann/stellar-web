@@ -71,4 +71,84 @@ describe('eventSubmissionSchema', () => {
     });
     expect(result.success).toBe(true);
   });
+
+  describe('預約資訊', () => {
+    it('三個預約欄位皆未填時通過驗證', () => {
+      const result = eventSubmissionSchema.safeParse(validData);
+      expect(result.success).toBe(true);
+    });
+
+    it('只填預約網址時通過驗證', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        reservationUrl: 'https://forms.gle/xxxx',
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it('預約網址格式不合法時驗證失敗', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        reservationUrl: 'not-a-url',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(
+          result.error.issues.some(
+            (i) => i.message === '請輸入正確的網址格式（需以 http:// 或 https:// 開頭）'
+          )
+        ).toBe(true);
+      }
+    });
+
+    it('只填預約日期沒填時間時驗證失敗', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        reservationDate: '2026-08-20',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(
+          result.error.issues.some((i) => i.message === '請同時選擇日期與時間，或都不填')
+        ).toBe(true);
+      }
+    });
+
+    it('只填預約時間沒填日期時驗證失敗', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        reservationTime: '20:00',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(
+          result.error.issues.some((i) => i.message === '請同時選擇日期與時間，或都不填')
+        ).toBe(true);
+      }
+    });
+
+    it('填了日期與時間但沒填網址時驗證失敗', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        reservationDate: '2026-08-20',
+        reservationTime: '20:00',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(
+          result.error.issues.some((i) => i.message === '請填寫預約網址，或清空預約日期／時間')
+        ).toBe(true);
+      }
+    });
+
+    it('網址、日期、時間皆填寫時通過驗證', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        reservationUrl: 'https://forms.gle/xxxx',
+        reservationDate: '2026-08-20',
+        reservationTime: '20:00',
+      });
+      expect(result.success).toBe(true);
+    });
+  });
 });
