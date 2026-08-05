@@ -59,6 +59,27 @@ export const formatEventDate = (startDate: FirebaseTimestamp, endDate: FirebaseT
   return startStr === endStr ? startStr : `${startStr} - ${endStr}`;
 };
 
+// 預約開始時間格式化，含星期，例如 2026/8/20（四）20:00
+export const formatReservationDateTime = (startAt: FirebaseTimestamp): string => {
+  const date = firebaseTimestampToDate(startAt);
+  const formatter = new Intl.DateTimeFormat('zh-TW', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(date);
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+  const weekday = get('weekday').replace('週', '');
+
+  return `${get('year')}/${get('month')}/${get('day')}（${weekday}）${get('hour')}:${get('minute')}`;
+};
+
 // 簡短日期範圍，格式為「M/DD」或「M/DD - M/DD」，使用本地時區
 export const formatEventDateShort = (start: FirebaseTimestamp, end: FirebaseTimestamp): string => {
   const s = firebaseTimestampToDate(start);

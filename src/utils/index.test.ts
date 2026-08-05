@@ -6,6 +6,7 @@ import {
   firebaseTimestampToDate,
   dateToLocalDateString,
   generateGoogleCalendarUrlAtTime,
+  formatReservationDateTime,
 } from './index';
 
 describe('formatEventDate', () => {
@@ -138,7 +139,7 @@ describe('generateGoogleCalendarUrlAtTime', () => {
       eventId: 'event-1',
     });
     const params = new URL(url).searchParams;
-    const [start, end] = params.get('dates')!.split('/');
+    const [start, end] = (params.get('dates') ?? '').split('/');
     expect(start).toBe('20260820T120000Z');
     expect(end).toBe('20260820T120500Z');
   });
@@ -162,6 +163,18 @@ describe('generateGoogleCalendarUrlAtTime', () => {
     });
     const params = new URL(url).searchParams;
     expect(params.get('location')).toBe('');
+  });
+});
+
+describe('formatReservationDateTime', () => {
+  it('格式化為含星期的日期時間，例如 2026/8/20（四）20:00', () => {
+    const startAt = { _seconds: Date.UTC(2026, 7, 20, 12, 3, 0) / 1000, _nanoseconds: 0 };
+    expect(formatReservationDateTime(startAt)).toBe('2026/8/20（四）20:03');
+  });
+
+  it('分鐘數補零', () => {
+    const startAt = { _seconds: Date.UTC(2026, 0, 1, 0, 5, 0) / 1000, _nanoseconds: 0 }; // 台灣 1/1 08:05
+    expect(formatReservationDateTime(startAt)).toBe('2026/1/1（四）08:05');
   });
 });
 
