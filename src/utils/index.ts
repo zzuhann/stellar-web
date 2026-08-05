@@ -16,6 +16,13 @@ export const dateToLocalDateString = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
+// 將 Date 轉換為本地時區的 HH:mm 格式
+export const dateToLocalTimeString = (date: Date): string => {
+  const hour = String(date.getHours()).padStart(2, '0');
+  const minute = String(date.getMinutes()).padStart(2, '0');
+  return `${hour}:${minute}`;
+};
+
 // 日期範圍格式化 (YYYY/M/D - YYYY/M/D)
 export const formatDateRange = (startDate: Date | string, endDate: Date | string): string => {
   const formatSingleDate = (date: Date | string): string => {

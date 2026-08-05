@@ -1,6 +1,7 @@
 import {
   CalendarIcon,
   ExclamationTriangleIcon,
+  LinkIcon,
   MapPinIcon,
   PhotoIcon,
 } from '@heroicons/react/24/outline';
@@ -8,6 +9,7 @@ import { errorText, formGroup, helperText, helperTextWarning, input, label } fro
 import ImageUpload from '../images/ImageUpload';
 import { css, cva } from '@/styled-system/css';
 import DatePicker from '../DatePicker';
+import TimePicker from '../TimePicker';
 import PlaceAutocomplete from '../forms/PlaceAutocomplete';
 import MultiImageUpload from '../images/MultiImageUpload';
 import { FieldErrors, UseFormRegister } from 'react-hook-form';
@@ -81,6 +83,25 @@ const sectionTitle = css({
   marginBottom: '2',
 });
 
+const reservationTimeRow = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '3',
+});
+
+const reservationTimeField = css({
+  flex: '1',
+  minWidth: '140px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1',
+});
+
+const captionLabel = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+});
+
 type EventInfoSectionProps = {
   register: UseFormRegister<EventSubmissionFormData>;
   errors: FieldErrors<EventSubmissionFormData>;
@@ -102,6 +123,10 @@ type EventInfoSectionProps = {
   endDate: string;
   description: string;
   existingEventLocationName: string;
+  reservationDate: string;
+  reservationTime: string;
+  handleChangeReservationDate: (date: string) => void;
+  handleChangeReservationTime: (time: string) => void;
 };
 
 const EventInfoSection = ({
@@ -119,6 +144,10 @@ const EventInfoSection = ({
   endDate,
   description,
   existingEventLocationName,
+  reservationDate,
+  reservationTime,
+  handleChangeReservationDate,
+  handleChangeReservationTime,
 }: EventInfoSectionProps) => {
   const { token } = useAuthToken();
 
@@ -258,6 +287,91 @@ const EventInfoSection = ({
             {errors.addressName.message}
           </p>
         )}
+      </div>
+
+      {/* 預約資訊 */}
+      <div className={sectionDivider} role="group" aria-labelledby="reservation-title">
+        <h3 id="reservation-title" className={sectionTitle}>
+          預約資訊（選填）
+        </h3>
+        <p id="reservation-hint" className={helperText}>
+          若此活動需要預約或報名，可提供預約網址與開始預約日期、時間，不需預約則可略過。
+        </p>
+
+        <div className={formGroup} style={{ marginTop: '12px' }}>
+          <label className={label} htmlFor="reservationUrl">
+            <LinkIcon aria-hidden="true" />
+            預約網址
+          </label>
+          <p id="reservationUrl-hint" className={helperText}>
+            提供粉絲預約、報名活動的連結
+          </p>
+          <input
+            className={input}
+            id="reservationUrl"
+            type="url"
+            inputMode="url"
+            placeholder="https://forms.gle/xxxx 或預約頁面網址"
+            {...register('reservationUrl')}
+            aria-invalid={!!errors.reservationUrl}
+            aria-describedby={
+              errors.reservationUrl ? 'reservationUrl-error' : 'reservationUrl-hint'
+            }
+          />
+          {errors.reservationUrl && (
+            <p id="reservationUrl-error" className={errorText} role="alert">
+              {errors.reservationUrl.message}
+            </p>
+          )}
+        </div>
+
+        <div
+          className={formGroup}
+          style={{ marginTop: '12px' }}
+          role="group"
+          aria-labelledby="reservationStartAt-label"
+        >
+          <label id="reservationStartAt-label" className={label}>
+            <CalendarIcon aria-hidden="true" />
+            預約開始時間
+          </label>
+          <p id="reservationStartAt-hint" className={helperText}>
+            例如：售票／預約開賣時間
+          </p>
+          <div className={reservationTimeRow}>
+            <div className={reservationTimeField}>
+              <span className={captionLabel} id="reservationDate-label">
+                日期
+              </span>
+              <DatePicker
+                value={reservationDate}
+                onChange={handleChangeReservationDate}
+                placeholder="選擇日期"
+                disabled={isPending}
+                error={!!errors.reservationTime}
+              />
+              <input type="hidden" {...register('reservationDate')} aria-hidden="true" />
+            </div>
+            <div className={reservationTimeField}>
+              <span className={captionLabel} id="reservationTime-label">
+                時間
+              </span>
+              <TimePicker
+                value={reservationTime}
+                onChange={handleChangeReservationTime}
+                placeholder="選擇時間"
+                disabled={isPending}
+                error={!!errors.reservationTime}
+              />
+              <input type="hidden" {...register('reservationTime')} aria-hidden="true" />
+            </div>
+          </div>
+          {errors.reservationTime && (
+            <p id="reservationStartAt-error" className={errorText} role="alert">
+              {errors.reservationTime.message}
+            </p>
+          )}
+        </div>
       </div>
 
       {/* 活動描述 */}

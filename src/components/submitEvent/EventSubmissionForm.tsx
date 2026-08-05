@@ -11,7 +11,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { CreateEventRequest, UpdateEventRequest, Artist, CoffeeEvent } from '@/types';
 import showToast from '@/lib/toast';
-import { firebaseTimestampToDate, dateToLocalDateString } from '@/utils';
+import { firebaseTimestampToDate, dateToLocalDateString, dateToLocalTimeString } from '@/utils';
 import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
 import EventInfoSection from './EventInfoSection';
@@ -219,6 +219,13 @@ function EventSubmissionForm({
               ? [existingEvent.detailImage]
               : [],
           artistIds: existingEvent.artists.map((artist) => artist.id),
+          reservationUrl: existingEvent.reservation?.url || '',
+          reservationDate: existingEvent.reservation?.startAt
+            ? dateToLocalDateString(firebaseTimestampToDate(existingEvent.reservation.startAt))
+            : '',
+          reservationTime: existingEvent.reservation?.startAt
+            ? dateToLocalTimeString(firebaseTimestampToDate(existingEvent.reservation.startAt))
+            : '',
         }
       : undefined,
   });
@@ -226,6 +233,8 @@ function EventSubmissionForm({
   const startDate = useWatch({ control, name: 'startDate' }) ?? '';
   const endDate = useWatch({ control, name: 'endDate' }) ?? '';
   const description = useWatch({ control, name: 'description' }) ?? '';
+  const reservationDate = useWatch({ control, name: 'reservationDate' }) ?? '';
+  const reservationTime = useWatch({ control, name: 'reservationTime' }) ?? '';
 
   const createEventMutation = useCreateEventMutation({ onSuccess });
   const updateEventMutation = useUpdateEventMutation({ onSuccess });
@@ -317,6 +326,14 @@ function EventSubmissionForm({
 
   const handleChangeEndDate = (date: string) => {
     setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
+  };
+
+  const handleChangeReservationDate = (date: string) => {
+    setValue('reservationDate', date, { shouldValidate: true, shouldDirty: true });
+  };
+
+  const handleChangeReservationTime = (time: string) => {
+    setValue('reservationTime', time, { shouldValidate: true, shouldDirty: true });
   };
 
   const handleChangeImages = (imageUrls: string[]) => {
@@ -426,6 +443,25 @@ function EventSubmissionForm({
     }
   }, [detailImageUrls, mainImageUrl, selectedArtists, setValue]);
 
+  // 組合 reservationUrl/reservationDate/reservationTime 為 API 的 reservation 物件
+  // 永遠回傳完整物件（不因為欄位為空就整個省略），讓 edit 模式清空欄位時後端能正確清除既有值
+  const buildReservationPayload = (data: EventSubmissionFormData) => {
+    const url = data.reservationUrl?.trim();
+    const hasStartAt = !!data.reservationDate && !!data.reservationTime;
+
+    return {
+      url: url || undefined,
+      startAt: hasStartAt
+        ? {
+            _seconds: Math.floor(
+              new Date(`${data.reservationDate}T${data.reservationTime}:00`).getTime() / 1000
+            ),
+            _nanoseconds: 0,
+          }
+        : undefined,
+    };
+  };
+
   const submitEventData = async (data: EventSubmissionFormData) => {
     if (mode === 'create' || mode === 'copy') {
       const eventData: CreateEventRequest = {
@@ -461,6 +497,7 @@ function EventSubmissionForm({
         },
         mainImage: mainImageUrl || undefined,
         detailImage: detailImageUrls,
+        reservation: buildReservationPayload(data),
         ...(submitterEmail ? { submitterEmail } : {}),
       };
 
@@ -498,6 +535,7 @@ function EventSubmissionForm({
         },
         mainImage: mainImageUrl || undefined,
         detailImage: detailImageUrls,
+        reservation: buildReservationPayload(data),
       };
 
       updateEventMutation.mutate(
@@ -578,6 +616,10 @@ function EventSubmissionForm({
             endDate={endDate}
             description={description}
             existingEventLocationName={existingEvent?.location.name || ''}
+            reservationDate={reservationDate}
+            reservationTime={reservationTime}
+            handleChangeReservationDate={handleChangeReservationDate}
+            handleChangeReservationTime={handleChangeReservationTime}
           />
         )}
 
