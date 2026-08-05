@@ -433,7 +433,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                         rel="noopener noreferrer"
                         className={addToCalendarHint}
                       >
-                        加入行事曆
+                        提醒我預約
                         <ArrowTopRightOnSquareIcon width={12} height={12} />
                       </a>
                     </div>

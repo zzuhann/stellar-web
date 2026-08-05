@@ -465,14 +465,14 @@ const EventDetail = ({ event }: EventDetailProps) => {
                         color="var(--color-text-secondary)"
                         aria-hidden="true"
                       />
-                      <span className="sr-only">預約開始時間，點擊加入行事曆</span>
+                      <span className="sr-only">預約開始時間，點擊提醒我預約</span>
                     </div>
                     <div className={detailContent}>
                       <div className={detailValue}>
                         {formatReservationDateTime(event.reservation.startAt)}
                       </div>
                       <div className={addToCalendarHint}>
-                        加入行事曆
+                        提醒我預約
                         <ArrowTopRightOnSquareIcon width={12} height={12} aria-hidden="true" />
                       </div>
                     </div>
