@@ -372,7 +372,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
                 startDate: event.datetime.start,
                 endDate: event.datetime.end,
                 location: `${event.location.name} ${event.location.address}`,
-                eventId: event.id,
+                eventSlugOrId: event.slug ?? event.id,
               })}
               platform="calendar"
               eventPage="/event/[id]"
@@ -464,7 +464,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
                       title: `[預約提醒] - ${event.title}`,
                       startAt: event.reservation.startAt,
                       location: `${event.location.name} ${event.location.address}`,
-                      eventId: event.id,
+                      eventSlugOrId: event.slug ?? event.id,
                     })}
                     platform="reservation_calendar"
                     eventPage="/event/[id]"

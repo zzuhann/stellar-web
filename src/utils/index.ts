@@ -94,13 +94,13 @@ export const generateGoogleCalendarUrl = ({
   startDate,
   endDate,
   location,
-  eventId,
+  eventSlugOrId,
 }: {
   title: string;
   startDate: FirebaseTimestamp;
   endDate: FirebaseTimestamp;
   location: string;
-  eventId: string;
+  eventSlugOrId: string; // 呼叫端請傳 event.slug ?? event.id，比照全站活動連結慣例
 }): string => {
   const start = firebaseTimestampToDate(startDate);
   const end = firebaseTimestampToDate(endDate);
@@ -118,7 +118,7 @@ export const generateGoogleCalendarUrl = ({
   endPlusOne.setDate(endPlusOne.getDate() + 1);
 
   const dates = `${formatToAllDayDate(start)}/${formatToAllDayDate(endPlusOne)}`;
-  const eventUrl = `https://www.stellar-zone.com/event/${eventId}`;
+  const eventUrl = `https://www.stellar-zone.com/event/${eventSlugOrId}`;
   const details = `活動名稱：${title}\n活動網址：${eventUrl}`;
 
   const params = new URLSearchParams({
@@ -139,12 +139,12 @@ export const generateGoogleCalendarUrlAtTime = ({
   title,
   startAt,
   location = '',
-  eventId,
+  eventSlugOrId,
 }: {
   title: string;
   startAt: FirebaseTimestamp;
   location?: string;
-  eventId: string;
+  eventSlugOrId: string; // 呼叫端請傳 event.slug ?? event.id，比照全站活動連結慣例
 }): string => {
   const start = firebaseTimestampToDate(startAt);
   const end = new Date(start.getTime() + 5 * 60 * 1000);
@@ -154,7 +154,7 @@ export const generateGoogleCalendarUrlAtTime = ({
     date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
 
   const dates = `${formatToDateTime(start)}/${formatToDateTime(end)}`;
-  const eventUrl = `https://www.stellar-zone.com/event/${eventId}`;
+  const eventUrl = `https://www.stellar-zone.com/event/${eventSlugOrId}`;
   const details = `活動名稱：${title}\n活動網址：${eventUrl}`;
 
   const params = new URLSearchParams({

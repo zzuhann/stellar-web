@@ -136,7 +136,7 @@ describe('generateGoogleCalendarUrlAtTime', () => {
     const url = generateGoogleCalendarUrlAtTime({
       title: '[預約提醒] - 測試活動',
       startAt,
-      eventId: 'event-1',
+      eventSlugOrId: 'event-1',
     });
     const params = new URL(url).searchParams;
     const [start, end] = (params.get('dates') ?? '').split('/');
@@ -148,18 +148,28 @@ describe('generateGoogleCalendarUrlAtTime', () => {
     const url = generateGoogleCalendarUrlAtTime({
       title: '[預約提醒] - 測試活動',
       startAt,
-      eventId: 'event-1',
+      eventSlugOrId: 'event-1',
     });
     const params = new URL(url).searchParams;
     expect(params.get('text')).toBe('[預約提醒] - 測試活動');
     expect(params.get('details')).toContain('https://www.stellar-zone.com/event/event-1');
   });
 
+  it('eventSlugOrId 傳 slug 時活動網址使用 slug（呼叫端應傳 event.slug ?? event.id）', () => {
+    const url = generateGoogleCalendarUrlAtTime({
+      title: '[預約提醒] - 測試活動',
+      startAt,
+      eventSlugOrId: 'my-event-slug',
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('details')).toContain('https://www.stellar-zone.com/event/my-event-slug');
+  });
+
   it('未提供 location 時預設為空字串', () => {
     const url = generateGoogleCalendarUrlAtTime({
       title: '[預約提醒] - 測試活動',
       startAt,
-      eventId: 'event-1',
+      eventSlugOrId: 'event-1',
     });
     const params = new URL(url).searchParams;
     expect(params.get('location')).toBe('');

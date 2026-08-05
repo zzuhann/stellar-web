@@ -439,7 +439,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                           title: `[預約提醒] - ${event.title}`,
                           startAt: event.reservation.startAt,
                           location: `${event.location.name} ${event.location.address}`,
-                          eventId: event.id,
+                          eventSlugOrId: event.slug ?? event.id,
                         })}
                         target="_blank"
                         rel="noopener noreferrer"
