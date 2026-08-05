@@ -7,6 +7,7 @@ import {
   dateToLocalDateString,
   generateGoogleCalendarUrlAtTime,
   formatReservationDateTime,
+  isPastTimestamp,
 } from './index';
 
 describe('formatEventDate', () => {
@@ -126,6 +127,55 @@ describe('firebaseTimestampToDate', () => {
     const result = firebaseTimestampToDate(timestamp);
     // 目前實作只使用 seconds，nanoseconds 被忽略
     expect(result.getTime()).toBe(1769443200000);
+  });
+});
+
+describe('isPastTimestamp', () => {
+  const now = new Date(2026, 7, 6, 12, 0, 0); // 2026/8/6 12:00
+
+  it('timestamp 早於 now 時回傳 true', () => {
+    const timestamp = {
+      _seconds: Math.floor(new Date(2026, 7, 5, 0, 0, 0).getTime() / 1000),
+      _nanoseconds: 0,
+    };
+    expect(isPastTimestamp(timestamp, now)).toBe(true);
+  });
+
+  it('timestamp 晚於 now 時回傳 false', () => {
+    const timestamp = {
+      _seconds: Math.floor(new Date(2026, 7, 7, 0, 0, 0).getTime() / 1000),
+      _nanoseconds: 0,
+    };
+    expect(isPastTimestamp(timestamp, now)).toBe(false);
+  });
+
+  it('同一天但時間早於 now 時仍視為過去（比較到分鐘，不是只比日期）', () => {
+    const timestamp = {
+      _seconds: Math.floor(new Date(2026, 7, 6, 8, 0, 0).getTime() / 1000),
+      _nanoseconds: 0,
+    };
+    expect(isPastTimestamp(timestamp, now)).toBe(true);
+  });
+
+  it('同一天但時間晚於 now 時視為尚未過去', () => {
+    const timestamp = {
+      _seconds: Math.floor(new Date(2026, 7, 6, 18, 0, 0).getTime() / 1000),
+      _nanoseconds: 0,
+    };
+    expect(isPastTimestamp(timestamp, now)).toBe(false);
+  });
+
+  it('未傳入 now 時預設用目前時間比較', () => {
+    const farFuture = {
+      _seconds: Math.floor(new Date(2099, 0, 1).getTime() / 1000),
+      _nanoseconds: 0,
+    };
+    const farPast = {
+      _seconds: Math.floor(new Date(2000, 0, 1).getTime() / 1000),
+      _nanoseconds: 0,
+    };
+    expect(isPastTimestamp(farFuture)).toBe(false);
+    expect(isPastTimestamp(farPast)).toBe(true);
   });
 });
 

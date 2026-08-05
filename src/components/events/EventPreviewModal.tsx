@@ -7,6 +7,7 @@ import {
   firebaseTimestampToDate,
   formatReservationDateTime,
   generateGoogleCalendarUrlAtTime,
+  isPastTimestamp,
 } from '@/utils';
 import {
   ArrowTopRightOnSquareIcon,
@@ -227,6 +228,11 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
 
   if (!isOpen) return null;
 
+  // 預約開始時間已過去時，不再顯示「提醒我預約」（已經過去的時間點沒辦法再加行事曆提醒）
+  const isReservationExpired = event.reservation?.startAt
+    ? isPastTimestamp(event.reservation.startAt)
+    : false;
+
   const formatEventDate = (startDate: FirebaseTimestamp, endDate: FirebaseTimestamp) => {
     const start = firebaseTimestampToDate(startDate);
     const end = firebaseTimestampToDate(endDate);
@@ -425,33 +431,45 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                   </div>
                 )}
 
-                {event.reservation?.startAt && (
-                  <div className={detailItem}>
-                    <div className={detailIcon}>
-                      <CalendarIcon />
-                    </div>
-                    <div className={reservationCalendarContent}>
-                      <div className={detailValue}>
-                        {formatReservationDateTime(event.reservation.startAt)}
+                {event.reservation?.startAt &&
+                  (isReservationExpired ? (
+                    <div className={detailItem}>
+                      <div className={detailIcon}>
+                        <CalendarIcon />
                       </div>
-                      <a
-                        href={generateGoogleCalendarUrlAtTime({
-                          title: `[預約提醒] - ${event.title}`,
-                          startAt: event.reservation.startAt,
-                          location: `${event.location.name} ${event.location.address}`,
-                          eventSlugOrId: event.slug ?? event.id,
-                        })}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={addToCalendarHint}
-                        style={{ marginTop: 0 }}
-                      >
-                        提醒我預約
-                        <ArrowTopRightOnSquareIcon width={12} height={12} />
-                      </a>
+                      <div className={detailContent}>
+                        <div className={detailValue}>
+                          {formatReservationDateTime(event.reservation.startAt)}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className={detailItem}>
+                      <div className={detailIcon}>
+                        <CalendarIcon />
+                      </div>
+                      <div className={reservationCalendarContent}>
+                        <div className={detailValue}>
+                          {formatReservationDateTime(event.reservation.startAt)}
+                        </div>
+                        <a
+                          href={generateGoogleCalendarUrlAtTime({
+                            title: `[預約提醒] - ${event.title}`,
+                            startAt: event.reservation.startAt,
+                            location: `${event.location.name} ${event.location.address}`,
+                            eventSlugOrId: event.slug ?? event.id,
+                          })}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={addToCalendarHint}
+                          style={{ marginTop: 0 }}
+                        >
+                          提醒我預約
+                          <ArrowTopRightOnSquareIcon width={12} height={12} />
+                        </a>
+                      </div>
+                    </div>
+                  ))}
               </div>
             </div>
           )}

@@ -8,6 +8,12 @@ export const firebaseTimestampToDate = (timestamp: {
   return new Date(timestamp._seconds * 1000);
 };
 
+// 判斷 timestamp 是否早於「現在」（含日期+時間，不是只比日期）
+// now 參數預設 new Date()，可在測試中傳入固定時間點
+export const isPastTimestamp = (timestamp: FirebaseTimestamp, now: Date = new Date()): boolean => {
+  return firebaseTimestampToDate(timestamp).getTime() < now.getTime();
+};
+
 // 將 Date 轉換為本地時區的 YYYY-MM-DD 格式（避免時區問題）
 export const dateToLocalDateString = (date: Date): string => {
   const year = date.getFullYear();
