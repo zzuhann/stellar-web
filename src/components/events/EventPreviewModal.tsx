@@ -3,8 +3,12 @@
 import { css } from '@/styled-system/css';
 import { CoffeeEvent, FirebaseTimestamp } from '@/types';
 import SwiperBanner from '@/components/SwiperBanner';
-import { firebaseTimestampToDate } from '@/utils';
-import { CalendarIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  firebaseTimestampToDate,
+  formatReservationDateTime,
+  generateGoogleCalendarUrlAtTime,
+} from '@/utils';
+import { CalendarIcon, LinkIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon } from '../ui/SocialMediaIcons';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { parseSocialMediaHandles } from '@/utils/socialMedia';
@@ -190,6 +194,28 @@ const bottomImagesContainer = css({
   marginTop: '6',
 });
 
+const reservationCalendarButton = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1.5',
+  marginTop: '2',
+  paddingX: '4',
+  paddingY: '2.5',
+  minHeight: '44px',
+  border: '1px solid',
+  borderColor: 'stellarBlue.500',
+  borderRadius: 'radius.md',
+  background: 'white',
+  color: 'stellarBlue.500',
+  textStyle: 'button',
+  textDecoration: 'none',
+  cursor: 'pointer',
+  transition: 'background 0.2s ease',
+  '&:hover': {
+    background: 'color.background.secondary',
+  },
+});
+
 export default function EventPreviewModal({ event, isOpen, onClose }: EventPreviewModalProps) {
   // 使用 scroll lock hook
   useScrollLock(isOpen);
@@ -368,6 +394,61 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
               </div>
             </div>
           </div>
+
+          {/* 預約資訊 */}
+          {(event.reservation?.url || event.reservation?.startAt) && (
+            <div className={descriptionSection}>
+              <h3 className={descriptionTitle}>預約資訊</h3>
+              <div className={eventDetailsSection}>
+                {event.reservation?.url && event.reservation.url.startsWith('http') && (
+                  <div className={detailItem}>
+                    <div className={detailIcon}>
+                      <LinkIcon />
+                    </div>
+                    <div className={detailContent}>
+                      <div className={detailValue}>
+                        <a
+                          href={event.reservation.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ color: 'var(--colors-stellar-blue-500)' }}
+                        >
+                          前往預約頁面
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {event.reservation?.startAt && (
+                  <div className={detailItem}>
+                    <div className={detailIcon}>
+                      <CalendarIcon />
+                    </div>
+                    <div className={detailContent}>
+                      <div className={detailValue}>
+                        {formatReservationDateTime(event.reservation.startAt)}
+                      </div>
+                      <a
+                        href={generateGoogleCalendarUrlAtTime({
+                          title: `[預約提醒] - ${event.title}`,
+                          startAt: event.reservation.startAt,
+                          location: `${event.location.name} ${event.location.address}`,
+                          eventId: event.id,
+                        })}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={reservationCalendarButton}
+                      >
+                        <CalendarIcon width={16} height={16} />
+                        加入 Google 日曆
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* 活動說明 */}
           {event.description && (
