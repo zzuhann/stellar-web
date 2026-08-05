@@ -8,7 +8,13 @@ import {
   formatReservationDateTime,
   generateGoogleCalendarUrlAtTime,
 } from '@/utils';
-import { CalendarIcon, LinkIcon, MapPinIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+  ArrowTopRightOnSquareIcon,
+  CalendarIcon,
+  LinkIcon,
+  MapPinIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon } from '../ui/SocialMediaIcons';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { parseSocialMediaHandles } from '@/utils/socialMedia';
@@ -194,26 +200,13 @@ const bottomImagesContainer = css({
   marginTop: '6',
 });
 
-const reservationCalendarButton = css({
+const addToCalendarHint = css({
+  textStyle: 'caption',
+  color: 'color.link',
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '1.5',
-  marginTop: '2',
-  paddingX: '4',
-  paddingY: '2.5',
-  minHeight: '44px',
-  border: '1px solid',
-  borderColor: 'stellarBlue.500',
-  borderRadius: 'radius.md',
-  background: 'white',
-  color: 'stellarBlue.500',
-  textStyle: 'button',
-  textDecoration: 'none',
-  cursor: 'pointer',
-  transition: 'background 0.2s ease',
-  '&:hover': {
-    background: 'color.background.secondary',
-  },
+  gap: '1',
+  marginTop: '0.5',
 });
 
 export default function EventPreviewModal({ event, isOpen, onClose }: EventPreviewModalProps) {
@@ -438,10 +431,10 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                         })}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={reservationCalendarButton}
+                        className={addToCalendarHint}
                       >
-                        <CalendarIcon width={16} height={16} />
-                        加入 Google 日曆
+                        加入行事曆
+                        <ArrowTopRightOnSquareIcon width={12} height={12} />
                       </a>
                     </div>
                   </div>

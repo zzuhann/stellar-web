@@ -146,28 +146,6 @@ const reservationLink = css({
   textStyle: 'bodySmall',
 });
 
-const reservationCalendarButton = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1.5',
-  marginTop: '2',
-  paddingX: '4',
-  paddingY: '2.5',
-  minHeight: '44px',
-  border: '1px solid',
-  borderColor: 'stellarBlue.500',
-  borderRadius: 'radius.md',
-  background: 'white',
-  color: 'stellarBlue.500',
-  textStyle: 'button',
-  textDecoration: 'none',
-  cursor: 'pointer',
-  transition: 'background 0.2s ease',
-  '&:hover': {
-    background: 'color.background.secondary',
-  },
-});
-
 const descriptionSection = css({
   marginTop: '4',
   paddingTop: '4',
@@ -468,7 +446,18 @@ const EventDetail = ({ event }: EventDetailProps) => {
                 )}
 
                 {event.reservation?.startAt && (
-                  <div className={detailItem}>
+                  <ExternalLink
+                    href={generateGoogleCalendarUrlAtTime({
+                      title: `[預約提醒] - ${event.title}`,
+                      startAt: event.reservation.startAt,
+                      location: `${event.location.name} ${event.location.address}`,
+                      eventId: event.id,
+                    })}
+                    platform="reservation_calendar"
+                    eventPage="/event/[id]"
+                    contentId={event.id}
+                    className={dateRowLink}
+                  >
                     <div className={detailIcon}>
                       <CalendarIcon
                         width={20}
@@ -476,30 +465,18 @@ const EventDetail = ({ event }: EventDetailProps) => {
                         color="var(--color-text-secondary)"
                         aria-hidden="true"
                       />
-                      <span className="sr-only">預約開始時間</span>
+                      <span className="sr-only">預約開始時間，點擊加入行事曆</span>
                     </div>
                     <div className={detailContent}>
                       <div className={detailValue}>
                         {formatReservationDateTime(event.reservation.startAt)}
                       </div>
-                      <ExternalLink
-                        href={generateGoogleCalendarUrlAtTime({
-                          title: `[預約提醒] - ${event.title}`,
-                          startAt: event.reservation.startAt,
-                          location: `${event.location.name} ${event.location.address}`,
-                          eventId: event.id,
-                        })}
-                        platform="reservation_calendar"
-                        eventPage="/event/[id]"
-                        contentId={event.id}
-                        className={reservationCalendarButton}
-                      >
-                        <CalendarIcon width={16} height={16} aria-hidden="true" />
-                        加入 Google 日曆
-                        <span className="sr-only">（在新視窗開啟）</span>
-                      </ExternalLink>
+                      <div className={addToCalendarHint}>
+                        加入行事曆
+                        <ArrowTopRightOnSquareIcon width={12} height={12} aria-hidden="true" />
+                      </div>
                     </div>
-                  </div>
+                  </ExternalLink>
                 )}
               </div>
             </div>
