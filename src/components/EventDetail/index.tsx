@@ -138,6 +138,19 @@ const addToCalendarHint = css({
   marginTop: '0.5',
 });
 
+// 僅供「預約開始時間」列使用：時間文字與提醒 hint 並排同一行顯示，
+// 跟活動起訖日那一列的上下堆疊（detailContent）不同，故獨立一個 class，
+// 不動共用的 detailContent，避免影響其他列
+const reservationCalendarContent = css({
+  flex: '1',
+  minWidth: '0',
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'baseline',
+  columnGap: '2',
+  rowGap: '0.5',
+});
+
 const reservationLink = css({
   display: 'inline-flex',
   alignItems: 'center',
@@ -467,11 +480,11 @@ const EventDetail = ({ event }: EventDetailProps) => {
                       />
                       <span className="sr-only">預約開始時間，點擊提醒我預約</span>
                     </div>
-                    <div className={detailContent}>
+                    <div className={reservationCalendarContent}>
                       <div className={detailValue}>
                         {formatReservationDateTime(event.reservation.startAt)}
                       </div>
-                      <div className={addToCalendarHint}>
+                      <div className={addToCalendarHint} style={{ marginTop: 0 }}>
                         提醒我預約
                         <ArrowTopRightOnSquareIcon width={12} height={12} aria-hidden="true" />
                       </div>

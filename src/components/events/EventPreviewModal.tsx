@@ -209,6 +209,18 @@ const addToCalendarHint = css({
   marginTop: '0.5',
 });
 
+// 僅供「預約開始時間」列使用：時間文字與提醒 hint 並排同一行顯示，跟其他列
+// 沿用的上下堆疊 detailContent 不同，故獨立一個 class，不動共用的 detailContent
+const reservationCalendarContent = css({
+  flex: 1,
+  minWidth: '0',
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'baseline',
+  columnGap: '2',
+  rowGap: '0.5',
+});
+
 export default function EventPreviewModal({ event, isOpen, onClose }: EventPreviewModalProps) {
   // 使用 scroll lock hook
   useScrollLock(isOpen);
@@ -418,7 +430,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                     <div className={detailIcon}>
                       <CalendarIcon />
                     </div>
-                    <div className={detailContent}>
+                    <div className={reservationCalendarContent}>
                       <div className={detailValue}>
                         {formatReservationDateTime(event.reservation.startAt)}
                       </div>
@@ -432,6 +444,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                         target="_blank"
                         rel="noopener noreferrer"
                         className={addToCalendarHint}
+                        style={{ marginTop: 0 }}
                       >
                         提醒我預約
                         <ArrowTopRightOnSquareIcon width={12} height={12} />
