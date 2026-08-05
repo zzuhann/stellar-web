@@ -135,9 +135,7 @@ describe('eventSubmissionSchema', () => {
       });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(
-          result.error.issues.some((i) => i.message === '請填寫預約網址，或清空預約日期／時間')
-        ).toBe(true);
+        expect(result.error.issues.some((i) => i.message === '請填寫預約網址')).toBe(true);
       }
     });
 

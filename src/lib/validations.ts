@@ -77,7 +77,7 @@ export const eventSubmissionSchema = z
       return !hasStartAt || hasUrl;
     },
     {
-      message: '請填寫預約網址，或清空預約日期／時間',
+      message: '請填寫預約網址',
       path: ['reservationUrl'],
     }
   )
