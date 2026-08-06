@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   formatEventDate,
   formatDateRange,
@@ -15,6 +15,7 @@ import {
   isValidCalendarDateString,
   parseTaipeiDateString,
   taipeiDateStringToLocalDate,
+  getTaipeiToday,
 } from './index';
 
 describe('formatEventDate', () => {
@@ -456,6 +457,40 @@ describe('taipeiDateStringToLocalDate', () => {
     expect(date.getFullYear()).toBe(parts.year);
     expect(date.getMonth()).toBe(parts.month);
     expect(date.getDate()).toBe(parts.day);
+  });
+});
+
+describe('getTaipeiToday', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('回傳 Asia/Taipei 的今天，而非系統瞬間對應的 UTC 日期', () => {
+    // 系統時間設為 UTC 2026-01-04 20:00 = Taipei 2026-01-05 04:00（跨日）
+    vi.setSystemTime(new Date(Date.UTC(2026, 0, 4, 20, 0, 0)));
+    const today = getTaipeiToday();
+    expect(today.getFullYear()).toBe(2026);
+    expect(today.getMonth()).toBe(0);
+    expect(today.getDate()).toBe(5);
+  });
+
+  it('系統瞬間換算後跨月時，正確回傳下個月的 Taipei 日期', () => {
+    // 系統時間設為 UTC 2026-01-31 20:00 = Taipei 2026-02-01 04:00（跨日又跨月）
+    vi.setSystemTime(new Date(Date.UTC(2026, 0, 31, 20, 0, 0)));
+    const today = getTaipeiToday();
+    expect(today.getFullYear()).toBe(2026);
+    expect(today.getMonth()).toBe(1);
+    expect(today.getDate()).toBe(1);
+  });
+
+  it('跟 dateToTaipeiDateString 對同一個系統瞬間的解讀一致（透過字串比較，避免把本地建構的 Date 又拿去做一次時區轉換）', () => {
+    vi.setSystemTime(new Date(Date.UTC(2026, 5, 15, 10, 0, 0)));
+    const todayDateString = `${getTaipeiToday().getFullYear()}-${String(getTaipeiToday().getMonth() + 1).padStart(2, '0')}-${String(getTaipeiToday().getDate()).padStart(2, '0')}`;
+    expect(todayDateString).toBe(dateToTaipeiDateString(new Date()));
   });
 });
 

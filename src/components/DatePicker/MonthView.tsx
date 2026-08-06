@@ -1,6 +1,7 @@
 import { css, cva } from '@/styled-system/css';
 import { MONTHS } from './constant';
 import NavigationHeader from './NavigationHeader';
+import { getTaipeiToday } from '@/utils';
 
 const yearMonthGrid = css({
   display: 'grid',
@@ -75,7 +76,8 @@ const MonthView = ({
 
       <div className={yearMonthGrid} role="listbox" aria-label="選擇月份">
         {MONTHS.map((month, index) => {
-          const isCurrentMonth = index === new Date().getMonth();
+          // getTaipeiToday()，不是裸的 new Date()：見 DatePicker/utils.ts isToday 註解
+          const isCurrentMonth = index === getTaipeiToday().getMonth();
           return (
             <button
               key={index}

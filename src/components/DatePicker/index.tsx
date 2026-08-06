@@ -8,7 +8,7 @@ import CalendarView from './CalendarView';
 import { formatDisplayDate, isDisabled } from './utils';
 import YearView from './YearView';
 import MonthView from './MonthView';
-import { taipeiDateStringToLocalDate } from '@/utils';
+import { getTaipeiToday, taipeiDateStringToLocalDate } from '@/utils';
 
 interface DatePickerProps {
   value: string;
@@ -111,12 +111,14 @@ export default function DatePicker({
 }: DatePickerProps) {
   // value 是「YYYY-MM-DD」字串，用 taipeiDateStringToLocalDate 依 Asia/Taipei 解析出
   // 正確的年月日再建構本地 Date，而不是直接 new Date(value)（date-only 字串會被當成
-  // UTC 午夜解析，非 UTC+8 環境下可能整個位移一天，讓月曆一開始就顯示錯的月份/年份）
+  // UTC 午夜解析，非 UTC+8 環境下可能整個位移一天，讓月曆一開始就顯示錯的月份/年份）。
+  // 沒有 value 時用 getTaipeiToday() 而不是裸的 new Date()，同樣理由：避免非 UTC+8
+  // 使用者剛好跨過午夜開啟空白 DatePicker 時，預設顯示的年月跟 Taipei 對不上
   const [currentDate, setCurrentDate] = useState(() => {
     if (value) {
       return taipeiDateStringToLocalDate(value);
     }
-    return new Date();
+    return getTaipeiToday();
   });
 
   const [prevValue, setPrevValue] = useState(value);

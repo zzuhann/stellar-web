@@ -1,7 +1,9 @@
-import { parseTaipeiDateString, taipeiDateStringToLocalDate } from '@/utils';
+import { getTaipeiToday, parseTaipeiDateString, taipeiDateStringToLocalDate } from '@/utils';
 
 export const isToday = (date: Date) => {
-  const today = new Date();
+  // getTaipeiToday()，不是裸的 new Date()：非 UTC+8 使用者剛好跨過午夜時，瀏覽器的
+  // 「今天」跟 Taipei 的「今天」可能不是同一天，會讓日曆高亮到錯的一格
+  const today = getTaipeiToday();
   return (
     date.getDate() === today.getDate() &&
     date.getMonth() === today.getMonth() &&

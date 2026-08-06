@@ -121,6 +121,15 @@ export const taipeiDateStringToLocalDate = (dateStr: string): Date => {
   return new Date(year, month, day);
 };
 
+// 取得 Asia/Taipei 時區的「今天」，回傳本地 Date 物件（語意同上方
+// taipeiDateStringToLocalDate：代表一個日曆日，不是一個 UTC 瞬間）。取代裸的
+// new Date() 用來判斷「現在是哪一天」——瀏覽器本地時間跟 Taipei 可能不是同一天
+// （例如非 UTC+8 使用者剛好跨過午夜開啟頁面），裸的 new Date() 會讀到瀏覽器自己的
+// 「今天」，不是 Taipei 的「今天」。
+export const getTaipeiToday = (): Date => {
+  return taipeiDateStringToLocalDate(dateToTaipeiDateString(new Date()));
+};
+
 // 日期範圍格式化 (YYYY/M/D - YYYY/M/D)
 export const formatDateRange = (startDate: Date | string, endDate: Date | string): string => {
   const formatSingleDate = (date: Date | string): string => {
