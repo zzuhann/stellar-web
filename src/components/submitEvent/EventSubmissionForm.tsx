@@ -11,7 +11,12 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { CreateEventRequest, UpdateEventRequest, Artist, CoffeeEvent } from '@/types';
 import showToast from '@/lib/toast';
-import { firebaseTimestampToDate, dateToLocalDateString, dateToLocalTimeString } from '@/utils';
+import {
+  firebaseTimestampToDate,
+  dateToTaipeiDateString,
+  dateToTaipeiTimeString,
+  taipeiDateTimeToTimestamp,
+} from '@/utils';
 import { scrollToFirstErrorField } from '@/utils/formHelpers';
 import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
@@ -213,8 +218,8 @@ function EventSubmissionForm({
           title: existingEvent.title,
           description: existingEvent.description,
           addressName: existingEvent.location.name,
-          startDate: dateToLocalDateString(firebaseTimestampToDate(existingEvent.datetime.start)),
-          endDate: dateToLocalDateString(firebaseTimestampToDate(existingEvent.datetime.end)),
+          startDate: dateToTaipeiDateString(firebaseTimestampToDate(existingEvent.datetime.start)),
+          endDate: dateToTaipeiDateString(firebaseTimestampToDate(existingEvent.datetime.end)),
           instagram: existingEvent.socialMedia.instagram || '',
           threads: existingEvent.socialMedia.threads || '',
           mainImage: existingEvent.mainImage || '',
@@ -226,10 +231,10 @@ function EventSubmissionForm({
           artistIds: existingEvent.artists.map((artist) => artist.id),
           reservationUrl: existingEvent.reservation?.url || '',
           reservationDate: existingEvent.reservation?.startAt
-            ? dateToLocalDateString(firebaseTimestampToDate(existingEvent.reservation.startAt))
+            ? dateToTaipeiDateString(firebaseTimestampToDate(existingEvent.reservation.startAt))
             : '',
           reservationTime: existingEvent.reservation?.startAt
-            ? dateToLocalTimeString(firebaseTimestampToDate(existingEvent.reservation.startAt))
+            ? dateToTaipeiTimeString(firebaseTimestampToDate(existingEvent.reservation.startAt))
             : '',
         }
       : undefined,
@@ -480,18 +485,14 @@ function EventSubmissionForm({
   // 永遠回傳完整物件（不因為欄位為空就整個省略），讓 edit 模式清空欄位時後端能正確清除既有值
   const buildReservationPayload = (data: EventSubmissionFormData) => {
     const url = data.reservationUrl?.trim();
-    const hasStartAt = !!data.reservationDate && !!data.reservationTime;
+    const { reservationDate, reservationTime } = data;
 
     return {
       url: url || undefined,
-      startAt: hasStartAt
-        ? {
-            _seconds: Math.floor(
-              new Date(`${data.reservationDate}T${data.reservationTime}:00`).getTime() / 1000
-            ),
-            _nanoseconds: 0,
-          }
-        : undefined,
+      startAt:
+        reservationDate && reservationTime
+          ? taipeiDateTimeToTimestamp(reservationDate, `${reservationTime}:00`)
+          : undefined,
     };
   };
 
@@ -502,16 +503,8 @@ function EventSubmissionForm({
         artistIds: selectedArtists.map((artist) => artist.id),
         description: data.description || '',
         datetime: {
-          start: {
-            // 00:00:00
-            _seconds: Math.floor(new Date(data.startDate + 'T00:00:00').getTime() / 1000),
-            _nanoseconds: 0,
-          },
-          end: {
-            // 23:59:59
-            _seconds: Math.floor(new Date(data.endDate + 'T23:59:59').getTime() / 1000),
-            _nanoseconds: 0,
-          },
+          start: taipeiDateTimeToTimestamp(data.startDate, '00:00:00'),
+          end: taipeiDateTimeToTimestamp(data.endDate, '23:59:59'),
         },
         location: {
           name: data.addressName,
@@ -544,16 +537,8 @@ function EventSubmissionForm({
         title: data.title,
         description: data.description || '',
         datetime: {
-          start: {
-            // 00:00:00
-            _seconds: Math.floor(new Date(data.startDate + 'T00:00:00').getTime() / 1000),
-            _nanoseconds: 0,
-          },
-          end: {
-            // 23:59:59
-            _seconds: Math.floor(new Date(data.endDate + 'T23:59:59').getTime() / 1000),
-            _nanoseconds: 0,
-          },
+          start: taipeiDateTimeToTimestamp(data.startDate, '00:00:00'),
+          end: taipeiDateTimeToTimestamp(data.endDate, '23:59:59'),
         },
         location: {
           name: data.addressName,

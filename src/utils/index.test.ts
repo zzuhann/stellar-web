@@ -4,7 +4,9 @@ import {
   formatDateRange,
   formatEventDateShort,
   firebaseTimestampToDate,
-  dateToLocalDateString,
+  dateToTaipeiDateString,
+  dateToTaipeiTimeString,
+  taipeiDateTimeToTimestamp,
   generateGoogleCalendarUrlAtTime,
   formatReservationDateTime,
   isPastTimestamp,
@@ -238,16 +240,56 @@ describe('formatReservationDateTime', () => {
   });
 });
 
-describe('dateToLocalDateString', () => {
+// 以下三個 describe 都用 Date.UTC 建構輸入（不受測試環境本地時區影響），
+// 刻意挑選 UTC 時刻換算成 Asia/Taipei 後會「跨到不同日期/跟 UTC 時刻數字不同」
+// 的案例——如果實作退化成用 .getFullYear()/.getHours() 等本地時區方法，
+// 在非 Asia/Taipei 的測試環境（例如 CI 常見的 UTC）這些案例就會斷言失敗，
+// 藉此驗證修正是否真的生效，而不是「剛好在開發機的時區下測試也會過」
+describe('dateToTaipeiDateString', () => {
   it('正確轉換為 YYYY-MM-DD 格式（有補0）', () => {
-    const date = new Date(2026, 0, 5); // 2026/1/5
-    const result = dateToLocalDateString(date);
-    expect(result).toBe('2026-01-05');
+    // UTC 2026-01-04 20:00 = Taipei 2026-01-05 04:00（跨日）
+    const date = new Date(Date.UTC(2026, 0, 4, 20, 0, 0));
+    expect(dateToTaipeiDateString(date)).toBe('2026-01-05');
   });
 
   it('處理雙位數月份和日期', () => {
-    const date = new Date(2026, 10, 15); // 2026/11/15
-    const result = dateToLocalDateString(date);
-    expect(result).toBe('2026-11-15');
+    // UTC 2026-11-14 20:00 = Taipei 2026-11-15 04:00（跨日）
+    const date = new Date(Date.UTC(2026, 10, 14, 20, 0, 0));
+    expect(dateToTaipeiDateString(date)).toBe('2026-11-15');
+  });
+});
+
+describe('dateToTaipeiTimeString', () => {
+  it('正確轉換為 HH:mm 格式並補零', () => {
+    // UTC 2026-08-05 16:30 = Taipei 2026-08-06 00:30（跨日，時間也補零）
+    const date = new Date(Date.UTC(2026, 7, 5, 16, 30, 0));
+    expect(dateToTaipeiTimeString(date)).toBe('00:30');
+  });
+
+  it('處理雙位數小時與分鐘', () => {
+    // UTC 2026-08-05 05:05 = Taipei 2026-08-05 13:05
+    const date = new Date(Date.UTC(2026, 7, 5, 5, 5, 0));
+    expect(dateToTaipeiTimeString(date)).toBe('13:05');
+  });
+});
+
+describe('taipeiDateTimeToTimestamp', () => {
+  it('依 Asia/Taipei（UTC+8）解讀日期字串，而非瀏覽器本地時區', () => {
+    const result = taipeiDateTimeToTimestamp('2026-08-05', '00:00:00');
+    // 2026-08-05T00:00:00+08:00 = 2026-08-04T16:00:00Z
+    expect(result._seconds).toBe(Date.UTC(2026, 7, 4, 16, 0, 0) / 1000);
+  });
+
+  it('23:59:59 正確落在同一個台北日期', () => {
+    const result = taipeiDateTimeToTimestamp('2026-08-05', '23:59:59');
+    // 2026-08-05T23:59:59+08:00 = 2026-08-05T15:59:59Z
+    expect(result._seconds).toBe(Date.UTC(2026, 7, 5, 15, 59, 59) / 1000);
+  });
+
+  it('與 dateToTaipeiDateString/dateToTaipeiTimeString 互為 round-trip', () => {
+    const timestamp = taipeiDateTimeToTimestamp('2026-08-20', '20:05:00');
+    const date = firebaseTimestampToDate(timestamp);
+    expect(dateToTaipeiDateString(date)).toBe('2026-08-20');
+    expect(dateToTaipeiTimeString(date)).toBe('20:05');
   });
 });

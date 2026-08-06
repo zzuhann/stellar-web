@@ -15,7 +15,7 @@ import PlaceAutocomplete from '@/components/forms/PlaceAutocomplete';
 import DatePicker from '@/components/DatePicker';
 import ImageUpload from '@/components/images/ImageUpload';
 import MultiImageUpload from '@/components/images/MultiImageUpload';
-import { dateToLocalDateString } from '@/utils';
+import { dateToTaipeiDateString } from '@/utils';
 import { formGroup, label, input, helperText, errorText } from '@/components/submitEvent/styles';
 
 import CaptionParseSection from './CaptionParseSection';
@@ -428,7 +428,7 @@ export default function EventImportForm() {
               }}
               placeholder="選擇開始日期"
               error={!!errors.startDate}
-              min={dateToLocalDateString(new Date())}
+              min={dateToTaipeiDateString(new Date())}
             />
             <input type="hidden" {...register('startDate')} aria-hidden="true" />
             <AutoFillHint show={autoFilledFields.has('startDate')} />

@@ -14,19 +14,46 @@ export const isPastTimestamp = (timestamp: FirebaseTimestamp, now: Date = new Da
   return firebaseTimestampToDate(timestamp).getTime() < now.getTime();
 };
 
-// 將 Date 轉換為本地時區的 YYYY-MM-DD 格式（避免時區問題）
-export const dateToLocalDateString = (date: Date): string => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+// 將 Date 轉換為 Asia/Taipei 時區的 YYYY-MM-DD 格式。
+// 注意：這裡的「Taipei」明確指 Asia/Taipei 時區，不是使用者瀏覽器所在地——
+// 台灣沒有日光節約時間，固定 UTC+8，不用 .getFullYear()/.getDate() 這類會
+// 受瀏覽器本地時區影響的方法，改用 Intl.DateTimeFormat 明確指定 timeZone。
+export const dateToTaipeiDateString = (date: Date): string => {
+  const formatter = new Intl.DateTimeFormat('zh-TW', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  const parts = formatter.formatToParts(date);
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+  return `${get('year')}-${get('month')}-${get('day')}`;
 };
 
-// 將 Date 轉換為本地時區的 HH:mm 格式
-export const dateToLocalTimeString = (date: Date): string => {
-  const hour = String(date.getHours()).padStart(2, '0');
-  const minute = String(date.getMinutes()).padStart(2, '0');
-  return `${hour}:${minute}`;
+// 將 Date 轉換為 Asia/Taipei 時區的 HH:mm 格式（見上方 dateToTaipeiDateString 註解）
+export const dateToTaipeiTimeString = (date: Date): string => {
+  const formatter = new Intl.DateTimeFormat('zh-TW', {
+    timeZone: 'Asia/Taipei',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(date);
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+  return `${get('hour')}:${get('minute')}`;
+};
+
+// 將「YYYY-MM-DD」日期字串 + 時間字串，依 Asia/Taipei 時區（固定 UTC+8）組成 FirebaseTimestamp。
+// 明確帶 +08:00 offset，不依賴瀏覽器 local timezone 解讀日期字串
+// （例如投稿表單的 startDate/endDate/reservationDate+reservationTime 送出時都經過這裡）。
+export const taipeiDateTimeToTimestamp = (
+  dateStr: string,
+  time: string
+): { _seconds: number; _nanoseconds: number } => {
+  return {
+    _seconds: Math.floor(new Date(`${dateStr}T${time}+08:00`).getTime() / 1000),
+    _nanoseconds: 0,
+  };
 };
 
 // 日期範圍格式化 (YYYY/M/D - YYYY/M/D)

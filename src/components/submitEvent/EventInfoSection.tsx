@@ -16,7 +16,7 @@ import MultiImageUpload from '../images/MultiImageUpload';
 import { FieldErrors, UseFormRegister } from 'react-hook-form';
 import { EventSubmissionFormData } from '@/lib/validations';
 import { useAuthToken } from '@/hooks/useAuthToken';
-import { dateToLocalDateString } from '@/utils';
+import { dateToTaipeiDateString } from '@/utils';
 
 const textarea = css({
   width: '100%',
@@ -263,7 +263,7 @@ const EventInfoSection = ({
             placeholder="選擇開始日期"
             disabled={isPending}
             error={!!errors.startDate}
-            min={dateToLocalDateString(new Date())}
+            min={dateToTaipeiDateString(new Date())}
           />
           <input type="hidden" {...register('startDate')} aria-hidden="true" />
           {errors.startDate && (
