@@ -10,7 +10,7 @@ import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import ImageUpload from '@/components/images/ImageUpload';
-import DatePicker from '@/components/DatePicker';
+import BirthdayPicker from '@/components/forms/BirthdayPicker';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { Artist, UpdateArtistRequest } from '@/types';
@@ -600,15 +600,13 @@ export default function ArtistSubmissionForm({
               <span className="sr-only">（必填）</span>
             </div>
           </label>
-          <DatePicker
+          <BirthdayPicker
             value={birthday || ''}
             onChange={(date) =>
               setValue('birthday', date, { shouldValidate: true, shouldDirty: true })
             }
-            placeholder="選擇生日"
             disabled={createArtistMutation.isPending || updateArtistMutation.isPending}
             error={!!errors.birthday}
-            // max={new Date().toISOString().split('T')[0]}
           />
           <input type="hidden" {...register('birthday')} aria-hidden="true" />
           {errors.birthday && (
