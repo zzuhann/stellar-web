@@ -87,6 +87,29 @@ export const taipeiDateTimeToTimestamp = (
   };
 };
 
+// 把「YYYY-MM-DD」日期字串解析為 Asia/Taipei 時區下的 {year, month, day}
+// （month 從 0 開始，對齊 JS Date.getMonth() 慣例，方便呼叫端直接比較日曆日）。
+// 不直接用 new Date(dateStr) 讀取年月日——date-only 字串會被當成 UTC 午夜解析，
+// 非 UTC+8 環境下用 .getFullYear() 等本地方法讀回來可能整個位移一天。做法是
+// 複用 taipeiDateTimeToTimestamp 先轉成明確的 UTC 瞬間，再用跟 dateToTaipeiDateString
+// 一樣的 Intl.DateTimeFormat + timeZone: 'Asia/Taipei' 讀回日曆日。
+export const parseTaipeiDateString = (
+  dateStr: string
+): { year: number; month: number; day: number } => {
+  const timestamp = taipeiDateTimeToTimestamp(dateStr, '00:00:00');
+  const date = firebaseTimestampToDate(timestamp);
+
+  const formatter = new Intl.DateTimeFormat('zh-TW', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  });
+  const parts = formatter.formatToParts(date);
+  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '0';
+  return { year: Number(get('year')), month: Number(get('month')) - 1, day: Number(get('day')) };
+};
+
 // 日期範圍格式化 (YYYY/M/D - YYYY/M/D)
 export const formatDateRange = (startDate: Date | string, endDate: Date | string): string => {
   const formatSingleDate = (date: Date | string): string => {

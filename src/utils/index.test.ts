@@ -13,6 +13,7 @@ import {
   isPastTimestamp,
   isHttpUrl,
   isValidCalendarDateString,
+  parseTaipeiDateString,
 } from './index';
 
 describe('formatEventDate', () => {
@@ -404,6 +405,27 @@ describe('taipeiDateTimeToTimestamp', () => {
     const date = firebaseTimestampToDate(timestamp);
     expect(dateToTaipeiDateString(date)).toBe('2026-08-20');
     expect(dateToTaipeiTimeString(date)).toBe('20:05');
+  });
+});
+
+describe('parseTaipeiDateString', () => {
+  it('解析出的年月日跟輸入字串一致（month 為 0-indexed）', () => {
+    expect(parseTaipeiDateString('2026-08-05')).toEqual({ year: 2026, month: 7, day: 5 });
+  });
+
+  it('月初/月底邊界正確', () => {
+    expect(parseTaipeiDateString('2026-01-01')).toEqual({ year: 2026, month: 0, day: 1 });
+    expect(parseTaipeiDateString('2026-12-31')).toEqual({ year: 2026, month: 11, day: 31 });
+  });
+
+  it('與 dateToTaipeiDateString 互為 round-trip', () => {
+    const original = '2026-02-15';
+    const parts = parseTaipeiDateString(original);
+    const timestamp = taipeiDateTimeToTimestamp(
+      `${parts.year}-${String(parts.month + 1).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`,
+      '00:00:00'
+    );
+    expect(dateToTaipeiDateString(firebaseTimestampToDate(timestamp))).toBe(original);
   });
 });
 

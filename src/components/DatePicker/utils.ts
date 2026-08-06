@@ -1,3 +1,5 @@
+import { parseTaipeiDateString } from '@/utils';
+
 export const isToday = (date: Date) => {
   const today = new Date();
   return (
@@ -9,11 +11,14 @@ export const isToday = (date: Date) => {
 
 export const isSelected = (date: Date, value: string) => {
   if (!value) return false;
-  const selectedDate = new Date(value);
+  // 同樣的 date-only 字串解析問題（見下方 isDisabled 註解）：new Date(value) 會被當成
+  // UTC 午夜解析，非 UTC+8 環境下用 .getDate() 等本地方法讀回來可能整個位移一天，
+  // 讓日曆格子高亮到錯的一天。改用 parseTaipeiDateString。
+  const selectedParts = parseTaipeiDateString(value);
   return (
-    date.getDate() === selectedDate.getDate() &&
-    date.getMonth() === selectedDate.getMonth() &&
-    date.getFullYear() === selectedDate.getFullYear()
+    date.getDate() === selectedParts.day &&
+    date.getMonth() === selectedParts.month &&
+    date.getFullYear() === selectedParts.year
   );
 };
 
@@ -36,20 +41,31 @@ export const getDaysInMonth = (date: Date) => {
   return days;
 };
 
+// min/max 是「YYYY-MM-DD」字串（例如呼叫端傳入 dateToTaipeiDateString(new Date())）。
+// 不能直接 new Date(min) 讀取年月日——date-only 字串會被當成 UTC 午夜解析，非 UTC+8
+// 環境下用 .getFullYear() 等本地方法讀回來可能整個位移一天，誤放行一天前的日期或
+// 誤擋一天後的日期。改用 parseTaipeiDateString 明確依 Asia/Taipei 解析 min/max。
+const compareDateParts = (
+  a: { year: number; month: number; day: number },
+  b: { year: number; month: number; day: number }
+): number => {
+  if (a.year !== b.year) return a.year - b.year;
+  if (a.month !== b.month) return a.month - b.month;
+  return a.day - b.day;
+};
+
 export const isDisabled = ({ date, min, max }: { date: Date; min?: string; max?: string }) => {
+  // 日曆格子的 date 是用本地 Date 元件生成（getDaysInMonth），這裡沿用同一套本地
+  // getter 取「這一格代表哪一天」，只有 min/max 字串的解析方式是這次要修的部分
+  const dateOnly = { year: date.getFullYear(), month: date.getMonth(), day: date.getDate() };
+
   if (min) {
-    const minDate = new Date(min);
-    // 只比較日期部分，忽略時間
-    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const minDateOnly = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
-    if (dateOnly < minDateOnly) return true;
+    const minParts = parseTaipeiDateString(min);
+    if (compareDateParts(dateOnly, minParts) < 0) return true;
   }
   if (max) {
-    const maxDate = new Date(max);
-    // 只比較日期部分，忽略時間
-    const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    const maxDateOnly = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate());
-    if (dateOnly > maxDateOnly) return true;
+    const maxParts = parseTaipeiDateString(max);
+    if (compareDateParts(dateOnly, maxParts) > 0) return true;
   }
   return false;
 };
@@ -58,6 +74,7 @@ export const formatDisplayDate = (dateString: string) => {
   if (!dateString) return '';
   const date = new Date(dateString);
   return date.toLocaleDateString('zh-TW', {
+    timeZone: 'Asia/Taipei',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
