@@ -214,31 +214,19 @@ function parseBirthday(value: string): { year: string; month: string; day: strin
   return { year: match[1], month: String(Number(match[2])), day: String(Number(match[3])) };
 }
 
+// value 只作為掛載當下的初始值（例如 edit mode 帶入既有藝人生日），掛載後元件
+// 自行管理年/月/日狀態，不再對 value prop 的後續變化做任何回填/重置。
+// 這個設計假設父層只在資料就緒後才 mount 這個元件（ArtistSubmissionForm 目前唯二兩個
+// 呼叫點 SubmitArtistClient.tsx、EditArtistClient.tsx 都是 existingArtist 讀取完成後才
+// render 表單），而不是同一個元件實例先掛載、資料才非同步補上。
+// 如果未來出現「同一元件實例需要在掛載後被外部整批替換生日」的情境，正確做法是讓父層
+// 用 key 強制整個元件重新掛載，而不是在這裡重新引入 value-prop 監聽——
+// 曾經試過用「記住最後一次 emit 的值」來分辨「外部真的改變」和「自己 onChange 的回音」，
+// 但父層若非同步/非原樣寫回，這個分辨方式一樣會誤判，屬於治標不治本。
 export default function BirthdayPicker({ value, onChange, disabled, error }: BirthdayPickerProps) {
-  const initial = parseBirthday(value);
-  const [year, setYear] = useState(initial.year);
-  const [month, setMonth] = useState(initial.month);
-  const [day, setDay] = useState(initial.day);
-
-  // 記住自己最後一次 emit 出去的值：controlled parent（如 react-hook-form 的 setValue）
-  // 通常會把 onChange 收到的值原樣寫回 value prop，這個 echo 不代表「外部改變了生日」，
-  // 只是「剛剛自己的選擇被回寫」，不該再觸發下面的重新拆解（否則例如只是把失效的日清空，
-  // 會連帶把使用者剛選好的年/月一起清掉，見下方 emit）。用 state 而非 ref，
-  // 因為 render 期間只能讀 state，不能讀 ref（react-hooks/refs）
-  const [lastEmitted, setLastEmitted] = useState(value);
-
-  // value 由外部改變時（例如 edit mode 非同步帶入既有藝人資料）重新拆解回填，
-  // 不用 useEffect 是為了在同一次 render 內同步完成，避免閃爍
-  const [prevValue, setPrevValue] = useState(value);
-  if (prevValue !== value) {
-    setPrevValue(value);
-    if (value !== lastEmitted) {
-      const parsed = parseBirthday(value);
-      setYear(parsed.year);
-      setMonth(parsed.month);
-      setDay(parsed.day);
-    }
-  }
+  const [year, setYear] = useState(() => parseBirthday(value).year);
+  const [month, setMonth] = useState(() => parseBirthday(value).month);
+  const [day, setDay] = useState(() => parseBirthday(value).day);
 
   const daysInMonth = year && month ? getDaysInMonth(Number(year), Number(month)) : 0;
   const dayOptions: DropdownOption[] = Array.from({ length: daysInMonth }, (_, i) => {
@@ -247,9 +235,7 @@ export default function BirthdayPicker({ value, onChange, disabled, error }: Bir
   });
 
   const emit = (y: string, m: string, d: string) => {
-    const next = y && m && d ? `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` : '';
-    setLastEmitted(next);
-    onChange(next);
+    onChange(y && m && d ? `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` : '');
   };
 
   // 年或月切換後，原本選的日若超出新月份天數（如 2/29 → 平年），清空日期而非留一個不存在的日期

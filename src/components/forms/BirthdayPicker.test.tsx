@@ -3,7 +3,8 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BirthdayPicker from './BirthdayPicker';
 
-// 模擬 react-hook-form 等 controlled parent：onChange 收到的值會原樣寫回 value prop
+// 模擬 react-hook-form 等 controlled parent：onChange 收到的值會原樣寫回 value prop，
+// 用來驗證這個回寫不會反過來影響 BirthdayPicker 已經在管理的內部狀態
 function ControlledBirthdayPicker({ initialValue }: { initialValue: string }) {
   const [value, setValue] = useState(initialValue);
   return <BirthdayPicker value={value} onChange={setValue} />;
@@ -102,7 +103,7 @@ describe('BirthdayPicker', () => {
     expect(screen.getByRole('button', { name: '生日日期' }).textContent).toContain('17 日');
   });
 
-  it('controlled parent（onChange 回寫進 value）：清空失效的日不會連帶清掉已選的年/月', () => {
+  it('controlled parent（onChange 回寫進 value）：清空失效的日不會連帶清掉已選的年/月，也不受 value 回寫影響', () => {
     render(<ControlledBirthdayPicker initialValue="2024-02-29" />);
 
     expect(screen.getByRole('button', { name: '生日日期' }).textContent).toContain('29 日');
@@ -117,14 +118,17 @@ describe('BirthdayPicker', () => {
     expect(screen.getByRole('button', { name: '生日日期' }).textContent).not.toContain('29');
   });
 
-  it('edit mode：value 是非同步帶入（初始為空，之後才更新）時也能正確回填', () => {
-    const { rerender } = render(<BirthdayPicker value="" onChange={vi.fn()} />);
-    expect(screen.getByRole('button', { name: '生日年份' }).textContent).toContain('年');
+  it('value 只作為掛載時的初始值：掛載後 value prop 改變不會回填／重置欄位', () => {
+    // BirthdayPicker 刻意只在掛載當下讀一次 value（見元件內註解）。兩個實際呼叫點
+    // （SubmitArtistClient、EditArtistClient）都是 existingArtist 就緒後才 mount 這個表單，
+    // 不會有「同一元件實例掛載後才非同步補上生日」的情境。
+    const { rerender } = render(<BirthdayPicker value="2001-04-17" onChange={vi.fn()} />);
+    expect(screen.getByRole('button', { name: '生日年份' }).textContent).toContain('2001 年');
 
     rerender(<BirthdayPicker value="1998-12-25" onChange={vi.fn()} />);
 
-    expect(screen.getByRole('button', { name: '生日年份' }).textContent).toContain('1998 年');
-    expect(screen.getByRole('button', { name: '生日月份' }).textContent).toContain('12 月');
-    expect(screen.getByRole('button', { name: '生日日期' }).textContent).toContain('25 日');
+    expect(screen.getByRole('button', { name: '生日年份' }).textContent).toContain('2001 年');
+    expect(screen.getByRole('button', { name: '生日月份' }).textContent).toContain('4 月');
+    expect(screen.getByRole('button', { name: '生日日期' }).textContent).toContain('17 日');
   });
 });
