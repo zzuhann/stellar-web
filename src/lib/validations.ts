@@ -1,6 +1,7 @@
 // 表單驗證 schemas
 
 import { z } from 'zod';
+import { isHttpUrl, isValidCalendarDateString } from '@/utils';
 
 // 活動投稿表單驗證
 export const eventSubmissionSchema = z
@@ -12,12 +13,12 @@ export const eventSubmissionSchema = z
       .string()
       .min(1, '請選擇開始日期')
       .regex(/^\d{4}-\d{2}-\d{2}$/, '請選擇有效的開始日期')
-      .refine((date) => !isNaN(Date.parse(date)), '請選擇有效的開始日期'),
+      .refine((date) => isValidCalendarDateString(date), '請選擇有效的開始日期'),
     endDate: z
       .string()
       .min(1, '請選擇結束日期')
       .regex(/^\d{4}-\d{2}-\d{2}$/, '請選擇有效的結束日期')
-      .refine((date) => !isNaN(Date.parse(date)), '請選擇有效的結束日期'),
+      .refine((date) => isValidCalendarDateString(date), '請選擇有效的結束日期'),
     addressName: z.string().min(1, '請輸入地點').max(200, '地址不能超過200個字'),
     instagram: z.string().optional().or(z.literal('')),
     threads: z.string().optional().or(z.literal('')),
@@ -49,23 +50,10 @@ export const eventSubmissionSchema = z
       path: ['instagram'],
     }
   )
-  .refine(
-    (data) => {
-      if (!data.reservationUrl) return true;
-      if (!/^https?:\/\//.test(data.reservationUrl)) return false;
-      // 檢查是否為結構完整的網址（例如 https:// 這種殘缺字串會被擋下）
-      try {
-        new URL(data.reservationUrl);
-        return true;
-      } catch {
-        return false;
-      }
-    },
-    {
-      message: '請輸入正確的網址格式（需以 http:// 或 https:// 開頭）',
-      path: ['reservationUrl'],
-    }
-  )
+  .refine((data) => !data.reservationUrl || isHttpUrl(data.reservationUrl), {
+    message: '請輸入正確的網址格式（需以 http:// 或 https:// 開頭）',
+    path: ['reservationUrl'],
+  })
   .refine(
     (data) => {
       const hasDate = !!data.reservationDate;
@@ -91,6 +79,7 @@ export const eventSubmissionSchema = z
   .refine(
     (data) => {
       if (!data.reservationDate || !data.reservationTime) return true;
+      if (!isValidCalendarDateString(data.reservationDate)) return false;
       return !isNaN(Date.parse(`${data.reservationDate}T${data.reservationTime}:00`));
     },
     {

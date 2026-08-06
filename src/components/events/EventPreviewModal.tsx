@@ -1,12 +1,13 @@
 'use client';
 
 import { css } from '@/styled-system/css';
-import { CoffeeEvent, FirebaseTimestamp } from '@/types';
+import { CoffeeEvent } from '@/types';
 import SwiperBanner from '@/components/SwiperBanner';
 import {
-  firebaseTimestampToDate,
+  formatEventDate,
   formatReservationDateTime,
   generateGoogleCalendarUrlAtTime,
+  isHttpUrl,
   isPastTimestamp,
 } from '@/utils';
 import {
@@ -233,25 +234,6 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
     ? isPastTimestamp(event.reservation.startAt)
     : false;
 
-  const formatEventDate = (startDate: FirebaseTimestamp, endDate: FirebaseTimestamp) => {
-    const start = firebaseTimestampToDate(startDate);
-    const end = firebaseTimestampToDate(endDate);
-
-    const startStr = start.toLocaleDateString('zh-TW', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-
-    const endStr = end.toLocaleDateString('zh-TW', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-
-    return startStr === endStr ? startStr : `${startStr} - ${endStr}`;
-  };
-
   // 準備 banner 數據
   const getBannerItems = () => {
     const items = [];
@@ -411,7 +393,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
             <div className={descriptionSection}>
               <h3 className={descriptionTitle}>預約資訊</h3>
               <div className={eventDetailsSection}>
-                {event.reservation?.url && event.reservation.url.startsWith('http') && (
+                {event.reservation?.url && isHttpUrl(event.reservation.url) && (
                   <div className={detailItem}>
                     <div className={detailIcon}>
                       <LinkIcon />

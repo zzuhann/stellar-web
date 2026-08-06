@@ -14,6 +14,37 @@ export const isPastTimestamp = (timestamp: FirebaseTimestamp, now: Date = new Da
   return firebaseTimestampToDate(timestamp).getTime() < now.getTime();
 };
 
+// 判斷字串是否為結構完整的 http(s) 網址。用途是「顯示端」決定要不要把值渲染成可
+// 點擊連結的防線（例如舊資料、直接呼叫 API 產生的髒資料），不是取代表單送出時
+// 的驗證——表單驗證的職責在 lib/validations.ts，兩邊都呼叫這個函式維持同一套標準。
+export const isHttpUrl = (url: string): boolean => {
+  if (!/^https?:\/\//.test(url)) return false;
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// 嚴格驗證「YYYY-MM-DD」字串是否為真的存在的日曆日期，而不只是格式正確或能被
+// Date.parse/new Date 接受——例如 2026-02-30 用 new Date() 會被靜默正規化成
+// 2026-03-02，Date.parse/isNaN 檢查不出來。做法是把字串拆成年月日後用
+// new Date(year, month-1, day) 建構，再回頭比對三個欄位是否跟輸入一致（正規化
+// 發生時，讀回來的值會跟輸入不同）。跟時區無關：建構與讀取都用同一組本地時間
+// accessor，只是拿來偵測「日期是否被自動進位」，不是要判斷是哪個時區的哪一天。
+export const isValidCalendarDateString = (dateStr: string): boolean => {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+  if (!match) return false;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+
+  const date = new Date(year, month - 1, day);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+};
+
 // 將 Date 轉換為 Asia/Taipei 時區的 YYYY-MM-DD 格式。
 // 注意：這裡的「Taipei」明確指 Asia/Taipei 時區，不是使用者瀏覽器所在地——
 // 台灣沒有日光節約時間，固定 UTC+8，不用 .getFullYear()/.getDate() 這類會

@@ -24,6 +24,7 @@ import {
   formatReservationDateTime,
   generateGoogleCalendarUrl,
   generateGoogleCalendarUrlAtTime,
+  isHttpUrl,
   isPastTimestamp,
 } from '@/utils';
 import PageViewTracker from '@/components/PageViewTracker';
@@ -437,7 +438,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
             <div className={descriptionSection}>
               <h3 className={descriptionTitle}>預約資訊</h3>
               <div className={eventDetailsSection}>
-                {event.reservation?.url && event.reservation.url.startsWith('http') && (
+                {event.reservation?.url && isHttpUrl(event.reservation.url) && (
                   <div className={detailItem}>
                     <div className={detailIcon}>
                       <LinkIcon

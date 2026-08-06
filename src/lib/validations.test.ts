@@ -72,6 +72,50 @@ describe('eventSubmissionSchema', () => {
     expect(result.success).toBe(true);
   });
 
+  describe('日期嚴格驗證（擋下 Date 會自動正規化的無效日期）', () => {
+    it('startDate 是不存在的日期（2 月 30 日）時驗證失敗', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        startDate: '2026-02-30',
+        endDate: '2026-03-01',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.some((i) => i.message === '請選擇有效的開始日期')).toBe(true);
+      }
+    });
+
+    it('endDate 是不存在的日期（4 月 31 日）時驗證失敗', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        startDate: '2026-04-01',
+        endDate: '2026-04-31',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.some((i) => i.message === '請選擇有效的結束日期')).toBe(true);
+      }
+    });
+
+    it('非閏年的 2 月 29 日驗證失敗', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        startDate: '2026-02-29',
+        endDate: '2026-03-01',
+      });
+      expect(result.success).toBe(false);
+    });
+
+    it('閏年的 2 月 29 日通過驗證', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        startDate: '2028-02-29',
+        endDate: '2028-03-01',
+      });
+      expect(result.success).toBe(true);
+    });
+  });
+
   describe('預約資訊', () => {
     it('三個預約欄位皆未填時通過驗證', () => {
       const result = eventSubmissionSchema.safeParse(validData);
@@ -185,6 +229,19 @@ describe('eventSubmissionSchema', () => {
         reservationTime: '20:00',
       });
       expect(result.success).toBe(true);
+    });
+
+    it('reservationDate 是不存在的日期（2 月 30 日）時驗證失敗', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        reservationUrl: 'https://forms.gle/xxxx',
+        reservationDate: '2026-02-30',
+        reservationTime: '20:00',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.some((i) => i.message === '請選擇有效的預約時間')).toBe(true);
+      }
     });
   });
 });
