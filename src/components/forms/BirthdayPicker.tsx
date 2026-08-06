@@ -220,15 +220,24 @@ export default function BirthdayPicker({ value, onChange, disabled, error }: Bir
   const [month, setMonth] = useState(initial.month);
   const [day, setDay] = useState(initial.day);
 
+  // 記住自己最後一次 emit 出去的值：controlled parent（如 react-hook-form 的 setValue）
+  // 通常會把 onChange 收到的值原樣寫回 value prop，這個 echo 不代表「外部改變了生日」，
+  // 只是「剛剛自己的選擇被回寫」，不該再觸發下面的重新拆解（否則例如只是把失效的日清空，
+  // 會連帶把使用者剛選好的年/月一起清掉，見下方 emit）。用 state 而非 ref，
+  // 因為 render 期間只能讀 state，不能讀 ref（react-hooks/refs）
+  const [lastEmitted, setLastEmitted] = useState(value);
+
   // value 由外部改變時（例如 edit mode 非同步帶入既有藝人資料）重新拆解回填，
   // 不用 useEffect 是為了在同一次 render 內同步完成，避免閃爍
   const [prevValue, setPrevValue] = useState(value);
   if (prevValue !== value) {
     setPrevValue(value);
-    const parsed = parseBirthday(value);
-    setYear(parsed.year);
-    setMonth(parsed.month);
-    setDay(parsed.day);
+    if (value !== lastEmitted) {
+      const parsed = parseBirthday(value);
+      setYear(parsed.year);
+      setMonth(parsed.month);
+      setDay(parsed.day);
+    }
   }
 
   const daysInMonth = year && month ? getDaysInMonth(Number(year), Number(month)) : 0;
@@ -238,11 +247,9 @@ export default function BirthdayPicker({ value, onChange, disabled, error }: Bir
   });
 
   const emit = (y: string, m: string, d: string) => {
-    if (y && m && d) {
-      onChange(`${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`);
-    } else {
-      onChange('');
-    }
+    const next = y && m && d ? `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}` : '';
+    setLastEmitted(next);
+    onChange(next);
   };
 
   // 年或月切換後，原本選的日若超出新月份天數（如 2/29 → 平年），清空日期而非留一個不存在的日期

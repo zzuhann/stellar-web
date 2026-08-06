@@ -1,6 +1,13 @@
+import { useState } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BirthdayPicker from './BirthdayPicker';
+
+// 模擬 react-hook-form 等 controlled parent：onChange 收到的值會原樣寫回 value prop
+function ControlledBirthdayPicker({ initialValue }: { initialValue: string }) {
+  const [value, setValue] = useState(initialValue);
+  return <BirthdayPicker value={value} onChange={setValue} />;
+}
 
 // jsdom 未實作 scrollIntoView，年份選單開啟時會呼叫到，測試前手動補上
 beforeEach(() => {
@@ -93,6 +100,21 @@ describe('BirthdayPicker', () => {
     expect(screen.getByRole('button', { name: '生日年份' }).textContent).toContain('2001 年');
     expect(screen.getByRole('button', { name: '生日月份' }).textContent).toContain('4 月');
     expect(screen.getByRole('button', { name: '生日日期' }).textContent).toContain('17 日');
+  });
+
+  it('controlled parent（onChange 回寫進 value）：清空失效的日不會連帶清掉已選的年/月', () => {
+    render(<ControlledBirthdayPicker initialValue="2024-02-29" />);
+
+    expect(screen.getByRole('button', { name: '生日日期' }).textContent).toContain('29 日');
+
+    fireEvent.click(screen.getByRole('button', { name: '生日年份' }));
+    fireEvent.click(screen.getByRole('option', { name: '2023 年' }));
+
+    // 日期因為 2023 年沒有 2/29 而被清空，但年/月要保留使用者剛選的值，不能整組被重置
+    expect(screen.getByRole('button', { name: '生日年份' }).textContent).toContain('2023 年');
+    expect(screen.getByRole('button', { name: '生日月份' }).textContent).toContain('2 月');
+    expect(screen.getByRole('button', { name: '生日日期' }).textContent).toContain('日');
+    expect(screen.getByRole('button', { name: '生日日期' }).textContent).not.toContain('29');
   });
 
   it('edit mode：value 是非同步帶入（初始為空，之後才更新）時也能正確回填', () => {
