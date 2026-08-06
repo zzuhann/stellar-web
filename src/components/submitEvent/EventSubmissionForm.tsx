@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useState, useEffect, useRef } from 'react';
+import { useForm, useWatch, FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { css } from '@/styled-system/css';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
@@ -11,7 +11,14 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { CreateEventRequest, UpdateEventRequest, Artist, CoffeeEvent } from '@/types';
 import showToast from '@/lib/toast';
-import { firebaseTimestampToDate, dateToLocalDateString } from '@/utils';
+import {
+  firebaseTimestampToDate,
+  dateToTaipeiDateString,
+  dateToTaipeiTimeString,
+  taipeiDateTimeToTimestamp,
+} from '@/utils';
+import { scrollToFirstErrorField } from '@/utils/formHelpers';
+import { buildReservationPayload } from './reservationPayload';
 import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
 import EventInfoSection from './EventInfoSection';
@@ -203,13 +210,15 @@ function EventSubmissionForm({
     control,
   } = useForm<EventSubmissionFormData>({
     resolver: zodResolver(eventSubmissionSchema),
+    // 關掉預設聚焦行為，改由 handleInvalidSubmit + fieldRefs 統一處理捲動/聚焦（涵蓋自訂元件）
+    shouldFocusError: false,
     defaultValues: existingEvent
       ? {
           title: existingEvent.title,
           description: existingEvent.description,
           addressName: existingEvent.location.name,
-          startDate: dateToLocalDateString(firebaseTimestampToDate(existingEvent.datetime.start)),
-          endDate: dateToLocalDateString(firebaseTimestampToDate(existingEvent.datetime.end)),
+          startDate: dateToTaipeiDateString(firebaseTimestampToDate(existingEvent.datetime.start)),
+          endDate: dateToTaipeiDateString(firebaseTimestampToDate(existingEvent.datetime.end)),
           instagram: existingEvent.socialMedia.instagram || '',
           threads: existingEvent.socialMedia.threads || '',
           mainImage: existingEvent.mainImage || '',
@@ -219,6 +228,13 @@ function EventSubmissionForm({
               ? [existingEvent.detailImage]
               : [],
           artistIds: existingEvent.artists.map((artist) => artist.id),
+          reservationUrl: existingEvent.reservation?.url || '',
+          reservationDate: existingEvent.reservation?.startAt
+            ? dateToTaipeiDateString(firebaseTimestampToDate(existingEvent.reservation.startAt))
+            : '',
+          reservationTime: existingEvent.reservation?.startAt
+            ? dateToTaipeiTimeString(firebaseTimestampToDate(existingEvent.reservation.startAt))
+            : '',
         }
       : undefined,
   });
@@ -226,6 +242,8 @@ function EventSubmissionForm({
   const startDate = useWatch({ control, name: 'startDate' }) ?? '';
   const endDate = useWatch({ control, name: 'endDate' }) ?? '';
   const description = useWatch({ control, name: 'description' }) ?? '';
+  const reservationDate = useWatch({ control, name: 'reservationDate' }) ?? '';
+  const reservationTime = useWatch({ control, name: 'reservationTime' }) ?? '';
 
   const createEventMutation = useCreateEventMutation({ onSuccess });
   const updateEventMutation = useUpdateEventMutation({ onSuccess });
@@ -317,6 +335,15 @@ function EventSubmissionForm({
 
   const handleChangeEndDate = (date: string) => {
     setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
+  };
+
+  // 預約開始時間不做即時驗證，避免只選日期未選時間時就先跳出錯誤，送出時才驗證
+  const handleChangeReservationDate = (date: string) => {
+    setValue('reservationDate', date, { shouldDirty: true });
+  };
+
+  const handleChangeReservationTime = (time: string) => {
+    setValue('reservationTime', time, { shouldDirty: true });
   };
 
   const handleChangeImages = (imageUrls: string[]) => {
@@ -426,6 +453,32 @@ function EventSubmissionForm({
     }
   }, [detailImageUrls, mainImageUrl, selectedArtists, setValue]);
 
+  // 送出驗證失敗時捲動到第一個錯誤欄位，順序比照畫面由上到下排列
+  const fieldRefs = useRef<Record<string, HTMLElement | null>>({});
+  const setFieldRef = (name: string) => (el: HTMLElement | null) => {
+    fieldRefs.current[name] = el;
+  };
+  const FIELD_ORDER = [
+    'artistIds',
+    'title',
+    'mainImage',
+    'startDate',
+    'endDate',
+    'addressName',
+    'reservationUrl',
+    'reservationTime',
+    'description',
+    'detailImage',
+    'instagram',
+  ];
+  const handleInvalidSubmit = (errors: FieldErrors<EventSubmissionFormData>) => {
+    scrollToFirstErrorField(
+      FIELD_ORDER,
+      (name) => !!errors[name as keyof EventSubmissionFormData],
+      fieldRefs.current
+    );
+  };
+
   const submitEventData = async (data: EventSubmissionFormData) => {
     if (mode === 'create' || mode === 'copy') {
       const eventData: CreateEventRequest = {
@@ -433,16 +486,8 @@ function EventSubmissionForm({
         artistIds: selectedArtists.map((artist) => artist.id),
         description: data.description || '',
         datetime: {
-          start: {
-            // 00:00:00
-            _seconds: Math.floor(new Date(data.startDate + 'T00:00:00').getTime() / 1000),
-            _nanoseconds: 0,
-          },
-          end: {
-            // 23:59:59
-            _seconds: Math.floor(new Date(data.endDate + 'T23:59:59').getTime() / 1000),
-            _nanoseconds: 0,
-          },
+          start: taipeiDateTimeToTimestamp(data.startDate, '00:00:00'),
+          end: taipeiDateTimeToTimestamp(data.endDate, '23:59:59'),
         },
         location: {
           name: data.addressName,
@@ -461,6 +506,7 @@ function EventSubmissionForm({
         },
         mainImage: mainImageUrl || undefined,
         detailImage: detailImageUrls,
+        reservation: buildReservationPayload(data),
         ...(submitterEmail ? { submitterEmail } : {}),
       };
 
@@ -474,16 +520,8 @@ function EventSubmissionForm({
         title: data.title,
         description: data.description || '',
         datetime: {
-          start: {
-            // 00:00:00
-            _seconds: Math.floor(new Date(data.startDate + 'T00:00:00').getTime() / 1000),
-            _nanoseconds: 0,
-          },
-          end: {
-            // 23:59:59
-            _seconds: Math.floor(new Date(data.endDate + 'T23:59:59').getTime() / 1000),
-            _nanoseconds: 0,
-          },
+          start: taipeiDateTimeToTimestamp(data.startDate, '00:00:00'),
+          end: taipeiDateTimeToTimestamp(data.endDate, '23:59:59'),
         },
         location: {
           name: data.addressName,
@@ -498,6 +536,7 @@ function EventSubmissionForm({
         },
         mainImage: mainImageUrl || undefined,
         detailImage: detailImageUrls,
+        reservation: buildReservationPayload(data),
       };
 
       updateEventMutation.mutate(
@@ -551,6 +590,7 @@ function EventSubmissionForm({
             removeArtist={removeArtist}
             register={register}
             errors={errors}
+            setFieldRef={setFieldRef}
           />
         )}
 
@@ -578,6 +618,11 @@ function EventSubmissionForm({
             endDate={endDate}
             description={description}
             existingEventLocationName={existingEvent?.location.name || ''}
+            reservationDate={reservationDate}
+            reservationTime={reservationTime}
+            handleChangeReservationDate={handleChangeReservationDate}
+            handleChangeReservationTime={handleChangeReservationTime}
+            setFieldRef={setFieldRef}
           />
         )}
 
@@ -616,6 +661,7 @@ function EventSubmissionForm({
           resubmitEventPending={resubmitEventMutation.isPending}
           handleSubmit={handleSubmit}
           onSubmit={onSubmit}
+          onInvalidSubmit={handleInvalidSubmit}
           existingEventStatus={existingEvent?.status || 'pending'}
         />
       </form>

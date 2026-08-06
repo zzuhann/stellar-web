@@ -5,6 +5,7 @@ import {
   BuildingStorefrontIcon,
   CalendarIcon,
   InformationCircleIcon,
+  LinkIcon,
   MapPinIcon,
 } from '@heroicons/react/24/outline';
 import { InstagramIcon, ThreadsIcon } from '../ui/SocialMediaIcons';
@@ -18,7 +19,14 @@ import BackToHomeButton from './BackToHomeButton';
 import ShareHandler from './ShareHandler';
 import DesktopFavoriteButton from './DesktopFavoriteButton';
 import { CoffeeEvent } from '@/types';
-import { formatEventDate, generateGoogleCalendarUrl } from '@/utils';
+import {
+  formatEventDate,
+  formatReservationDateTime,
+  generateGoogleCalendarUrl,
+  generateGoogleCalendarUrlAtTime,
+  isHttpUrl,
+  isPastTimestamp,
+} from '@/utils';
 import PageViewTracker from '@/components/PageViewTracker';
 import EventViewTracker from '@/components/EventViewTracker';
 import Breadcrumb from '@/components/ui/Breadcrumb';
@@ -132,6 +140,25 @@ const addToCalendarHint = css({
   marginTop: '0.5',
 });
 
+// 「預約開始時間」列專用：時間文字與提醒 hint 並排同一行，跟其他列的上下堆疊不同
+const reservationCalendarContent = css({
+  flex: '1',
+  minWidth: '0',
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'baseline',
+  columnGap: '2',
+  rowGap: '0.5',
+});
+
+const reservationLink = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  color: 'color.link',
+  textStyle: 'bodySmall',
+});
+
 const descriptionSection = css({
   marginTop: '4',
   paddingTop: '4',
@@ -223,6 +250,11 @@ const EventDetail = ({ event }: EventDetailProps) => {
       });
     });
   }
+
+  // 預約開始時間已過去時，不再顯示「提醒我預約」（已經過去的時間點沒辦法再加行事曆提醒）
+  const isReservationExpired = event.reservation?.startAt
+    ? isPastTimestamp(event.reservation.startAt)
+    : false;
 
   const primaryArtist = event.artists?.[0];
   const breadcrumbItems = [
@@ -345,7 +377,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
                 startDate: event.datetime.start,
                 endDate: event.datetime.end,
                 location: `${event.location.name} ${event.location.address}`,
-                eventId: event.id,
+                eventSlugOrId: event.slug ?? event.id,
               })}
               platform="calendar"
               eventPage="/event/[id]"
@@ -398,6 +430,93 @@ const EventDetail = ({ event }: EventDetailProps) => {
               </div>
             </div>
           </div>
+
+          {/* 預約資訊 */}
+          {(event.reservation?.url || event.reservation?.startAt) && (
+            <div className={descriptionSection}>
+              <h3 className={descriptionTitle}>預約資訊</h3>
+              <div className={eventDetailsSection}>
+                {event.reservation?.url && isHttpUrl(event.reservation.url) && (
+                  <div className={detailItem}>
+                    <div className={detailIcon}>
+                      <LinkIcon
+                        width={20}
+                        height={20}
+                        color="var(--color-text-secondary)"
+                        aria-hidden="true"
+                      />
+                      <span className="sr-only">預約網址</span>
+                    </div>
+                    <div className={detailContent}>
+                      <ExternalLink
+                        href={event.reservation.url}
+                        platform="reservation"
+                        eventPage="/event/[id]"
+                        contentId={event.id}
+                        className={reservationLink}
+                      >
+                        前往預約頁面
+                        <ArrowTopRightOnSquareIcon width={12} height={12} aria-hidden="true" />
+                        <span className="sr-only">（在新視窗開啟）</span>
+                      </ExternalLink>
+                    </div>
+                  </div>
+                )}
+
+                {event.reservation?.startAt &&
+                  (isReservationExpired ? (
+                    <div className={detailItem}>
+                      <div className={detailIcon}>
+                        <CalendarIcon
+                          width={20}
+                          height={20}
+                          color="var(--color-text-secondary)"
+                          aria-hidden="true"
+                        />
+                        <span className="sr-only">預約開始時間</span>
+                      </div>
+                      <div className={detailContent}>
+                        <div className={detailValue}>
+                          {formatReservationDateTime(event.reservation.startAt)}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <ExternalLink
+                      href={generateGoogleCalendarUrlAtTime({
+                        title: `[預約提醒] - ${event.title}`,
+                        startAt: event.reservation.startAt,
+                        location: `${event.location.name} ${event.location.address}`,
+                        eventSlugOrId: event.slug ?? event.id,
+                      })}
+                      platform="reservation_calendar"
+                      eventPage="/event/[id]"
+                      contentId={event.id}
+                      className={dateRowLink}
+                    >
+                      <div className={detailIcon}>
+                        <CalendarIcon
+                          width={20}
+                          height={20}
+                          color="var(--color-text-secondary)"
+                          aria-hidden="true"
+                        />
+                        <span className="sr-only">預約開始時間，點擊提醒我預約</span>
+                      </div>
+                      <div className={reservationCalendarContent}>
+                        <div className={detailValue}>
+                          {formatReservationDateTime(event.reservation.startAt)}
+                        </div>
+                        <div className={addToCalendarHint} style={{ marginTop: 0 }}>
+                          提醒我預約
+                          <ArrowTopRightOnSquareIcon width={12} height={12} aria-hidden="true" />
+                        </div>
+                      </div>
+                    </ExternalLink>
+                  ))}
+              </div>
+            </div>
+          )}
 
           {/* 活動說明 */}
           {event.description && (

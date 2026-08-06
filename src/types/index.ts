@@ -62,6 +62,10 @@ export interface CoffeeEvent {
   updatedAt: FirebaseTimestamp;
   isFavorited?: boolean; // 收藏狀態（登入時才有）
   viewCount?: number;
+  reservation?: {
+    url?: string;
+    startAt?: FirebaseTimestamp;
+  };
 }
 
 export interface TrendingEventsResponse {
@@ -199,6 +203,10 @@ export interface CreateEventRequest {
   mainImage?: string; // 主要圖片 URL
   detailImage?: string[]; // 詳細圖片 URL
   submitterEmail?: string; // 匿名用戶可選填的 email
+  reservation?: {
+    url?: string;
+    startAt?: FirebaseTimestamp;
+  };
 }
 
 // 藝人編輯請求格式
@@ -250,6 +258,11 @@ export interface UpdateEventRequest {
   };
   mainImage?: string;
   detailImage?: string[];
+  // null 代表清除整個預約資訊
+  reservation?: {
+    url?: string;
+    startAt?: FirebaseTimestamp;
+  } | null;
 }
 
 // 用戶收藏

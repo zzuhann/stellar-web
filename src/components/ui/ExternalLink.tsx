@@ -4,7 +4,14 @@ import { sendGAEvent } from '@next/third-parties/google';
 import { useAuth } from '@/lib/auth-context';
 import { ReactNode } from 'react';
 
-type Platform = 'instagram' | 'threads' | 'x' | 'location' | 'calendar';
+type Platform =
+  | 'instagram'
+  | 'threads'
+  | 'x'
+  | 'location'
+  | 'calendar'
+  | 'reservation'
+  | 'reservation_calendar';
 
 interface ExternalLinkProps {
   href: string;

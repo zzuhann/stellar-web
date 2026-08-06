@@ -19,6 +19,8 @@ const useDeleteEventMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['map-data'] });
       queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
+      // 同 useUpdateEventMutation：活動已刪除，['event', id] 快取也要清掉避免殘留舊資料
+      queryClient.invalidateQueries({ queryKey: ['event', eventId] });
       showToast.success('刪除成功');
     },
     onError: (error) => {

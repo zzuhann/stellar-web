@@ -1,6 +1,8 @@
 // 表單驗證 schemas
 
 import { z } from 'zod';
+import { isHttpUrl, isValidCalendarDateString } from '@/utils';
+import { isValidTimeString } from '@/components/TimePicker/utils';
 
 // 活動投稿表單驗證
 export const eventSubmissionSchema = z
@@ -12,17 +14,20 @@ export const eventSubmissionSchema = z
       .string()
       .min(1, '請選擇開始日期')
       .regex(/^\d{4}-\d{2}-\d{2}$/, '請選擇有效的開始日期')
-      .refine((date) => !isNaN(Date.parse(date)), '請選擇有效的開始日期'),
+      .refine((date) => isValidCalendarDateString(date), '請選擇有效的開始日期'),
     endDate: z
       .string()
       .min(1, '請選擇結束日期')
       .regex(/^\d{4}-\d{2}-\d{2}$/, '請選擇有效的結束日期')
-      .refine((date) => !isNaN(Date.parse(date)), '請選擇有效的結束日期'),
+      .refine((date) => isValidCalendarDateString(date), '請選擇有效的結束日期'),
     addressName: z.string().min(1, '請輸入地點').max(200, '地址不能超過200個字'),
     instagram: z.string().optional().or(z.literal('')),
     threads: z.string().optional().or(z.literal('')),
     mainImage: z.string().min(1, '請上傳主視覺圖片'),
     detailImage: z.array(z.string()).max(10, '詳細說明圖片最多上傳10張').optional(),
+    reservationUrl: z.string().trim().optional().or(z.literal('')),
+    reservationDate: z.string().optional().or(z.literal('')),
+    reservationTime: z.string().optional().or(z.literal('')),
   })
   .refine(
     (data) => {
@@ -44,6 +49,44 @@ export const eventSubmissionSchema = z
     {
       message: '請至少填寫一個社群媒體帳號（Instagram 或 Threads）',
       path: ['instagram'],
+    }
+  )
+  .refine((data) => !data.reservationUrl || isHttpUrl(data.reservationUrl), {
+    message: '請輸入正確的網址格式（需以 http:// 或 https:// 開頭）',
+    path: ['reservationUrl'],
+  })
+  .refine(
+    (data) => {
+      const hasDate = !!data.reservationDate;
+      const hasTime = !!data.reservationTime;
+      return hasDate === hasTime;
+    },
+    {
+      message: '請同時選擇日期與時間，或都不填',
+      path: ['reservationTime'],
+    }
+  )
+  .refine(
+    (data) => {
+      const hasStartAt = !!data.reservationDate && !!data.reservationTime;
+      const hasUrl = !!data.reservationUrl;
+      return !hasStartAt || hasUrl;
+    },
+    {
+      message: '請填寫預約網址',
+      path: ['reservationUrl'],
+    }
+  )
+  .refine(
+    (data) => {
+      if (!data.reservationDate || !data.reservationTime) return true;
+      if (!isValidCalendarDateString(data.reservationDate)) return false;
+      // 用 isValidTimeString 而非 Date.parse：Date.parse 會放行 24:00 等不合法時間並靜默進位
+      return isValidTimeString(data.reservationTime);
+    },
+    {
+      message: '請選擇有效的預約時間',
+      path: ['reservationTime'],
     }
   );
 

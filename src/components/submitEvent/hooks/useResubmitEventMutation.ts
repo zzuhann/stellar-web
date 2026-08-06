@@ -9,10 +9,12 @@ const useResubmitEventMutation = () => {
 
   return useMutation({
     mutationFn: (eventId: string) => eventsApi.resubmit(eventId),
-    onSuccess: () => {
+    onSuccess: (updatedEvent) => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['map-data'] });
       queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
+      // 同 useUpdateEventMutation：resubmit 會改動 status，['event', id] 快取也要清掉
+      queryClient.invalidateQueries({ queryKey: ['event', updatedEvent.id] });
       showToast.success('已重新送出審核！');
 
       router.push(`/my-submissions?tab=event`);

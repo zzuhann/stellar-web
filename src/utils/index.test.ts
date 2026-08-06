@@ -1,10 +1,21 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   formatEventDate,
   formatDateRange,
   formatEventDateShort,
   firebaseTimestampToDate,
-  dateToLocalDateString,
+  dateToTaipeiDateString,
+  dateToTaipeiTimeString,
+  taipeiDateTimeToTimestamp,
+  generateGoogleCalendarUrl,
+  generateGoogleCalendarUrlAtTime,
+  formatReservationDateTime,
+  isPastTimestamp,
+  isHttpUrl,
+  isValidCalendarDateString,
+  parseTaipeiDateString,
+  taipeiDateStringToLocalDate,
+  getTaipeiToday,
 } from './index';
 
 describe('formatEventDate', () => {
@@ -109,6 +120,18 @@ describe('formatEventDateShort', () => {
     const result = formatEventDateShort(ts(2026, 1, 1), ts(2026, 1, 1));
     expect(result).toBe('1/1');
   });
+
+  it('依 Asia/Taipei 而非測試環境本地時區換算日期（跨日邊界）', () => {
+    // UTC 2026-01-04 20:00 = Taipei 2026-01-05 04:00，若誤用本地時區元件可能仍停留在 1/4
+    const startAt = { _seconds: Date.UTC(2026, 0, 4, 20, 0, 0) / 1000, _nanoseconds: 0 };
+    const result = formatEventDateShort(startAt, startAt);
+    expect(result).toBe('1/5');
+  });
+
+  it('月日相同但年份不同時，不會被誤判為單日活動', () => {
+    const result = formatEventDateShort(ts(2026, 1, 5), ts(2027, 1, 5));
+    expect(result).toBe('1/5 - 1/5');
+  });
 });
 
 describe('firebaseTimestampToDate', () => {
@@ -127,16 +150,398 @@ describe('firebaseTimestampToDate', () => {
   });
 });
 
-describe('dateToLocalDateString', () => {
+describe('isPastTimestamp', () => {
+  const now = new Date(2026, 7, 6, 12, 0, 0); // 2026/8/6 12:00
+
+  it('timestamp 早於 now 時回傳 true', () => {
+    const timestamp = {
+      _seconds: Math.floor(new Date(2026, 7, 5, 0, 0, 0).getTime() / 1000),
+      _nanoseconds: 0,
+    };
+    expect(isPastTimestamp(timestamp, now)).toBe(true);
+  });
+
+  it('timestamp 晚於 now 時回傳 false', () => {
+    const timestamp = {
+      _seconds: Math.floor(new Date(2026, 7, 7, 0, 0, 0).getTime() / 1000),
+      _nanoseconds: 0,
+    };
+    expect(isPastTimestamp(timestamp, now)).toBe(false);
+  });
+
+  it('同一天但時間早於 now 時仍視為過去（比較到分鐘，不是只比日期）', () => {
+    const timestamp = {
+      _seconds: Math.floor(new Date(2026, 7, 6, 8, 0, 0).getTime() / 1000),
+      _nanoseconds: 0,
+    };
+    expect(isPastTimestamp(timestamp, now)).toBe(true);
+  });
+
+  it('同一天但時間晚於 now 時視為尚未過去', () => {
+    const timestamp = {
+      _seconds: Math.floor(new Date(2026, 7, 6, 18, 0, 0).getTime() / 1000),
+      _nanoseconds: 0,
+    };
+    expect(isPastTimestamp(timestamp, now)).toBe(false);
+  });
+
+  it('未傳入 now 時預設用目前時間比較', () => {
+    const farFuture = {
+      _seconds: Math.floor(new Date(2099, 0, 1).getTime() / 1000),
+      _nanoseconds: 0,
+    };
+    const farPast = {
+      _seconds: Math.floor(new Date(2000, 0, 1).getTime() / 1000),
+      _nanoseconds: 0,
+    };
+    expect(isPastTimestamp(farFuture)).toBe(false);
+    expect(isPastTimestamp(farPast)).toBe(true);
+  });
+});
+
+describe('generateGoogleCalendarUrl', () => {
+  const ts = (year: number, month: number, day: number, hour = 12) => ({
+    _seconds: Date.UTC(year, month - 1, day, hour, 0, 0) / 1000,
+    _nanoseconds: 0,
+  });
+
+  const baseArgs = {
+    title: '測試活動',
+    location: '測試地點',
+    eventSlugOrId: 'event-1',
+  };
+
+  it('單日活動：結束日期正確加一天（exclusive）', () => {
+    const url = generateGoogleCalendarUrl({
+      ...baseArgs,
+      startDate: ts(2026, 8, 5),
+      endDate: ts(2026, 8, 5),
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('dates')).toBe('20260805/20260806');
+  });
+
+  it('跨日活動：結束日期加一天', () => {
+    const url = generateGoogleCalendarUrl({
+      ...baseArgs,
+      startDate: ts(2026, 8, 5),
+      endDate: ts(2026, 8, 10),
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('dates')).toBe('20260805/20260811');
+  });
+
+  it('結束日期是月底時，加一天要正確跨月（不用 .setDate() 這類會受瀏覽器時區影響的方法）', () => {
+    const url = generateGoogleCalendarUrl({
+      ...baseArgs,
+      startDate: ts(2026, 1, 30),
+      endDate: ts(2026, 1, 31),
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('dates')).toBe('20260130/20260201');
+  });
+
+  it('結束日期是年底時，加一天要正確跨年', () => {
+    const url = generateGoogleCalendarUrl({
+      ...baseArgs,
+      startDate: ts(2026, 12, 31),
+      endDate: ts(2026, 12, 31),
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('dates')).toBe('20261231/20270101');
+  });
+
+  it('依 Asia/Taipei 而非測試環境本地時區換算日期（跨日邊界）', () => {
+    // UTC 2026-01-04 20:00 = Taipei 2026-01-05 04:00，若誤用本地時區元件可能仍停留在 1/4
+    const startAt = { _seconds: Date.UTC(2026, 0, 4, 20, 0, 0) / 1000, _nanoseconds: 0 };
+    const url = generateGoogleCalendarUrl({
+      ...baseArgs,
+      startDate: startAt,
+      endDate: startAt,
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('dates')).toBe('20260105/20260106');
+  });
+});
+
+describe('generateGoogleCalendarUrlAtTime', () => {
+  const startAt = { _seconds: Date.UTC(2026, 7, 20, 12, 0, 0) / 1000, _nanoseconds: 0 }; // 2026/8/20 20:00 台灣時間
+
+  it('產生的 dates 區間固定為 5 分鐘', () => {
+    const url = generateGoogleCalendarUrlAtTime({
+      title: '[預約提醒] - 測試活動',
+      startAt,
+      eventSlugOrId: 'event-1',
+    });
+    const params = new URL(url).searchParams;
+    const [start, end] = (params.get('dates') ?? '').split('/');
+    expect(start).toBe('20260820T120000Z');
+    expect(end).toBe('20260820T120500Z');
+  });
+
+  it('標題與活動網址正確帶入', () => {
+    const url = generateGoogleCalendarUrlAtTime({
+      title: '[預約提醒] - 測試活動',
+      startAt,
+      eventSlugOrId: 'event-1',
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('text')).toBe('[預約提醒] - 測試活動');
+    expect(params.get('details')).toContain('https://www.stellar-zone.com/event/event-1');
+  });
+
+  it('eventSlugOrId 傳 slug 時活動網址使用 slug（呼叫端應傳 event.slug ?? event.id）', () => {
+    const url = generateGoogleCalendarUrlAtTime({
+      title: '[預約提醒] - 測試活動',
+      startAt,
+      eventSlugOrId: 'my-event-slug',
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('details')).toContain('https://www.stellar-zone.com/event/my-event-slug');
+  });
+
+  it('未提供 location 時預設為空字串', () => {
+    const url = generateGoogleCalendarUrlAtTime({
+      title: '[預約提醒] - 測試活動',
+      startAt,
+      eventSlugOrId: 'event-1',
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('location')).toBe('');
+  });
+});
+
+describe('formatReservationDateTime', () => {
+  it('格式化為含星期的日期時間，例如 2026/8/20（四）20:00', () => {
+    const startAt = { _seconds: Date.UTC(2026, 7, 20, 12, 3, 0) / 1000, _nanoseconds: 0 };
+    expect(formatReservationDateTime(startAt)).toBe('2026/8/20（四）20:03');
+  });
+
+  it('分鐘數補零', () => {
+    const startAt = { _seconds: Date.UTC(2026, 0, 1, 0, 5, 0) / 1000, _nanoseconds: 0 }; // 台灣 1/1 08:05
+    expect(formatReservationDateTime(startAt)).toBe('2026/1/1（四）08:05');
+  });
+});
+
+// 以下三個 describe 都用 Date.UTC 建構輸入、挑跨日案例，若實作誤用本地時區方法
+// 會在非 UTC+8 測試環境下斷言失敗
+describe('dateToTaipeiDateString', () => {
   it('正確轉換為 YYYY-MM-DD 格式（有補0）', () => {
-    const date = new Date(2026, 0, 5); // 2026/1/5
-    const result = dateToLocalDateString(date);
-    expect(result).toBe('2026-01-05');
+    // UTC 2026-01-04 20:00 = Taipei 2026-01-05 04:00（跨日）
+    const date = new Date(Date.UTC(2026, 0, 4, 20, 0, 0));
+    expect(dateToTaipeiDateString(date)).toBe('2026-01-05');
   });
 
   it('處理雙位數月份和日期', () => {
-    const date = new Date(2026, 10, 15); // 2026/11/15
-    const result = dateToLocalDateString(date);
-    expect(result).toBe('2026-11-15');
+    // UTC 2026-11-14 20:00 = Taipei 2026-11-15 04:00（跨日）
+    const date = new Date(Date.UTC(2026, 10, 14, 20, 0, 0));
+    expect(dateToTaipeiDateString(date)).toBe('2026-11-15');
+  });
+});
+
+describe('dateToTaipeiTimeString', () => {
+  it('正確轉換為 HH:mm 格式並補零', () => {
+    // UTC 2026-08-05 16:30 = Taipei 2026-08-06 00:30（跨日，時間也補零）
+    const date = new Date(Date.UTC(2026, 7, 5, 16, 30, 0));
+    expect(dateToTaipeiTimeString(date)).toBe('00:30');
+  });
+
+  it('處理雙位數小時與分鐘', () => {
+    // UTC 2026-08-05 05:05 = Taipei 2026-08-05 13:05
+    const date = new Date(Date.UTC(2026, 7, 5, 5, 5, 0));
+    expect(dateToTaipeiTimeString(date)).toBe('13:05');
+  });
+
+  it('Taipei 午夜 00:00 邊界', () => {
+    // UTC 2026-08-05 16:00 = Taipei 2026-08-06 00:00 整
+    const date = new Date(Date.UTC(2026, 7, 5, 16, 0, 0));
+    expect(dateToTaipeiTimeString(date)).toBe('00:00');
+  });
+
+  it('Taipei 23:59 邊界', () => {
+    // UTC 2026-08-05 15:59 = Taipei 2026-08-05 23:59
+    const date = new Date(Date.UTC(2026, 7, 5, 15, 59, 0));
+    expect(dateToTaipeiTimeString(date)).toBe('23:59');
+  });
+});
+
+describe('taipeiDateTimeToTimestamp', () => {
+  it('依 Asia/Taipei（UTC+8）解讀日期字串，而非瀏覽器本地時區', () => {
+    const result = taipeiDateTimeToTimestamp('2026-08-05', '00:00:00');
+    // 2026-08-05T00:00:00+08:00 = 2026-08-04T16:00:00Z
+    expect(result._seconds).toBe(Date.UTC(2026, 7, 4, 16, 0, 0) / 1000);
+  });
+
+  it('23:59:59 正確落在同一個台北日期', () => {
+    const result = taipeiDateTimeToTimestamp('2026-08-05', '23:59:59');
+    // 2026-08-05T23:59:59+08:00 = 2026-08-05T15:59:59Z
+    expect(result._seconds).toBe(Date.UTC(2026, 7, 5, 15, 59, 59) / 1000);
+  });
+
+  it('月底 23:59:59（跨月）', () => {
+    const result = taipeiDateTimeToTimestamp('2026-01-31', '23:59:59');
+    // 2026-01-31T23:59:59+08:00 = 2026-01-31T15:59:59Z（UTC 端仍是 1/31，時區換算不涉及日期進位）
+    expect(result._seconds).toBe(Date.UTC(2026, 0, 31, 15, 59, 59) / 1000);
+    // 轉回 Taipei 日期字串應仍是投稿當天的月底，不會被算成 2 月
+    expect(dateToTaipeiDateString(firebaseTimestampToDate(result))).toBe('2026-01-31');
+  });
+
+  it('年底 23:59:59（跨年）', () => {
+    const result = taipeiDateTimeToTimestamp('2026-12-31', '23:59:59');
+    expect(result._seconds).toBe(Date.UTC(2026, 11, 31, 15, 59, 59) / 1000);
+    expect(dateToTaipeiDateString(firebaseTimestampToDate(result))).toBe('2026-12-31');
+  });
+
+  it('年初 00:00:00（跨年，UTC 端仍落在前一年）', () => {
+    const result = taipeiDateTimeToTimestamp('2027-01-01', '00:00:00');
+    // 2027-01-01T00:00:00+08:00 = 2026-12-31T16:00:00Z
+    expect(result._seconds).toBe(Date.UTC(2026, 11, 31, 16, 0, 0) / 1000);
+    expect(dateToTaipeiDateString(firebaseTimestampToDate(result))).toBe('2027-01-01');
+  });
+
+  it('與 dateToTaipeiDateString/dateToTaipeiTimeString 互為 round-trip', () => {
+    const timestamp = taipeiDateTimeToTimestamp('2026-08-20', '20:05:00');
+    const date = firebaseTimestampToDate(timestamp);
+    expect(dateToTaipeiDateString(date)).toBe('2026-08-20');
+    expect(dateToTaipeiTimeString(date)).toBe('20:05');
+  });
+});
+
+describe('parseTaipeiDateString', () => {
+  it('解析出的年月日跟輸入字串一致（month 為 0-indexed）', () => {
+    expect(parseTaipeiDateString('2026-08-05')).toEqual({ year: 2026, month: 7, day: 5 });
+  });
+
+  it('月初/月底邊界正確', () => {
+    expect(parseTaipeiDateString('2026-01-01')).toEqual({ year: 2026, month: 0, day: 1 });
+    expect(parseTaipeiDateString('2026-12-31')).toEqual({ year: 2026, month: 11, day: 31 });
+  });
+
+  it('與 dateToTaipeiDateString 互為 round-trip', () => {
+    const original = '2026-02-15';
+    const parts = parseTaipeiDateString(original);
+    const timestamp = taipeiDateTimeToTimestamp(
+      `${parts.year}-${String(parts.month + 1).padStart(2, '0')}-${String(parts.day).padStart(2, '0')}`,
+      '00:00:00'
+    );
+    expect(dateToTaipeiDateString(firebaseTimestampToDate(timestamp))).toBe(original);
+  });
+});
+
+describe('taipeiDateStringToLocalDate', () => {
+  it('回傳的本地 Date 讀回來的年月日跟輸入字串一致', () => {
+    const date = taipeiDateStringToLocalDate('2026-08-05');
+    expect(date.getFullYear()).toBe(2026);
+    expect(date.getMonth()).toBe(7);
+    expect(date.getDate()).toBe(5);
+  });
+
+  it('月初/月底邊界正確', () => {
+    const jan1 = taipeiDateStringToLocalDate('2026-01-01');
+    expect(jan1.getFullYear()).toBe(2026);
+    expect(jan1.getMonth()).toBe(0);
+    expect(jan1.getDate()).toBe(1);
+
+    const dec31 = taipeiDateStringToLocalDate('2026-12-31');
+    expect(dec31.getFullYear()).toBe(2026);
+    expect(dec31.getMonth()).toBe(11);
+    expect(dec31.getDate()).toBe(31);
+  });
+
+  it('與 parseTaipeiDateString 回傳的年月日一致', () => {
+    const parts = parseTaipeiDateString('2026-03-20');
+    const date = taipeiDateStringToLocalDate('2026-03-20');
+    expect(date.getFullYear()).toBe(parts.year);
+    expect(date.getMonth()).toBe(parts.month);
+    expect(date.getDate()).toBe(parts.day);
+  });
+});
+
+describe('getTaipeiToday', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('回傳 Asia/Taipei 的今天，而非系統瞬間對應的 UTC 日期', () => {
+    // 系統時間設為 UTC 2026-01-04 20:00 = Taipei 2026-01-05 04:00（跨日）
+    vi.setSystemTime(new Date(Date.UTC(2026, 0, 4, 20, 0, 0)));
+    const today = getTaipeiToday();
+    expect(today.getFullYear()).toBe(2026);
+    expect(today.getMonth()).toBe(0);
+    expect(today.getDate()).toBe(5);
+  });
+
+  it('系統瞬間換算後跨月時，正確回傳下個月的 Taipei 日期', () => {
+    // 系統時間設為 UTC 2026-01-31 20:00 = Taipei 2026-02-01 04:00（跨日又跨月）
+    vi.setSystemTime(new Date(Date.UTC(2026, 0, 31, 20, 0, 0)));
+    const today = getTaipeiToday();
+    expect(today.getFullYear()).toBe(2026);
+    expect(today.getMonth()).toBe(1);
+    expect(today.getDate()).toBe(1);
+  });
+
+  it('跟 dateToTaipeiDateString 對同一個系統瞬間的解讀一致（透過字串比較，避免把本地建構的 Date 又拿去做一次時區轉換）', () => {
+    vi.setSystemTime(new Date(Date.UTC(2026, 5, 15, 10, 0, 0)));
+    const todayDateString = `${getTaipeiToday().getFullYear()}-${String(getTaipeiToday().getMonth() + 1).padStart(2, '0')}-${String(getTaipeiToday().getDate()).padStart(2, '0')}`;
+    expect(todayDateString).toBe(dateToTaipeiDateString(new Date()));
+  });
+});
+
+describe('isHttpUrl', () => {
+  it('合法的 https 網址回傳 true', () => {
+    expect(isHttpUrl('https://forms.gle/xxxx')).toBe(true);
+  });
+
+  it('合法的 http 網址回傳 true', () => {
+    expect(isHttpUrl('http://example.com')).toBe(true);
+  });
+
+  it('只有 protocol 沒有 host 的殘缺網址回傳 false', () => {
+    expect(isHttpUrl('https://')).toBe(false);
+  });
+
+  it('非 http(s) protocol（例如 javascript:）回傳 false', () => {
+    expect(isHttpUrl('javascript:alert(1)')).toBe(false);
+  });
+
+  it('非網址字串回傳 false', () => {
+    expect(isHttpUrl('not-a-url')).toBe(false);
+  });
+
+  it('空字串回傳 false', () => {
+    expect(isHttpUrl('')).toBe(false);
+  });
+});
+
+describe('isValidCalendarDateString', () => {
+  it('合法日期回傳 true', () => {
+    expect(isValidCalendarDateString('2026-08-05')).toBe(true);
+  });
+
+  it('閏年 2/29 回傳 true', () => {
+    expect(isValidCalendarDateString('2028-02-29')).toBe(true);
+  });
+
+  it('非閏年 2/29 會被 Date 自動正規化成 3/1，需擋下', () => {
+    expect(isValidCalendarDateString('2026-02-29')).toBe(false);
+  });
+
+  it('日期超出月份範圍（4 月 31 日）需擋下', () => {
+    expect(isValidCalendarDateString('2026-04-31')).toBe(false);
+  });
+
+  it('月份超出範圍（13 月）需擋下', () => {
+    expect(isValidCalendarDateString('2026-13-01')).toBe(false);
+  });
+
+  it('格式不符（非 YYYY-MM-DD）回傳 false', () => {
+    expect(isValidCalendarDateString('2026/08/05')).toBe(false);
+    expect(isValidCalendarDateString('2026-8-5')).toBe(false);
+    expect(isValidCalendarDateString('not-a-date')).toBe(false);
+    expect(isValidCalendarDateString('')).toBe(false);
   });
 });

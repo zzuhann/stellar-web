@@ -8,6 +8,7 @@ import CalendarView from './CalendarView';
 import { formatDisplayDate, isDisabled } from './utils';
 import YearView from './YearView';
 import MonthView from './MonthView';
+import { getTaipeiToday, taipeiDateStringToLocalDate } from '@/utils';
 
 interface DatePickerProps {
   value: string;
@@ -108,18 +109,20 @@ export default function DatePicker({
   disabled = false,
   error = false,
 }: DatePickerProps) {
+  // 用 taipeiDateStringToLocalDate/getTaipeiToday 而非 new Date(value)/new Date()：
+  // 避免非 UTC+8 環境下月曆初始顯示的年月位移
   const [currentDate, setCurrentDate] = useState(() => {
     if (value) {
-      return new Date(value);
+      return taipeiDateStringToLocalDate(value);
     }
-    return new Date();
+    return getTaipeiToday();
   });
 
   const [prevValue, setPrevValue] = useState(value);
   if (prevValue !== value) {
     setPrevValue(value);
     if (value) {
-      setCurrentDate(new Date(value));
+      setCurrentDate(taipeiDateStringToLocalDate(value));
     }
   }
 

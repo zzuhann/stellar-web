@@ -66,3 +66,68 @@ export const errorText = css({
   color: 'red.600',
   marginTop: '1',
 });
+
+export const sectionDivider = css({
+  borderTop: '1px solid',
+  borderTopColor: 'color.border.light',
+  paddingTop: '6',
+  marginTop: '6',
+});
+
+export const sectionTitle = css({
+  textStyle: 'h4',
+  fontWeight: 'semibold',
+  color: 'color.text.primary',
+  marginBottom: '2',
+});
+
+// 「預約開始時間」欄位樣式，EventInfoSection 與 EventImportForm 共用
+export const reservationTimeRow = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '3',
+});
+
+export const reservationTimeField = css({
+  flex: '1',
+  minWidth: '140px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '1',
+});
+
+export const captionLabel = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+});
+
+export const reservationLabelRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '2',
+});
+
+export const clearReservationButton = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1',
+  minHeight: '44px',
+  paddingX: '3',
+  border: 'none',
+  background: 'transparent',
+  color: 'color.text.secondary',
+  textStyle: 'caption',
+  cursor: 'pointer',
+  borderRadius: 'radius.md',
+  transition: 'color 0.2s ease, background 0.2s ease',
+  '&:hover': {
+    color: 'red.600',
+    background: 'color.background.secondary',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
+});
