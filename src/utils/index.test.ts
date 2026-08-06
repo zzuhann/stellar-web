@@ -7,6 +7,7 @@ import {
   dateToTaipeiDateString,
   dateToTaipeiTimeString,
   taipeiDateTimeToTimestamp,
+  generateGoogleCalendarUrl,
   generateGoogleCalendarUrlAtTime,
   formatReservationDateTime,
   isPastTimestamp,
@@ -190,6 +191,71 @@ describe('isPastTimestamp', () => {
     };
     expect(isPastTimestamp(farFuture)).toBe(false);
     expect(isPastTimestamp(farPast)).toBe(true);
+  });
+});
+
+describe('generateGoogleCalendarUrl', () => {
+  const ts = (year: number, month: number, day: number, hour = 12) => ({
+    _seconds: Date.UTC(year, month - 1, day, hour, 0, 0) / 1000,
+    _nanoseconds: 0,
+  });
+
+  const baseArgs = {
+    title: '測試活動',
+    location: '測試地點',
+    eventSlugOrId: 'event-1',
+  };
+
+  it('單日活動：結束日期正確加一天（exclusive）', () => {
+    const url = generateGoogleCalendarUrl({
+      ...baseArgs,
+      startDate: ts(2026, 8, 5),
+      endDate: ts(2026, 8, 5),
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('dates')).toBe('20260805/20260806');
+  });
+
+  it('跨日活動：結束日期加一天', () => {
+    const url = generateGoogleCalendarUrl({
+      ...baseArgs,
+      startDate: ts(2026, 8, 5),
+      endDate: ts(2026, 8, 10),
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('dates')).toBe('20260805/20260811');
+  });
+
+  it('結束日期是月底時，加一天要正確跨月（不用 .setDate() 這類會受瀏覽器時區影響的方法）', () => {
+    const url = generateGoogleCalendarUrl({
+      ...baseArgs,
+      startDate: ts(2026, 1, 30),
+      endDate: ts(2026, 1, 31),
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('dates')).toBe('20260130/20260201');
+  });
+
+  it('結束日期是年底時，加一天要正確跨年', () => {
+    const url = generateGoogleCalendarUrl({
+      ...baseArgs,
+      startDate: ts(2026, 12, 31),
+      endDate: ts(2026, 12, 31),
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('dates')).toBe('20261231/20270101');
+  });
+
+  it('依 Asia/Taipei 而非測試環境本地時區換算日期（跨日邊界）', () => {
+    // UTC 2026-01-04 20:00 = Taipei 2026-01-05 04:00，若誤用本地時區元件可能仍停留在 1/4
+    const startAt = { _seconds: Date.UTC(2026, 0, 4, 20, 0, 0) / 1000, _nanoseconds: 0 };
+    const url = generateGoogleCalendarUrl({
+      ...baseArgs,
+      startDate: startAt,
+      endDate: startAt,
+    });
+    const params = new URL(url).searchParams;
+    expect(params.get('dates')).toBe('20260105/20260106');
   });
 });
 

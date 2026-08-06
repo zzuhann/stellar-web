@@ -159,19 +159,44 @@ export const generateGoogleCalendarUrl = ({
   const start = firebaseTimestampToDate(startDate);
   const end = firebaseTimestampToDate(endDate);
 
-  // All Day Event 格式：YYYYMMDD（結束日期要加一天，因為 Google Calendar 的結束日期是 exclusive）
-  const formatToAllDayDate = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}${month}${day}`;
+  // 取出 Date 在 Asia/Taipei 時區下的年/月/日，不用 .getFullYear()/.getMonth()/.getDate()
+  // 這類會受瀏覽器 local timezone 影響的方法
+  const getTaipeiDateParts = (date: Date): { year: number; month: number; day: number } => {
+    const formatter = new Intl.DateTimeFormat('zh-TW', {
+      timeZone: 'Asia/Taipei',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    });
+    const parts = formatter.formatToParts(date);
+    const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '0';
+    return { year: Number(get('year')), month: Number(get('month')), day: Number(get('day')) };
   };
 
-  // 結束日期加一天（Google Calendar all day event 結束日期是 exclusive）
-  const endPlusOne = new Date(end);
-  endPlusOne.setDate(endPlusOne.getDate() + 1);
+  // All Day Event 格式：YYYYMMDD
+  const formatAllDayDate = (parts: { year: number; month: number; day: number }): string => {
+    const month = String(parts.month).padStart(2, '0');
+    const day = String(parts.day).padStart(2, '0');
+    return `${parts.year}${month}${day}`;
+  };
 
-  const dates = `${formatToAllDayDate(start)}/${formatToAllDayDate(endPlusOne)}`;
+  const startParts = getTaipeiDateParts(start);
+  const endParts = getTaipeiDateParts(end);
+
+  // 結束日期加一天（Google Calendar all day event 結束日期是 exclusive）。
+  // 用 Date.UTC 組出「代表這個 Taipei 日曆日」的 UTC 午夜時間點做加一天運算
+  // （Date.UTC 會自動處理月底/年底進位），再用 UTC getter 讀回——UTC getter
+  // 不受瀏覽器 local timezone 影響，避免又混入瀏覽器時區。
+  const endPlusOneUtcMidnight = new Date(
+    Date.UTC(endParts.year, endParts.month - 1, endParts.day + 1)
+  );
+  const endPlusOneParts = {
+    year: endPlusOneUtcMidnight.getUTCFullYear(),
+    month: endPlusOneUtcMidnight.getUTCMonth() + 1,
+    day: endPlusOneUtcMidnight.getUTCDate(),
+  };
+
+  const dates = `${formatAllDayDate(startParts)}/${formatAllDayDate(endPlusOneParts)}`;
   const eventUrl = `https://www.stellar-zone.com/event/${eventSlugOrId}`;
   const details = `活動名稱：${title}\n活動網址：${eventUrl}`;
 
