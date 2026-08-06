@@ -1,4 +1,4 @@
-import { parseTaipeiDateString } from '@/utils';
+import { parseTaipeiDateString, taipeiDateStringToLocalDate } from '@/utils';
 
 export const isToday = (date: Date) => {
   const today = new Date();
@@ -72,9 +72,13 @@ export const isDisabled = ({ date, min, max }: { date: Date; min?: string; max?:
 
 export const formatDisplayDate = (dateString: string) => {
   if (!dateString) return '';
-  const date = new Date(dateString);
+  // 用 taipeiDateStringToLocalDate 取代直接 new Date(dateString)：後者對 date-only
+  // 字串的解析是 UTC 午夜，即使這裡的 toLocaleDateString 有指定 timeZone 讓輸出結果
+  // 剛好正確，這種寫法仍然容易在 review 時被誤判成沒綁定時區、也跟同檔案其他函式的
+  // 解法不一致。改成本地建構的 Date 後，顯示時不再需要（也不應該再）指定 timeZone，
+  // 否則對一個本地建構的 Date 再套用 Asia/Taipei 轉換，反而會依瀏覽器時區重新位移。
+  const date = taipeiDateStringToLocalDate(dateString);
   return date.toLocaleDateString('zh-TW', {
-    timeZone: 'Asia/Taipei',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',

@@ -14,6 +14,7 @@ import {
   isHttpUrl,
   isValidCalendarDateString,
   parseTaipeiDateString,
+  taipeiDateStringToLocalDate,
 } from './index';
 
 describe('formatEventDate', () => {
@@ -426,6 +427,35 @@ describe('parseTaipeiDateString', () => {
       '00:00:00'
     );
     expect(dateToTaipeiDateString(firebaseTimestampToDate(timestamp))).toBe(original);
+  });
+});
+
+describe('taipeiDateStringToLocalDate', () => {
+  it('回傳的本地 Date 讀回來的年月日跟輸入字串一致', () => {
+    const date = taipeiDateStringToLocalDate('2026-08-05');
+    expect(date.getFullYear()).toBe(2026);
+    expect(date.getMonth()).toBe(7);
+    expect(date.getDate()).toBe(5);
+  });
+
+  it('月初/月底邊界正確', () => {
+    const jan1 = taipeiDateStringToLocalDate('2026-01-01');
+    expect(jan1.getFullYear()).toBe(2026);
+    expect(jan1.getMonth()).toBe(0);
+    expect(jan1.getDate()).toBe(1);
+
+    const dec31 = taipeiDateStringToLocalDate('2026-12-31');
+    expect(dec31.getFullYear()).toBe(2026);
+    expect(dec31.getMonth()).toBe(11);
+    expect(dec31.getDate()).toBe(31);
+  });
+
+  it('與 parseTaipeiDateString 回傳的年月日一致', () => {
+    const parts = parseTaipeiDateString('2026-03-20');
+    const date = taipeiDateStringToLocalDate('2026-03-20');
+    expect(date.getFullYear()).toBe(parts.year);
+    expect(date.getMonth()).toBe(parts.month);
+    expect(date.getDate()).toBe(parts.day);
   });
 });
 

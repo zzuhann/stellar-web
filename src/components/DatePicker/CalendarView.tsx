@@ -2,6 +2,7 @@ import { css, cva } from '@/styled-system/css';
 import { WEEK_DAYS } from './constant';
 import { getDaysInMonth, isDisabled, isSelected, isToday } from './utils';
 import NavigationHeader from './NavigationHeader';
+import { taipeiDateStringToLocalDate } from '@/utils';
 
 const weekDaysHeader = css({
   display: 'grid',
@@ -118,17 +119,14 @@ const CalendarView = ({
     month: 'long',
   });
 
+  // lastDayOfPreviousMonth 是本地 Date（局部日曆運算，見 utils.ts getDaysInMonth 同款
+  // 慣例），min/max 是「YYYY-MM-DD」字串，用 taipeiDateStringToLocalDate 依 Asia/Taipei
+  // 解析成同樣語意的本地 Date 後才能直接比較——不能 new Date(min) 直接解析，
+  // date-only 字串會被當成 UTC 午夜，非 UTC+8 環境下可能整個位移一天
   const lastDayOfPreviousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
   let isPreviousDisabled = false;
   if (min) {
-    const lastOnly = new Date(
-      lastDayOfPreviousMonth.getFullYear(),
-      lastDayOfPreviousMonth.getMonth(),
-      lastDayOfPreviousMonth.getDate()
-    );
-    const minDate = new Date(min);
-    const minOnly = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
-    isPreviousDisabled = lastOnly < minOnly;
+    isPreviousDisabled = lastDayOfPreviousMonth < taipeiDateStringToLocalDate(min);
   }
 
   return (
@@ -141,7 +139,8 @@ const CalendarView = ({
         isNextDisabled={
           !!(
             max &&
-            new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1) > new Date(max)
+            new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1) >
+              taipeiDateStringToLocalDate(max)
           )
         }
         handleHeaderTextClick={handleYearMonthClick}

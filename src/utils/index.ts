@@ -110,6 +110,17 @@ export const parseTaipeiDateString = (
   return { year: Number(get('year')), month: Number(get('month')) - 1, day: Number(get('day')) };
 };
 
+// 把「YYYY-MM-DD」日期字串轉成本地 Date 物件，年月日已依 parseTaipeiDateString 正確
+// 解析出 Taipei 日曆日。給只做「本地日期元件運算」（例如日曆格子生成、月份導覽狀態）
+// 且不需要真實時間瞬間的呼叫端使用——這個 Date 代表的是「一個日曆日」，不是「一個
+// UTC 瞬間」。回傳後請只用本地 getter（.getFullYear()/.getMonth()/.getDate()）操作，
+// 不要再對它套用 Intl timeZone 轉換：那是給「已知代表某個真實瞬間」的 Date 用的，
+// 對這種本地建構的 Date 再轉一次時區反而會依瀏覽器時區位移，產生新的 bug。
+export const taipeiDateStringToLocalDate = (dateStr: string): Date => {
+  const { year, month, day } = parseTaipeiDateString(dateStr);
+  return new Date(year, month, day);
+};
+
 // 日期範圍格式化 (YYYY/M/D - YYYY/M/D)
 export const formatDateRange = (startDate: Date | string, endDate: Date | string): string => {
   const formatSingleDate = (date: Date | string): string => {
