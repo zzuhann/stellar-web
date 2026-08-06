@@ -81,9 +81,7 @@ export const sectionTitle = css({
   marginBottom: '2',
 });
 
-// 以下幾個是「預約開始時間」欄位（日期+時間並排、清空按鈕）專用的樣式，
-// EventSubmissionForm 的 EventInfoSection 與 EventImportForm 共用，見兩邊的
-// 「預約資訊」區塊——放在共用 styles.ts 避免兩處各寫一份
+// 「預約開始時間」欄位樣式，EventInfoSection 與 EventImportForm 共用
 export const reservationTimeRow = css({
   display: 'flex',
   flexWrap: 'wrap',

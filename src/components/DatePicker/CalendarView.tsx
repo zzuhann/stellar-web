@@ -119,10 +119,8 @@ const CalendarView = ({
     month: 'long',
   });
 
-  // lastDayOfPreviousMonth 是本地 Date（局部日曆運算，見 utils.ts getDaysInMonth 同款
-  // 慣例），min/max 是「YYYY-MM-DD」字串，用 taipeiDateStringToLocalDate 依 Asia/Taipei
-  // 解析成同樣語意的本地 Date 後才能直接比較——不能 new Date(min) 直接解析，
-  // date-only 字串會被當成 UTC 午夜，非 UTC+8 環境下可能整個位移一天
+  // min/max 用 taipeiDateStringToLocalDate 解析成本地 Date 才能跟 lastDayOfPreviousMonth
+  // 比較；new Date(min) 會把 date-only 字串當 UTC 午夜解析，非 UTC+8 環境下可能位移一天
   const lastDayOfPreviousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0);
   let isPreviousDisabled = false;
   if (min) {

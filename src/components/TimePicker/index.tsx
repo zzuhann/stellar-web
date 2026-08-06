@@ -107,9 +107,8 @@ export default function TimePicker({
   const [hour, setHour] = useState(() => parseTimeString(value).hour);
   const [minute, setMinute] = useState(() => parseTimeString(value).minute);
 
-  // React 官方建議的「render 期間依 prop 變化調整 state」寫法（比照 DatePicker 既有邏輯，
-  // 見 DatePicker/index.tsx 的 prevValue pattern）：用 prevValue 守衛避免無窮迴圈，
-  // 換來的好處是不用多一次 useEffect + re-render 才能同步 value prop
+  // render 期間依 value prop 調整 state（比照 DatePicker 的 prevValue pattern），
+  // 用 prevValue 守衛避免無窮迴圈，省去多一次 useEffect + re-render
   if (prevValue !== value) {
     setPrevValue(value);
     const next = parseTimeString(value);

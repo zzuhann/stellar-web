@@ -67,8 +67,7 @@ type ChooseArtistSectionProps = {
   removeArtist: (artistId: string) => void;
   register: UseFormRegister<EventSubmissionFormData>;
   errors: FieldErrors<EventSubmissionFormData>;
-  // 選填：只有 EventSubmissionForm 需要送出失敗時捲動到此欄位，其他重用此元件的表單
-  // （例如 eventImport/EventImportForm）不需要這個行為
+  // 選填：僅送出失敗時需捲動到此欄位的表單（如 EventSubmissionForm）會傳入
   setFieldRef?: (name: string) => (el: HTMLElement | null) => void;
 };
 

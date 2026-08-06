@@ -20,10 +20,8 @@ vi.mock('@/lib/toast', () => ({
   default: { success: vi.fn(), error: vi.fn() },
 }));
 
-// 同 useUpdateEventMutation.test.ts：刪除後這筆活動的 useEventDetail 快取
-// （['event', id]）也要清掉，避免殘留舊資料讓後續查詢誤以為活動還存在。
-// onSuccess 這裡用的是 mutation variables（eventId），不是回傳值，所以 mock 的
-// useMutation 要把 variables 一併傳給 onSuccess，比照 react-query 真正的簽章。
+// 同 useUpdateEventMutation.test.ts：['event', id] 快取也要清掉。onSuccess 用的是
+// mutation variables 而非回傳值，故 mock 的 useMutation 要把 variables 傳給 onSuccess
 vi.mock('@tanstack/react-query', () => ({
   useMutation: <TData, TVariables>(options: {
     mutationFn: (variables: TVariables) => Promise<TData>;

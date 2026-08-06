@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { buildReservationPayload } from './reservationPayload';
 import type { EventSubmissionFormData } from '@/lib/validations';
 
-// EventSubmissionForm（一般投稿/編輯）與 EventImportForm（貼文匯入）都呼叫這個共用函式
-// 組出 API 要的 reservation 物件，這裡測的是兩邊共用的那份邏輯本身。
 const baseData: EventSubmissionFormData = {
   title: '測試活動',
   artistIds: ['artist-1'],

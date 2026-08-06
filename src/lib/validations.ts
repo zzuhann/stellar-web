@@ -81,9 +81,7 @@ export const eventSubmissionSchema = z
     (data) => {
       if (!data.reservationDate || !data.reservationTime) return true;
       if (!isValidCalendarDateString(data.reservationDate)) return false;
-      // 重用 TimePicker 自己的 HH:mm 驗證邏輯，不要用 Date.parse 重新做一次不完整的
-      // 驗證——Date.parse(`${date}T${time}:00`) 會放行 24:00 這種不合法時間（之後被
-      // 靜默組成隔日午夜），isValidTimeString 才會正確擋下
+      // 用 isValidTimeString 而非 Date.parse：Date.parse 會放行 24:00 等不合法時間並靜默進位
       return isValidTimeString(data.reservationTime);
     },
     {

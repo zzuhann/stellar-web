@@ -1,8 +1,7 @@
 import { getTaipeiToday, parseTaipeiDateString, taipeiDateStringToLocalDate } from '@/utils';
 
 export const isToday = (date: Date) => {
-  // getTaipeiToday()，不是裸的 new Date()：非 UTC+8 使用者剛好跨過午夜時，瀏覽器的
-  // 「今天」跟 Taipei 的「今天」可能不是同一天，會讓日曆高亮到錯的一格
+  // 用 getTaipeiToday 而非 new Date()：避免非 UTC+8 使用者跨午夜時，日曆高亮到錯的一格
   const today = getTaipeiToday();
   return (
     date.getDate() === today.getDate() &&
@@ -13,9 +12,8 @@ export const isToday = (date: Date) => {
 
 export const isSelected = (date: Date, value: string) => {
   if (!value) return false;
-  // 同樣的 date-only 字串解析問題（見下方 isDisabled 註解）：new Date(value) 會被當成
-  // UTC 午夜解析，非 UTC+8 環境下用 .getDate() 等本地方法讀回來可能整個位移一天，
-  // 讓日曆格子高亮到錯的一天。改用 parseTaipeiDateString。
+  // 用 parseTaipeiDateString 而非 new Date(value)：date-only 字串會被當 UTC 午夜解析，
+  // 非 UTC+8 環境下可能位移一天
   const selectedParts = parseTaipeiDateString(value);
   return (
     date.getDate() === selectedParts.day &&
@@ -43,10 +41,8 @@ export const getDaysInMonth = (date: Date) => {
   return days;
 };
 
-// min/max 是「YYYY-MM-DD」字串（例如呼叫端傳入 dateToTaipeiDateString(new Date())）。
-// 不能直接 new Date(min) 讀取年月日——date-only 字串會被當成 UTC 午夜解析，非 UTC+8
-// 環境下用 .getFullYear() 等本地方法讀回來可能整個位移一天，誤放行一天前的日期或
-// 誤擋一天後的日期。改用 parseTaipeiDateString 明確依 Asia/Taipei 解析 min/max。
+// min/max 是 YYYY-MM-DD 字串，用 parseTaipeiDateString 解析後逐欄比較，避免
+// new Date(min) 的 UTC 午夜解析造成日期位移
 const compareDateParts = (
   a: { year: number; month: number; day: number },
   b: { year: number; month: number; day: number }
@@ -57,8 +53,7 @@ const compareDateParts = (
 };
 
 export const isDisabled = ({ date, min, max }: { date: Date; min?: string; max?: string }) => {
-  // 日曆格子的 date 是用本地 Date 元件生成（getDaysInMonth），這裡沿用同一套本地
-  // getter 取「這一格代表哪一天」，只有 min/max 字串的解析方式是這次要修的部分
+  // date 沿用本地 Date getter（跟 getDaysInMonth 生成方式一致），僅 min/max 字串需另外解析
   const dateOnly = { year: date.getFullYear(), month: date.getMonth(), day: date.getDate() };
 
   if (min) {
@@ -74,11 +69,8 @@ export const isDisabled = ({ date, min, max }: { date: Date; min?: string; max?:
 
 export const formatDisplayDate = (dateString: string) => {
   if (!dateString) return '';
-  // 用 taipeiDateStringToLocalDate 取代直接 new Date(dateString)：後者對 date-only
-  // 字串的解析是 UTC 午夜，即使這裡的 toLocaleDateString 有指定 timeZone 讓輸出結果
-  // 剛好正確，這種寫法仍然容易在 review 時被誤判成沒綁定時區、也跟同檔案其他函式的
-  // 解法不一致。改成本地建構的 Date 後，顯示時不再需要（也不應該再）指定 timeZone，
-  // 否則對一個本地建構的 Date 再套用 Asia/Taipei 轉換，反而會依瀏覽器時區重新位移。
+  // 用 taipeiDateStringToLocalDate 取代 new Date(dateString)；回傳的是本地建構的 Date，
+  // 顯示時不能再套用 Asia/Taipei timeZone，否則會依瀏覽器時區重新位移
   const date = taipeiDateStringToLocalDate(dateString);
   return date.toLocaleDateString('zh-TW', {
     year: 'numeric',

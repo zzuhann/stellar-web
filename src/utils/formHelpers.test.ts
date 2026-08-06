@@ -24,8 +24,7 @@ describe('scrollToFirstErrorField', () => {
       { title: titleContainer, addressName: addressContainer }
     );
 
-    // scrollIntoView 是 stub 在 Element.prototype 上的共用 mock，兩個容器共用同一個
-    // function 參照，因此用呼叫次數（只呼叫一次）確認只有第一個錯誤欄位觸發捲動
+    // scrollIntoView 是共用 mock，用呼叫次數確認只有第一個錯誤欄位觸發捲動
     expect(addressContainer.scrollIntoView).toHaveBeenCalledTimes(1);
     expect(addressContainer.scrollIntoView).toHaveBeenCalledWith({
       behavior: 'smooth',

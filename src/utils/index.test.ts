@@ -323,11 +323,8 @@ describe('formatReservationDateTime', () => {
   });
 });
 
-// 以下三個 describe 都用 Date.UTC 建構輸入（不受測試環境本地時區影響），
-// 刻意挑選 UTC 時刻換算成 Asia/Taipei 後會「跨到不同日期/跟 UTC 時刻數字不同」
-// 的案例——如果實作退化成用 .getFullYear()/.getHours() 等本地時區方法，
-// 在非 Asia/Taipei 的測試環境（例如 CI 常見的 UTC）這些案例就會斷言失敗，
-// 藉此驗證修正是否真的生效，而不是「剛好在開發機的時區下測試也會過」
+// 以下三個 describe 都用 Date.UTC 建構輸入、挑跨日案例，若實作誤用本地時區方法
+// 會在非 UTC+8 測試環境下斷言失敗
 describe('dateToTaipeiDateString', () => {
   it('正確轉換為 YYYY-MM-DD 格式（有補0）', () => {
     // UTC 2026-01-04 20:00 = Taipei 2026-01-05 04:00（跨日）
@@ -526,11 +523,11 @@ describe('isValidCalendarDateString', () => {
   });
 
   it('閏年 2/29 回傳 true', () => {
-    expect(isValidCalendarDateString('2028-02-29')).toBe(true); // 2028 是閏年
+    expect(isValidCalendarDateString('2028-02-29')).toBe(true);
   });
 
   it('非閏年 2/29 會被 Date 自動正規化成 3/1，需擋下', () => {
-    expect(isValidCalendarDateString('2026-02-29')).toBe(false); // 2026 不是閏年
+    expect(isValidCalendarDateString('2026-02-29')).toBe(false);
   });
 
   it('日期超出月份範圍（4 月 31 日）需擋下', () => {

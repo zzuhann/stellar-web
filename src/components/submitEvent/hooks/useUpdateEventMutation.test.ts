@@ -21,10 +21,8 @@ vi.mock('@/lib/toast', () => ({
   default: { success: vi.fn(), error: vi.fn() },
 }));
 
-// 這支測試專門驗證回歸：useEventDetail 讀取活動的 query key 是 ['event', id]（單數），
-// 跟這裡原本就有 invalidate 的 ['events']（複數）是完全不同的 key，react-query 不會
-// 模糊比對前綴——沒有明確 invalidate ['event', id] 的話，編輯活動存檔後，回到投稿列表
-// 再次編輯同一筆會抓到舊快取，要重新整理頁面才會拿到新資料。
+// 回歸測試：['event', id]（單數）跟 ['events']（複數）是不同 key，沒有明確 invalidate
+// 前者的話，編輯活動存檔後再次編輯同一筆會抓到舊快取
 vi.mock('@tanstack/react-query', () => ({
   useMutation: <TData, TVariables>(options: {
     mutationFn: (variables: TVariables) => Promise<TData>;

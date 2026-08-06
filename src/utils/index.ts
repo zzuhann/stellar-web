@@ -8,15 +8,13 @@ export const firebaseTimestampToDate = (timestamp: {
   return new Date(timestamp._seconds * 1000);
 };
 
-// 判斷 timestamp 是否早於「現在」（含日期+時間，不是只比日期）
-// now 參數預設 new Date()，可在測試中傳入固定時間點
+// 判斷 timestamp 是否早於 now（含時間，不只比日期）；now 可在測試中覆寫成固定時間點
 export const isPastTimestamp = (timestamp: FirebaseTimestamp, now: Date = new Date()): boolean => {
   return firebaseTimestampToDate(timestamp).getTime() < now.getTime();
 };
 
-// 判斷字串是否為結構完整的 http(s) 網址。用途是「顯示端」決定要不要把值渲染成可
-// 點擊連結的防線（例如舊資料、直接呼叫 API 產生的髒資料），不是取代表單送出時
-// 的驗證——表單驗證的職責在 lib/validations.ts，兩邊都呼叫這個函式維持同一套標準。
+// 判斷是否為結構完整的 http(s) 網址；顯示端（要不要渲染成連結）跟 lib/validations.ts
+// 的表單驗證共用同一套標準
 export const isHttpUrl = (url: string): boolean => {
   if (!/^https?:\/\//.test(url)) return false;
   try {
@@ -27,12 +25,8 @@ export const isHttpUrl = (url: string): boolean => {
   }
 };
 
-// 嚴格驗證「YYYY-MM-DD」字串是否為真的存在的日曆日期，而不只是格式正確或能被
-// Date.parse/new Date 接受——例如 2026-02-30 用 new Date() 會被靜默正規化成
-// 2026-03-02，Date.parse/isNaN 檢查不出來。做法是把字串拆成年月日後用
-// new Date(year, month-1, day) 建構，再回頭比對三個欄位是否跟輸入一致（正規化
-// 發生時，讀回來的值會跟輸入不同）。跟時區無關：建構與讀取都用同一組本地時間
-// accessor，只是拿來偵測「日期是否被自動進位」，不是要判斷是哪個時區的哪一天。
+// 嚴格驗證日曆日期是否真的存在：new Date(2026, 1, 30) 這種無效日期會被靜默正規化成
+// 3/2，Date.parse/isNaN 驗不出來，所以改成重建日期後比對三個欄位是否跟輸入一致
 export const isValidCalendarDateString = (dateStr: string): boolean => {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
   if (!match) return false;
@@ -45,10 +39,7 @@ export const isValidCalendarDateString = (dateStr: string): boolean => {
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 };
 
-// 將 Date 轉換為 Asia/Taipei 時區的 YYYY-MM-DD 格式。
-// 注意：這裡的「Taipei」明確指 Asia/Taipei 時區，不是使用者瀏覽器所在地——
-// 台灣沒有日光節約時間，固定 UTC+8，不用 .getFullYear()/.getDate() 這類會
-// 受瀏覽器本地時區影響的方法，改用 Intl.DateTimeFormat 明確指定 timeZone。
+// 轉成 Asia/Taipei（非瀏覽器所在時區）的 YYYY-MM-DD；台灣無日光節約，固定 UTC+8
 export const dateToTaipeiDateString = (date: Date): string => {
   const formatter = new Intl.DateTimeFormat('zh-TW', {
     timeZone: 'Asia/Taipei',
@@ -74,9 +65,7 @@ export const dateToTaipeiTimeString = (date: Date): string => {
   return `${get('hour')}:${get('minute')}`;
 };
 
-// 將「YYYY-MM-DD」日期字串 + 時間字串，依 Asia/Taipei 時區（固定 UTC+8）組成 FirebaseTimestamp。
-// 明確帶 +08:00 offset，不依賴瀏覽器 local timezone 解讀日期字串
-// （例如投稿表單的 startDate/endDate/reservationDate+reservationTime 送出時都經過這裡）。
+// 把日期字串+時間依 Asia/Taipei（明確 +08:00 offset）組成 FirebaseTimestamp，不依賴瀏覽器時區解讀
 export const taipeiDateTimeToTimestamp = (
   dateStr: string,
   time: string
@@ -87,12 +76,8 @@ export const taipeiDateTimeToTimestamp = (
   };
 };
 
-// 把「YYYY-MM-DD」日期字串解析為 Asia/Taipei 時區下的 {year, month, day}
-// （month 從 0 開始，對齊 JS Date.getMonth() 慣例，方便呼叫端直接比較日曆日）。
-// 不直接用 new Date(dateStr) 讀取年月日——date-only 字串會被當成 UTC 午夜解析，
-// 非 UTC+8 環境下用 .getFullYear() 等本地方法讀回來可能整個位移一天。做法是
-// 複用 taipeiDateTimeToTimestamp 先轉成明確的 UTC 瞬間，再用跟 dateToTaipeiDateString
-// 一樣的 Intl.DateTimeFormat + timeZone: 'Asia/Taipei' 讀回日曆日。
+// 解析為 Asia/Taipei 的 {year, month, day}（month 0-indexed）；不直接 new Date(dateStr)
+// 讀取，date-only 字串會被當 UTC 午夜解析，非 UTC+8 環境下可能位移一天
 export const parseTaipeiDateString = (
   dateStr: string
 ): { year: number; month: number; day: number } => {
@@ -110,22 +95,15 @@ export const parseTaipeiDateString = (
   return { year: Number(get('year')), month: Number(get('month')) - 1, day: Number(get('day')) };
 };
 
-// 把「YYYY-MM-DD」日期字串轉成本地 Date 物件，年月日已依 parseTaipeiDateString 正確
-// 解析出 Taipei 日曆日。給只做「本地日期元件運算」（例如日曆格子生成、月份導覽狀態）
-// 且不需要真實時間瞬間的呼叫端使用——這個 Date 代表的是「一個日曆日」，不是「一個
-// UTC 瞬間」。回傳後請只用本地 getter（.getFullYear()/.getMonth()/.getDate()）操作，
-// 不要再對它套用 Intl timeZone 轉換：那是給「已知代表某個真實瞬間」的 Date 用的，
-// 對這種本地建構的 Date 再轉一次時區反而會依瀏覽器時區位移，產生新的 bug。
+// 把日期字串轉成代表該 Taipei 日曆日的本地 Date；回傳後只能用本地 getter 讀取，
+// 不要再套用 Intl timeZone 轉換（會重複轉換、依瀏覽器時區位移）
 export const taipeiDateStringToLocalDate = (dateStr: string): Date => {
   const { year, month, day } = parseTaipeiDateString(dateStr);
   return new Date(year, month, day);
 };
 
-// 取得 Asia/Taipei 時區的「今天」，回傳本地 Date 物件（語意同上方
-// taipeiDateStringToLocalDate：代表一個日曆日，不是一個 UTC 瞬間）。取代裸的
-// new Date() 用來判斷「現在是哪一天」——瀏覽器本地時間跟 Taipei 可能不是同一天
-// （例如非 UTC+8 使用者剛好跨過午夜開啟頁面），裸的 new Date() 會讀到瀏覽器自己的
-// 「今天」，不是 Taipei 的「今天」。
+// 取得 Asia/Taipei 的「今天」；取代裸的 new Date()，避免非 UTC+8 使用者跨午夜時
+// 抓到瀏覽器自己的今天而非 Taipei 的今天
 export const getTaipeiToday = (): Date => {
   return taipeiDateStringToLocalDate(dateToTaipeiDateString(new Date()));
 };
@@ -233,8 +211,7 @@ export const generateGoogleCalendarUrl = ({
   const start = firebaseTimestampToDate(startDate);
   const end = firebaseTimestampToDate(endDate);
 
-  // 取出 Date 在 Asia/Taipei 時區下的年/月/日，不用 .getFullYear()/.getMonth()/.getDate()
-  // 這類會受瀏覽器 local timezone 影響的方法
+  // 取出 Date 在 Asia/Taipei 下的年/月/日，不用 .getFullYear() 等受瀏覽器時區影響的方法
   const getTaipeiDateParts = (date: Date): { year: number; month: number; day: number } => {
     const formatter = new Intl.DateTimeFormat('zh-TW', {
       timeZone: 'Asia/Taipei',
@@ -257,10 +234,8 @@ export const generateGoogleCalendarUrl = ({
   const startParts = getTaipeiDateParts(start);
   const endParts = getTaipeiDateParts(end);
 
-  // 結束日期加一天（Google Calendar all day event 結束日期是 exclusive）。
-  // 用 Date.UTC 組出「代表這個 Taipei 日曆日」的 UTC 午夜時間點做加一天運算
-  // （Date.UTC 會自動處理月底/年底進位），再用 UTC getter 讀回——UTC getter
-  // 不受瀏覽器 local timezone 影響，避免又混入瀏覽器時區。
+  // 結束日期加一天（Google Calendar all-day 結束日期是 exclusive）；用 Date.UTC 運算
+  // 自動處理月底/年底進位，UTC getter 讀回避免混入瀏覽器時區
   const endPlusOneUtcMidnight = new Date(
     Date.UTC(endParts.year, endParts.month - 1, endParts.day + 1)
   );

@@ -63,8 +63,8 @@ export interface CoffeeEvent {
   isFavorited?: boolean; // 收藏狀態（登入時才有）
   viewCount?: number;
   reservation?: {
-    url?: string; // 預約網址
-    startAt?: FirebaseTimestamp; // 預約開始時間
+    url?: string;
+    startAt?: FirebaseTimestamp;
   };
 }
 

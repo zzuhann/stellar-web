@@ -109,11 +109,8 @@ export default function DatePicker({
   disabled = false,
   error = false,
 }: DatePickerProps) {
-  // value 是「YYYY-MM-DD」字串，用 taipeiDateStringToLocalDate 依 Asia/Taipei 解析出
-  // 正確的年月日再建構本地 Date，而不是直接 new Date(value)（date-only 字串會被當成
-  // UTC 午夜解析，非 UTC+8 環境下可能整個位移一天，讓月曆一開始就顯示錯的月份/年份）。
-  // 沒有 value 時用 getTaipeiToday() 而不是裸的 new Date()，同樣理由：避免非 UTC+8
-  // 使用者剛好跨過午夜開啟空白 DatePicker 時，預設顯示的年月跟 Taipei 對不上
+  // 用 taipeiDateStringToLocalDate/getTaipeiToday 而非 new Date(value)/new Date()：
+  // 避免非 UTC+8 環境下月曆初始顯示的年月位移
   const [currentDate, setCurrentDate] = useState(() => {
     if (value) {
       return taipeiDateStringToLocalDate(value);

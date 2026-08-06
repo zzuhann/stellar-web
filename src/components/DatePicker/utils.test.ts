@@ -1,10 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { isDisabled, isSelected, formatDisplayDate } from './utils';
 
-// isDisabled/isSelected/formatDisplayDate 這幾個測試不依賴測試環境的本地時區——
-// min/max/value 都是「YYYY-MM-DD」字串，內部經 parseTaipeiDateString 明確綁定
-// Asia/Taipei 解析，跟 date 參數（本地元件建構的日曆格子）比較。刻意在多個
-// TZ 環境下（見驗證流程）重跑這份測試，確認結果不受測試環境時區影響。
+// min/max/value 皆為 YYYY-MM-DD 字串並經 parseTaipeiDateString 解析，故這些測試
+// 結果不受測試環境本地時區影響
 
 describe('isDisabled', () => {
   it('date 早於 min 時應被停用', () => {
@@ -80,8 +78,7 @@ describe('formatDisplayDate', () => {
   });
 
   it('年初/年底日期正確顯示，不受測試環境本地時區影響', () => {
-    // date-only 字串會被當成 UTC 午夜解析；沒有綁定 Asia/Taipei 的話，在 UTC 之前
-    // 的時區（例如美西）下讀回來的本地日期會少一天，這裡驗證修正後不會發生
+    // 未綁定 Asia/Taipei 時，UTC 之前的時區（如美西）讀回的本地日期會少一天
     expect(formatDisplayDate('2026-01-01')).toBe('2026/01/01');
     expect(formatDisplayDate('2026-12-31')).toBe('2026/12/31');
   });

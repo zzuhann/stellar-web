@@ -21,8 +21,7 @@ vi.mock('@/lib/toast', () => ({
   default: { success: vi.fn(), error: vi.fn() },
 }));
 
-// 同 useUpdateEventMutation.test.ts：resubmit 也會改動這筆活動的 status，
-// useEventDetail 的 ['event', id] 快取要一併清掉，否則重新編輯同一筆會拿到舊資料
+// 同 useUpdateEventMutation.test.ts：resubmit 會改動 status，['event', id] 快取也要清掉
 vi.mock('@tanstack/react-query', () => ({
   useMutation: <TData, TVariables>(options: {
     mutationFn: (variables: TVariables) => Promise<TData>;

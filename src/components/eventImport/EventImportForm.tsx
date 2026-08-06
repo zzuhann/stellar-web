@@ -305,11 +305,8 @@ export default function EventImportForm() {
     clearAutoFill('location');
   };
 
-  // ─── 預約資訊（純手動填寫，parse-caption 不解析這兩個欄位，不受 autoFill/合併邏輯影響：
-  // 見 specs/features/event-import-assistant/design-backend.md「本功能的欄位刻意與既有
-  // EventSubmissionForm 對齊」） ───
-  // 不即時驗證（不加 shouldValidate: true），比照 EventSubmissionForm 既有作法：避免使用者
-  // 只選了日期、還沒選時間時就先跳出「未同時填時間」的錯誤，只在送出時才驗證
+  // ─── 預約資訊（純手動填寫，parse-caption 不解析這兩個欄位） ───
+  // 不即時驗證：比照 EventSubmissionForm，避免只選日期未選時間時就先跳出錯誤
   const handleChangeReservationDate = (date: string) => {
     setValue('reservationDate', date, { shouldDirty: true });
   };
@@ -518,8 +515,7 @@ export default function EventImportForm() {
           )}
         </div>
 
-        {/* 預約資訊（選填，純手動填寫——parse-caption 不解析這兩個欄位，比照
-            EventSubmissionForm 的 EventInfoSection 一致的區塊呈現與驗證規則） */}
+        {/* 預約資訊（選填，純手動填寫，比照 EventSubmissionForm 的區塊呈現與驗證規則） */}
         <div className={sectionDivider} role="group" aria-labelledby="reservation-title">
           <h3 id="reservation-title" className={sectionTitle}>
             預約資訊（選填）

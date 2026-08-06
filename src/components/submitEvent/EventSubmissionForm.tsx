@@ -210,9 +210,7 @@ function EventSubmissionForm({
     control,
   } = useForm<EventSubmissionFormData>({
     resolver: zodResolver(eventSubmissionSchema),
-    // 送出失敗時的捲動/聚焦改由 handleInvalidSubmit + fieldRefs 統一處理，
-    // 涵蓋 DatePicker/TimePicker/下拉選單等沒有原生 focus 目標的自訂元件，
-    // 關掉預設行為避免跟自訂邏輯搶著捲動
+    // 關掉預設聚焦行為，改由 handleInvalidSubmit + fieldRefs 統一處理捲動/聚焦（涵蓋自訂元件）
     shouldFocusError: false,
     defaultValues: existingEvent
       ? {
@@ -339,8 +337,7 @@ function EventSubmissionForm({
     setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
   };
 
-  // 預約開始時間不做即時驗證（選日期/時間當下不檢查），只在送出時才驗證，
-  // 避免使用者只選了日期、還沒選時間時就先跳出「請同時選擇日期與時間」錯誤
+  // 預約開始時間不做即時驗證，避免只選日期未選時間時就先跳出錯誤，送出時才驗證
   const handleChangeReservationDate = (date: string) => {
     setValue('reservationDate', date, { shouldDirty: true });
   };

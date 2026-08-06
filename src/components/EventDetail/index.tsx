@@ -140,9 +140,7 @@ const addToCalendarHint = css({
   marginTop: '0.5',
 });
 
-// 僅供「預約開始時間」列使用：時間文字與提醒 hint 並排同一行顯示，
-// 跟活動起訖日那一列的上下堆疊（detailContent）不同，故獨立一個 class，
-// 不動共用的 detailContent，避免影響其他列
+// 「預約開始時間」列專用：時間文字與提醒 hint 並排同一行，跟其他列的上下堆疊不同
 const reservationCalendarContent = css({
   flex: '1',
   minWidth: '0',
