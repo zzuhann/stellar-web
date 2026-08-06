@@ -78,7 +78,6 @@ const YearView = ({
       <div className={yearMonthGrid} role="listbox" aria-label="選擇年份">
         {Array.from({ length: 12 }, (_, i) => {
           const year = currentDate.getFullYear() - 6 + i;
-          // getTaipeiToday()，不是裸的 new Date()：見 DatePicker/utils.ts isToday 註解
           const isCurrentYear = year === getTaipeiToday().getFullYear();
           return (
             <button

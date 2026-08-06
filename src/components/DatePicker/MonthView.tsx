@@ -76,7 +76,6 @@ const MonthView = ({
 
       <div className={yearMonthGrid} role="listbox" aria-label="選擇月份">
         {MONTHS.map((month, index) => {
-          // getTaipeiToday()，不是裸的 new Date()：見 DatePicker/utils.ts isToday 註解
           const isCurrentMonth = index === getTaipeiToday().getMonth();
           return (
             <button

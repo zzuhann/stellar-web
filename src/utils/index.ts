@@ -52,7 +52,6 @@ export const dateToTaipeiDateString = (date: Date): string => {
   return `${get('year')}-${get('month')}-${get('day')}`;
 };
 
-// 將 Date 轉換為 Asia/Taipei 時區的 HH:mm 格式（見上方 dateToTaipeiDateString 註解）
 export const dateToTaipeiTimeString = (date: Date): string => {
   const formatter = new Intl.DateTimeFormat('zh-TW', {
     timeZone: 'Asia/Taipei',
