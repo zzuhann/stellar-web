@@ -243,5 +243,31 @@ describe('eventSubmissionSchema', () => {
         expect(result.error.issues.some((i) => i.message === '請選擇有效的預約時間')).toBe(true);
       }
     });
+
+    it('reservationTime 是不合法時間（24:00）時驗證失敗', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        reservationUrl: 'https://forms.gle/xxxx',
+        reservationDate: '2026-08-20',
+        reservationTime: '24:00',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.some((i) => i.message === '請選擇有效的預約時間')).toBe(true);
+      }
+    });
+
+    it('reservationTime 格式錯誤（非 HH:mm）時驗證失敗', () => {
+      const result = eventSubmissionSchema.safeParse({
+        ...validData,
+        reservationUrl: 'https://forms.gle/xxxx',
+        reservationDate: '2026-08-20',
+        reservationTime: '9:5',
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues.some((i) => i.message === '請選擇有效的預約時間')).toBe(true);
+      }
+    });
   });
 });
