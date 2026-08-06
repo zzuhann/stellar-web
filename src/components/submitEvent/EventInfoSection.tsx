@@ -6,7 +6,21 @@ import {
   PhotoIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { errorText, formGroup, helperText, helperTextWarning, input, label } from './styles';
+import {
+  errorText,
+  formGroup,
+  helperText,
+  helperTextWarning,
+  input,
+  label,
+  sectionDivider,
+  sectionTitle,
+  reservationTimeRow,
+  reservationTimeField,
+  captionLabel,
+  reservationLabelRow,
+  clearReservationButton,
+} from './styles';
 import ImageUpload from '../images/ImageUpload';
 import { css, cva } from '@/styled-system/css';
 import DatePicker from '../DatePicker';
@@ -68,70 +82,6 @@ const gridContainer = css({
   display: 'grid',
   gridTemplateColumns: '1fr',
   gap: '4',
-});
-
-const sectionDivider = css({
-  borderTop: '1px solid',
-  borderTopColor: 'color.border.light',
-  paddingTop: '6',
-  marginTop: '6',
-});
-
-const sectionTitle = css({
-  textStyle: 'h4',
-  fontWeight: 'semibold',
-  color: 'color.text.primary',
-  marginBottom: '2',
-});
-
-const reservationTimeRow = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '3',
-});
-
-const reservationTimeField = css({
-  flex: '1',
-  minWidth: '140px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '1',
-});
-
-const captionLabel = css({
-  textStyle: 'caption',
-  color: 'color.text.secondary',
-});
-
-const reservationLabelRow = css({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '2',
-});
-
-const clearReservationButton = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1',
-  minHeight: '44px',
-  paddingX: '3',
-  border: 'none',
-  background: 'transparent',
-  color: 'color.text.secondary',
-  textStyle: 'caption',
-  cursor: 'pointer',
-  borderRadius: 'radius.md',
-  transition: 'color 0.2s ease, background 0.2s ease',
-  '&:hover': {
-    color: 'red.600',
-    background: 'color.background.secondary',
-  },
-  '&:focus-visible': {
-    outline: '2px solid',
-    outlineColor: 'color.primary',
-    outlineOffset: '2px',
-  },
 });
 
 type EventInfoSectionProps = {

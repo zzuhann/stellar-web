@@ -18,6 +18,7 @@ import {
   taipeiDateTimeToTimestamp,
 } from '@/utils';
 import { scrollToFirstErrorField } from '@/utils/formHelpers';
+import { buildReservationPayload } from './reservationPayload';
 import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
 import EventInfoSection from './EventInfoSection';
@@ -479,21 +480,6 @@ function EventSubmissionForm({
       (name) => !!errors[name as keyof EventSubmissionFormData],
       fieldRefs.current
     );
-  };
-
-  // 組合 reservationUrl/reservationDate/reservationTime 為 API 的 reservation 物件
-  // 永遠回傳完整物件（不因為欄位為空就整個省略），讓 edit 模式清空欄位時後端能正確清除既有值
-  const buildReservationPayload = (data: EventSubmissionFormData) => {
-    const url = data.reservationUrl?.trim();
-    const { reservationDate, reservationTime } = data;
-
-    return {
-      url: url || undefined,
-      startAt:
-        reservationDate && reservationTime
-          ? taipeiDateTimeToTimestamp(reservationDate, `${reservationTime}:00`)
-          : undefined,
-    };
   };
 
   const submitEventData = async (data: EventSubmissionFormData) => {

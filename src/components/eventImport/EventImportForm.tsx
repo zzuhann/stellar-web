@@ -3,7 +3,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CalendarIcon, MapPinIcon, PhotoIcon, UserIcon } from '@heroicons/react/24/outline';
+import {
+  CalendarIcon,
+  LinkIcon,
+  MapPinIcon,
+  PhotoIcon,
+  UserIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
 import { useAuthToken } from '@/hooks/useAuthToken';
@@ -13,10 +20,25 @@ import ArtistSelectionModal from '@/components/forms/ArtistSelectionModal';
 import ChooseArtistSection from '@/components/submitEvent/ChooseArtistSection';
 import PlaceAutocomplete from '@/components/forms/PlaceAutocomplete';
 import DatePicker from '@/components/DatePicker';
+import TimePicker from '@/components/TimePicker';
 import ImageUpload from '@/components/images/ImageUpload';
 import MultiImageUpload from '@/components/images/MultiImageUpload';
 import { dateToTaipeiDateString, taipeiDateTimeToTimestamp } from '@/utils';
-import { formGroup, label, input, helperText, errorText } from '@/components/submitEvent/styles';
+import {
+  formGroup,
+  label,
+  input,
+  helperText,
+  errorText,
+  sectionDivider,
+  sectionTitle,
+  reservationTimeRow,
+  reservationTimeField,
+  captionLabel,
+  reservationLabelRow,
+  clearReservationButton,
+} from '@/components/submitEvent/styles';
+import { buildReservationPayload } from '@/components/submitEvent/reservationPayload';
 
 import CaptionParseSection from './CaptionParseSection';
 import CoverImageUrlField from './CoverImageUrlField';
@@ -98,6 +120,8 @@ export default function EventImportForm() {
   const watchedStartDate = useWatch({ control, name: 'startDate' }) ?? '';
   const watchedEndDate = useWatch({ control, name: 'endDate' }) ?? '';
   const watchedAddressName = useWatch({ control, name: 'addressName' }) ?? '';
+  const watchedReservationDate = useWatch({ control, name: 'reservationDate' }) ?? '';
+  const watchedReservationTime = useWatch({ control, name: 'reservationTime' }) ?? '';
 
   // ─── 不受 react-hook-form 管理的欄位（比照 EventSubmissionForm 的既有模式） ───
   const [selectedArtists, setSelectedArtists] = useState<Artist[]>([]);
@@ -281,6 +305,19 @@ export default function EventImportForm() {
     clearAutoFill('location');
   };
 
+  // ─── 預約資訊（純手動填寫，parse-caption 不解析這兩個欄位，不受 autoFill/合併邏輯影響：
+  // 見 specs/features/event-import-assistant/design-backend.md「本功能的欄位刻意與既有
+  // EventSubmissionForm 對齊」） ───
+  // 不即時驗證（不加 shouldValidate: true），比照 EventSubmissionForm 既有作法：避免使用者
+  // 只選了日期、還沒選時間時就先跳出「未同時填時間」的錯誤，只在送出時才驗證
+  const handleChangeReservationDate = (date: string) => {
+    setValue('reservationDate', date, { shouldDirty: true });
+  };
+
+  const handleChangeReservationTime = (time: string) => {
+    setValue('reservationTime', time, { shouldDirty: true });
+  };
+
   // ─── 送出 ───
   const createEventMutation = useCreateImportedEventMutation();
 
@@ -313,6 +350,7 @@ export default function EventImportForm() {
       },
       mainImage: mainImageUrl || undefined,
       detailImage: [...uploadedDetailImages, ...detailImageQueue.successUrls],
+      reservation: buildReservationPayload(data),
     };
 
     createEventMutation.mutate(eventData);
@@ -478,6 +516,98 @@ export default function EventImportForm() {
               {errors.addressName.message}
             </p>
           )}
+        </div>
+
+        {/* 預約資訊（選填，純手動填寫——parse-caption 不解析這兩個欄位，比照
+            EventSubmissionForm 的 EventInfoSection 一致的區塊呈現與驗證規則） */}
+        <div className={sectionDivider} role="group" aria-labelledby="reservation-title">
+          <h3 id="reservation-title" className={sectionTitle}>
+            預約資訊（選填）
+          </h3>
+          <p id="reservation-hint" className={helperText}>
+            若此活動需要預約或報名，可提供預約網址與開始預約日期、時間，不需預約則可略過。
+          </p>
+
+          <div className={formGroup} style={{ marginTop: '12px' }}>
+            <label className={label} htmlFor="reservationUrl">
+              <LinkIcon aria-hidden="true" />
+              預約網址
+            </label>
+            <input
+              className={input}
+              id="reservationUrl"
+              type="url"
+              inputMode="url"
+              placeholder="https://forms.gle/xxxx 或預約頁面網址"
+              {...register('reservationUrl')}
+              aria-invalid={!!errors.reservationUrl}
+              aria-describedby={errors.reservationUrl ? 'reservationUrl-error' : undefined}
+            />
+            {errors.reservationUrl && (
+              <p id="reservationUrl-error" className={errorText} role="alert">
+                {errors.reservationUrl.message}
+              </p>
+            )}
+          </div>
+
+          <div
+            className={formGroup}
+            style={{ marginTop: '12px' }}
+            role="group"
+            aria-labelledby="reservationStartAt-label"
+          >
+            <div className={reservationLabelRow}>
+              <label id="reservationStartAt-label" className={label}>
+                <CalendarIcon aria-hidden="true" />
+                預約開始時間
+              </label>
+              {(watchedReservationDate || watchedReservationTime) && (
+                <button
+                  type="button"
+                  className={clearReservationButton}
+                  aria-label="清空預約開始時間"
+                  onClick={() => {
+                    handleChangeReservationDate('');
+                    handleChangeReservationTime('');
+                  }}
+                >
+                  <XMarkIcon width={14} height={14} aria-hidden="true" />
+                  清空
+                </button>
+              )}
+            </div>
+            <div className={reservationTimeRow}>
+              <div className={reservationTimeField}>
+                <span className={captionLabel} id="reservationDate-label">
+                  日期
+                </span>
+                <DatePicker
+                  value={watchedReservationDate}
+                  onChange={handleChangeReservationDate}
+                  placeholder="選擇日期"
+                  error={!!errors.reservationTime}
+                />
+                <input type="hidden" {...register('reservationDate')} aria-hidden="true" />
+              </div>
+              <div className={reservationTimeField}>
+                <span className={captionLabel} id="reservationTime-label">
+                  時間
+                </span>
+                <TimePicker
+                  value={watchedReservationTime}
+                  onChange={handleChangeReservationTime}
+                  placeholder="選擇時間"
+                  error={!!errors.reservationTime}
+                />
+                <input type="hidden" {...register('reservationTime')} aria-hidden="true" />
+              </div>
+            </div>
+            {errors.reservationTime && (
+              <p id="reservationStartAt-error" className={errorText} role="alert">
+                {errors.reservationTime.message}
+              </p>
+            )}
+          </div>
         </div>
 
         {/* 詳細說明 */}
