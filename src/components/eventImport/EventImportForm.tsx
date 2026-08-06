@@ -15,7 +15,7 @@ import PlaceAutocomplete from '@/components/forms/PlaceAutocomplete';
 import DatePicker from '@/components/DatePicker';
 import ImageUpload from '@/components/images/ImageUpload';
 import MultiImageUpload from '@/components/images/MultiImageUpload';
-import { dateToTaipeiDateString } from '@/utils';
+import { dateToTaipeiDateString, taipeiDateTimeToTimestamp } from '@/utils';
 import { formGroup, label, input, helperText, errorText } from '@/components/submitEvent/styles';
 
 import CaptionParseSection from './CaptionParseSection';
@@ -295,16 +295,10 @@ export default function EventImportForm() {
       artistIds: selectedArtists.map((a) => a.id),
       description: data.description || '',
       datetime: {
-        // 比照 EventSubmissionForm 既有作法：固定套用當天 00:00:00 / 23:59:59，
+        // 比照 EventSubmissionForm 既有作法：固定套用當天 00:00:00 / 23:59:59（Asia/Taipei），
         // 這個頁面不提供活動時段欄位。
-        start: {
-          _seconds: Math.floor(new Date(data.startDate + 'T00:00:00').getTime() / 1000),
-          _nanoseconds: 0,
-        },
-        end: {
-          _seconds: Math.floor(new Date(data.endDate + 'T23:59:59').getTime() / 1000),
-          _nanoseconds: 0,
-        },
+        start: taipeiDateTimeToTimestamp(data.startDate, '00:00:00'),
+        end: taipeiDateTimeToTimestamp(data.endDate, '23:59:59'),
       },
       location: {
         name: data.addressName,
