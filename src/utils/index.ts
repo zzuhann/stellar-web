@@ -113,12 +113,33 @@ export const formatReservationDateTime = (startAt: FirebaseTimestamp): string =>
   return `${get('year')}/${get('month')}/${get('day')}（${weekday}）${get('hour')}:${get('minute')}`;
 };
 
-// 簡短日期範圍，格式為「M/DD」或「M/DD - M/DD」，使用本地時區
+// 簡短日期範圍，格式為「M/D」或「M/D - M/D」，明確使用 Asia/Taipei 時區（不受瀏覽器時區影響）
 export const formatEventDateShort = (start: FirebaseTimestamp, end: FirebaseTimestamp): string => {
   const s = firebaseTimestampToDate(start);
   const e = firebaseTimestampToDate(end);
-  const fmt = (d: Date) => `${d.getMonth() + 1}/${d.getDate()}`;
-  return s.toDateString() === e.toDateString() ? fmt(s) : `${fmt(s)} - ${fmt(e)}`;
+
+  const formatter = new Intl.DateTimeFormat('zh-TW', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+  });
+
+  const getParts = (date: Date) => {
+    const parts = formatter.formatToParts(date);
+    const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
+    return { year: get('year'), month: get('month'), day: get('day') };
+  };
+
+  const sParts = getParts(s);
+  const eParts = getParts(e);
+  const fmt = (parts: { month: string; day: string }) => `${parts.month}/${parts.day}`;
+
+  // 同一個 Taipei 日曆日才視為單日活動；只比 month/day 會讓跨年同月同日誤判為同一天，故連 year 一起比
+  const isSameDay =
+    sParts.year === eParts.year && sParts.month === eParts.month && sParts.day === eParts.day;
+
+  return isSameDay ? fmt(sParts) : `${fmt(sParts)} - ${fmt(eParts)}`;
 };
 
 // 生成 Google Calendar 加入行事曆 URL（All Day Event）

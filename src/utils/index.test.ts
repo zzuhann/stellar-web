@@ -114,6 +114,18 @@ describe('formatEventDateShort', () => {
     const result = formatEventDateShort(ts(2026, 1, 1), ts(2026, 1, 1));
     expect(result).toBe('1/1');
   });
+
+  it('依 Asia/Taipei 而非測試環境本地時區換算日期（跨日邊界）', () => {
+    // UTC 2026-01-04 20:00 = Taipei 2026-01-05 04:00，若誤用本地時區元件可能仍停留在 1/4
+    const startAt = { _seconds: Date.UTC(2026, 0, 4, 20, 0, 0) / 1000, _nanoseconds: 0 };
+    const result = formatEventDateShort(startAt, startAt);
+    expect(result).toBe('1/5');
+  });
+
+  it('月日相同但年份不同時，不會被誤判為單日活動', () => {
+    const result = formatEventDateShort(ts(2026, 1, 5), ts(2027, 1, 5));
+    expect(result).toBe('1/5 - 1/5');
+  });
 });
 
 describe('firebaseTimestampToDate', () => {
