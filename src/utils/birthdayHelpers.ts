@@ -52,3 +52,12 @@ export const formatBirthdayFull = (birthday: string): string => {
 
   return `${year}/${month}/${day}`;
 };
+
+/**
+ * 計算某年某月的天數（含閏年 2 月）
+ * new Date(year, month, 0) 取「該月下一個月的第 0 天」= 該月最後一天，原生處理閏年規則
+ * @param month - 月份，1-12
+ */
+export const getDaysInMonth = (year: number, month: number): number => {
+  return new Date(year, month, 0).getDate();
+};
