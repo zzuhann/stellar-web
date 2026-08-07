@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
-import { getDaysInMonth } from '@/utils/birthdayHelpers';
+import { formatBirthdayFull, getDaysInMonth } from '@/utils/birthdayHelpers';
+import BirthdayPickerMobileSheet from './BirthdayPickerMobileSheet';
+import { YEAR_OPTIONS, MONTH_OPTIONS, type PickerOption } from './birthdayPickerOptions';
 
 interface BirthdayPickerProps {
   value: string;
@@ -12,17 +14,22 @@ interface BirthdayPickerProps {
   error?: boolean;
 }
 
-const MIN_BIRTH_YEAR = 1950;
-const CURRENT_YEAR = new Date().getFullYear();
-const YEAR_OPTIONS = Array.from(
-  { length: CURRENT_YEAR - MIN_BIRTH_YEAR + 1 },
-  (_, i) => MIN_BIRTH_YEAR + i
-);
-const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => i + 1);
+// 桌面版三個獨立 dropdown，手機版（<768px）改用合併觸發欄位 + bottom sheet 滾輪，
+// 用 CSS media query 切換要顯示哪個版本（兩者皆常駐掛載），不用 JS matchMedia 決定 mount，
+// 避免 SSR/hydration 時機問題
+const desktopRow = css({
+  display: 'none',
+  '@media (min-width: 768px)': {
+    display: 'flex',
+    gap: '2',
+  },
+});
 
-const row = css({
-  display: 'flex',
-  gap: '2',
+const mobileTriggerWrap = css({
+  display: 'block',
+  '@media (min-width: 768px)': {
+    display: 'none',
+  },
 });
 
 const fieldWrap = css({
@@ -107,10 +114,8 @@ const dropdownOption = cva({
   },
 });
 
-interface DropdownOption {
-  value: string;
-  label: string;
-}
+// PickerOption 定義在 birthdayPickerOptions.ts（wheel 選項跟 dropdown 選項是同一種形狀）
+type DropdownOption = PickerOption;
 
 interface DropdownProps {
   ariaLabel: string;
@@ -120,7 +125,6 @@ interface DropdownProps {
   onChange: (value: string) => void;
   disabled?: boolean;
   error?: boolean;
-  scrollToValue?: string;
 }
 
 // 三個生日子欄位共用的 dropdown：套用 stellar-web/CLAUDE.md 的 custom dropdown 標準 pattern
@@ -132,11 +136,9 @@ function Dropdown({
   onChange,
   disabled,
   error,
-  scrollToValue,
 }: DropdownProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -147,14 +149,6 @@ function Dropdown({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
-
-  // 開啟時捲動定位到 scrollToValue（年份選單定位到今年），僅是預設可視位置，不代表已選值
-  useEffect(() => {
-    if (!open || !scrollToValue || !menuRef.current) return;
-    const target = menuRef.current.querySelector<HTMLElement>(`[data-value="${scrollToValue}"]`);
-    if (!target) return;
-    target.scrollIntoView({ block: 'center' });
-  }, [open, scrollToValue]);
 
   const selectedLabel = options.find((opt) => opt.value === value)?.label;
 
@@ -184,7 +178,7 @@ function Dropdown({
         />
       </button>
       {open && (
-        <div ref={menuRef} className={dropdownMenu} role="listbox" aria-label={ariaLabel}>
+        <div className={dropdownMenu} role="listbox" aria-label={ariaLabel}>
           {options.map((opt) => (
             <button
               key={opt.value}
@@ -228,7 +222,10 @@ export default function BirthdayPicker({ value, onChange, disabled, error }: Bir
   const [month, setMonth] = useState(() => parseBirthday(value).month);
   const [day, setDay] = useState(() => parseBirthday(value).day);
 
-  const daysInMonth = year && month ? getDaysInMonth(Number(year), Number(month)) : 0;
+  // 天數只依月份決定（除了 2 月），年份未選時無法判斷閏年，用固定的閏年
+  // （2000）放寬 2 月顯示到 29 天，避免使用者先選日、後選年時被卡住。
+  // 之後若真的選了平年，handleYearChange 裡的 clampDay 會清空超出範圍的日期。
+  const daysInMonth = month ? getDaysInMonth(Number(year) || 2000, Number(month)) : 0;
   const dayOptions: DropdownOption[] = Array.from({ length: daysInMonth }, (_, i) => {
     const d = String(i + 1);
     return { value: d, label: `${d} 日` };
@@ -264,42 +261,86 @@ export default function BirthdayPicker({ value, onChange, disabled, error }: Bir
     emit(year, month, d);
   };
 
+  const [sheetOpen, setSheetOpen] = useState(false);
+
+  // Bottom sheet 的「完成」永遠可按，emit 目前三欄置中的值——跟桌面版「未選滿三欄
+  // emit 空字串」刻意不同，是使用者知情且刻意接受的手機版簡化（見 design-frontend.md）
+  const handleWheelConfirm = (date: string) => {
+    const parsed = parseBirthday(date);
+    setYear(parsed.year);
+    setMonth(parsed.month);
+    setDay(parsed.day);
+    onChange(date);
+    setSheetOpen(false);
+  };
+
+  const hasSelection = !!(year && month && day);
+  const mobileTriggerLabel = hasSelection
+    ? formatBirthdayFull(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`)
+    : '選擇生日';
+
   return (
-    <div className={row}>
-      <div className={fieldWrap}>
-        <Dropdown
-          ariaLabel="生日年份"
-          value={year}
-          options={YEAR_OPTIONS.map((y) => ({ value: String(y), label: `${y} 年` }))}
-          placeholder="年"
-          onChange={handleYearChange}
+    <>
+      <div className={desktopRow}>
+        <div className={fieldWrap}>
+          <Dropdown
+            ariaLabel="生日年份"
+            value={year}
+            options={YEAR_OPTIONS.map((y) => ({ value: String(y), label: `${y} 年` }))}
+            placeholder="年"
+            onChange={handleYearChange}
+            disabled={disabled}
+            error={error}
+          />
+        </div>
+        <div className={fieldWrap}>
+          <Dropdown
+            ariaLabel="生日月份"
+            value={month}
+            options={MONTH_OPTIONS.map((m) => ({ value: String(m), label: `${m} 月` }))}
+            placeholder="月"
+            onChange={handleMonthChange}
+            disabled={disabled}
+            error={error}
+          />
+        </div>
+        <div className={fieldWrap}>
+          <Dropdown
+            ariaLabel="生日日期"
+            value={day}
+            options={dayOptions}
+            placeholder="日"
+            onChange={handleDayChange}
+            disabled={disabled || !month}
+            error={error}
+          />
+        </div>
+      </div>
+      <div className={mobileTriggerWrap}>
+        <button
+          type="button"
+          className={dropdownTrigger({ error, disabled })}
+          data-empty={!hasSelection ? 'true' : undefined}
+          aria-label="生日"
+          aria-haspopup="dialog"
           disabled={disabled}
-          error={error}
-          scrollToValue={String(CURRENT_YEAR)}
-        />
+          onClick={() => setSheetOpen(true)}
+        >
+          <span>{mobileTriggerLabel}</span>
+          <ChevronDownIcon
+            className={css({ width: '14px', height: '14px', flexShrink: '0' })}
+            aria-hidden="true"
+          />
+        </button>
       </div>
-      <div className={fieldWrap}>
-        <Dropdown
-          ariaLabel="生日月份"
-          value={month}
-          options={MONTH_OPTIONS.map((m) => ({ value: String(m), label: `${m} 月` }))}
-          placeholder="月"
-          onChange={handleMonthChange}
-          disabled={disabled}
-          error={error}
-        />
-      </div>
-      <div className={fieldWrap}>
-        <Dropdown
-          ariaLabel="生日日期"
-          value={day}
-          options={dayOptions}
-          placeholder="日"
-          onChange={handleDayChange}
-          disabled={disabled || !year || !month}
-          error={error}
-        />
-      </div>
-    </div>
+      <BirthdayPickerMobileSheet
+        isOpen={sheetOpen}
+        onClose={() => setSheetOpen(false)}
+        onConfirm={handleWheelConfirm}
+        committedYear={year}
+        committedMonth={month}
+        committedDay={day}
+      />
+    </>
   );
 }
