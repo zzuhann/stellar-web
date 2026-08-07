@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useLayoutEffect, useRef } from 'react';
 
 interface GeolocationState {
   latitude: number | null;
@@ -37,8 +37,13 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     [options]
   );
 
+  const isSupportedRef = useRef(state.isSupported);
+  useLayoutEffect(() => {
+    isSupportedRef.current = state.isSupported;
+  }, [state.isSupported]);
+
   const getCurrentPosition = useCallback(() => {
-    if (!state.isSupported) return;
+    if (!isSupportedRef.current) return;
 
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
 
@@ -69,10 +74,10 @@ export function useGeolocation(options: GeolocationOptions = {}) {
       },
       defaultOptions
     );
-  }, [state.isSupported, defaultOptions]);
+  }, [defaultOptions]);
 
   const checkPermission = useCallback(async () => {
-    if (!state.isSupported) return;
+    if (!isSupportedRef.current) return;
 
     try {
       const permission = await navigator.permissions.query({
@@ -82,7 +87,7 @@ export function useGeolocation(options: GeolocationOptions = {}) {
     } catch {
       setState((prev) => ({ ...prev, hasPermission: true }));
     }
-  }, [state.isSupported]);
+  }, []);
 
   return {
     ...state,
