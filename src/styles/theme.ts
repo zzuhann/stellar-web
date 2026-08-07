@@ -107,6 +107,7 @@ export const semanticColors = {
 
     // 邊框
     border: {
+      subtle: { value: '{colors.gray.100}' }, // 比 light 更淺，用於裝飾性分隔線（不需明顯分界感）
       light: { value: '{colors.gray.200}' },
       medium: { value: '{colors.gray.300}' },
     },
