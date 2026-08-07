@@ -262,6 +262,15 @@ export default function BirthdayPicker({ value, onChange, disabled, error }: Bir
   };
 
   const [sheetOpen, setSheetOpen] = useState(false);
+  const mobileTriggerRef = useRef<HTMLButtonElement>(null);
+
+  // Sheet 關閉後（不論取消、Escape、遮罩點擊或完成）把 focus 還給觸發它的欄位按鈕，
+  // 符合 dialog 關閉後的 focus 管理慣例，也讓鍵盤使用者不會因為 focus 停在畫面外
+  // 的隱藏元素而「跑丟」
+  const closeSheet = () => {
+    setSheetOpen(false);
+    mobileTriggerRef.current?.focus();
+  };
 
   // Bottom sheet 的「完成」永遠可按，emit 目前三欄置中的值——跟桌面版「未選滿三欄
   // emit 空字串」刻意不同，是使用者知情且刻意接受的手機版簡化（見 design-frontend.md）
@@ -271,7 +280,7 @@ export default function BirthdayPicker({ value, onChange, disabled, error }: Bir
     setMonth(parsed.month);
     setDay(parsed.day);
     onChange(date);
-    setSheetOpen(false);
+    closeSheet();
   };
 
   const hasSelection = !!(year && month && day);
@@ -318,6 +327,7 @@ export default function BirthdayPicker({ value, onChange, disabled, error }: Bir
       </div>
       <div className={mobileTriggerWrap}>
         <button
+          ref={mobileTriggerRef}
           type="button"
           className={dropdownTrigger({ error, disabled })}
           data-empty={!hasSelection ? 'true' : undefined}
@@ -335,7 +345,7 @@ export default function BirthdayPicker({ value, onChange, disabled, error }: Bir
       </div>
       <BirthdayPickerMobileSheet
         isOpen={sheetOpen}
-        onClose={() => setSheetOpen(false)}
+        onClose={closeSheet}
         onConfirm={handleWheelConfirm}
         committedYear={year}
         committedMonth={month}

@@ -11,7 +11,7 @@ const ITEM_HEIGHT = 44; // matches WCAG minimum touch target
 const overlay = css({
   position: 'fixed',
   inset: '0',
-  background: 'rgba(0,0,0,0.5)',
+  background: 'alpha.black.50',
   zIndex: '200',
   transition: 'opacity 280ms ease-out',
 });
@@ -119,7 +119,7 @@ const primaryButton = css({
   flex: '1',
   height: '48px',
   backgroundColor: 'color.primary',
-  color: 'white',
+  color: 'gray.0',
   border: 'none',
   borderRadius: 'radius.lg',
   textStyle: 'button',
@@ -128,7 +128,7 @@ const primaryButton = css({
   '&:hover': { opacity: '0.9' },
   '&:focus-visible': {
     outline: '2px solid',
-    outlineColor: 'white',
+    outlineColor: 'gray.0',
     outlineOffset: '2px',
   },
 });
@@ -158,22 +158,27 @@ interface WheelColumnProps {
   options: PickerOption[];
   value: string;
   onChange: (value: string) => void;
+  isOpen: boolean;
 }
 
 // 原生 scroll-snap 滾輪：每欄是一個獨立 tab stop 的 listbox，方向鍵切換選項；
 // 觸控拖曳交給瀏覽器原生 scroll-snap，停止後用 handleScroll 算出停在哪個選項並回報。
 // 手感（scroll-snap 在各瀏覽器/App 內建瀏覽器的實際體感）無法用 unit test 驗證，需實機測試。
-function WheelColumn({ idPrefix, ariaLabel, options, value, onChange }: WheelColumnProps) {
+function WheelColumn({ idPrefix, ariaLabel, options, value, onChange, isOpen }: WheelColumnProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // value 變化時（開啟 sheet、年/月切換 reset 日、鍵盤切換）同步捲動位置
+  // value 變化時（開啟 sheet、年/月切換 reset 日、鍵盤切換）同步捲動位置。
+  // 只在 isOpen 時執行：元件常駐掛載，關閉狀態下 draftYear/Month/Day 理論上不會變，
+  // 但仍以 isOpen 擋一層，避免 scrollIntoView 在 sheet 隱藏、body scroll 尚未鎖定的
+  // 時間點意外把外層頁面一起捲走（desktop 版年份下拉先前就是同一種 bug）。
   useEffect(() => {
+    if (!isOpen) return;
     const container = scrollRef.current;
     if (!container) return;
     const target = container.querySelector<HTMLElement>(`[data-value="${value}"]`);
     target?.scrollIntoView?.({ block: 'center' });
-  }, [value]);
+  }, [value, isOpen]);
 
   useEffect(() => {
     return () => {
@@ -394,6 +399,11 @@ export default function BirthdayPickerMobileSheet({
         aria-modal="true"
         aria-label="選擇生日"
         aria-hidden={!isOpen}
+        // aria-hidden 只讓輔助科技略過，不會把元素移出 Tab 順序；sheet 常駐掛載，
+        // 關閉時仍可能被鍵盤 Tab 到藏在畫面外的按鈕/listbox。inert 才會真的讓整個
+        // 子樹不可 focus、不可點擊（@testing-library/dom 目前不認得 inert，
+        // 所以 aria-hidden 仍保留給測試查詢用）
+        inert={!isOpen}
       >
         <div className={handleBar} aria-hidden="true" />
         <h2 className={title}>選擇生日</h2>
@@ -404,6 +414,7 @@ export default function BirthdayPickerMobileSheet({
             options={YEAR_WHEEL_OPTIONS}
             value={draftYear}
             onChange={handleYearChange}
+            isOpen={isOpen}
           />
           <WheelColumn
             idPrefix="birthday-month"
@@ -411,6 +422,7 @@ export default function BirthdayPickerMobileSheet({
             options={MONTH_WHEEL_OPTIONS}
             value={draftMonth}
             onChange={handleMonthChange}
+            isOpen={isOpen}
           />
           <WheelColumn
             idPrefix="birthday-day"
@@ -418,6 +430,7 @@ export default function BirthdayPickerMobileSheet({
             options={dayWheelOptions}
             value={draftDay}
             onChange={setDraftDay}
+            isOpen={isOpen}
           />
         </div>
         <div className={buttonRow}>

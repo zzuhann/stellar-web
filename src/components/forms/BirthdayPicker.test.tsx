@@ -343,4 +343,24 @@ describe('BirthdayPicker 手機版 Bottom Sheet', () => {
     fireEvent.click(screen.getByRole('button', { name: '完成' }));
     expect(onChange).toHaveBeenCalledWith('2001-05-02');
   });
+
+  it('按取消後，focus 回到觸發生日 sheet 的按鈕（不留在畫面外的隱藏內容裡）', () => {
+    render(<BirthdayPicker value="2001-04-17" onChange={vi.fn()} />);
+    const trigger = screen.getByRole('button', { name: '生日' });
+
+    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole('button', { name: '取消' }));
+
+    expect(document.activeElement).toBe(trigger);
+  });
+
+  it('按完成後，focus 也回到觸發按鈕', () => {
+    render(<BirthdayPicker value="2001-04-17" onChange={vi.fn()} />);
+    const trigger = screen.getByRole('button', { name: '生日' });
+
+    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole('button', { name: '完成' }));
+
+    expect(document.activeElement).toBe(trigger);
+  });
 });
