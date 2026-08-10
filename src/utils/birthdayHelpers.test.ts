@@ -4,6 +4,7 @@ import {
   formatBirthdayMonthDay,
   formatBirthdayFull,
   formatBirthdayShort,
+  getDaysInMonth,
 } from './birthdayHelpers';
 
 describe('shouldShowBirthdayHat', () => {
@@ -119,5 +120,35 @@ describe('formatBirthdayFull', () => {
 
   it('無效格式應該回傳空字串', () => {
     expect(formatBirthdayFull('invalid')).toBe('');
+  });
+});
+
+describe('getDaysInMonth', () => {
+  it('閏年 2 月有 29 天', () => {
+    expect(getDaysInMonth(2024, 2)).toBe(29);
+  });
+
+  it('平年 2 月有 28 天', () => {
+    expect(getDaysInMonth(2023, 2)).toBe(28);
+  });
+
+  it('世紀閏年（能被 400 整除）2 月有 29 天', () => {
+    expect(getDaysInMonth(2000, 2)).toBe(29);
+  });
+
+  it('世紀平年（能被 100 整除但不能被 400 整除）2 月有 28 天', () => {
+    expect(getDaysInMonth(1900, 2)).toBe(28);
+  });
+
+  it('小月（4 月）有 30 天', () => {
+    expect(getDaysInMonth(2025, 4)).toBe(30);
+  });
+
+  it('大月（1 月）有 31 天', () => {
+    expect(getDaysInMonth(2025, 1)).toBe(31);
+  });
+
+  it('12 月有 31 天', () => {
+    expect(getDaysInMonth(2025, 12)).toBe(31);
   });
 });

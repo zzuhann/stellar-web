@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useState, useEffect, useRef } from 'react';
+import { FieldErrors, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { UserIcon, CalendarIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
@@ -10,7 +10,7 @@ import { useArtistStore } from '@/store';
 import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import ImageUpload from '@/components/images/ImageUpload';
-import DatePicker from '@/components/DatePicker';
+import BirthdayPicker from '@/components/forms/BirthdayPicker';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { Artist, UpdateArtistRequest } from '@/types';
@@ -318,7 +318,19 @@ export default function ArtistSubmissionForm({
   const [pendingSubmitData, setPendingSubmitData] = useState<ArtistSubmissionFormData | null>(null);
   const [submitterEmail, setSubmitterEmail] = useState('');
   const [emailError, setEmailError] = useState('');
+  const birthdayFieldRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  // 送出驗證失敗時：照舊 toast 第一個錯誤訊息；生日欄位額外捲動到可視範圍，
+  // 因為它是三個 dropdown 疊在一起，使用者容易漏看紅框
+  const onInvalidSubmit = (errors: FieldErrors<ArtistSubmissionFormData>) => {
+    const firstError = Object.values(errors)[0]?.message;
+    if (firstError) {
+      showToast.error(firstError);
+    }
+    if (errors.birthday) {
+      birthdayFieldRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
   const { createArtist } = useArtistStore();
   const { user } = useAuth();
   const { token } = useAuthToken();
@@ -592,7 +604,7 @@ export default function ArtistSubmissionForm({
         </div>
 
         {/* 生日 */}
-        <div className={formGroup}>
+        <div className={formGroup} ref={birthdayFieldRef}>
           <label className={label} htmlFor="birthday">
             <CalendarIcon aria-hidden="true" />
             <div>
@@ -600,15 +612,11 @@ export default function ArtistSubmissionForm({
               <span className="sr-only">（必填）</span>
             </div>
           </label>
-          <DatePicker
+          <BirthdayPicker
             value={birthday || ''}
-            onChange={(date) =>
-              setValue('birthday', date, { shouldValidate: true, shouldDirty: true })
-            }
-            placeholder="選擇生日"
+            onChange={(date) => setValue('birthday', date, { shouldDirty: true })}
             disabled={createArtistMutation.isPending || updateArtistMutation.isPending}
             error={!!errors.birthday}
-            // max={new Date().toISOString().split('T')[0]}
           />
           <input type="hidden" {...register('birthday')} aria-hidden="true" />
           {errors.birthday && (
@@ -757,13 +765,7 @@ export default function ArtistSubmissionForm({
             disabled={
               createArtistMutation.isPending || updateArtistMutation.isPending || isUploadingImage
             }
-            onClick={handleSubmit(onSubmit, (errors) => {
-              // 找出第一個錯誤並顯示
-              const firstError = Object.values(errors)[0]?.message;
-              if (firstError) {
-                showToast.error(firstError);
-              }
-            })}
+            onClick={() => handleSubmit(onSubmit, onInvalidSubmit)()}
           >
             {isUploadingImage ||
             createArtistMutation.isPending ||
