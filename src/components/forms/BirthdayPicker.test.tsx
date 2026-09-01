@@ -13,14 +13,25 @@ function ControlledBirthdayPicker({ initialValue }: { initialValue: string }) {
 afterEach(cleanup);
 
 describe('BirthdayPicker', () => {
-  it('初始為空值時，年份欄位預設顯示 2000 年，月/日仍顯示 placeholder 且日期欄位 disabled', () => {
+  it('初始為空值時，年/月/日三個欄位都顯示 placeholder，且日期欄位 disabled', () => {
     render(<BirthdayPicker value="" onChange={vi.fn()} />);
 
-    expect(screen.getByRole('button', { name: '生日年份' }).textContent).toBe('2000 年');
+    expect(screen.getByRole('button', { name: '生日年份' }).textContent).toBe('年');
     expect(screen.getByRole('button', { name: '生日月份' }).textContent).toContain('月');
     const dayButton = screen.getByRole('button', { name: '生日日期' }) as HTMLButtonElement;
     expect(dayButton.textContent).toContain('日');
     expect(dayButton.disabled).toBe(true);
+  });
+
+  it('點開年份下拉選單，觸發按鈕自動變成「2000 年」且該選項 aria-selected 為 true', () => {
+    render(<BirthdayPicker value="" onChange={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '生日年份' }));
+
+    expect(screen.getByRole('button', { name: '生日年份' }).textContent).toBe('2000 年');
+    expect(screen.getByRole('option', { name: '2000 年' }).getAttribute('aria-selected')).toBe(
+      'true'
+    );
   });
 
   it('只選年份，尚未選滿三者時，onChange 收到空字串（無法組成完整日期）', () => {
@@ -49,10 +60,25 @@ describe('BirthdayPicker', () => {
     expect(onChange).toHaveBeenLastCalledWith('2000-04-17');
   });
 
-  it('只選月/日、不主動選年份，年份沿用預設值 2000 一併送出（刻意接受的行為，非 bug）', () => {
+  it('只選月/日、從未點開過年份選單，年份維持空值，onChange 收到空字串', () => {
     const onChange = vi.fn();
     render(<BirthdayPicker value="" onChange={onChange} />);
 
+    fireEvent.click(screen.getByRole('button', { name: '生日月份' }));
+    fireEvent.click(screen.getByRole('option', { name: '4 月' }));
+
+    fireEvent.click(screen.getByRole('button', { name: '生日日期' }));
+    fireEvent.click(screen.getByRole('option', { name: '17 日' }));
+
+    expect(onChange).toHaveBeenLastCalledWith('');
+  });
+
+  it('點開過年份選單但沒手動點選任何選項，仍算已選 2000：之後選完月/日照樣組成完整日期', () => {
+    const onChange = vi.fn();
+    render(<BirthdayPicker value="" onChange={onChange} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '生日年份' }));
+    // 只是點開看一眼，不點任何 option，直接去選月/日
     fireEvent.click(screen.getByRole('button', { name: '生日月份' }));
     fireEvent.click(screen.getByRole('option', { name: '4 月' }));
 

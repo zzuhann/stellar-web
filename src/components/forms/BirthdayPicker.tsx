@@ -125,6 +125,10 @@ interface DropdownProps {
   onChange: (value: string) => void;
   disabled?: boolean;
   error?: boolean;
+  // 這個欄位是空的時候，第一次開啟選單就自動選取這個值（並捲動到可見範圍）。
+  // 目前只有年份欄位使用：YEAR_OPTIONS 有 77 個選項，2000 在中段偏後，
+  // 選單開啟時預設看不到，藉此讓使用者一開選單就能看到「2000 年」被選中。
+  selectOnOpen?: string;
 }
 
 // 三個生日子欄位共用的 dropdown：套用 stellar-web/CLAUDE.md 的 custom dropdown 標準 pattern
@@ -136,9 +140,11 @@ function Dropdown({
   onChange,
   disabled,
   error,
+  selectOnOpen,
 }: DropdownProps) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -149,6 +155,18 @@ function Dropdown({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  // 選單開啟時，把目前已選值捲動到可見範圍——不只服務「剛被 selectOnOpen 自動選取」
+  // 的情境，使用者重新打開一個先前就選過值的選單時也適用，是通用行為。
+  useEffect(() => {
+    if (!open) return;
+    if (!value) return;
+    const optionEl = menuRef.current?.querySelector(`[data-value="${value}"]`);
+    // jsdom（測試環境）沒有實作 scrollIntoView，feature-detect 避免測試炸掉
+    if (optionEl && typeof optionEl.scrollIntoView === 'function') {
+      optionEl.scrollIntoView({ block: 'center' });
+    }
+  }, [open, value]);
 
   const selectedLabel = options.find((opt) => opt.value === value)?.label;
 
@@ -163,7 +181,13 @@ function Dropdown({
         aria-expanded={open}
         aria-invalid={error ? 'true' : undefined}
         disabled={disabled}
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => {
+          // 只在「打開」的這次觸發自動選取，關閉時不要動到 value
+          if (!open && selectOnOpen && !value) {
+            onChange(selectOnOpen);
+          }
+          setOpen((o) => !o);
+        }}
       >
         <span>{selectedLabel ?? placeholder}</span>
         <ChevronDownIcon
@@ -178,7 +202,7 @@ function Dropdown({
         />
       </button>
       {open && (
-        <div className={dropdownMenu} role="listbox" aria-label={ariaLabel}>
+        <div ref={menuRef} className={dropdownMenu} role="listbox" aria-label={ariaLabel}>
           {options.map((opt) => (
             <button
               key={opt.value}
@@ -218,7 +242,7 @@ function parseBirthday(value: string): { year: string; month: string; day: strin
 // 曾經試過用「記住最後一次 emit 的值」來分辨「外部真的改變」和「自己 onChange 的回音」，
 // 但父層若非同步/非原樣寫回，這個分辨方式一樣會誤判，屬於治標不治本。
 export default function BirthdayPicker({ value, onChange, disabled, error }: BirthdayPickerProps) {
-  const [year, setYear] = useState(() => parseBirthday(value).year || '2000');
+  const [year, setYear] = useState(() => parseBirthday(value).year);
   const [month, setMonth] = useState(() => parseBirthday(value).month);
   const [day, setDay] = useState(() => parseBirthday(value).day);
 
@@ -300,6 +324,7 @@ export default function BirthdayPicker({ value, onChange, disabled, error }: Bir
             onChange={handleYearChange}
             disabled={disabled}
             error={error}
+            selectOnOpen="2000"
           />
         </div>
         <div className={fieldWrap}>
