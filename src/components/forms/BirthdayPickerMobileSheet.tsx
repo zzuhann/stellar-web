@@ -74,8 +74,7 @@ const wheelScroll = css({
   },
 });
 
-// 選中狀態刻意不切換 textStyle（會連 line-height 一起瞬間跳變、造成頓挫），
-// 改用 transform: scale 模擬「放大」，字級本身固定，靠 transition 讓 scale/color/fontWeight 連續漸變
+// 選中狀態用 transform: scale 模擬放大，避免切換 textStyle 導致 line-height 瞬間跳變
 const wheelOption = cva({
   base: {
     height: `${ITEM_HEIGHT}px`,
@@ -161,17 +160,12 @@ interface WheelColumnProps {
   isOpen: boolean;
 }
 
-// 原生 scroll-snap 滾輪：每欄是一個獨立 tab stop 的 listbox，方向鍵切換選項；
-// 觸控拖曳交給瀏覽器原生 scroll-snap，停止後用 handleScroll 算出停在哪個選項並回報。
-// 手感（scroll-snap 在各瀏覽器/App 內建瀏覽器的實際體感）無法用 unit test 驗證，需實機測試。
+// 原生 scroll-snap 滾輪，觸控交給瀏覽器處理，停止後用 handleScroll 算出停在哪個選項
 function WheelColumn({ idPrefix, ariaLabel, options, value, onChange, isOpen }: WheelColumnProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // value 變化時（開啟 sheet、年/月切換 reset 日、鍵盤切換）同步捲動位置。
-  // 只在 isOpen 時執行：元件常駐掛載，關閉狀態下 draftYear/Month/Day 理論上不會變，
-  // 但仍以 isOpen 擋一層，避免 scrollIntoView 在 sheet 隱藏、body scroll 尚未鎖定的
-  // 時間點意外把外層頁面一起捲走（desktop 版年份下拉先前就是同一種 bug）。
+  // 只在 isOpen 時捲動，避免 sheet 隱藏時 scrollIntoView 意外把外層頁面一起捲走
   useEffect(() => {
     if (!isOpen) return;
     const container = scrollRef.current;
@@ -284,12 +278,8 @@ export default function BirthdayPickerMobileSheet({
   const [draftDay, setDraftDay] = useState('');
   const sheetRef = useRef<HTMLDivElement>(null);
 
-  // 開啟時決定置中位置：已有選過的生日（edit mode 或使用者先前確認過）就置中該值，
-  // 否則（create mode 尚未選過）年固定置中 2000（避免預設成當前年份，輸入生日時觀感怪異），
-  // 月/日仍置中今天——wheel 這種互動本來就沒有「空」的視覺狀態，
-  // 這是使用者知情且刻意接受的取捨（見 design-frontend.md 手機版章節）。
-  // 用 React 官方建議的「render 期間依 prop 變化調整 state」寫法（非 useEffect），
-  // 避免 setState-in-effect 造成多一輪 cascading render。
+  // 開啟時：已選過的生日就置中該值，否則年固定置中 2000、月/日置中今天（見 design-frontend.md）
+  // render 期間依 prop 變化調整 state（非 useEffect），避免多一輪 cascading render
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   if (isOpen !== prevIsOpen) {
     setPrevIsOpen(isOpen);
@@ -354,8 +344,7 @@ export default function BirthdayPickerMobileSheet({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // 年或月切換後日期直接 reset 成 1 日（不是 clamp 到最接近的合法值）——
-  // 跟桌面版刻意不同的簡化行為，見 design-frontend.md 手機版章節
+  // 年/月切換後日期直接 reset 成 1 日，跟桌面版的 clamp 邏輯刻意不同
   const handleYearChange = (y: string) => {
     setDraftYear(y);
     setDraftDay('1');
@@ -400,10 +389,7 @@ export default function BirthdayPickerMobileSheet({
         aria-modal="true"
         aria-label="選擇生日"
         aria-hidden={!isOpen}
-        // aria-hidden 只讓輔助科技略過，不會把元素移出 Tab 順序；sheet 常駐掛載，
-        // 關閉時仍可能被鍵盤 Tab 到藏在畫面外的按鈕/listbox。inert 才會真的讓整個
-        // 子樹不可 focus、不可點擊（@testing-library/dom 目前不認得 inert，
-        // 所以 aria-hidden 仍保留給測試查詢用）
+        // aria-hidden 不影響 Tab 順序，關閉時仍可能被 Tab 到；inert 才真的擋住 focus/click
         inert={!isOpen}
       >
         <div className={handleBar} aria-hidden="true" />

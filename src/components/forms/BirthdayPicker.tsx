@@ -14,9 +14,7 @@ interface BirthdayPickerProps {
   error?: boolean;
 }
 
-// 桌面版三個獨立 dropdown，手機版（<768px）改用合併觸發欄位 + bottom sheet 滾輪，
-// 用 CSS media query 切換要顯示哪個版本（兩者皆常駐掛載），不用 JS matchMedia 決定 mount，
-// 避免 SSR/hydration 時機問題
+// 用 CSS media query 切換桌面/手機版顯示，兩者常駐掛載，避免 JS matchMedia 造成 hydration 問題
 const desktopRow = css({
   display: 'none',
   '@media (min-width: 768px)': {
@@ -125,9 +123,7 @@ interface DropdownProps {
   onChange: (value: string) => void;
   disabled?: boolean;
   error?: boolean;
-  // 這個欄位是空的時候，第一次開啟選單就自動選取這個值（並捲動到可見範圍）。
-  // 目前只有年份欄位使用：YEAR_OPTIONS 有 77 個選項，2000 在中段偏後，
-  // 選單開啟時預設看不到，藉此讓使用者一開選單就能看到「2000 年」被選中。
+  // 欄位為空時，第一次開啟選單自動選取這個值並捲動可見（只有年份欄位用，見 spec）
   selectOnOpen?: string;
 }
 
@@ -156,8 +152,7 @@ function Dropdown({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // 選單開啟時，把目前已選值捲動到可見範圍——不只服務「剛被 selectOnOpen 自動選取」
-  // 的情境，使用者重新打開一個先前就選過值的選單時也適用，是通用行為。
+  // 選單開啟時把目前已選值捲動到可見範圍（通用行為，不只服務 selectOnOpen）
   useEffect(() => {
     if (!open) return;
     if (!value) return;
@@ -232,23 +227,14 @@ function parseBirthday(value: string): { year: string; month: string; day: strin
   return { year: match[1], month: String(Number(match[2])), day: String(Number(match[3])) };
 }
 
-// value 只作為掛載當下的初始值（例如 edit mode 帶入既有藝人生日），掛載後元件
-// 自行管理年/月/日狀態，不再對 value prop 的後續變化做任何回填/重置。
-// 這個設計假設父層只在資料就緒後才 mount 這個元件（ArtistSubmissionForm 目前唯二兩個
-// 呼叫點 SubmitArtistClient.tsx、EditArtistClient.tsx 都是 existingArtist 讀取完成後才
-// render 表單），而不是同一個元件實例先掛載、資料才非同步補上。
-// 如果未來出現「同一元件實例需要在掛載後被外部整批替換生日」的情境，正確做法是讓父層
-// 用 key 強制整個元件重新掛載，而不是在這裡重新引入 value-prop 監聽——
-// 曾經試過用「記住最後一次 emit 的值」來分辨「外部真的改變」和「自己 onChange 的回音」，
-// 但父層若非同步/非原樣寫回，這個分辨方式一樣會誤判，屬於治標不治本。
+// value 只作為掛載時的初始值，掛載後不再監聽 prop 變化（會跟自身 emit('') 的回音搞混）。
+// 若未來需要在已掛載的實例上換一組生日，用 key 強制重新掛載，不要重新加 resync。
 export default function BirthdayPicker({ value, onChange, disabled, error }: BirthdayPickerProps) {
   const [year, setYear] = useState(() => parseBirthday(value).year);
   const [month, setMonth] = useState(() => parseBirthday(value).month);
   const [day, setDay] = useState(() => parseBirthday(value).day);
 
-  // 天數只依月份決定（除了 2 月），年份未選時無法判斷閏年，用固定的閏年
-  // （2000）放寬 2 月顯示到 29 天，避免使用者先選日、後選年時被卡住。
-  // 之後若真的選了平年，handleYearChange 裡的 clampDay 會清空超出範圍的日期。
+  // 年份未選時無法判斷閏年，用 2000（閏年）放寬 2 月到 29 天，避免先選日卡住
   const daysInMonth = month ? getDaysInMonth(Number(year) || 2000, Number(month)) : 0;
   const dayOptions: DropdownOption[] = Array.from({ length: daysInMonth }, (_, i) => {
     const d = String(i + 1);
@@ -288,16 +274,13 @@ export default function BirthdayPicker({ value, onChange, disabled, error }: Bir
   const [sheetOpen, setSheetOpen] = useState(false);
   const mobileTriggerRef = useRef<HTMLButtonElement>(null);
 
-  // Sheet 關閉後（不論取消、Escape、遮罩點擊或完成）把 focus 還給觸發它的欄位按鈕，
-  // 符合 dialog 關閉後的 focus 管理慣例，也讓鍵盤使用者不會因為 focus 停在畫面外
-  // 的隱藏元素而「跑丟」
+  // Sheet 關閉後把 focus 還給觸發按鈕，避免鍵盤使用者 focus 停在畫面外元素
   const closeSheet = () => {
     setSheetOpen(false);
     mobileTriggerRef.current?.focus();
   };
 
-  // Bottom sheet 的「完成」永遠可按，emit 目前三欄置中的值——跟桌面版「未選滿三欄
-  // emit 空字串」刻意不同，是使用者知情且刻意接受的手機版簡化（見 design-frontend.md）
+  // 「完成」永遠可按、emit 目前置中值——跟桌面版「未選滿不送出」刻意不同（見 design-frontend.md）
   const handleWheelConfirm = (date: string) => {
     const parsed = parseBirthday(date);
     setYear(parsed.year);
