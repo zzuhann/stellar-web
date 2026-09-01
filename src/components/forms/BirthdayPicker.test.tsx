@@ -49,6 +49,19 @@ describe('BirthdayPicker', () => {
     expect(onChange).toHaveBeenLastCalledWith('2000-04-17');
   });
 
+  it('只選月/日、不主動選年份，年份沿用預設值 2000 一併送出（刻意接受的行為，非 bug）', () => {
+    const onChange = vi.fn();
+    render(<BirthdayPicker value="" onChange={onChange} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '生日月份' }));
+    fireEvent.click(screen.getByRole('option', { name: '4 月' }));
+
+    fireEvent.click(screen.getByRole('button', { name: '生日日期' }));
+    fireEvent.click(screen.getByRole('option', { name: '17 日' }));
+
+    expect(onChange).toHaveBeenLastCalledWith('2000-04-17');
+  });
+
   it('閏年（2024）2 月可以選到 29 日', () => {
     render(<BirthdayPicker value="" onChange={vi.fn()} />);
 
