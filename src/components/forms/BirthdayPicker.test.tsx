@@ -13,10 +13,10 @@ function ControlledBirthdayPicker({ initialValue }: { initialValue: string }) {
 afterEach(cleanup);
 
 describe('BirthdayPicker', () => {
-  it('初始為空值時，年月日三個欄位都顯示 placeholder，且日期欄位 disabled', () => {
+  it('初始為空值時，年份欄位預設顯示 2000 年，月/日仍顯示 placeholder 且日期欄位 disabled', () => {
     render(<BirthdayPicker value="" onChange={vi.fn()} />);
 
-    expect(screen.getByRole('button', { name: '生日年份' }).textContent).toContain('年');
+    expect(screen.getByRole('button', { name: '生日年份' }).textContent).toBe('2000 年');
     expect(screen.getByRole('button', { name: '生日月份' }).textContent).toContain('月');
     const dayButton = screen.getByRole('button', { name: '生日日期' }) as HTMLButtonElement;
     expect(dayButton.textContent).toContain('日');
@@ -191,7 +191,7 @@ describe('BirthdayPicker 手機版 Bottom Sheet', () => {
     expect(screen.getByRole('listbox', { name: '選擇生日日期' })).toBeTruthy();
   });
 
-  it('create mode：開啟 sheet 時三欄預設置中今天的年/月/日', () => {
+  it('create mode：開啟 sheet 時年固定置中 2000，月/日置中今天', () => {
     render(<BirthdayPicker value="" onChange={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: '生日' }));
 
@@ -200,9 +200,7 @@ describe('BirthdayPicker 手機版 Bottom Sheet', () => {
     const dayListbox = screen.getByRole('listbox', { name: '選擇生日日期' });
 
     expect(
-      within(yearListbox)
-        .getByRole('option', { name: `${REAL_YEAR} 年` })
-        .getAttribute('aria-selected')
+      within(yearListbox).getByRole('option', { name: '2000 年' }).getAttribute('aria-selected')
     ).toBe('true');
     expect(
       within(monthListbox).getByRole('option', { name: '5 月' }).getAttribute('aria-selected')
@@ -231,13 +229,13 @@ describe('BirthdayPicker 手機版 Bottom Sheet', () => {
     ).toBe('true');
   });
 
-  it('create mode：完全沒滾動就按完成，仍 emit 今天的日期（完成按鈕永遠可按）', () => {
+  it('create mode：完全沒滾動就按完成，emit 2000 年搭配今天的月/日（完成按鈕永遠可按）', () => {
     const onChange = vi.fn();
     render(<BirthdayPicker value="" onChange={onChange} />);
     fireEvent.click(screen.getByRole('button', { name: '生日' }));
     fireEvent.click(screen.getByRole('button', { name: '完成' }));
 
-    expect(onChange).toHaveBeenCalledWith(MOCK_TODAY);
+    expect(onChange).toHaveBeenCalledWith('2000-05-15');
   });
 
   it('edit mode：完全沒改動就按完成，emit 原本的生日（不因為手機版而改變值）', () => {
@@ -306,20 +304,18 @@ describe('BirthdayPicker 手機版 Bottom Sheet', () => {
     render(<BirthdayPicker value="" onChange={onChange} />);
     fireEvent.click(screen.getByRole('button', { name: '生日' }));
 
-    // YEAR_OPTIONS 由 1950 遞增排列，前一年在陣列中排在更前面（listbox 更上方），
-    // 往「上一個選項」（ArrowUp）走才會到前一年
+    // create mode 預設置中 2000 年，YEAR_OPTIONS 由 1950 遞增排列，前一年在陣列中
+    // 排在更前面（listbox 更上方），往「上一個選項」（ArrowUp）走才會到前一年
     const yearListbox = screen.getByRole('listbox', { name: '選擇生日年份' });
     fireEvent.keyDown(yearListbox, { key: 'ArrowUp' });
 
     expect(
-      within(yearListbox)
-        .getByRole('option', { name: `${REAL_YEAR - 1} 年` })
-        .getAttribute('aria-selected')
+      within(yearListbox).getByRole('option', { name: '1999 年' }).getAttribute('aria-selected')
     ).toBe('true');
 
     // 切年份跟切月份一樣會把日 reset 成 1（見 reset 行為測試），這裡只驗證年份本身有正確切換
     fireEvent.click(screen.getByRole('button', { name: '完成' }));
-    expect(onChange).toHaveBeenCalledWith(`${REAL_YEAR - 1}-05-01`);
+    expect(onChange).toHaveBeenCalledWith('1999-05-01');
   });
 
   it('鍵盤：月份與日期 listbox 也可以用方向鍵切換選項', () => {

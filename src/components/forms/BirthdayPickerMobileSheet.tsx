@@ -285,7 +285,8 @@ export default function BirthdayPickerMobileSheet({
   const sheetRef = useRef<HTMLDivElement>(null);
 
   // 開啟時決定置中位置：已有選過的生日（edit mode 或使用者先前確認過）就置中該值，
-  // 否則（create mode 尚未選過）置中今天——wheel 這種互動本來就沒有「空」的視覺狀態，
+  // 否則（create mode 尚未選過）年固定置中 2000（避免預設成當前年份，輸入生日時觀感怪異），
+  // 月/日仍置中今天——wheel 這種互動本來就沒有「空」的視覺狀態，
   // 這是使用者知情且刻意接受的取捨（見 design-frontend.md 手機版章節）。
   // 用 React 官方建議的「render 期間依 prop 變化調整 state」寫法（非 useEffect），
   // 避免 setState-in-effect 造成多一輪 cascading render。
@@ -295,7 +296,7 @@ export default function BirthdayPickerMobileSheet({
     if (isOpen) {
       const hasCommitted = !!(committedYear && committedMonth && committedDay);
       const today = new Date();
-      setDraftYear(hasCommitted ? committedYear : String(today.getFullYear()));
+      setDraftYear(hasCommitted ? committedYear : '2000');
       setDraftMonth(hasCommitted ? committedMonth : String(today.getMonth() + 1));
       setDraftDay(hasCommitted ? committedDay : String(today.getDate()));
     }

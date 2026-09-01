@@ -218,7 +218,7 @@ function parseBirthday(value: string): { year: string; month: string; day: strin
 // 曾經試過用「記住最後一次 emit 的值」來分辨「外部真的改變」和「自己 onChange 的回音」，
 // 但父層若非同步/非原樣寫回，這個分辨方式一樣會誤判，屬於治標不治本。
 export default function BirthdayPicker({ value, onChange, disabled, error }: BirthdayPickerProps) {
-  const [year, setYear] = useState(() => parseBirthday(value).year);
+  const [year, setYear] = useState(() => parseBirthday(value).year || '2000');
   const [month, setMonth] = useState(() => parseBirthday(value).month);
   const [day, setDay] = useState(() => parseBirthday(value).day);
 
