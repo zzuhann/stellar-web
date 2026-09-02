@@ -1,6 +1,7 @@
 import { css } from '@/styled-system/css';
 import type { Venue, VenueDetail } from '@/types';
 import VenueDetailView from '@/components/venues/VenueDetailView';
+import VenueViewTracker from '@/components/venues/VenueViewTracker';
 
 const notFoundWrap = css({
   minHeight: '60vh',
@@ -42,5 +43,10 @@ export default function VenueDetailClient({ venue, relatedVenues }: VenueDetailC
     );
   }
 
-  return <VenueDetailView venue={venue} relatedVenues={relatedVenues} />;
+  return (
+    <>
+      <VenueViewTracker venueId={venue.id} />
+      <VenueDetailView venue={venue} relatedVenues={relatedVenues} />
+    </>
+  );
 }

@@ -105,4 +105,9 @@ export const venueApi = {
     const response = await api.patch<{ message: string }>('/venues/batch-status', { updates });
     return response.data;
   },
+
+  // 記錄場地瀏覽量
+  recordView: async (id: string): Promise<void> => {
+    await api.post(`/venues/${id}/view`);
+  },
 };
