@@ -1,5 +1,39 @@
 # E2E tests (Playwright)
 
+## 目錄結構與 buckets
+
+測試分成兩個 bucket，各對應一個（或多個）Playwright project：
+
+| 目錄                | 意義                                                    | project                                                                                        | 執行方式                                                  |
+| ------------------- | ------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `e2e/regression/`   | **應該永遠綠**。紅 = 有東西壞了                         | `regression`（桌機 Desktop Chrome）、`regression-mobile`（iPhone 13，只跑 `*.mobile.spec.ts`） | 進 CI、擋 merge                                           |
+| `e2e/known-issues/` | **故意紅**（斷言正確行為、產品目前不符）。變綠 = 修好了 | `known-issues`（桌機）                                                                         | 獨立執行、**不擋 merge**，見 `e2e/known-issues/README.md` |
+| `e2e/helpers/`      | 共用函式（`firstCard`、`expectImageLoaded`）            | —                                                                                              | —                                                         |
+
+還在根目錄、未進 bucket 的檔案：
+
+- `auth.setup.ts` / `admin.setup.ts` — 手動跑一次存 storageState（`setup` / `admin-setup` project）
+- `map-new.spec.ts` — 舊 `/map-new/` 路由測試，路由已改名 `/map/`，**整支註解中、待重整**（不是產品壞了，故不進 known-issues）
+- `my-favorite.auth.spec.ts` — 需登入，維持註解，暫不在範圍
+
+### 手機測試檔名慣例：`*.mobile.spec.ts`
+
+手機情境（漢堡選單、觸控捲動、多寬度溢出…）放 `e2e/regression/xxx.mobile.spec.ts`，只會由 `regression-mobile`（iPhone 13）執行，桌機 project 會忽略它，不會整套跑兩遍。
+
+> ⚠️ **注意**：這個檔名慣例的前提是「一支 spec 只跑桌機**或**只跑手機」。
+> 如果之後需要「**同一支 spec 同時跑桌機和手機**」，檔名慣例會擋住（一個檔案只能被一個裝置 project 選中）。
+> 屆時要改用 **tag**（例如在 test 標題加 `@mobile`，config 用 `--grep` / `--grep-invert` 分流）。**現在先不要為此做任何預留設計。**
+
+## ⚠️ 對正式站(BASE_URL)例行執行「不包含」哪些測試
+
+`regression/` 裡不是每一支都會出現在對正式站的例行執行中。看到全綠時請注意下列測試**根本沒被跑到**：
+
+- **`regression/admin-review.admin.spec.ts`**：檔名是 `*.admin.spec.ts`，只由 `chromium-admin` project 執行，需要 **admin storageState（`e2e/.auth/admin.json`）+ Firestore emulator** 才能過 `role==='admin'` 守衛。對正式站的例行 run（不帶 admin 登入、非 emulator）**不會**包含它。→ 全綠 **不代表**後台審核也驗過了。
+- **`regression-mobile` 的 `*.mobile.spec.ts`**：要視你的例行指令有沒有帶 `--project=regression-mobile`。
+- 需登入的 `*.auth.spec.ts`（目前只有註解中的 my-favorite）：只由 `chromium-authenticated` 執行。
+
+換句話說，對正式站最單純的一輪 `--project=regression` 只涵蓋**公開、未登入、桌機**的情境。
+
 ## Quick start
 
 ```bash

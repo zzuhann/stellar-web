@@ -1,0 +1,4 @@
+# e2e/reports 是測試執行產物（summary.md、複製過來的截圖 / 影片 / trace），不進 repo。
+# PM 跑完直接把 summary.md 與 artifacts/ 交給工程師即可。
+*
+!.gitignore
