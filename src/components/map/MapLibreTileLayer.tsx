@@ -3,9 +3,9 @@
 // MapLibre vector tile layer wrapped as a Leaflet layer via @maplibre/maplibre-gl-leaflet.
 // Pattern from the official docs / Stadia Maps tutorial.
 //
-// maplibre-gl is pinned to ^4.7.1 (NOT the latest v6.x) on purpose: v5+ changed
-// its worker reload behavior in a way that conflicts with Next.js 16's Turbopack
-// dev/build server, silently failing to load vector tiles (blank map, no error).
+// maplibre-gl is constrained to the 4.x line (^4.7.1, NOT the latest v6.x) on purpose:
+// v5+ changed its worker reload behavior in a way that conflicts with Next.js 16's
+// Turbopack dev/build server, silently failing to load vector tiles (blank map, no error).
 // See https://github.com/vercel/next.js/issues/86495 — unresolved upstream as of
 // writing. Do not upgrade past the 4.x line until that issue is fixed.
 import {

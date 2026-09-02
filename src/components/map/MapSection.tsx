@@ -77,8 +77,8 @@ export default function MapSection({
         minZoom={1}
         maxZoom={19}
         maxBounds={[
-          [180, -Infinity],
-          [-180, Infinity],
+          [-90, -180],
+          [90, 180],
         ]}
         maxBoundsViscosity={1}
       >
