@@ -159,21 +159,6 @@ describe('VenueFilters 排序下拉選單（Phase 2.8）', () => {
     ]);
   });
 
-  it('只有「綜合排序」選項顯示輔助說明文字，其餘兩項不顯示', () => {
-    render(<VenueFilters {...baseProps} sort="composite" search="" />);
-
-    fireEvent.click(getSortTrigger());
-
-    expect(screen.getByText('依活躍度與瀏覽熱度綜合評分')).toBeTruthy();
-
-    const menu = screen.getByRole('menu');
-    const options = within(menu).getAllByRole('menuitemradio');
-    const newestOption = options.find((o) => o.textContent?.includes('最新上架'));
-    const eventCountOption = options.find((o) => o.textContent?.includes('生咖數最多'));
-    expect(newestOption?.textContent).not.toContain('依活躍度');
-    expect(eventCountOption?.textContent).not.toContain('依活躍度');
-  });
-
   it('選中項目具備 aria-checked=true 與 checkmark（✓）', () => {
     render(<VenueFilters {...baseProps} sort="newest" search="" />);
 

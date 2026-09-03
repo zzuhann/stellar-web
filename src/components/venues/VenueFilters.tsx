@@ -293,20 +293,15 @@ const sortDropdownOption = css({
   '&:hover': { background: 'gray.50' },
 });
 
-const sortOptionTextWrap = css({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '0.5',
-});
-
-const sortOptionDescription = css({
-  textStyle: 'caption',
-  color: 'gray.500',
-});
-
 const checkmark = css({
   color: 'color.primary',
   flexShrink: 0,
+});
+
+const clearFiltersRow = css({
+  display: 'flex',
+  paddingX: '4',
+  marginTop: '1.5',
 });
 
 const clearFiltersButton = css({
@@ -315,14 +310,12 @@ const clearFiltersButton = css({
   display: 'inline-flex',
   alignItems: 'center',
   gap: '1',
-  marginLeft: 'auto',
   background: 'transparent',
   border: 'none',
   cursor: 'pointer',
   color: 'stellarBlue.600',
   textStyle: 'caption',
   fontWeight: 'medium',
-  flexShrink: 0,
   '&:hover': {
     textDecoration: 'underline',
   },
@@ -335,8 +328,8 @@ const clearFiltersIcon = css({
 
 export type VenueSort = 'composite' | 'eventCount' | 'newest';
 
-const SORT_OPTIONS: { id: VenueSort; label: string; description?: string }[] = [
-  { id: 'composite', label: '綜合排序', description: '依活躍度與瀏覽熱度綜合評分' },
+const SORT_OPTIONS: { id: VenueSort; label: string }[] = [
+  { id: 'composite', label: '綜合排序' },
   { id: 'newest', label: '最新上架' },
   { id: 'eventCount', label: '生咖數最多' },
 ];
@@ -594,20 +587,17 @@ export default function VenueFilters({
                     setSortOpen(false);
                   }}
                 >
-                  <span className={sortOptionTextWrap}>
-                    <span>{opt.label}</span>
-                    {opt.description && (
-                      <span className={sortOptionDescription}>{opt.description}</span>
-                    )}
-                  </span>
+                  <span>{opt.label}</span>
                   {sort === opt.id && <span className={checkmark}>✓</span>}
                 </button>
               ))}
             </div>
           )}
         </div>
+      </div>
 
-        {hasActiveFilters && (
+      {hasActiveFilters && (
+        <div className={clearFiltersRow}>
           <button
             type="button"
             className={clearFiltersButton}
@@ -619,8 +609,8 @@ export default function VenueFilters({
             <ArrowPathIcon className={clearFiltersIcon} aria-hidden="true" />
             清除篩選
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
