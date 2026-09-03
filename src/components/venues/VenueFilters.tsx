@@ -218,9 +218,6 @@ const filterDivider = css({
   background: 'color.border.light',
   flexShrink: 0,
   marginX: '1',
-  // Desktop 靠右對齊排序區塊（design-frontend.md L198）：auto margin 只消耗既有可用空間，
-  // 不會撐出額外寬度，capacityRow 本身無 overflow-x，故不影響 mobile 橫向捲動行為
-  marginLeft: 'auto',
 });
 
 const sortLabel = css({
@@ -312,25 +309,20 @@ const checkmark = css({
   flexShrink: 0,
 });
 
-const clearFiltersRow = css({
-  display: 'flex',
-  justifyContent: 'flex-end',
-  paddingX: '4',
-  marginTop: '1.5',
-});
-
 const clearFiltersButton = css({
   minHeight: '44px',
   paddingX: '3',
   display: 'inline-flex',
   alignItems: 'center',
   gap: '1',
+  marginLeft: 'auto',
   background: 'transparent',
   border: 'none',
   cursor: 'pointer',
   color: 'stellarBlue.600',
   textStyle: 'caption',
   fontWeight: 'medium',
+  flexShrink: 0,
   '&:hover': {
     textDecoration: 'underline',
   },
@@ -614,10 +606,8 @@ export default function VenueFilters({
             </div>
           )}
         </div>
-      </div>
 
-      {hasActiveFilters && (
-        <div className={clearFiltersRow}>
+        {hasActiveFilters && (
           <button
             type="button"
             className={clearFiltersButton}
@@ -629,8 +619,8 @@ export default function VenueFilters({
             <ArrowPathIcon className={clearFiltersIcon} aria-hidden="true" />
             清除篩選
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

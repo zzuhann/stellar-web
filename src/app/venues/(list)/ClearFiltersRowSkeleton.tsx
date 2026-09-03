@@ -5,15 +5,14 @@ import { css } from '@/styled-system/css';
 import Skeleton from '@/components/ui/Skeleton';
 import { parseVenueCapacity } from '@/utils/venues';
 
-const clearFiltersRow = css({
-  display: 'flex',
-  justifyContent: 'flex-end',
-  paddingX: '4',
-  marginTop: '1.5',
+const clearFiltersSkeleton = css({
+  marginLeft: 'auto',
+  flexShrink: 0,
 });
 
 // loading.tsx 讀不到 searchParams，故用 client 元件搭配 useSearchParams 判斷是否保留高度；
-// 邏輯需與 VenueFilters.tsx:387 的 hasActiveFilters 完全一致，否則會造成 CLS。
+// 邏輯需與 VenueFilters.tsx 的 hasActiveFilters 完全一致，否則會造成 CLS。
+// 渲染在 capacityRow 內、排序 dropdown 之後（與真實的清除篩選按鈕位置一致）。
 export default function ClearFiltersRowSkeleton() {
   const searchParams = useSearchParams();
 
@@ -29,8 +28,6 @@ export default function ClearFiltersRowSkeleton() {
   if (!hasActiveFilters) return null;
 
   return (
-    <div className={clearFiltersRow}>
-      <Skeleton width="88px" height="44px" borderRadius="6px" />
-    </div>
+    <Skeleton className={clearFiltersSkeleton} width="88px" height="44px" borderRadius="6px" />
   );
 }
