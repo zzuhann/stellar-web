@@ -220,43 +220,93 @@ const filterDivider = css({
   marginX: '1',
 });
 
-const sortControl = css({
-  display: 'flex',
-  padding: '2px',
-  borderRadius: 'radius.sm',
-  background: 'gray.100',
+const sortLabel = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
   flexShrink: 0,
+  whiteSpace: 'nowrap',
 });
 
-const sortItem = css({
+// 獨立於 capacity 的 dropdownTrigger：「綜合排序」四字比 capacity 常見選項略長，需要
+// 較寬的 minWidth；並明確補上 minHeight: 44px（capacity 版本現況未達 44px 觸控目標，
+// 此為既有缺口，這裡只修排序自己的版本，不強制一併修 capacity，避免範圍蔓延）。
+const sortDropdownTrigger = css({
+  minWidth: '108px',
   minHeight: '44px',
-  paddingY: '1',
-  paddingX: '2.5',
-  borderRadius: 'radius.sm',
+  paddingY: '2',
+  paddingX: '3',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'color.background.primary',
+  color: 'color.text.primary',
+  cursor: 'pointer',
+  textAlign: 'left',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: '1.5',
+  textStyle: 'caption',
+  '&:hover': { borderColor: 'color.primary' },
+});
+
+const sortChevron = css({
+  flexShrink: 0,
+  transition: 'transform 0.15s ease',
+  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+});
+
+const sortDropdownMenu = css({
+  position: 'absolute',
+  top: 'calc(100% + 4px)',
+  left: 0,
+  right: 0,
+  minWidth: '200px',
+  maxHeight: '240px',
+  overflowY: 'auto',
+  background: 'color.background.primary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.md',
+  boxShadow: 'shadow.md',
+  zIndex: 30,
+  transformOrigin: 'top',
+  animation: 'slideDown 0.18s ease-out',
+  '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+});
+
+const sortDropdownOption = css({
+  width: '100%',
+  minHeight: '44px',
+  paddingY: '2',
+  paddingX: '3',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: '2',
+  background: 'transparent',
   border: 'none',
   cursor: 'pointer',
-  background: 'transparent',
-  color: 'gray.600',
   textStyle: 'caption',
-  fontWeight: 'medium',
-  transition: 'background 0.15s ease, color 0.12s ease',
-  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
-  whiteSpace: 'nowrap',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
+  color: 'color.text.primary',
+  textAlign: 'left',
+  '&:hover': { background: 'gray.50' },
 });
 
-const sortItemActive = css({
-  background: 'white',
-  color: 'stellarBlue.500',
-  fontWeight: 'semibold',
-  boxShadow: 'shadow.sm',
-  borderRadius: 'radius.sm',
+const sortOptionTextWrap = css({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '0.5',
+});
+
+const sortOptionDescription = css({
+  textStyle: 'caption',
+  color: 'gray.500',
 });
 
 const checkmark = css({
   color: 'color.primary',
+  flexShrink: 0,
 });
 
 const clearFiltersRow = css({
@@ -326,6 +376,8 @@ export default function VenueFilters({
   const [showRight, setShowRight] = useState(true);
   const [capacityOpen, setCapacityOpen] = useState(false);
   const capacityRef = useRef<HTMLDivElement>(null);
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
 
   // Raw input shown immediately; only the debounced value flows up to the URL/query.
   const [searchInput, setSearchInput] = useState(search);
@@ -375,6 +427,9 @@ export default function VenueFilters({
       if (capacityRef.current && !capacityRef.current.contains(e.target as Node)) {
         setCapacityOpen(false);
       }
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
@@ -382,6 +437,7 @@ export default function VenueFilters({
 
   const selectedCapacityLabel =
     CAPACITY_OPTIONS.find((opt) => opt.id === capacity)?.label ?? '不限';
+  const selectedSortOption = SORT_OPTIONS.find((opt) => opt.id === sort) ?? SORT_OPTIONS[0];
 
   // 用即時的 searchInput（而非 debounce 後才寫入 URL 的 search prop），讓按鈕出現/
   // 消失的時機跟輸入框本身一樣即時，不需要等 800ms debounce 結束。
@@ -496,18 +552,64 @@ export default function VenueFilters({
 
         <div className={filterDivider} aria-hidden="true" />
 
-        <div className={sortControl} role="group" aria-label="場地排序方式">
-          {SORT_OPTIONS.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              aria-pressed={sort === opt.id}
-              className={`${sortItem} ${sort === opt.id ? sortItemActive : ''}`}
-              onClick={() => onSortChange(opt.id)}
+        <span id="sort-label" className={sortLabel}>
+          排序
+        </span>
+
+        <div ref={sortRef} className={dropdownContainer}>
+          <button
+            type="button"
+            className={sortDropdownTrigger}
+            aria-haspopup="menu"
+            aria-expanded={sortOpen}
+            aria-labelledby="sort-label"
+            onClick={() => setSortOpen((o) => !o)}
+          >
+            <span>{selectedSortOption.label}</span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              aria-hidden="true"
+              className={sortChevron}
+              style={{ transform: sortOpen ? 'rotate(180deg)' : undefined }}
             >
-              {opt.label}
-            </button>
-          ))}
+              <path
+                d="M2 4L6 8L10 4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          {sortOpen && (
+            <div className={sortDropdownMenu} role="menu" aria-labelledby="sort-label">
+              {SORT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={sort === opt.id}
+                  className={sortDropdownOption}
+                  onClick={() => {
+                    onSortChange(opt.id);
+                    setSortOpen(false);
+                  }}
+                >
+                  <span className={sortOptionTextWrap}>
+                    <span>{opt.label}</span>
+                    {opt.description && (
+                      <span className={sortOptionDescription}>{opt.description}</span>
+                    )}
+                  </span>
+                  {sort === opt.id && <span className={checkmark}>✓</span>}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

@@ -1,4 +1,5 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import VenueFilters from './VenueFilters';
 
@@ -122,5 +123,123 @@ describe('VenueFilters 清除篩選按鈕', () => {
     fireEvent.click(screen.getByRole('button', { name: '清除篩選' }));
 
     expect(onClearFilters).toHaveBeenCalledTimes(1);
+  });
+});
+
+// Phase 2.8：排序 UI 由 segmented control 改為 dropdown，比照既有 capacity dropdown pattern。
+//
+// Trigger 的 aria-labelledby="sort-label" 會覆蓋其可及名稱（accessible name）為可見的
+// 「排序」標籤本身（比照現有 capacity trigger：accessible name 為「空間人數」而非目前選中的
+// 「不限」），因此查詢 trigger 一律用 name: '排序'，選中值改用畫面可見文字（getByText）驗證。
+describe('VenueFilters 排序下拉選單（Phase 2.8）', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  const getSortTrigger = () => screen.getByRole('button', { name: '排序' });
+
+  it('未帶 sort（等同 composite）時，trigger 顯示「綜合排序」', () => {
+    render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    expect(screen.getByText('綜合排序')).toBeTruthy();
+  });
+
+  it('點擊 trigger 開啟選單，顯示三個選項且結構為 role="menu" / role="menuitemradio"', () => {
+    render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    fireEvent.click(getSortTrigger());
+
+    const menu = screen.getByRole('menu');
+    const options = within(menu).getAllByRole('menuitemradio');
+    expect(options).toHaveLength(3);
+    expect(options.map((o) => o.textContent)).toEqual([
+      expect.stringContaining('綜合排序'),
+      expect.stringContaining('最新上架'),
+      expect.stringContaining('生咖數最多'),
+    ]);
+  });
+
+  it('只有「綜合排序」選項顯示輔助說明文字，其餘兩項不顯示', () => {
+    render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    fireEvent.click(getSortTrigger());
+
+    expect(screen.getByText('依活躍度與瀏覽熱度綜合評分')).toBeTruthy();
+
+    const menu = screen.getByRole('menu');
+    const options = within(menu).getAllByRole('menuitemradio');
+    const newestOption = options.find((o) => o.textContent?.includes('最新上架'));
+    const eventCountOption = options.find((o) => o.textContent?.includes('生咖數最多'));
+    expect(newestOption?.textContent).not.toContain('依活躍度');
+    expect(eventCountOption?.textContent).not.toContain('依活躍度');
+  });
+
+  it('選中項目具備 aria-checked=true 與 checkmark（✓）', () => {
+    render(<VenueFilters {...baseProps} sort="newest" search="" />);
+
+    fireEvent.click(getSortTrigger());
+
+    const menu = screen.getByRole('menu');
+    const selected = within(menu).getByRole('menuitemradio', { name: /最新上架/ });
+    expect(selected.getAttribute('aria-checked')).toBe('true');
+    expect(selected.textContent).toContain('✓');
+
+    const notSelected = within(menu).getByRole('menuitemradio', { name: /生咖數最多/ });
+    expect(notSelected.getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('點擊「最新上架」選項會呼叫 onSortChange("newest") 並關閉選單', () => {
+    const onSortChange = vi.fn();
+    render(<VenueFilters {...baseProps} sort="composite" search="" onSortChange={onSortChange} />);
+
+    fireEvent.click(getSortTrigger());
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /最新上架/ }));
+
+    expect(onSortChange).toHaveBeenCalledWith('newest');
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('點擊選單外側自動關閉', () => {
+    render(
+      <div>
+        <VenueFilters {...baseProps} sort="composite" search="" />
+        <button type="button">外部元素</button>
+      </div>
+    );
+
+    fireEvent.click(getSortTrigger());
+    expect(screen.getByRole('menu')).toBeTruthy();
+
+    fireEvent.mouseDown(screen.getByRole('button', { name: '外部元素' }));
+
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('trigger 具備 aria-haspopup/aria-expanded/aria-labelledby，且畫面上有可見「排序」標籤', () => {
+    render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    const label = screen.getByText('排序');
+    expect(label.id).toBeTruthy();
+
+    const trigger = getSortTrigger();
+    expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(trigger.getAttribute('aria-labelledby')).toBe(label.id);
+
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('鍵盤操作：Tab 聚焦 trigger、Enter 開啟選單', async () => {
+    const user = userEvent.setup();
+    render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    const trigger = getSortTrigger();
+    trigger.focus();
+    expect(document.activeElement).toBe(trigger);
+
+    await user.keyboard('{Enter}');
+
+    expect(screen.getByRole('menu')).toBeTruthy();
   });
 });
