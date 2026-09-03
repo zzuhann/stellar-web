@@ -220,13 +220,6 @@ const filterDivider = css({
   marginX: '1',
 });
 
-const sortLabel = css({
-  textStyle: 'caption',
-  color: 'color.text.secondary',
-  flexShrink: 0,
-  whiteSpace: 'nowrap',
-});
-
 // 獨立於 capacity 的 dropdownTrigger：「綜合排序」四字比 capacity 常見選項略長，需要
 // 較寬的 minWidth；並明確補上 minHeight: 44px（capacity 版本現況未達 44px 觸控目標，
 // 此為既有缺口，這裡只修排序自己的版本，不強制一併修 capacity，避免範圍蔓延）。
@@ -298,26 +291,24 @@ const checkmark = css({
   flexShrink: 0,
 });
 
-const clearFiltersRow = css({
-  display: 'flex',
-  paddingX: '4',
-  marginTop: '1.5',
-});
-
-const clearFiltersButton = css({
+// icon-only，接在 capacityRow 尾端（取代先前獨立一行的 clearFiltersRow），
+// 只在 hasActiveFilters 為 true 時 render，維持 44x44 觸控目標。
+const clearFiltersIconButton = css({
+  minWidth: '44px',
   minHeight: '44px',
-  paddingX: '3',
-  display: 'inline-flex',
+  flexShrink: 0,
+  marginLeft: 'auto',
+  display: 'flex',
   alignItems: 'center',
-  gap: '1',
+  justifyContent: 'center',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
   background: 'transparent',
-  border: 'none',
   cursor: 'pointer',
   color: 'stellarBlue.600',
-  textStyle: 'caption',
-  fontWeight: 'medium',
   '&:hover': {
-    textDecoration: 'underline',
+    background: 'gray.50',
   },
 });
 
@@ -540,17 +531,13 @@ export default function VenueFilters({
 
         <div className={filterDivider} aria-hidden="true" />
 
-        <span id="sort-label" className={sortLabel}>
-          排序
-        </span>
-
         <div ref={sortRef} className={dropdownContainer}>
           <button
             type="button"
             className={sortDropdownTrigger}
             aria-haspopup="menu"
             aria-expanded={sortOpen}
-            aria-labelledby="sort-label"
+            aria-label="排序"
             onClick={() => setSortOpen((o) => !o)}
           >
             <span>{selectedSortOption.label}</span>
@@ -574,7 +561,7 @@ export default function VenueFilters({
           </button>
 
           {sortOpen && (
-            <div className={sortDropdownMenu} role="menu" aria-labelledby="sort-label">
+            <div className={sortDropdownMenu} role="menu" aria-label="排序">
               {SORT_OPTIONS.map((opt) => (
                 <button
                   key={opt.id}
@@ -594,23 +581,21 @@ export default function VenueFilters({
             </div>
           )}
         </div>
-      </div>
 
-      {hasActiveFilters && (
-        <div className={clearFiltersRow}>
+        {hasActiveFilters && (
           <button
             type="button"
-            className={clearFiltersButton}
+            className={clearFiltersIconButton}
+            aria-label="清除篩選"
             onClick={() => {
               setSearchInput('');
               onClearFilters();
             }}
           >
             <ArrowPathIcon className={clearFiltersIcon} aria-hidden="true" />
-            清除篩選
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
