@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { TileLayer, Marker, MapContainer, useMap } from 'react-leaflet';
+import { Marker, MapContainer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { css } from '@/styled-system/css';
 import { Artist, MapEvent } from '@/types';
 import { initializeLeafletIcons } from '@/components/map/utils/leaflet-icons';
 import { createUserLocationIcon } from '@/components/map/utils/userLocationIcon';
+import { MapLibreTileLayer } from './MapLibreTileLayer';
 import MarkerLayer from './MarkerLayer';
 import { DEFAULT_CENTER, DEFAULT_ZOOM } from './constants';
 
@@ -72,13 +74,19 @@ export default function MapSection({
         zoom={DEFAULT_ZOOM}
         style={{ height: '100%', width: '100%' }}
         zoomControl={true}
+        minZoom={1}
+        maxZoom={19}
+        maxBounds={[
+          [-90, -180],
+          [90, 180],
+        ]}
+        maxBoundsViscosity={1}
       >
         <MapReadyCapture onMapReady={onMapReady} onReady={() => setIsMapReady(true)} />
 
-        <TileLayer
-          maxZoom={19}
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        <MapLibreTileLayer
+          attribution='&copy; <a href="https://openfreemap.org">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://tiles.openfreemap.org/styles/positron"
         />
 
         {isMapReady && (
