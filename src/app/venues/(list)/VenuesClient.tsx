@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { venueApi } from '@/lib/api';
 import queryKey from '@/hooks/queryKey';
@@ -9,7 +10,7 @@ import { useAuth } from '@/lib/auth-context';
 import { usePageView } from '@/hooks/usePageView';
 import { trackFilterVenues } from '@/lib/analytics/venues';
 import { useQueryState } from '@/hooks/useQueryState';
-import { useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
+import { useQueryStateContext } from '@/hooks/useQueryStateContext';
 import { parseVenueCapacity, parseVenuePage, parseVenueSort } from '@/utils/venues';
 import VenueFilters, {
   type CapacityFilter,
@@ -76,6 +77,9 @@ const retryButton = css({
   marginTop: '3',
   paddingY: '2',
   paddingX: '4',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1.5',
   borderRadius: 'radius.md',
   border: '1px solid',
   borderColor: 'color.border.light',
@@ -84,6 +88,11 @@ const retryButton = css({
   cursor: 'pointer',
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
+});
+
+const retryButtonIcon = css({
+  width: '16px',
+  height: '16px',
 });
 
 interface VenuesClientProps {
@@ -96,7 +105,7 @@ const PAGE_LIMIT = 20;
 
 export default function VenuesClient({ regions }: VenuesClientProps) {
   const { user } = useAuth();
-  const { mergeUpdates } = useQueryStateContextMergeUpdates();
+  const { params: rawParams, mergeUpdates } = useQueryStateContext();
 
   const [region, setRegion] = useQueryState('region', {
     parse: (value: string) => value,
@@ -112,7 +121,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
   });
   const [sort, setSort] = useQueryState<VenueSort>('sort', {
     parse: parseVenueSort,
-    defaultValue: 'newest',
+    defaultValue: 'composite',
   });
   const [pageNum, setPageNum] = useQueryState<number>('page', {
     parse: parseVenuePage,
@@ -123,11 +132,24 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
 
   usePageView({ eventPage: '/venues' });
 
+  // 帶不合法 `sort` 值的 URL（如 ?sort=foo）：不只是用預設值渲染，還要把網址列的亂碼值
+  // 清掉（router.replace 語意，不留 history entry），比照「清除篩選」對不合法值的處理方式
+  // （2026-09 裁定）。用 raw params 而非已解析的 `sort`，因為 parseVenueSort 對不合法值
+  // 也會 fallback 為 'composite'，兩者無法從解析後的值反推「原本網址是否合法」。
+  useEffect(() => {
+    const rawSort = rawParams.sort;
+    if (rawSort !== undefined && parseVenueSort(rawSort) !== rawSort) {
+      setSort(null);
+    }
+  }, [rawParams.sort, setSort]);
+
   const queryParams = {
     region: region === '全部' ? undefined : [region],
     capacityRange: capacity === 'all' ? undefined : capacity,
     search: search || undefined,
-    sort,
+    // 'composite' 是新預設值，不送給後端（比照 region/capacityRange 預設值不送的既有慣例）；
+    // 後端未帶 sort 時本就等同 composite。
+    sort: sort === 'composite' ? undefined : sort,
     page: pageNum,
     limit: PAGE_LIMIT,
     status: 'active' as const,
@@ -221,7 +243,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
     sessionStorage.removeItem(SCROLL_KEY);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     mergeUpdates(() => {
-      setSort(nextSort === 'newest' ? null : nextSort);
+      setSort(nextSort === 'composite' ? null : nextSort);
       setPageNum(null);
     });
   };
@@ -273,6 +295,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
               載入場地列表失敗，請重新整理頁面
               <div>
                 <button type="button" className={retryButton} onClick={() => refetch()}>
+                  <ArrowPathIcon className={retryButtonIcon} aria-hidden="true" />
                   重試
                 </button>
               </div>
