@@ -218,6 +218,9 @@ const filterDivider = css({
   background: 'color.border.light',
   flexShrink: 0,
   marginX: '1',
+  // Desktop 靠右對齊排序區塊（design-frontend.md L198）：auto margin 只消耗既有可用空間，
+  // 不會撐出額外寬度，capacityRow 本身無 overflow-x，故不影響 mobile 橫向捲動行為
+  marginLeft: 'auto',
 });
 
 const sortLabel = css({
