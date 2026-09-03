@@ -288,11 +288,12 @@ const clearFiltersIcon = css({
   height: '14px',
 });
 
-export type VenueSort = 'eventCount' | 'newest';
+export type VenueSort = 'composite' | 'eventCount' | 'newest';
 
-const SORT_OPTIONS: { id: VenueSort; label: string }[] = [
+const SORT_OPTIONS: { id: VenueSort; label: string; description?: string }[] = [
+  { id: 'composite', label: '綜合排序', description: '依活躍度與瀏覽熱度綜合評分' },
   { id: 'newest', label: '最新上架' },
-  { id: 'eventCount', label: '最多收錄生咖' },
+  { id: 'eventCount', label: '生咖數最多' },
 ];
 
 interface VenueFiltersProps {
