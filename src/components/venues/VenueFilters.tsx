@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { ArrowPathIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon } from '@heroicons/react/24/solid';
 import { css } from '@/styled-system/css';
 import { useDebounce } from '@/hooks/useDebounce';
 import { CAPACITY_OPTIONS, type CapacityFilter } from './venueCapacity';
@@ -302,8 +303,7 @@ const clearFiltersIconButton = css({
   alignItems: 'center',
   justifyContent: 'center',
   borderRadius: 'radius.md',
-  border: '1px solid',
-  borderColor: 'color.border.light',
+  border: 'none',
   background: 'transparent',
   cursor: 'pointer',
   color: 'stellarBlue.600',
