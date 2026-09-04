@@ -234,7 +234,7 @@ const sortDropdownMenu = css({
   top: 'calc(100% + 4px)',
   left: 0,
   right: 0,
-  minWidth: '200px',
+  minWidth: '160px',
   maxHeight: '240px',
   overflowY: 'auto',
   background: 'color.background.primary',
