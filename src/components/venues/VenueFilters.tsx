@@ -123,8 +123,12 @@ const regionFadeRight = css({
 
 const regionChip = css({
   flexShrink: 0,
+  minHeight: '44px',
   paddingY: '2',
   paddingX: '3',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   borderRadius: '999px',
   border: '1px solid',
   borderColor: 'color.border.light',
@@ -196,6 +200,7 @@ const dropdownMenu = css({
 
 const dropdownOption = css({
   width: '100%',
+  minHeight: '44px',
   paddingY: '2',
   paddingX: '3',
   display: 'flex',
