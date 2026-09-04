@@ -461,7 +461,7 @@ export interface VenueFilterParams {
   region?: string[];
   capacityRange?: CapacityRange;
   search?: string;
-  sort?: 'eventCount' | 'name' | 'newest' | 'random';
+  sort?: 'composite' | 'eventCount' | 'name' | 'newest' | 'random';
   page?: number;
   limit?: number;
   status?: 'active' | 'inactive' | 'pending' | 'rejected' | 'all';

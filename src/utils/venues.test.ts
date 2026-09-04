@@ -19,13 +19,15 @@ describe('deriveVenueRegions', () => {
 
 describe('parseVenueSort', () => {
   it('合法值原樣回傳', () => {
+    expect(parseVenueSort('composite')).toBe('composite');
     expect(parseVenueSort('eventCount')).toBe('eventCount');
     expect(parseVenueSort('newest')).toBe('newest');
   });
 
-  it('不合法值 fallback 為預設值 newest（2026-08-03 對齊正式上線既有行為）', () => {
-    expect(parseVenueSort('random')).toBe('newest');
-    expect(parseVenueSort('')).toBe('newest');
+  it('不合法值 fallback 為新預設值 composite（Phase 2.8：2026-09 裁定推翻原 newest 預設）', () => {
+    expect(parseVenueSort('random')).toBe('composite');
+    expect(parseVenueSort('')).toBe('composite');
+    expect(parseVenueSort('foo')).toBe('composite');
   });
 });
 

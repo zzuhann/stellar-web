@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { ArrowPathIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon } from '@heroicons/react/24/solid';
 import { css } from '@/styled-system/css';
 import { useDebounce } from '@/hooks/useDebounce';
 import { CAPACITY_OPTIONS, type CapacityFilter } from './venueCapacity';
@@ -122,8 +123,12 @@ const regionFadeRight = css({
 
 const regionChip = css({
   flexShrink: 0,
+  minHeight: '44px',
   paddingY: '2',
   paddingX: '3',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   borderRadius: '999px',
   border: '1px solid',
   borderColor: 'color.border.light',
@@ -150,20 +155,17 @@ const capacityRow = css({
   marginTop: '2.5',
 });
 
-const capacityLabel = css({
-  textStyle: 'caption',
-  color: 'color.text.secondary',
-  flexShrink: 0,
-  whiteSpace: 'nowrap',
-});
-
 const dropdownContainer = css({
   position: 'relative',
   flexShrink: 0,
 });
 
+// 容納人數與排序共用同一顆 trigger 樣式（原本各自獨立，寬高不一致，2026-09 使用者裁定合併）。
+// minWidth 108px 是排序原本的寬度（「綜合排序」四字所需），沿用給兩者；minHeight 44px 補上
+// 容納人數原本缺的觸控目標（既有缺口，這次順便修掉，不用再單獨追蹤）。
 const dropdownTrigger = css({
-  minWidth: '90px',
+  minWidth: '108px',
+  minHeight: '44px',
   paddingY: '2',
   paddingX: '3',
   borderRadius: 'radius.md',
@@ -198,6 +200,7 @@ const dropdownMenu = css({
 
 const dropdownOption = css({
   width: '100%',
+  minHeight: '44px',
   paddingY: '2',
   paddingX: '3',
   display: 'flex',
@@ -220,66 +223,71 @@ const filterDivider = css({
   marginX: '1',
 });
 
-const sortControl = css({
-  display: 'flex',
-  padding: '2px',
-  borderRadius: 'radius.sm',
-  background: 'gray.100',
+const sortChevron = css({
   flexShrink: 0,
+  transition: 'transform 0.15s ease',
+  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
 });
 
-const sortItem = css({
+const sortDropdownMenu = css({
+  position: 'absolute',
+  top: 'calc(100% + 4px)',
+  left: 0,
+  right: 0,
+  minWidth: '160px',
+  maxHeight: '240px',
+  overflowY: 'auto',
+  background: 'color.background.primary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  borderRadius: 'radius.md',
+  boxShadow: 'shadow.md',
+  zIndex: 30,
+  transformOrigin: 'top',
+  animation: 'slideDown 0.18s ease-out',
+  '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+});
+
+const sortDropdownOption = css({
+  width: '100%',
   minHeight: '44px',
-  paddingY: '1',
-  paddingX: '2.5',
-  borderRadius: 'radius.sm',
+  paddingY: '2',
+  paddingX: '3',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: '2',
+  background: 'transparent',
   border: 'none',
   cursor: 'pointer',
-  background: 'transparent',
-  color: 'gray.600',
   textStyle: 'caption',
-  fontWeight: 'medium',
-  transition: 'background 0.15s ease, color 0.12s ease',
-  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
-  whiteSpace: 'nowrap',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-});
-
-const sortItemActive = css({
-  background: 'white',
-  color: 'stellarBlue.500',
-  fontWeight: 'semibold',
-  boxShadow: 'shadow.sm',
-  borderRadius: 'radius.sm',
+  color: 'color.text.primary',
+  textAlign: 'left',
+  '&:hover': { background: 'gray.50' },
 });
 
 const checkmark = css({
   color: 'color.primary',
+  flexShrink: 0,
 });
 
-const clearFiltersRow = css({
-  display: 'flex',
-  justifyContent: 'flex-end',
-  paddingX: '4',
-  marginTop: '1.5',
-});
-
-const clearFiltersButton = css({
+// icon-only，接在 capacityRow 尾端（取代先前獨立一行的 clearFiltersRow），
+// 只在 hasActiveFilters 為 true 時 render，維持 44x44 觸控目標。
+const clearFiltersIconButton = css({
+  minWidth: '44px',
   minHeight: '44px',
-  paddingX: '3',
-  display: 'inline-flex',
+  flexShrink: 0,
+  marginLeft: 'auto',
+  display: 'flex',
   alignItems: 'center',
-  gap: '1',
-  background: 'transparent',
+  justifyContent: 'center',
+  borderRadius: 'radius.md',
   border: 'none',
+  background: 'transparent',
   cursor: 'pointer',
   color: 'stellarBlue.600',
-  textStyle: 'caption',
-  fontWeight: 'medium',
   '&:hover': {
-    textDecoration: 'underline',
+    background: 'gray.50',
   },
 });
 
@@ -288,11 +296,12 @@ const clearFiltersIcon = css({
   height: '14px',
 });
 
-export type VenueSort = 'eventCount' | 'newest';
+export type VenueSort = 'composite' | 'eventCount' | 'newest';
 
 const SORT_OPTIONS: { id: VenueSort; label: string }[] = [
+  { id: 'composite', label: '綜合排序' },
   { id: 'newest', label: '最新上架' },
-  { id: 'eventCount', label: '最多收錄生咖' },
+  { id: 'eventCount', label: '生咖數最多' },
 ];
 
 interface VenueFiltersProps {
@@ -325,6 +334,14 @@ export default function VenueFilters({
   const [showRight, setShowRight] = useState(true);
   const [capacityOpen, setCapacityOpen] = useState(false);
   const capacityRef = useRef<HTMLDivElement>(null);
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
+  // hideOffset：目前收起的 px 數，0 = 全開、barRef 實際高度 = 完全收起。
+  // 直接跟著滾動距離 1:1 累加/扣減（不是門檻觸發 + 固定動畫時長），滾多少收多少，
+  // 視覺上像是跟著內容一起被滾走，而不是滑一下就整條瞬間收起來。
+  const barRef = useRef<HTMLDivElement>(null);
+  const [hideOffset, setHideOffset] = useState(0);
+  const hideOffsetRef = useRef(0);
 
   // Raw input shown immediately; only the debounced value flows up to the URL/query.
   const [searchInput, setSearchInput] = useState(search);
@@ -374,20 +391,52 @@ export default function VenueFilters({
       if (capacityRef.current && !capacityRef.current.contains(e.target as Node)) {
         setCapacityOpen(false);
       }
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // 比照瀏覽器（如 Chrome for Mobile）底部網址列的隱藏／顯示：往下滾動時收起，
+  // 往上滾動時再出現，讓場地列表在滾動閱讀時有更多可視空間。距離頁面頂部太近
+  // （< 80px，約等於外層 sticky header 的高度）時一律顯示，避免在頂部小幅度
+  // 滾動時反覆閃爍收合／展開。用累加的 px 值直接對應滾動距離（沒有固定時長的
+  // CSS transition），滾多少收多少，視覺上像整條跟著內容一起被滾走，不是滑一下
+  // 就整條瞬間收起來。
+  useEffect(() => {
+    let lastY = window.scrollY;
+
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      const delta = currentY - lastY;
+      lastY = currentY;
+
+      if (currentY < 80) {
+        hideOffsetRef.current = 0;
+      } else {
+        const barHeight = barRef.current?.offsetHeight ?? 0;
+        hideOffsetRef.current = Math.min(barHeight, Math.max(0, hideOffsetRef.current + delta));
+      }
+
+      setHideOffset(hideOffsetRef.current);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const selectedCapacityLabel =
-    CAPACITY_OPTIONS.find((opt) => opt.id === capacity)?.label ?? '不限';
+    CAPACITY_OPTIONS.find((opt) => opt.id === capacity)?.label ?? '不限人數';
+  const selectedSortOption = SORT_OPTIONS.find((opt) => opt.id === sort) ?? SORT_OPTIONS[0];
 
   // 用即時的 searchInput（而非 debounce 後才寫入 URL 的 search prop），讓按鈕出現/
   // 消失的時機跟輸入框本身一樣即時，不需要等 800ms debounce 結束。
   const hasActiveFilters = region !== '全部' || capacity !== 'all' || searchInput !== '';
 
   return (
-    <div className={filterBar}>
+    <div ref={barRef} className={filterBar} style={{ transform: `translateY(-${hideOffset}px)` }}>
       <div className={searchRow}>
         <div className={searchFieldWrap}>
           <MagnifyingGlassIcon className={searchFieldIcon} aria-hidden="true" />
@@ -435,17 +484,13 @@ export default function VenueFilters({
       </div>
 
       <div className={capacityRow}>
-        <span id="capacity-label" className={capacityLabel}>
-          空間人數
-        </span>
-
         <div ref={capacityRef} className={dropdownContainer}>
           <button
             type="button"
             className={dropdownTrigger}
             aria-haspopup="menu"
             aria-expanded={capacityOpen}
-            aria-labelledby="capacity-label"
+            aria-label="空間人數"
             onClick={() => setCapacityOpen((o) => !o)}
           >
             <span>{selectedCapacityLabel}</span>
@@ -472,7 +517,7 @@ export default function VenueFilters({
           </button>
 
           {capacityOpen && (
-            <div className={dropdownMenu} role="menu" aria-labelledby="capacity-label">
+            <div className={dropdownMenu} role="menu" aria-label="空間人數">
               {CAPACITY_OPTIONS.map((opt) => (
                 <button
                   key={opt.id}
@@ -495,36 +540,71 @@ export default function VenueFilters({
 
         <div className={filterDivider} aria-hidden="true" />
 
-        <div className={sortControl} role="group" aria-label="場地排序方式">
-          {SORT_OPTIONS.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              aria-pressed={sort === opt.id}
-              className={`${sortItem} ${sort === opt.id ? sortItemActive : ''}`}
-              onClick={() => onSortChange(opt.id)}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {hasActiveFilters && (
-        <div className={clearFiltersRow}>
+        <div ref={sortRef} className={dropdownContainer}>
           <button
             type="button"
-            className={clearFiltersButton}
+            className={dropdownTrigger}
+            aria-haspopup="menu"
+            aria-expanded={sortOpen}
+            aria-label="排序"
+            onClick={() => setSortOpen((o) => !o)}
+          >
+            <span>{selectedSortOption.label}</span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 12 12"
+              fill="none"
+              aria-hidden="true"
+              className={sortChevron}
+              style={{ transform: sortOpen ? 'rotate(180deg)' : undefined }}
+            >
+              <path
+                d="M2 4L6 8L10 4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+
+          {sortOpen && (
+            <div className={sortDropdownMenu} role="menu" aria-label="排序">
+              {SORT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={sort === opt.id}
+                  className={sortDropdownOption}
+                  onClick={() => {
+                    onSortChange(opt.id);
+                    setSortOpen(false);
+                  }}
+                >
+                  <span>{opt.label}</span>
+                  {sort === opt.id && <span className={checkmark}>✓</span>}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {hasActiveFilters && (
+          <button
+            type="button"
+            className={clearFiltersIconButton}
+            aria-label="清除篩選"
             onClick={() => {
               setSearchInput('');
               onClearFilters();
             }}
           >
             <ArrowPathIcon className={clearFiltersIcon} aria-hidden="true" />
-            清除篩選
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

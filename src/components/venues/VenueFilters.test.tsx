@@ -1,4 +1,5 @@
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import VenueFilters from './VenueFilters';
 
@@ -122,5 +123,108 @@ describe('VenueFilters 清除篩選按鈕', () => {
     fireEvent.click(screen.getByRole('button', { name: '清除篩選' }));
 
     expect(onClearFilters).toHaveBeenCalledTimes(1);
+  });
+});
+
+// Phase 2.8：排序 UI 由 segmented control 改為 dropdown，比照既有 capacity dropdown pattern。
+//
+// Trigger 用 aria-label="排序" 直接提供可及名稱（accessible name），畫面上不顯示「排序」
+// 文字標籤（預設值就是「綜合排序」，畫面文字已足夠表意，省下的空間讓清除篩選 icon 按鈕
+// 能併進同一行，詳見 Phase 2.9「清除篩選版面調整」）。因此查詢 trigger 一律用 name: '排序'，
+// 選中值改用畫面可見文字（getByText）驗證。
+describe('VenueFilters 排序下拉選單（Phase 2.8）', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  const getSortTrigger = () => screen.getByRole('button', { name: '排序' });
+
+  it('未帶 sort（等同 composite）時，trigger 顯示「綜合排序」', () => {
+    render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    expect(screen.getByText('綜合排序')).toBeTruthy();
+  });
+
+  it('點擊 trigger 開啟選單，顯示三個選項且結構為 role="menu" / role="menuitemradio"', () => {
+    render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    fireEvent.click(getSortTrigger());
+
+    const menu = screen.getByRole('menu');
+    const options = within(menu).getAllByRole('menuitemradio');
+    expect(options).toHaveLength(3);
+    expect(options.map((o) => o.textContent)).toEqual([
+      expect.stringContaining('綜合排序'),
+      expect.stringContaining('最新上架'),
+      expect.stringContaining('生咖數最多'),
+    ]);
+  });
+
+  it('選中項目具備 aria-checked=true 與 checkmark（✓）', () => {
+    render(<VenueFilters {...baseProps} sort="newest" search="" />);
+
+    fireEvent.click(getSortTrigger());
+
+    const menu = screen.getByRole('menu');
+    const selected = within(menu).getByRole('menuitemradio', { name: /最新上架/ });
+    expect(selected.getAttribute('aria-checked')).toBe('true');
+    expect(selected.textContent).toContain('✓');
+
+    const notSelected = within(menu).getByRole('menuitemradio', { name: /生咖數最多/ });
+    expect(notSelected.getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('點擊「最新上架」選項會呼叫 onSortChange("newest") 並關閉選單', () => {
+    const onSortChange = vi.fn();
+    render(<VenueFilters {...baseProps} sort="composite" search="" onSortChange={onSortChange} />);
+
+    fireEvent.click(getSortTrigger());
+    fireEvent.click(screen.getByRole('menuitemradio', { name: /最新上架/ }));
+
+    expect(onSortChange).toHaveBeenCalledWith('newest');
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('點擊選單外側自動關閉', () => {
+    render(
+      <div>
+        <VenueFilters {...baseProps} sort="composite" search="" />
+        <button type="button">外部元素</button>
+      </div>
+    );
+
+    fireEvent.click(getSortTrigger());
+    expect(screen.getByRole('menu')).toBeTruthy();
+
+    fireEvent.mouseDown(screen.getByRole('button', { name: '外部元素' }));
+
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('trigger 具備 aria-haspopup/aria-expanded/aria-label="排序"（畫面不顯示文字標籤）', () => {
+    render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    expect(screen.queryByText('排序')).toBeNull();
+
+    const trigger = getSortTrigger();
+    expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(trigger.getAttribute('aria-label')).toBe('排序');
+
+    fireEvent.click(trigger);
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('鍵盤操作：Tab 聚焦 trigger、Enter 開啟選單', async () => {
+    const user = userEvent.setup();
+    render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    const trigger = getSortTrigger();
+    trigger.focus();
+    expect(document.activeElement).toBe(trigger);
+
+    await user.keyboard('{Enter}');
+
+    expect(screen.getByRole('menu')).toBeTruthy();
   });
 });

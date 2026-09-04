@@ -7,7 +7,6 @@ import { parseVenueCapacity } from '@/utils/venues';
 
 const clearFiltersRow = css({
   display: 'flex',
-  justifyContent: 'flex-end',
   paddingX: '4',
   marginTop: '1.5',
 });
