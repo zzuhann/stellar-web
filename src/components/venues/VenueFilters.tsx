@@ -21,6 +21,12 @@ const filterBar = css({
   borderBottomColor: 'color.border.light',
   paddingTop: '2.5',
   paddingBottom: '3',
+  transition: 'transform 0.25s ease',
+  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
+});
+
+const filterBarHidden = css({
+  transform: 'translateY(-100%)',
 });
 
 const searchRow = css({
@@ -336,6 +342,8 @@ export default function VenueFilters({
   const capacityRef = useRef<HTMLDivElement>(null);
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
+  const [isBarHidden, setIsBarHidden] = useState(false);
+  const lastScrollYRef = useRef(0);
 
   // Raw input shown immediately; only the debounced value flows up to the URL/query.
   const [searchInput, setSearchInput] = useState(search);
@@ -393,6 +401,32 @@ export default function VenueFilters({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  // 比照瀏覽器（如 Chrome for Mobile）底部網址列的隱藏／顯示：往下滾動時收起，
+  // 往上滾動時再出現，讓場地列表在滾動閱讀時有更多可視空間。距離頁面頂部太近
+  // （< 80px，約等於外層 sticky header 的高度）時一律顯示，避免在頂部小幅度
+  // 滾動時反覆閃爍收合／展開。
+  useEffect(() => {
+    lastScrollYRef.current = window.scrollY;
+
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      const lastY = lastScrollYRef.current;
+
+      if (currentY < 80) {
+        setIsBarHidden(false);
+      } else if (currentY > lastY) {
+        setIsBarHidden(true);
+      } else if (currentY < lastY) {
+        setIsBarHidden(false);
+      }
+
+      lastScrollYRef.current = currentY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const selectedCapacityLabel =
     CAPACITY_OPTIONS.find((opt) => opt.id === capacity)?.label ?? '不限人數';
   const selectedSortOption = SORT_OPTIONS.find((opt) => opt.id === sort) ?? SORT_OPTIONS[0];
@@ -402,7 +436,7 @@ export default function VenueFilters({
   const hasActiveFilters = region !== '全部' || capacity !== 'all' || searchInput !== '';
 
   return (
-    <div className={filterBar}>
+    <div className={`${filterBar} ${isBarHidden ? filterBarHidden : ''}`}>
       <div className={searchRow}>
         <div className={searchFieldWrap}>
           <MagnifyingGlassIcon className={searchFieldIcon} aria-hidden="true" />
