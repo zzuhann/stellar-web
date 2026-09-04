@@ -151,13 +151,6 @@ const capacityRow = css({
   marginTop: '2.5',
 });
 
-const capacityLabel = css({
-  textStyle: 'caption',
-  color: 'color.text.secondary',
-  flexShrink: 0,
-  whiteSpace: 'nowrap',
-});
-
 const dropdownContainer = css({
   position: 'relative',
   flexShrink: 0,
@@ -415,7 +408,7 @@ export default function VenueFilters({
   }, []);
 
   const selectedCapacityLabel =
-    CAPACITY_OPTIONS.find((opt) => opt.id === capacity)?.label ?? '不限';
+    CAPACITY_OPTIONS.find((opt) => opt.id === capacity)?.label ?? '不限人數';
   const selectedSortOption = SORT_OPTIONS.find((opt) => opt.id === sort) ?? SORT_OPTIONS[0];
 
   // 用即時的 searchInput（而非 debounce 後才寫入 URL 的 search prop），讓按鈕出現/
@@ -471,17 +464,13 @@ export default function VenueFilters({
       </div>
 
       <div className={capacityRow}>
-        <span id="capacity-label" className={capacityLabel}>
-          空間人數
-        </span>
-
         <div ref={capacityRef} className={dropdownContainer}>
           <button
             type="button"
             className={dropdownTrigger}
             aria-haspopup="menu"
             aria-expanded={capacityOpen}
-            aria-labelledby="capacity-label"
+            aria-label="空間人數"
             onClick={() => setCapacityOpen((o) => !o)}
           >
             <span>{selectedCapacityLabel}</span>
@@ -508,7 +497,7 @@ export default function VenueFilters({
           </button>
 
           {capacityOpen && (
-            <div className={dropdownMenu} role="menu" aria-labelledby="capacity-label">
+            <div className={dropdownMenu} role="menu" aria-label="空間人數">
               {CAPACITY_OPTIONS.map((opt) => (
                 <button
                   key={opt.id}

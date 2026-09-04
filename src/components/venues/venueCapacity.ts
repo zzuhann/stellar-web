@@ -10,7 +10,7 @@ export const CAPACITY_RANGE_LABEL: Record<string, string> = {
 };
 
 export const CAPACITY_OPTIONS: { id: CapacityFilter; label: string }[] = [
-  { id: 'all', label: '不限' },
+  { id: 'all', label: '不限人數' },
   { id: '20以下', label: '20人以下' },
   { id: '20-40', label: '20-40人' },
   { id: '40-60', label: '40-60人' },
