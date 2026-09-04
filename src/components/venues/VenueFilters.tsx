@@ -21,12 +21,6 @@ const filterBar = css({
   borderBottomColor: 'color.border.light',
   paddingTop: '2.5',
   paddingBottom: '3',
-  transition: 'transform 0.25s ease',
-  '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
-});
-
-const filterBarHidden = css({
-  transform: 'translateY(-100%)',
 });
 
 const searchRow = css({
@@ -342,8 +336,12 @@ export default function VenueFilters({
   const capacityRef = useRef<HTMLDivElement>(null);
   const [sortOpen, setSortOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
-  const [isBarHidden, setIsBarHidden] = useState(false);
-  const lastScrollYRef = useRef(0);
+  // hideOffset：目前收起的 px 數，0 = 全開、barRef 實際高度 = 完全收起。
+  // 直接跟著滾動距離 1:1 累加/扣減（不是門檻觸發 + 固定動畫時長），滾多少收多少，
+  // 視覺上像是跟著內容一起被滾走，而不是滑一下就整條瞬間收起來。
+  const barRef = useRef<HTMLDivElement>(null);
+  const [hideOffset, setHideOffset] = useState(0);
+  const hideOffsetRef = useRef(0);
 
   // Raw input shown immediately; only the debounced value flows up to the URL/query.
   const [searchInput, setSearchInput] = useState(search);
@@ -404,23 +402,25 @@ export default function VenueFilters({
   // 比照瀏覽器（如 Chrome for Mobile）底部網址列的隱藏／顯示：往下滾動時收起，
   // 往上滾動時再出現，讓場地列表在滾動閱讀時有更多可視空間。距離頁面頂部太近
   // （< 80px，約等於外層 sticky header 的高度）時一律顯示，避免在頂部小幅度
-  // 滾動時反覆閃爍收合／展開。
+  // 滾動時反覆閃爍收合／展開。用累加的 px 值直接對應滾動距離（沒有固定時長的
+  // CSS transition），滾多少收多少，視覺上像整條跟著內容一起被滾走，不是滑一下
+  // 就整條瞬間收起來。
   useEffect(() => {
-    lastScrollYRef.current = window.scrollY;
+    let lastY = window.scrollY;
 
     const handleScroll = () => {
       const currentY = window.scrollY;
-      const lastY = lastScrollYRef.current;
+      const delta = currentY - lastY;
+      lastY = currentY;
 
       if (currentY < 80) {
-        setIsBarHidden(false);
-      } else if (currentY > lastY) {
-        setIsBarHidden(true);
-      } else if (currentY < lastY) {
-        setIsBarHidden(false);
+        hideOffsetRef.current = 0;
+      } else {
+        const barHeight = barRef.current?.offsetHeight ?? 0;
+        hideOffsetRef.current = Math.min(barHeight, Math.max(0, hideOffsetRef.current + delta));
       }
 
-      lastScrollYRef.current = currentY;
+      setHideOffset(hideOffsetRef.current);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -436,7 +436,7 @@ export default function VenueFilters({
   const hasActiveFilters = region !== '全部' || capacity !== 'all' || searchInput !== '';
 
   return (
-    <div className={`${filterBar} ${isBarHidden ? filterBarHidden : ''}`}>
+    <div ref={barRef} className={filterBar} style={{ transform: `translateY(-${hideOffset}px)` }}>
       <div className={searchRow}>
         <div className={searchFieldWrap}>
           <MagnifyingGlassIcon className={searchFieldIcon} aria-hidden="true" />
