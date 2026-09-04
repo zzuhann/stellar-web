@@ -156,8 +156,12 @@ const dropdownContainer = css({
   flexShrink: 0,
 });
 
+// 容納人數與排序共用同一顆 trigger 樣式（原本各自獨立，寬高不一致，2026-09 使用者裁定合併）。
+// minWidth 108px 是排序原本的寬度（「綜合排序」四字所需），沿用給兩者；minHeight 44px 補上
+// 容納人數原本缺的觸控目標（既有缺口，這次順便修掉，不用再單獨追蹤）。
 const dropdownTrigger = css({
-  minWidth: '90px',
+  minWidth: '108px',
+  minHeight: '44px',
   paddingY: '2',
   paddingX: '3',
   borderRadius: 'radius.md',
@@ -212,29 +216,6 @@ const filterDivider = css({
   background: 'color.border.light',
   flexShrink: 0,
   marginX: '1',
-});
-
-// 獨立於 capacity 的 dropdownTrigger：「綜合排序」四字比 capacity 常見選項略長，需要
-// 較寬的 minWidth；並明確補上 minHeight: 44px（capacity 版本現況未達 44px 觸控目標，
-// 此為既有缺口，這裡只修排序自己的版本，不強制一併修 capacity，避免範圍蔓延）。
-const sortDropdownTrigger = css({
-  minWidth: '108px',
-  minHeight: '44px',
-  paddingY: '2',
-  paddingX: '3',
-  borderRadius: 'radius.md',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  background: 'color.background.primary',
-  color: 'color.text.primary',
-  cursor: 'pointer',
-  textAlign: 'left',
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  gap: '1.5',
-  textStyle: 'caption',
-  '&:hover': { borderColor: 'color.primary' },
 });
 
 const sortChevron = css({
@@ -523,7 +504,7 @@ export default function VenueFilters({
         <div ref={sortRef} className={dropdownContainer}>
           <button
             type="button"
-            className={sortDropdownTrigger}
+            className={dropdownTrigger}
             aria-haspopup="menu"
             aria-expanded={sortOpen}
             aria-label="排序"
