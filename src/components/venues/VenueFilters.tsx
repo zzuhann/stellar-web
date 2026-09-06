@@ -458,13 +458,7 @@ export default function VenueFilters({
       ref={barRef}
       className={filterBar}
       style={{
-        // ponytail: 純視覺 translateY，收合時不會騰出版面空間（下面列表不會補位）。
-        // 曾試過搭配負 marginBottom 讓 layout 真的收回這塊空間，但 marginBottom 動態
-        // 改變 position: sticky 元素的文件高度，會在滾動當下跟瀏覽器的 scroll anchoring
-        // 打架，導致收合到底那瞬間 scrollY 讀數異常跳動、體感卡頓。實測驗證：拿掉
-        // marginBottom 後，用同一支腳本連續滾動 100px 觀察 scrollY delta，不再出現
-        // 忽然變成 25px 這種不對應的跳動。要恢復「騰出空間」效果，之後再找不會動態
-        // 改變 sticky 元素本身 box 高度的做法（例如額外包一層固定高度的 wrapper）。
+        // 不搭配 marginBottom：動態改變 sticky 元素的 box 高度會跟瀏覽器的 scroll anchoring 打架，滾動時卡頓。
         transform: `translateY(-${hideOffset}px)`,
       }}
     >
