@@ -55,4 +55,20 @@ describe('venueApi', () => {
 
     expect(api.get).toHaveBeenCalledWith('/venues?page=1');
   });
+
+  it('sort 為 composite 時原樣送出（Phase 2.8：後端新預設，型別已支援）', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { venues: [] } });
+
+    await venueApi.getVenues({ sort: 'composite', page: 1, limit: 20 });
+
+    expect(api.get).toHaveBeenCalledWith('/venues?sort=composite&page=1&limit=20');
+  });
+
+  it('sort 為 undefined 時不附加 sort 參數（Phase 2.8：VenuesClient 選擇綜合排序時的既有慣例）', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { venues: [] } });
+
+    await venueApi.getVenues({ sort: undefined, page: 1, limit: 20 });
+
+    expect(api.get).toHaveBeenCalledWith('/venues?page=1&limit=20');
+  });
 });

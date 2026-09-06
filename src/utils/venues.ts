@@ -15,17 +15,14 @@ export function deriveVenueRegions(venues: Pick<Venue, 'region'>[]): string[] {
   return ['全部', ...unique];
 }
 
-const VALID_SORT_VALUES: VenueSort[] = ['eventCount', 'newest'];
+const VALID_SORT_VALUES: VenueSort[] = ['composite', 'eventCount', 'newest'];
 
 /**
- * Unknown/illegal `sort` URL values fall back to the default `newest`. This matches
- * what was actually live in production — design-frontend.md previously said the
- * default should be `eventCount`, but that was stale doc drift, never actually
- * shipped. 2026-08-03: doc corrected to match reality instead of reality being
- * changed to match the doc.
+ * Unknown/illegal `sort` URL values fall back to the new default `composite`
+ * (Phase 2.8, 2026-09 裁定 — supersedes the 2026-08-03 `newest` default).
  */
 export function parseVenueSort(value: string): VenueSort {
-  return VALID_SORT_VALUES.includes(value as VenueSort) ? (value as VenueSort) : 'newest';
+  return VALID_SORT_VALUES.includes(value as VenueSort) ? (value as VenueSort) : 'composite';
 }
 
 /** Unknown/illegal `capacity` URL values fall back to the default `all`. */
