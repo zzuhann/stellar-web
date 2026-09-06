@@ -56,6 +56,13 @@ const searchRow = css({
   marginBottom: '2.5',
 });
 
+// 對應真實 VenueFilters.tsx 的 regionWrap（外層相對定位容器，裡面包可捲動的
+// regionRow）。骨架不需要真的做出滾動/漸層遮罩互動邏輯，但保留同一層外層包裝，
+// 讓兩者的 DOM 結構深度一致。
+const regionWrap = css({
+  position: 'relative',
+});
+
 const regionRow = css({
   display: 'flex',
   gap: '1.5',
@@ -71,9 +78,11 @@ const capacityRow = css({
   marginTop: '2.5',
 });
 
+// 對齊真實 filterDivider（VenueFilters.tsx）：不設固定 height，改用 alignSelf:
+// 'stretch' 撐滿所在 flex row（capacityRow 裡由 44px 高的 dropdownTrigger 決定）。
 const filterDivider = css({
   width: '1px',
-  height: '24px',
+  alignSelf: 'stretch',
   background: 'color.border.light',
   flexShrink: 0,
   marginX: '1',
@@ -101,12 +110,16 @@ export default function VenuesLoading() {
           </div>
 
           {/* regionChip 已於 90bb837 補上 44px 觸控高度（原本只靠 paddingY），骨架同步更新，
-              否則載入態換入真實內容時區域列高度會跳動。 */}
-          <div className={regionRow}>
-            <Skeleton width="48px" height="44px" borderRadius="9999px" />
-            <Skeleton width="64px" height="44px" borderRadius="9999px" />
-            <Skeleton width="56px" height="44px" borderRadius="9999px" />
-            <Skeleton width="72px" height="44px" borderRadius="9999px" />
+              否則載入態換入真實內容時區域列高度會跳動。regionWrap 外層包裝對應真實
+              VenueFilters.tsx 的 regionWrap + regionFadeLeft/Right 結構層級（骨架不需要
+              漸層遮罩本身，只需要結構對得上，不會造成 CLS，純粹是視覺結構一致性）。 */}
+          <div className={regionWrap}>
+            <div className={regionRow}>
+              <Skeleton width="48px" height="44px" borderRadius="9999px" />
+              <Skeleton width="64px" height="44px" borderRadius="9999px" />
+              <Skeleton width="56px" height="44px" borderRadius="9999px" />
+              <Skeleton width="72px" height="44px" borderRadius="9999px" />
+            </div>
           </div>
 
           {/* 容納人數/排序 trigger 骨架寬高需與 VenueFilters.tsx 的 dropdownTrigger（108x44）一致；
