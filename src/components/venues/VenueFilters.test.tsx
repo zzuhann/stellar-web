@@ -238,6 +238,7 @@ describe('VenueFilters 排序下拉選單（Phase 2.8）', () => {
 describe('VenueFilters 滾動收合 filter bar', () => {
   let rafCallbacks: FrameRequestCallback[];
   let rafSpy: ReturnType<typeof vi.fn>;
+  let cancelRafSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     rafCallbacks = [];
@@ -245,8 +246,9 @@ describe('VenueFilters 滾動收合 filter bar', () => {
       rafCallbacks.push(cb);
       return rafCallbacks.length;
     });
+    cancelRafSpy = vi.fn();
     vi.stubGlobal('requestAnimationFrame', rafSpy);
-    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    vi.stubGlobal('cancelAnimationFrame', cancelRafSpy);
     Object.defineProperty(window, 'scrollY', { value: 0, writable: true, configurable: true });
   });
 
@@ -339,12 +341,33 @@ describe('VenueFilters 滾動收合 filter bar', () => {
     expect(rafSpy).toHaveBeenCalledTimes(2);
   });
 
-  it('元件 unmount 時會移除 scroll listener', () => {
+  it('元件 unmount 時會取消 pending RAF（傳入正確 id），且卸載後強制執行該 callback 不會再更新畫面', () => {
     const removeSpy = vi.spyOn(window, 'removeEventListener');
-    const { unmount } = render(<VenueFilters {...baseProps} search="" />);
+    const { unmount, container } = render(<VenueFilters {...baseProps} search="" />);
+    const bar = container.firstChild as HTMLElement;
+    Object.defineProperty(bar, 'offsetHeight', { value: 999, configurable: true });
+
+    // 觸發一次 scroll，讓元件排程一個 pending RAF，但先不執行它的 callback。
+    scrollTo(100);
+    expect(rafSpy).toHaveBeenCalledTimes(1);
+    const pendingRafId = rafSpy.mock.results[0]?.value;
+    const pendingCallback = rafCallbacks[0];
+    const transformBeforeUnmount = bar.style.transform;
 
     unmount();
 
     expect(removeSpy).toHaveBeenCalledWith('scroll', expect.any(Function));
+    // 核心斷言：cancelAnimationFrame 被呼叫，且傳入的 id 跟 unmount 前排程的那個 RAF id 一致。
+    // 拿掉程式碼裡的 cancelAnimationFrame(rafId) 這行的話，這個斷言會失敗。
+    expect(cancelRafSpy).toHaveBeenCalledWith(pendingRafId);
+
+    // 強制事後執行被取消的 RAF callback（模擬瀏覽器沒有真的尊重 cancel 的極端情況），
+    // 元件已卸載，不應該再有任何畫面更新（DOM 上的 transform 維持卸載當下的值）。
+    expect(() => {
+      act(() => {
+        pendingCallback(0);
+      });
+    }).not.toThrow();
+    expect(bar.style.transform).toBe(transformBeforeUnmount);
   });
 });
