@@ -342,6 +342,7 @@ export default function VenueFilters({
   const barRef = useRef<HTMLDivElement>(null);
   const [hideOffset, setHideOffset] = useState(0);
   const hideOffsetRef = useRef(0);
+  const rafScheduledRef = useRef(false);
 
   // Raw input shown immediately; only the debounced value flows up to the URL/query.
   const [searchInput, setSearchInput] = useState(search);
@@ -407,8 +408,15 @@ export default function VenueFilters({
   // 就整條瞬間收起來。
   useEffect(() => {
     let lastY = window.scrollY;
+    let rafId: number | null = null;
 
-    const handleScroll = () => {
+    // Multiple 'scroll' events can fire within the same frame; collapse them into
+    // one setHideOffset per frame via a "already scheduled" flag, reading the
+    // freshest window.scrollY when the frame actually runs.
+    const applyScroll = () => {
+      rafId = null;
+      rafScheduledRef.current = false;
+
       const currentY = window.scrollY;
       const delta = currentY - lastY;
       lastY = currentY;
@@ -423,8 +431,18 @@ export default function VenueFilters({
       setHideOffset(hideOffsetRef.current);
     };
 
+    const handleScroll = () => {
+      if (rafScheduledRef.current) return;
+      rafScheduledRef.current = true;
+      rafId = requestAnimationFrame(applyScroll);
+    };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+      rafScheduledRef.current = false;
+    };
   }, []);
 
   const selectedCapacityLabel =
@@ -436,7 +454,16 @@ export default function VenueFilters({
   const hasActiveFilters = region !== '全部' || capacity !== 'all' || searchInput !== '';
 
   return (
-    <div ref={barRef} className={filterBar} style={{ transform: `translateY(-${hideOffset}px)` }}>
+    <div
+      ref={barRef}
+      className={filterBar}
+      style={{
+        transform: `translateY(-${hideOffset}px)`,
+        // position: sticky 的 box 本身高度不受 transform 影響，單靠上面的位移只是視覺上滑走、
+        // 留白給下面的場地列表；用負 marginBottom 讓外層排版真的往上收回這塊空間。
+        marginBottom: `-${hideOffset}px`,
+      }}
+    >
       <div className={searchRow}>
         <div className={searchFieldWrap}>
           <MagnifyingGlassIcon className={searchFieldIcon} aria-hidden="true" />

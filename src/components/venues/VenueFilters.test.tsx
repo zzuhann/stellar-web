@@ -228,3 +228,123 @@ describe('VenueFilters 排序下拉選單（Phase 2.8）', () => {
     expect(screen.getByRole('menu')).toBeTruthy();
   });
 });
+
+// 滾動收合 filter bar：比照瀏覽器網址列隱藏/顯示，滾多少收多少（見元件內註解）。
+// requestAnimationFrame 被 stub 成手動可控（捕捉 callback、不自動執行），用來驗證：
+// (a) 同一 frame 內多次 scroll 事件只排程一次 RAF（問題 3：批次合併）
+// (b) hideOffset 的累加/遞減/clamp/歸零邏輯（問題 4）
+// jsdom 不做真正的版面配置，offsetHeight 預設為 0，因此每個測試視需要手動覆寫
+// barRef 元素的 offsetHeight，模擬 filter bar 實際高度。
+describe('VenueFilters 滾動收合 filter bar', () => {
+  let rafCallbacks: FrameRequestCallback[];
+  let rafSpy: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    rafCallbacks = [];
+    rafSpy = vi.fn((cb: FrameRequestCallback) => {
+      rafCallbacks.push(cb);
+      return rafCallbacks.length;
+    });
+    vi.stubGlobal('requestAnimationFrame', rafSpy);
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    Object.defineProperty(window, 'scrollY', { value: 0, writable: true, configurable: true });
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  // 手動執行目前排隊中的 RAF callback，模擬瀏覽器跑到下一個 frame。
+  // 包在 act() 內，因為 callback 裡的 setHideOffset 不是透過 RTL 的 fireEvent 觸發，
+  // 不會被自動包進 act()。
+  const flushRaf = () => {
+    const pending = rafCallbacks;
+    rafCallbacks = [];
+    act(() => {
+      pending.forEach((cb) => cb(0));
+    });
+  };
+
+  const scrollTo = (y: number) => {
+    Object.defineProperty(window, 'scrollY', { value: y, writable: true, configurable: true });
+    fireEvent.scroll(window);
+  };
+
+  const renderBar = (barHeight = 999) => {
+    const { container } = render(<VenueFilters {...baseProps} search="" />);
+    const bar = container.firstChild as HTMLElement;
+    Object.defineProperty(bar, 'offsetHeight', { value: barHeight, configurable: true });
+    return bar;
+  };
+
+  it('往下滾動時，hideOffset 隨滾動距離 1:1 累加', () => {
+    const bar = renderBar();
+
+    scrollTo(100); // > 80 門檻，delta = 100 - 0
+    flushRaf();
+    expect(bar.style.transform).toBe('translateY(-100px)');
+    expect(bar.style.marginBottom).toBe('-100px');
+
+    scrollTo(140); // delta = 40，累加至 140
+    flushRaf();
+    expect(bar.style.transform).toBe('translateY(-140px)');
+    expect(bar.style.marginBottom).toBe('-140px');
+  });
+
+  it('往上滾動時，hideOffset 隨滾動距離 1:1 遞減', () => {
+    const bar = renderBar();
+
+    scrollTo(150);
+    flushRaf();
+    expect(bar.style.transform).toBe('translateY(-150px)');
+
+    scrollTo(100); // delta = -50，遞減至 100
+    flushRaf();
+    expect(bar.style.transform).toBe('translateY(-100px)');
+  });
+
+  it('hideOffset 不會超過 bar 自身高度（clamp 上限）', () => {
+    const bar = renderBar(50);
+
+    scrollTo(300); // delta 遠大於 barHeight
+    flushRaf();
+    expect(bar.style.transform).toBe('translateY(-50px)');
+  });
+
+  it('距離頁面頂部 < 80px 時，hideOffset 強制歸零', () => {
+    const bar = renderBar();
+
+    scrollTo(200);
+    flushRaf();
+    expect(bar.style.transform).toBe('translateY(-200px)');
+
+    scrollTo(50); // < 80，不論 delta 為何一律歸零
+    flushRaf();
+    expect(bar.style.transform).toBe('translateY(-0px)');
+    // jsdom 的 CSSOM 會把 margin-bottom 的 "-0px" 正規化成 "0px"，數值上等價於歸零。
+    expect(bar.style.marginBottom).toBe('0px');
+  });
+
+  it('同一 frame 內連續多次 scroll 事件，只排程一次 requestAnimationFrame', () => {
+    renderBar();
+
+    scrollTo(90);
+    scrollTo(95);
+    scrollTo(99);
+    expect(rafSpy).toHaveBeenCalledTimes(1);
+
+    flushRaf();
+
+    scrollTo(120); // 上一個 frame 已 flush，ticking 重置，可以再排一次
+    expect(rafSpy).toHaveBeenCalledTimes(2);
+  });
+
+  it('元件 unmount 時會移除 scroll listener', () => {
+    const removeSpy = vi.spyOn(window, 'removeEventListener');
+    const { unmount } = render(<VenueFilters {...baseProps} search="" />);
+
+    unmount();
+
+    expect(removeSpy).toHaveBeenCalledWith('scroll', expect.any(Function));
+  });
+});
