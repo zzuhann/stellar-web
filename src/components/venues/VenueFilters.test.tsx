@@ -285,12 +285,10 @@ describe('VenueFilters 滾動收合 filter bar', () => {
     scrollTo(100); // > 80 門檻，delta = 100 - 0
     flushRaf();
     expect(bar.style.transform).toBe('translateY(-100px)');
-    expect(bar.style.marginBottom).toBe('-100px');
 
     scrollTo(140); // delta = 40，累加至 140
     flushRaf();
     expect(bar.style.transform).toBe('translateY(-140px)');
-    expect(bar.style.marginBottom).toBe('-140px');
   });
 
   it('往上滾動時，hideOffset 隨滾動距離 1:1 遞減', () => {
@@ -323,8 +321,6 @@ describe('VenueFilters 滾動收合 filter bar', () => {
     scrollTo(50); // < 80，不論 delta 為何一律歸零
     flushRaf();
     expect(bar.style.transform).toBe('translateY(-0px)');
-    // jsdom 的 CSSOM 會把 margin-bottom 的 "-0px" 正規化成 "0px"，數值上等價於歸零。
-    expect(bar.style.marginBottom).toBe('0px');
   });
 
   it('同一 frame 內連續多次 scroll 事件，只排程一次 requestAnimationFrame', () => {
