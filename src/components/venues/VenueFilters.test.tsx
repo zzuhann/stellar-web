@@ -341,7 +341,7 @@ describe('VenueFilters 滾動收合 filter bar', () => {
     expect(rafSpy).toHaveBeenCalledTimes(2);
   });
 
-  it('元件 unmount 時會取消 pending RAF（傳入正確 id），且卸載後強制執行該 callback 不會再更新畫面', () => {
+  it('元件 unmount 時會取消 pending RAF（傳入正確 id）', () => {
     const removeSpy = vi.spyOn(window, 'removeEventListener');
     const { unmount, container } = render(<VenueFilters {...baseProps} search="" />);
     const bar = container.firstChild as HTMLElement;
@@ -351,23 +351,16 @@ describe('VenueFilters 滾動收合 filter bar', () => {
     scrollTo(100);
     expect(rafSpy).toHaveBeenCalledTimes(1);
     const pendingRafId = rafSpy.mock.results[0]?.value;
-    const pendingCallback = rafCallbacks[0];
-    const transformBeforeUnmount = bar.style.transform;
 
     unmount();
 
     expect(removeSpy).toHaveBeenCalledWith('scroll', expect.any(Function));
     // 核心斷言：cancelAnimationFrame 被呼叫，且傳入的 id 跟 unmount 前排程的那個 RAF id 一致。
     // 拿掉程式碼裡的 cancelAnimationFrame(rafId) 這行的話，這個斷言會失敗。
+    //
+    // 不再額外斷言「unmount 後強制執行該 callback，DOM 不會變化」——元件已從 React tree
+    // 拔除，就算 setState 真的被呼叫，React 也不會把它反映到已卸載的 DOM 節點上，這件事
+    // 不論 cancelAnimationFrame 有沒有生效都成立，無法用來證明 cancel 是否真的發生。
     expect(cancelRafSpy).toHaveBeenCalledWith(pendingRafId);
-
-    // 強制事後執行被取消的 RAF callback（模擬瀏覽器沒有真的尊重 cancel 的極端情況），
-    // 元件已卸載，不應該再有任何畫面更新（DOM 上的 transform 維持卸載當下的值）。
-    expect(() => {
-      act(() => {
-        pendingCallback(0);
-      });
-    }).not.toThrow();
-    expect(bar.style.transform).toBe(transformBeforeUnmount);
   });
 });
