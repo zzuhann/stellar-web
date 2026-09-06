@@ -95,29 +95,31 @@ export default function VenuesLoading() {
           <p className={subtitle}>在 STELLAR 找到適合舉辦生咖、生日應援的空間！</p>
         </section>
 
-        {/* 清除篩選列是否保留高度交給 ClearFiltersRowSkeleton 用 useSearchParams 判斷，需與 VenueFilters 的 hasActiveFilters 行為一致 */}
         <div className={filterBar}>
           <div className={searchRow}>
             <Skeleton width="100%" height="44px" borderRadius="8px" />
           </div>
 
+          {/* regionChip 已於 90bb837 補上 44px 觸控高度（原本只靠 paddingY），骨架同步更新，
+              否則載入態換入真實內容時區域列高度會跳動。 */}
           <div className={regionRow}>
-            <Skeleton width="48px" height="36px" borderRadius="9999px" />
-            <Skeleton width="64px" height="36px" borderRadius="9999px" />
-            <Skeleton width="56px" height="36px" borderRadius="9999px" />
-            <Skeleton width="72px" height="36px" borderRadius="9999px" />
+            <Skeleton width="48px" height="44px" borderRadius="9999px" />
+            <Skeleton width="64px" height="44px" borderRadius="9999px" />
+            <Skeleton width="56px" height="44px" borderRadius="9999px" />
+            <Skeleton width="72px" height="44px" borderRadius="9999px" />
           </div>
 
+          {/* 容納人數/排序 trigger 骨架寬高需與 VenueFilters.tsx 的 dropdownTrigger（108x44）一致；
+              清除篩選 icon 已併入這一列尾端（見 VenueFilters.tsx capacityRow），骨架比照併入，
+              不再是獨立一行，交給 ClearFiltersRowSkeleton 用 useSearchParams 判斷是否 render。 */}
           <div className={capacityRow}>
-            <Skeleton width="56px" height="16px" borderRadius="4px" />
-            <Skeleton width="90px" height="36px" borderRadius="6px" />
+            <Skeleton width="108px" height="44px" borderRadius="6px" />
             <div className={filterDivider} aria-hidden="true" />
-            <Skeleton width="150px" height="44px" borderRadius="6px" />
+            <Skeleton width="108px" height="44px" borderRadius="6px" />
+            <Suspense fallback={null}>
+              <ClearFiltersRowSkeleton />
+            </Suspense>
           </div>
-
-          <Suspense fallback={null}>
-            <ClearFiltersRowSkeleton />
-          </Suspense>
         </div>
 
         <section className={listSection}>

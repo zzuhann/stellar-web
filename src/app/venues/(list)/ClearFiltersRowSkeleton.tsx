@@ -1,18 +1,15 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { css } from '@/styled-system/css';
 import Skeleton from '@/components/ui/Skeleton';
 import { parseVenueCapacity } from '@/utils/venues';
 
-const clearFiltersRow = css({
-  display: 'flex',
-  paddingX: '4',
-  marginTop: '1.5',
-});
-
 // loading.tsx 讀不到 searchParams，故用 client 元件搭配 useSearchParams 判斷是否保留高度；
-// 邏輯需與 VenueFilters.tsx:387 的 hasActiveFilters 完全一致，否則會造成 CLS。
+// 邏輯需與 VenueFilters.tsx 的 hasActiveFilters 完全一致，否則會造成 CLS。
+//
+// 清除篩選按鈕已改為 icon-only、併入 capacityRow 尾端（不再是獨立一整行，見
+// VenueFilters.tsx 的 clearFiltersIconButton），這裡直接 render 成該列的最後一個
+// flex item，用 marginLeft: auto 頂到最右側，尺寸對齊 44x44 觸控目標。
 export default function ClearFiltersRowSkeleton() {
   const searchParams = useSearchParams();
 
@@ -27,9 +24,5 @@ export default function ClearFiltersRowSkeleton() {
 
   if (!hasActiveFilters) return null;
 
-  return (
-    <div className={clearFiltersRow}>
-      <Skeleton width="88px" height="44px" borderRadius="6px" />
-    </div>
-  );
+  return <Skeleton width="44px" height="44px" borderRadius="6px" style={{ marginLeft: 'auto' }} />;
 }
