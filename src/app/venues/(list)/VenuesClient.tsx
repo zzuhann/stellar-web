@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { venueApi } from '@/lib/api';
 import queryKey from '@/hooks/queryKey';
@@ -19,6 +18,7 @@ import VenueFilters, {
 import VenueCard from '@/components/venues/VenueCard';
 import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
 import SubmissionsPagination from '@/components/ui/SubmissionsPagination';
+import ApiErrorState from '@/components/ui/ApiErrorState';
 
 const SCROLL_KEY = 'venues_scrollY';
 
@@ -71,28 +71,6 @@ const emptyState = css({
   borderRadius: 'radius.lg',
   color: 'color.text.secondary',
   textStyle: 'bodySmall',
-});
-
-const retryButton = css({
-  marginTop: '3',
-  paddingY: '2',
-  paddingX: '4',
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1.5',
-  borderRadius: 'radius.md',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  background: 'color.background.primary',
-  color: 'color.primary',
-  cursor: 'pointer',
-  textStyle: 'bodySmall',
-  fontWeight: 'semibold',
-});
-
-const retryButtonIcon = css({
-  width: '16px',
-  height: '16px',
 });
 
 interface VenuesClientProps {
@@ -291,15 +269,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
 
         <section aria-label="場地列表" className={listSection}>
           {isError ? (
-            <div className={emptyState}>
-              載入場地列表失敗，請重新整理頁面
-              <div>
-                <button type="button" className={retryButton} onClick={() => refetch()}>
-                  <ArrowPathIcon className={retryButtonIcon} aria-hidden="true" />
-                  重試
-                </button>
-              </div>
-            </div>
+            <ApiErrorState message="載入場地列表失敗，請重新整理頁面" onRetry={() => refetch()} />
           ) : isLoading ? (
             Array.from({ length: 6 }, (_, i) => <VenueCardSkeleton key={i} />)
           ) : venues.length === 0 ? (

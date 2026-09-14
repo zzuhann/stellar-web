@@ -3,9 +3,9 @@
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import EventSubmissionForm from '@/components/submitEvent/EventSubmissionForm';
+import ApiErrorState from '@/components/ui/ApiErrorState';
 import showToast from '@/lib/toast';
 import Loading from '@/components/Loading';
 import useEventDetail from './hooks/useEventDetail';
@@ -22,38 +22,6 @@ const mainContent = css({
     paddingX: '6',
     paddingBottom: '15',
   },
-});
-
-const emptyState = css({
-  paddingY: '10',
-  paddingX: '5',
-  textAlign: 'center',
-  background: 'color.background.secondary',
-  borderRadius: 'radius.lg',
-  color: 'color.text.secondary',
-  textStyle: 'bodySmall',
-});
-
-const retryButton = css({
-  marginTop: '3',
-  paddingY: '2',
-  paddingX: '4',
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1.5',
-  borderRadius: 'radius.md',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  background: 'color.background.primary',
-  color: 'color.primary',
-  cursor: 'pointer',
-  textStyle: 'bodySmall',
-  fontWeight: 'semibold',
-});
-
-const retryButtonIcon = css({
-  width: '16px',
-  height: '16px',
 });
 
 export default function SubmitEventClient() {
@@ -136,15 +104,10 @@ export default function SubmitEventClient() {
   if (eventId && eventLoadError) {
     return (
       <main className={mainContent}>
-        <div className={emptyState}>
-          {handleApiError(eventError, '活動資料載入失敗，請稍後再試')}
-          <div>
-            <button type="button" className={retryButton} onClick={() => refetchEvent()}>
-              <ArrowPathIcon className={retryButtonIcon} aria-hidden="true" />
-              重試
-            </button>
-          </div>
-        </div>
+        <ApiErrorState
+          message={handleApiError(eventError, '活動資料載入失敗，請稍後再試')}
+          onRetry={() => refetchEvent()}
+        />
       </main>
     );
   }
