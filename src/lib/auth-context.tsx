@@ -5,6 +5,7 @@ import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
 import * as Sentry from '@sentry/nextjs';
 import { auth } from './firebase';
 import { getUserData, createUserDocument } from './auth';
+import { subscribeUnauthorized } from './auth-events';
 import { User as AppUser } from '@/types';
 
 interface AuthContextType {
@@ -49,7 +50,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           try {
             await createUserDocument(firebaseUser);
           } catch (e) {
-             
             Sentry.captureException(e, { tags: { context: 'auth_createUserDocument' } });
           }
           appUserData = await getUserData(firebaseUser.uid);
@@ -68,6 +68,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    return subscribeUnauthorized(() => {
+      pendingActionRef.current = null;
+      setRedirectUrl(null);
+      setAuthModalOpen(true);
+    });
   }, []);
 
   const toggleAuthModal = useCallback((redirectTo?: string, onAuthSuccess?: () => void) => {
