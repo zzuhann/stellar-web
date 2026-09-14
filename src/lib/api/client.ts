@@ -1,7 +1,11 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios';
 import { auth } from '../firebase';
+import { notifyUnauthorized } from '../auth-events';
 
 const SESSION_ID_KEY = 'stellar_session_id';
+// leading-edge debounce: 平行請求同時 401 時只處理第一次，避免重複 signOut/toast
+const UNAUTHORIZED_DEBOUNCE_MS = 1000;
+let lastUnauthorizedHandledAt = 0;
 
 function createRequestId(): string {
   if (typeof globalThis.crypto?.randomUUID === 'function') {
@@ -70,7 +74,12 @@ api.interceptors.response.use(
   (response) => response, // 不標註型別，保留泛型推斷
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      // Token 過期或無效，可以在這裡處理登出邏輯
+      const now = Date.now();
+      if (now - lastUnauthorizedHandledAt > UNAUTHORIZED_DEBOUNCE_MS) {
+        lastUnauthorizedHandledAt = now;
+        auth.signOut().catch(() => {});
+        notifyUnauthorized();
+      }
     }
     return Promise.reject(error);
   }
