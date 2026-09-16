@@ -9,6 +9,7 @@ import { CoffeeEvent } from '@/types';
 
 import dynamic from 'next/dynamic';
 import ConfirmModal from '@/components/ui/ConfirmModal';
+import ApiErrorState from '@/components/ui/ApiErrorState';
 import { showToast } from '@/lib/toast';
 import Loading from '../Loading';
 import { css } from '@/styled-system/css';
@@ -21,6 +22,7 @@ const EventPreviewModal = dynamic(() => import('@/components/events/EventPreview
 import { useQueryStateContext } from '@/hooks/useQueryStateContext';
 import { useMySubmittedArtists, useMySubmittedEvents } from './hooks/useUserSubmissions';
 import useDeleteEventMutation from './hooks/useDeleteEventMutation';
+import { handleApiError } from '@/lib/api';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -118,6 +120,7 @@ function MySubmissions() {
 
   const isLoading =
     authLoading || (activeTab === 'event' ? eventsQuery.isLoading : artistsQuery.isLoading);
+  const activeQuery = activeTab === 'event' ? eventsQuery : artistsQuery;
 
   if (!user) {
     return null;
@@ -131,7 +134,14 @@ function MySubmissions() {
 
           {isLoading && <Loading description="載入中..." />}
 
-          {!isLoading && activeTab === 'artist' && artistsQuery.data && (
+          {!isLoading && activeQuery.isError && (
+            <ApiErrorState
+              message={handleApiError(activeQuery.error, '投稿資料載入失敗，請稍後再試')}
+              onRetry={() => activeQuery.refetch()}
+            />
+          )}
+
+          {!isLoading && !activeQuery.isError && activeTab === 'artist' && artistsQuery.data && (
             <ArtistSubmissions
               artists={artistsQuery.data.artists}
               summary={artistsQuery.data.summary}
@@ -141,7 +151,7 @@ function MySubmissions() {
             />
           )}
 
-          {!isLoading && activeTab === 'event' && eventsQuery.data && (
+          {!isLoading && !activeQuery.isError && activeTab === 'event' && eventsQuery.data && (
             <EventSubmissions
               events={eventsQuery.data.events}
               summary={eventsQuery.data.summary}

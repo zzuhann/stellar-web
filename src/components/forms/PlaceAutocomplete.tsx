@@ -226,7 +226,8 @@ export default function PlaceAutocomplete({
     queryFn: () => api.autocomplete(debouncedQuery),
     enabled: debouncedQuery.length >= 2 && !isSelectedState,
     staleTime: 1000 * 60 * 5,
-    retry: 2,
+    // retry 沿用 QueryProvider 的全域預設（含 401 不重試），
+    // 這裡原本只是單純數字（最多重試 2 次），跟全域預設效果一致
   });
 
   const handlePlaceSelect = async (prediction: PlacePrediction | null) => {

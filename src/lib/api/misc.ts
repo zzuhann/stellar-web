@@ -1,29 +1,28 @@
 import axios from 'axios';
 import { PlacePrediction, PlaceDetails } from '@/types';
 import api from './client';
+import { ERROR_CODE_MESSAGES, FIELD_LABELS } from './errorCodes';
 
 // 統一錯誤處理函數
 export function handleApiError(error: unknown, fallbackMessage = '發生未知錯誤'): string {
-  if (axios.isAxiosError(error)) {
-    if (error.response?.data?.message) {
-      return error.response.data.message;
-    }
-    if (error.response?.data?.error) {
-      return error.response.data.error;
-    }
-    if (error.response?.status === 401) {
-      return '請先登入後再試';
-    }
-    if (error.response?.status === 403) {
-      return '權限不足';
-    }
-    if (error.response?.status === 400) {
-      return '格式錯誤';
-    }
+  if (!axios.isAxiosError(error)) return fallbackMessage;
+
+  const data = error.response?.data as
+    | { error?: string; message?: string; code?: string; field?: string }
+    | undefined;
+
+  if (data?.code === 'VALIDATION_ERROR') {
+    const fieldLabel = data.field ? FIELD_LABELS[data.field] : undefined;
+    return fieldLabel ? `${fieldLabel}格式不正確，請確認後再試` : '輸入資料格式有誤，請確認後再試';
   }
+  if (data?.code && ERROR_CODE_MESSAGES[data.code]) return ERROR_CODE_MESSAGES[data.code];
+  if (data?.message) return data.message;
+  if (data?.error) return data.error;
+  if (error.response?.status === 401) return '請先登入後再試';
+  if (error.response?.status === 403) return '權限不足';
+  if (error.response?.status === 400) return '格式錯誤';
   return fallbackMessage;
 }
-
 export type ContactRequest = {
   name: string;
   email: string;

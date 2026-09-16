@@ -1,6 +1,7 @@
 // 圖片上傳到後端 API
 
 import api from './api';
+import { handleApiError } from './api/misc';
 
 export interface UploadResponse {
   success: boolean;
@@ -39,7 +40,7 @@ export async function uploadImageToAPI(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '上傳失敗',
+      error: handleApiError(error, '上傳失敗'),
     };
   }
 }
@@ -51,6 +52,7 @@ export async function deleteImageFromAPI(
 ): Promise<DeleteResponse> {
   try {
     const response = await api.delete('/images/delete', {
+      data: { imageUrl },
       headers: {
         Authorization: `Bearer ${authToken}`,
         'Content-Type': 'application/json',
@@ -61,7 +63,7 @@ export async function deleteImageFromAPI(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : '刪除失敗',
+      error: handleApiError(error, '刪除失敗'),
     };
   }
 }

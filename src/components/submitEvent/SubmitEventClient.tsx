@@ -5,9 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { css } from '@/styled-system/css';
 import EventSubmissionForm from '@/components/submitEvent/EventSubmissionForm';
+import ApiErrorState from '@/components/ui/ApiErrorState';
 import showToast from '@/lib/toast';
 import Loading from '@/components/Loading';
 import useEventDetail from './hooks/useEventDetail';
+import { handleApiError } from '@/lib/api';
 
 const mainContent = css({
   maxWidth: '1200px',
@@ -33,7 +35,13 @@ export default function SubmitEventClient() {
 
   // 編輯或複製模式下取得活動資料
   const eventId = editEventId || copyEventId;
-  const { data: existingEvent, isLoading: loadingEvent } = useEventDetail(eventId ?? '');
+  const {
+    data: existingEvent,
+    isLoading: loadingEvent,
+    isError: eventLoadError,
+    error: eventError,
+    refetch: refetchEvent,
+  } = useEventDetail(eventId ?? '');
 
   const openedModalRef = useRef(false);
   const prevModalOpenRef = useRef(false);
@@ -79,6 +87,7 @@ export default function SubmitEventClient() {
     if (loadingEvent || loading) return;
     if (!user) return;
     if (isEditMode || isCopyMode) {
+      if (eventLoadError) return;
       if (!existingEvent) {
         showToast.warning('活動不存在');
         router.push('/my-submissions?tab=event');
@@ -90,7 +99,21 @@ export default function SubmitEventClient() {
         return;
       }
     }
-  }, [isEditMode, isCopyMode, existingEvent, router, user, loadingEvent, loading]);
+  }, [isEditMode, isCopyMode, existingEvent, router, user, loadingEvent, loading, eventLoadError]);
+
+  // existingEvent 已經有資料代表表單已經渲染過、使用者可能正在編輯——
+  // 這時候背景重新整理失敗不能卸載表單（會銷毀使用者還沒送出的內容），
+  // 只有「從來沒成功拿到過資料」（初次載入就失敗）才顯示整頁錯誤畫面。
+  if (eventId && eventLoadError && !existingEvent) {
+    return (
+      <main className={mainContent}>
+        <ApiErrorState
+          message={handleApiError(eventError, '活動資料載入失敗，請稍後再試')}
+          onRetry={() => refetchEvent()}
+        />
+      </main>
+    );
+  }
 
   const isLoading = loading || (eventId && loadingEvent);
 
