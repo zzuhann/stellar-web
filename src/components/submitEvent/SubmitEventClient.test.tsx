@@ -72,6 +72,25 @@ describe('SubmitEventClient 編輯模式下活動資料查詢失敗', () => {
   });
 });
 
+describe('SubmitEventClient 編輯模式下表單已載入、使用者編輯中，背景重新整理失敗', () => {
+  it('不會卸載表單改顯示整頁錯誤（使用者正在編輯的內容不能被銷毀）', () => {
+    currentSearchParams = createSearchParamsMock([['edit', 'event-1']]);
+    useEventDetailMock.mockReturnValue({
+      data: { id: 'event-1', createdBy: 'user-1' },
+      isLoading: false,
+      isError: true,
+      error: new Error('background refetch failed'),
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useEventDetail>);
+
+    render(<SubmitEventClient />);
+
+    expect(screen.getByText('event-submission-form-stub')).toBeTruthy();
+    expect(screen.queryByText('活動資料載入失敗，請稍後再試')).toBeNull();
+    expect(pushMock).not.toHaveBeenCalled();
+  });
+});
+
 describe('SubmitEventClient 編輯模式下活動真的不存在（查詢成功但無資料，反例對照）', () => {
   it('導頁回 /my-submissions 並顯示「活動不存在」提示', () => {
     currentSearchParams = createSearchParamsMock([['edit', 'event-1']]);

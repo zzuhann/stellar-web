@@ -101,7 +101,10 @@ export default function SubmitEventClient() {
     }
   }, [isEditMode, isCopyMode, existingEvent, router, user, loadingEvent, loading, eventLoadError]);
 
-  if (eventId && eventLoadError) {
+  // existingEvent 已經有資料代表表單已經渲染過、使用者可能正在編輯——
+  // 這時候背景重新整理失敗不能卸載表單（會銷毀使用者還沒送出的內容），
+  // 只有「從來沒成功拿到過資料」（初次載入就失敗）才顯示整頁錯誤畫面。
+  if (eventId && eventLoadError && !existingEvent) {
     return (
       <main className={mainContent}>
         <ApiErrorState
