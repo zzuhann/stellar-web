@@ -1,11 +1,18 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios';
 import { auth } from '../firebase';
-import { notifyUnauthorized } from '../auth-events';
+import { getAuthGeneration, notifyUnauthorized } from '../auth-events';
+
+declare module 'axios' {
+  interface AxiosRequestConfig {
+    // 送出請求當下的登入世代版號，純前端記帳用，不會送到伺服器。
+    __authGeneration?: number;
+  }
+}
 
 const SESSION_ID_KEY = 'stellar_session_id';
-// leading-edge debounce: 平行請求同時 401 時只處理第一次，避免重複 signOut/toast
-const UNAUTHORIZED_DEBOUNCE_MS = 1000;
-let lastUnauthorizedHandledAt = 0;
+// 同一個登入世代（generation）內，401 只處理一次，避免多個平行請求重複 signOut/toast。
+// 世代切換（重新登入）後會自動重新解鎖，見回應攔截器。
+let lastHandledUnauthorizedGeneration: number | null = null;
 
 function createRequestId(): string {
   if (typeof globalThis.crypto?.randomUUID === 'function') {
@@ -59,6 +66,9 @@ api.interceptors.request.use(
       }
 
       config.headers = headers;
+      // 記下送出當下的登入世代，回應攔截器收到 401 時用來判斷這個 401
+      // 是否還跟「現在」的登入狀態有關（見 auth-events.ts 的說明）。
+      config.__authGeneration = getAuthGeneration();
     } catch {
       // ignore token fetch errors
     }
@@ -74,9 +84,16 @@ api.interceptors.response.use(
   (response) => response, // 不標註型別，保留泛型推斷
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      const now = Date.now();
-      if (now - lastUnauthorizedHandledAt > UNAUTHORIZED_DEBOUNCE_MS) {
-        lastUnauthorizedHandledAt = now;
+      const requestGeneration = error.config?.__authGeneration;
+      const currentGeneration = getAuthGeneration();
+
+      // 請求送出後、401 回來前登入狀態已經變了（例如已經重新登入）——
+      // 這是一個跟現在無關的過期 401，忽略，不 signOut/彈登入框。
+      if (
+        requestGeneration === currentGeneration &&
+        lastHandledUnauthorizedGeneration !== currentGeneration
+      ) {
+        lastHandledUnauthorizedGeneration = currentGeneration;
         auth.signOut().catch(() => {});
         notifyUnauthorized();
       }

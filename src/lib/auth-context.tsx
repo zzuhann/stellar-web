@@ -5,7 +5,7 @@ import { User as FirebaseUser, onAuthStateChanged } from 'firebase/auth';
 import * as Sentry from '@sentry/nextjs';
 import { auth } from './firebase';
 import { getUserData, createUserDocument } from './auth';
-import { subscribeUnauthorized } from './auth-events';
+import { bumpAuthGeneration, subscribeUnauthorized } from './auth-events';
 import { User as AppUser } from '@/types';
 
 interface AuthContextType {
@@ -42,6 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      // 每次觸發（登入或登出）都遞增版號，讓 401 攔截器能判斷請求送出當下的
+      // 登入狀態是否已經改變（例如舊 token 的 401 在重新登入後才回來）。
+      bumpAuthGeneration();
       setUser(firebaseUser);
 
       if (firebaseUser) {
@@ -70,14 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    return subscribeUnauthorized(() => {
-      pendingActionRef.current = null;
-      setRedirectUrl(null);
-      setAuthModalOpen(true);
-    });
-  }, []);
-
   const toggleAuthModal = useCallback((redirectTo?: string, onAuthSuccess?: () => void) => {
     if (redirectTo) {
       setRedirectUrl(redirectTo);
@@ -92,6 +87,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         pendingActionRef.current = null;
       }
       return !prev;
+    });
+  }, []);
+
+  useEffect(() => {
+    return subscribeUnauthorized(() => {
+      pendingActionRef.current = null;
+      setRedirectUrl(null);
+      setAuthModalOpen(true);
     });
   }, []);
 

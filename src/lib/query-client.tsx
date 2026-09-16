@@ -1,6 +1,7 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import axios from 'axios';
 import { ReactNode, useState } from 'react';
 
 interface QueryProviderProps {
@@ -15,7 +16,11 @@ export function QueryProvider({ children }: QueryProviderProps) {
           queries: {
             staleTime: 1000 * 60 * 5, // 5 分鐘
             gcTime: 1000 * 60 * 10, // 10 分鐘
-            retry: 2,
+            // 401 不重試：重試不會讓過期 token 變有效，只會拖延導去登入的時間
+            retry: (failureCount, error) => {
+              if (axios.isAxiosError(error) && error.response?.status === 401) return false;
+              return failureCount < 2;
+            },
             refetchOnWindowFocus: false,
           },
         },
