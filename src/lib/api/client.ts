@@ -49,6 +49,12 @@ const api = axios.create({
 // 請求攔截器 - 添加認證 token
 api.interceptors.request.use(
   async (config) => {
+    // 記下送出當下的登入世代，必須在任何 await 之前、且不管下面成功與否都要設定：
+    // 這個值要反映「這個請求開始送出那一刻」的登入狀態，不能被 getIdToken() 的等待時間差
+    // 影響（等待期間使用者可能剛好重新登入），也不能因為 token 取得失敗而漏記
+    // （漏記會讓這個請求之後合法的 401 被誤判成「沒有世代資訊」而忽略，該跳登入框卻沒跳）。
+    config.__authGeneration = getAuthGeneration();
+
     try {
       const headers = AxiosHeaders.from(config.headers);
 
@@ -66,9 +72,6 @@ api.interceptors.request.use(
       }
 
       config.headers = headers;
-      // 記下送出當下的登入世代，回應攔截器收到 401 時用來判斷這個 401
-      // 是否還跟「現在」的登入狀態有關（見 auth-events.ts 的說明）。
-      config.__authGeneration = getAuthGeneration();
     } catch {
       // ignore token fetch errors
     }
