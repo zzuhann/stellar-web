@@ -15,6 +15,8 @@ const emptyState = css({
 
 const retryButton = css({
   marginTop: '3',
+  minWidth: '44px',
+  minHeight: '44px',
   paddingY: '2',
   paddingX: '4',
   display: 'inline-flex',
