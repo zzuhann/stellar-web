@@ -70,12 +70,15 @@ export default function useAdminReview(tab: 'artists' | 'events') {
     onSuccess: (reviewedEvents) => {
       revalidatePaths([
         '/',
+        '/venues',
         ...reviewedEvents.flatMap((event) => [
           `/event/${event.slug ?? event.id}`,
           ...event.artists.map((artist) => `/map/${artist.slug ?? artist.id}`),
         ]),
       ]);
       queryClient.invalidateQueries({ queryKey: eventKey });
+      queryClient.invalidateQueries({ queryKey: ['venues'] });
+      queryClient.invalidateQueries({ queryKey: ['home-venues'] });
       queryClient.invalidateQueries({ queryKey: ['top-artists'] });
       showToast.success('審核完成');
     },
