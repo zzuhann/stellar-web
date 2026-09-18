@@ -15,10 +15,14 @@ const useUpdateEventMutation = ({ onSuccess }: UseUpdateEventMutationProps) => {
       eventsApi.update(id, data),
     onSuccess: (updatedEvent) => {
       revalidatePaths([
+        '/',
+        '/venues',
         `/event/${updatedEvent.slug ?? updatedEvent.id}`,
         ...updatedEvent.artists.map((a) => `/map/${a.slug ?? a.id}`),
       ]);
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['venues'] });
+      queryClient.invalidateQueries({ queryKey: ['home-venues'] });
       queryClient.invalidateQueries({ queryKey: ['map-data'] });
       queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
       // ['event', id]（單數）跟上面的 ['events']（複數）是不同 key，需另外 invalidate，

@@ -84,7 +84,12 @@ describe('useUpdateEventMutation', () => {
       await Promise.resolve();
     });
 
-    expect(revalidatePaths).toHaveBeenCalledWith(['/event/event-1-slug', '/map/artist-1-slug']);
+    expect(revalidatePaths).toHaveBeenCalledWith([
+      '/',
+      '/venues',
+      '/event/event-1-slug',
+      '/map/artist-1-slug',
+    ]);
   });
 
   it('更新失敗時顯示錯誤 toast，不 invalidate', async () => {
