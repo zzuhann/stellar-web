@@ -1,11 +1,4 @@
-import {
-  CalendarIcon,
-  ExclamationTriangleIcon,
-  LinkIcon,
-  MapPinIcon,
-  PhotoIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import {
   errorText,
   formGroup,
@@ -170,7 +163,6 @@ const EventInfoSection = ({
         ref={setFieldRef('mainImage')}
       >
         <label id="mainImage-label" className={label}>
-          <PhotoIcon aria-hidden="true" />
           <div>
             主視覺圖片<span aria-hidden="true">*</span>
             <span className="sr-only">（必填）</span>
@@ -201,7 +193,6 @@ const EventInfoSection = ({
       <div className={gridContainer}>
         <div className={formGroup} ref={setFieldRef('startDate')}>
           <label className={label} htmlFor="startDate">
-            <CalendarIcon aria-hidden="true" />
             <div>
               開始日期<span aria-hidden="true">*</span>
               <span className="sr-only">（必填）</span>
@@ -225,7 +216,6 @@ const EventInfoSection = ({
 
         <div className={formGroup} ref={setFieldRef('endDate')}>
           <label className={label} htmlFor="endDate">
-            <CalendarIcon aria-hidden="true" />
             <div>
               結束日期<span aria-hidden="true">*</span>
               <span className="sr-only">（必填）</span>
@@ -262,7 +252,6 @@ const EventInfoSection = ({
         ref={setFieldRef('addressName')}
       >
         <label id="addressName-label" className={label}>
-          <MapPinIcon aria-hidden="true" />
           <div>
             地點<span aria-hidden="true">*</span>
             <span className="sr-only">（必填）</span>
@@ -298,7 +287,6 @@ const EventInfoSection = ({
           ref={setFieldRef('reservationUrl')}
         >
           <label className={label} htmlFor="reservationUrl">
-            <LinkIcon aria-hidden="true" />
             預約網址
           </label>
           <input
@@ -327,7 +315,6 @@ const EventInfoSection = ({
         >
           <div className={reservationLabelRow}>
             <label id="reservationStartAt-label" className={label}>
-              <CalendarIcon aria-hidden="true" />
               預約開始時間
             </label>
             {(reservationDate || reservationTime) && (
@@ -426,7 +413,6 @@ const EventInfoSection = ({
         ref={setFieldRef('detailImage')}
       >
         <label id="detailImage-label" className={label}>
-          <PhotoIcon aria-hidden="true" />
           詳細說明圖片
         </label>
         <p id="detailImage-hint" className={helperText}>

@@ -8,7 +8,7 @@ export const formGroup = css({
 
 export const label = css({
   textStyle: 'bodySmall',
-  fontWeight: 'medium',
+  fontWeight: 'bold',
   color: 'color.text.primary',
   display: 'flex',
   alignItems: 'center',
