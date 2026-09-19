@@ -269,7 +269,7 @@ const EventInfoSection = ({
           </div>
         </label>
         <p id="addressName-hint" className={helperText}>
-          建議先輸入店家名稱，比較容易搜尋到（搜尋不到的話，再試試看輸入地址）
+          建議先搜尋店家名稱，如果搜尋不到店家再搜尋店家地址
         </p>
         <PlaceAutocomplete
           onPlaceSelect={handlePlaceSelect}
