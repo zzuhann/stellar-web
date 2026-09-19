@@ -55,7 +55,7 @@ interface DesktopFavoriteButtonProps {
 }
 
 export default function DesktopFavoriteButton({ eventId }: DesktopFavoriteButtonProps) {
-  const { user, toggleAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const favoriteToggle = useFavoriteToggle();
   const { data: favoriteStatus, isLoading } = useFavoriteStatus(eventId);
 
@@ -64,7 +64,7 @@ export default function DesktopFavoriteButton({ eventId }: DesktopFavoriteButton
 
   const handleClick = () => {
     if (!user) {
-      toggleAuthModal(undefined, () => {
+      openAuthModal(undefined, () => {
         favoriteToggle.mutate({ eventId, isFavorited: false });
       });
       return;

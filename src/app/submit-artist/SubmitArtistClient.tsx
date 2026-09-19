@@ -41,7 +41,7 @@ const loadingText = css({
 });
 
 export default function SubmitArtistClient() {
-  const { user, loading, authModalOpen, toggleAuthModal } = useAuth();
+  const { user, loading, authModalOpen, openAuthModal } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
@@ -59,35 +59,35 @@ export default function SubmitArtistClient() {
     retry: false,
   });
 
-  const openedModalRef = useRef(false);
   const prevModalOpenRef = useRef(false);
   const wasLoggedInRef = useRef(false);
 
-  // Open auth modal when unauthenticated; check !authModalOpen to avoid toggling it closed
+  // Open auth modal when unauthenticated; check !authModalOpen to avoid re-opening it needlessly.
+  // openAuthModal sets state directly (not a toggle), so calling it more than once (e.g. React
+  // Strict Mode's double-invoke in dev) is idempotent — no more open/close cancel-out.
   useEffect(() => {
     if (!loading && !user && !authModalOpen) {
-      openedModalRef.current = true;
-      toggleAuthModal();
+      openAuthModal();
     }
     // user intentionally omitted: this effect should only run once when auth resolves,
     // not re-run on logout (handled by wasLoggedInRef effect below)
     // authModalOpen intentionally omitted: reading it here would create a stale closure loop
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, toggleAuthModal]);
+  }, [loading, openAuthModal]);
 
   // Reset ref after successful login
   useEffect(() => {
     if (user) {
-      openedModalRef.current = false;
       wasLoggedInRef.current = true;
     }
   }, [user]);
 
-  // Redirect home only when modal transitions from open → closed without logging in
+  // Redirect home when modal transitions from open → closed without logging in,
+  // regardless of who opened it (this page, header nav, favorite button, etc.)
   useEffect(() => {
     const wasOpen = prevModalOpenRef.current;
     prevModalOpenRef.current = authModalOpen;
-    if (openedModalRef.current && wasOpen && !authModalOpen && !user) {
+    if (wasOpen && !authModalOpen && !user) {
       router.push('/');
     }
   }, [authModalOpen, user, router]);
