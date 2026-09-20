@@ -19,6 +19,7 @@ import {
 } from '@/utils';
 import { scrollToFirstErrorField } from '@/utils/formHelpers';
 import { buildReservationPayload } from './reservationPayload';
+import { computeEventFormProgress } from './formProgress';
 import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
 import EventInfoSection from './EventInfoSection';
@@ -239,11 +240,25 @@ function EventSubmissionForm({
       : undefined,
   });
 
+  const title = useWatch({ control, name: 'title' }) ?? '';
   const startDate = useWatch({ control, name: 'startDate' }) ?? '';
   const endDate = useWatch({ control, name: 'endDate' }) ?? '';
+  const addressName = useWatch({ control, name: 'addressName' }) ?? '';
   const description = useWatch({ control, name: 'description' }) ?? '';
+  const instagram = useWatch({ control, name: 'instagram' }) ?? '';
+  const threads = useWatch({ control, name: 'threads' }) ?? '';
   const reservationDate = useWatch({ control, name: 'reservationDate' }) ?? '';
   const reservationTime = useWatch({ control, name: 'reservationTime' }) ?? '';
+
+  const formProgress = computeEventFormProgress({
+    title,
+    startDate,
+    endDate,
+    addressName,
+    mainImage: mainImageUrl,
+    instagram,
+    threads,
+  });
 
   const createEventMutation = useCreateEventMutation({ onSuccess });
   const updateEventMutation = useUpdateEventMutation({ onSuccess });
@@ -623,6 +638,7 @@ function EventSubmissionForm({
             handleChangeReservationDate={handleChangeReservationDate}
             handleChangeReservationTime={handleChangeReservationTime}
             setFieldRef={setFieldRef}
+            progress={formProgress}
           />
         )}
 

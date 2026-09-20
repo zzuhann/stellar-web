@@ -23,6 +23,8 @@ import { FieldErrors, UseFormRegister } from 'react-hook-form';
 import { EventSubmissionFormData } from '@/lib/validations';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import { dateToTaipeiDateString } from '@/utils';
+import FormProgressHeader from './FormProgressHeader';
+import { EventFormProgress } from './formProgress';
 
 const textarea = css({
   width: '100%',
@@ -102,6 +104,7 @@ type EventInfoSectionProps = {
   handleChangeReservationDate: (date: string) => void;
   handleChangeReservationTime: (time: string) => void;
   setFieldRef: (name: string) => (el: HTMLElement | null) => void;
+  progress: EventFormProgress;
 };
 
 const EventInfoSection = ({
@@ -124,11 +127,14 @@ const EventInfoSection = ({
   handleChangeReservationDate,
   handleChangeReservationTime,
   setFieldRef,
+  progress,
 }: EventInfoSectionProps) => {
   const { token } = useAuthToken();
 
   return (
     <>
+      <FormProgressHeader progress={progress} />
+
       {/* 活動標題 */}
       <div className={formGroup} ref={setFieldRef('title')}>
         <label className={label} htmlFor="title">
