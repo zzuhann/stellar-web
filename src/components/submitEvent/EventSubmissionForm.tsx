@@ -462,13 +462,13 @@ function EventSubmissionForm({
     'artistIds',
     'title',
     'mainImage',
+    'detailImage',
     'startDate',
     'endDate',
     'addressName',
     'reservationUrl',
     'reservationTime',
     'description',
-    'detailImage',
     'instagram',
   ];
   const handleInvalidSubmit = (errors: FieldErrors<EventSubmissionFormData>) => {

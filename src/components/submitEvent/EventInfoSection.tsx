@@ -10,7 +10,6 @@ import {
   sectionTitle,
   reservationTimeRow,
   reservationTimeField,
-  captionLabel,
   reservationLabelRow,
   clearReservationButton,
 } from './styles';
@@ -189,6 +188,37 @@ const EventInfoSection = ({
         )}
       </div>
 
+      {/* 詳細說明圖片 */}
+      <div
+        className={formGroup}
+        role="group"
+        aria-labelledby="detailImage-label"
+        ref={setFieldRef('detailImage')}
+      >
+        <label id="detailImage-label" className={label}>
+          詳細說明圖片
+        </label>
+        <p id="detailImage-hint" className={helperText}>
+          除了主視覺圖片以外的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳 10 張
+        </p>
+        <MultiImageUpload
+          currentImages={detailImageUrls}
+          onImagesChange={handleChangeImages}
+          maxImages={10}
+          placeholder="點擊新增圖片"
+          maxSizeMB={5}
+          disabled={isPending}
+          authToken={token || undefined}
+          compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
+        />
+        <input type="hidden" {...register('detailImage')} aria-hidden="true" />
+        {errors.detailImage && (
+          <p id="detailImage-error" className={errorText} role="alert">
+            {errors.detailImage.message}
+          </p>
+        )}
+      </div>
+
       {/* 活動時間 */}
       <div className={gridContainer}>
         <div className={formGroup} ref={setFieldRef('startDate')}>
@@ -258,7 +288,7 @@ const EventInfoSection = ({
           </div>
         </label>
         <p id="addressName-hint" className={helperText}>
-          搜尋店家名稱或地址（出現選項之後，選擇正確的店家即可！）
+          先打店家名稱（例如「留白咖啡」），找不到時再改用地址。
         </p>
         <PlaceAutocomplete
           onPlaceSelect={handlePlaceSelect}
@@ -334,9 +364,6 @@ const EventInfoSection = ({
           </div>
           <div className={reservationTimeRow}>
             <div className={reservationTimeField}>
-              <span className={captionLabel} id="reservationDate-label">
-                日期
-              </span>
               <DatePicker
                 value={reservationDate}
                 onChange={handleChangeReservationDate}
@@ -347,9 +374,6 @@ const EventInfoSection = ({
               <input type="hidden" {...register('reservationDate')} aria-hidden="true" />
             </div>
             <div className={reservationTimeField}>
-              <span className={captionLabel} id="reservationTime-label">
-                時間
-              </span>
               <TimePicker
                 value={reservationTime}
                 onChange={handleChangeReservationTime}
@@ -401,37 +425,6 @@ const EventInfoSection = ({
         {errors.description && (
           <p id="description-error" className={errorText} role="alert">
             {errors.description.message}
-          </p>
-        )}
-      </div>
-
-      {/* 詳細說明圖片 */}
-      <div
-        className={formGroup}
-        role="group"
-        aria-labelledby="detailImage-label"
-        ref={setFieldRef('detailImage')}
-      >
-        <label id="detailImage-label" className={label}>
-          詳細說明圖片
-        </label>
-        <p id="detailImage-hint" className={helperText}>
-          除了主視覺圖片以外的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳 10 張
-        </p>
-        <MultiImageUpload
-          currentImages={detailImageUrls}
-          onImagesChange={handleChangeImages}
-          maxImages={10}
-          placeholder="點擊新增圖片"
-          maxSizeMB={5}
-          disabled={isPending}
-          authToken={token || undefined}
-          compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
-        />
-        <input type="hidden" {...register('detailImage')} aria-hidden="true" />
-        {errors.detailImage && (
-          <p id="detailImage-error" className={errorText} role="alert">
-            {errors.detailImage.message}
           </p>
         )}
       </div>
