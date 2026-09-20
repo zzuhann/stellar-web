@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildReservationPayload } from './reservationPayload';
+import { buildReservationPayload, shouldEnableReservationByDefault } from './reservationPayload';
 import type { EventSubmissionFormData } from '@/lib/validations';
 
 const baseData: EventSubmissionFormData = {
@@ -69,5 +69,34 @@ describe('buildReservationPayload', () => {
       reservationTime: '20:00',
     });
     expect(result.startAt).toBeUndefined();
+  });
+});
+
+describe('shouldEnableReservationByDefault', () => {
+  it('新建活動（reservation 為 undefined）預設關閉', () => {
+    expect(shouldEnableReservationByDefault(undefined)).toBe(false);
+  });
+
+  it('既有活動的 reservation 為空物件時預設關閉', () => {
+    expect(shouldEnableReservationByDefault({})).toBe(false);
+  });
+
+  it('既有活動只有 url 時預設開啟', () => {
+    expect(shouldEnableReservationByDefault({ url: 'https://forms.gle/xxxx' })).toBe(true);
+  });
+
+  it('既有活動只有 startAt 時預設開啟', () => {
+    expect(shouldEnableReservationByDefault({ startAt: { _seconds: 0, _nanoseconds: 0 } })).toBe(
+      true
+    );
+  });
+
+  it('既有活動 url 與 startAt 皆有時預設開啟', () => {
+    expect(
+      shouldEnableReservationByDefault({
+        url: 'https://forms.gle/xxxx',
+        startAt: { _seconds: 0, _nanoseconds: 0 },
+      })
+    ).toBe(true);
   });
 });
