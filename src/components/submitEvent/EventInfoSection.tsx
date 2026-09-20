@@ -176,71 +176,6 @@ const EventInfoSection = ({
         )}
       </div>
 
-      {/* 主視覺圖片 */}
-      <div
-        className={formGroup}
-        role="group"
-        aria-labelledby="mainImage-label"
-        ref={setFieldRef('mainImage')}
-      >
-        <label id="mainImage-label" className={label}>
-          <div>
-            主視覺圖片<span aria-hidden="true">*</span>
-            <span className="sr-only">（必填）</span>
-          </div>
-        </label>
-        <p id="mainImage-hint" className={helperText}>
-          主要宣傳圖片(推薦上傳比例 3:4)
-        </p>
-        <ImageUpload
-          currentImageUrl={mainImageUrl}
-          onUploadComplete={onUploadComplete}
-          compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
-          placeholder="點擊上傳主視覺圖片"
-          maxSizeMB={5}
-          disabled={isPending}
-          authToken={token || undefined}
-          enableCrop={false}
-        />
-        <input type="hidden" {...register('mainImage')} aria-hidden="true" />
-        {errors.mainImage && (
-          <p id="mainImage-error" className={errorText} role="alert">
-            {errors.mainImage.message}
-          </p>
-        )}
-      </div>
-
-      {/* 詳細說明圖片 */}
-      <div
-        className={formGroup}
-        role="group"
-        aria-labelledby="detailImage-label"
-        ref={setFieldRef('detailImage')}
-      >
-        <label id="detailImage-label" className={label}>
-          詳細說明圖片
-        </label>
-        <p id="detailImage-hint" className={helperText}>
-          除了主視覺圖片以外的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳 10 張
-        </p>
-        <MultiImageUpload
-          currentImages={detailImageUrls}
-          onImagesChange={handleChangeImages}
-          maxImages={10}
-          placeholder="點擊新增圖片"
-          maxSizeMB={5}
-          disabled={isPending}
-          authToken={token || undefined}
-          compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
-        />
-        <input type="hidden" {...register('detailImage')} aria-hidden="true" />
-        {errors.detailImage && (
-          <p id="detailImage-error" className={errorText} role="alert">
-            {errors.detailImage.message}
-          </p>
-        )}
-      </div>
-
       {/* 活動時間 */}
       <div className={gridContainer}>
         <div className={formGroup} ref={setFieldRef('startDate')}>
@@ -473,6 +408,71 @@ const EventInfoSection = ({
               )}
             </div>
           </>
+        )}
+      </div>
+
+      {/* 主視覺圖片 */}
+      <div
+        className={formGroup}
+        role="group"
+        aria-labelledby="mainImage-label"
+        ref={setFieldRef('mainImage')}
+      >
+        <label id="mainImage-label" className={label}>
+          <div>
+            主視覺圖片<span aria-hidden="true">*</span>
+            <span className="sr-only">（必填）</span>
+          </div>
+        </label>
+        <p id="mainImage-hint" className={helperText}>
+          主要宣傳圖片(推薦上傳比例 3:4)
+        </p>
+        <ImageUpload
+          currentImageUrl={mainImageUrl}
+          onUploadComplete={onUploadComplete}
+          compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
+          placeholder="點擊上傳主視覺圖片"
+          maxSizeMB={5}
+          disabled={isPending}
+          authToken={token || undefined}
+          enableCrop={false}
+        />
+        <input type="hidden" {...register('mainImage')} aria-hidden="true" />
+        {errors.mainImage && (
+          <p id="mainImage-error" className={errorText} role="alert">
+            {errors.mainImage.message}
+          </p>
+        )}
+      </div>
+
+      {/* 詳細說明圖片 */}
+      <div
+        className={formGroup}
+        role="group"
+        aria-labelledby="detailImage-label"
+        ref={setFieldRef('detailImage')}
+      >
+        <label id="detailImage-label" className={label}>
+          詳細說明圖片
+        </label>
+        <p id="detailImage-hint" className={helperText}>
+          除了主視覺圖片以外的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳 10 張
+        </p>
+        <MultiImageUpload
+          currentImages={detailImageUrls}
+          onImagesChange={handleChangeImages}
+          maxImages={10}
+          placeholder="點擊新增圖片"
+          maxSizeMB={5}
+          disabled={isPending}
+          authToken={token || undefined}
+          compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
+        />
+        <input type="hidden" {...register('detailImage')} aria-hidden="true" />
+        {errors.detailImage && (
+          <p id="detailImage-error" className={errorText} role="alert">
+            {errors.detailImage.message}
+          </p>
         )}
       </div>
 

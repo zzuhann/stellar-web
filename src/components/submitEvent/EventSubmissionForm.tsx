@@ -498,14 +498,14 @@ function EventSubmissionForm({
   const FIELD_ORDER = [
     'artistIds',
     'title',
-    'mainImage',
-    'detailImage',
     'startDate',
     'endDate',
     'addressName',
     'instagram',
     'reservationUrl',
     'reservationTime',
+    'mainImage',
+    'detailImage',
     'description',
   ];
   const handleInvalidSubmit = (errors: FieldErrors<EventSubmissionFormData>) => {
