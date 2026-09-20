@@ -1,4 +1,4 @@
-import { ChevronDownIcon, UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { errorText, formGroup, helperText, label } from './styles';
 import { Artist } from '@/types';
 import { css } from '@/styled-system/css';
@@ -110,7 +110,6 @@ const ChooseArtistSection = ({
       ref={setFieldRef?.('artistIds')}
     >
       <label id="artistIds-label" className={label}>
-        <UserIcon aria-hidden="true" />
         <div>
           應援藝人<span aria-hidden="true">*</span>
         </div>
