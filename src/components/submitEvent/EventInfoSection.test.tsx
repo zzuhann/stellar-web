@@ -7,13 +7,12 @@ import EventInfoSection from './EventInfoSection';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
 
 // EventInfoSection 掛載了 ImageUpload / MultiImageUpload / PlaceAutocomplete / DatePicker /
-// TimePicker / FormProgressHeader 等重依賴（Firebase auth、Google Places API），
+// TimePicker 等重依賴（Firebase auth、Google Places API），
 // 這些跟預約開關的行為無關，改用輕量替身；DatePicker/TimePicker 保留可操作的 input
 // 好讓測試能模擬「已填寫預約日期/時間」再驗證關閉開關會清空。
 vi.mock('../images/ImageUpload', () => ({ default: () => null }));
 vi.mock('../images/MultiImageUpload', () => ({ default: () => null }));
 vi.mock('../forms/PlaceAutocomplete', () => ({ default: () => null }));
-vi.mock('./FormProgressHeader', () => ({ default: () => null }));
 vi.mock('@/hooks/useAuthToken', () => ({ useAuthToken: () => ({ token: null }) }));
 vi.mock('../DatePicker', () => ({
   default: ({
@@ -136,7 +135,6 @@ function Harness({
         handleChangeInstagram={handleChangeInstagram}
         handleChangeThreads={handleChangeThreads}
         setFieldRef={() => () => {}}
-        progress={{ completed: 0, total: 5, segments: [false, false, false, false, false] }}
       />
       <button type="submit">送出</button>
     </form>
