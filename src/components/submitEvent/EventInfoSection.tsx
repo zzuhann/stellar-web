@@ -387,6 +387,7 @@ const EventInfoSection = ({
             checked={reservationEnabled}
             onChange={onToggleReservation}
             label="需要事先預約或報名"
+            disabled={isPending}
           />
         </div>
 

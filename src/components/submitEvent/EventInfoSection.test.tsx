@@ -62,10 +62,12 @@ function Harness({
   initialEnabled,
   initialValues,
   onSubmit,
+  isPending = false,
 }: {
   initialEnabled: boolean;
   initialValues?: Partial<EventSubmissionFormData>;
   onSubmit: (data: EventSubmissionFormData) => void;
+  isPending?: boolean;
 }) {
   const [reservationEnabled, setReservationEnabled] = useState(initialEnabled);
   const {
@@ -113,7 +115,7 @@ function Harness({
         errors={errors}
         mainImageUrl=""
         onUploadComplete={() => {}}
-        isPending={false}
+        isPending={isPending}
         handleChangeStartDate={() => {}}
         handleChangeEndDate={() => {}}
         handlePlaceSelect={() => {}}
@@ -226,6 +228,18 @@ describe('EventInfoSection 預約開關', () => {
     fireEvent.click(screen.getByText('送出'));
 
     await vi.waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+  });
+
+  it('送出中（isPending）時開關被鎖定，點擊不會觸發切換', () => {
+    render(<Harness initialEnabled={false} isPending={true} onSubmit={vi.fn()} />);
+
+    const toggle = screen.getByRole('switch', { name: '需要事先預約或報名' });
+    expect((toggle as HTMLButtonElement).disabled).toBe(true);
+
+    fireEvent.click(toggle);
+
+    // 開關仍是關閉狀態，且不應渲染出開啟後才有的欄位
+    expect(screen.queryByLabelText('預約網址')).toBeNull();
   });
 });
 
