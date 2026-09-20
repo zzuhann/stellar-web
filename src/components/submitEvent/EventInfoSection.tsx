@@ -245,7 +245,7 @@ const EventInfoSection = ({
           </div>
         </label>
         <p id="addressName-hint" className={helperText}>
-          先打店家名稱（例如「留白咖啡」），找不到時再改用地址。
+          先打店家名稱（例如「留白時間」），找不到時再改用地址。
         </p>
         <PlaceAutocomplete
           onPlaceSelect={handlePlaceSelect}
@@ -270,7 +270,7 @@ const EventInfoSection = ({
           社群媒體（請填寫 ID 即可，而非完整網址）
         </h3>
         <p id="social-media-hint" className={helperText}>
-          請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗
+          請提供主要公布資訊的社群平台
         </p>
 
         <div className={gridContainer} style={{ marginTop: '8px' }}>
@@ -413,7 +413,7 @@ const EventInfoSection = ({
 
       {/* 主視覺圖片 */}
       <div
-        className={formGroup}
+        className={`${sectionDivider} ${formGroup}`}
         role="group"
         aria-labelledby="mainImage-label"
         ref={setFieldRef('mainImage')}
@@ -477,7 +477,7 @@ const EventInfoSection = ({
       </div>
 
       {/* 活動描述 */}
-      <div className={`${sectionDivider} ${formGroup}`} ref={setFieldRef('description')}>
+      <div className={formGroup} ref={setFieldRef('description')}>
         <label className={label} htmlFor="description">
           詳細說明
         </label>
