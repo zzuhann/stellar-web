@@ -46,7 +46,7 @@ describe('SocialAccountRows', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: '新增共同主辦' }));
+    fireEvent.click(screen.getByRole('button', { name: '新增共同主辦 - Instagram' }));
 
     expect(screen.getAllByPlaceholderText('boynextdoor_official')).toHaveLength(2);
     expect(screen.getAllByRole('button', { name: /移除/ })).toHaveLength(2);
@@ -100,7 +100,7 @@ describe('SocialAccountRows', () => {
       />
     );
 
-    fireEvent.click(screen.getByRole('button', { name: '新增共同主辦' }));
+    fireEvent.click(screen.getByRole('button', { name: '新增共同主辦 - Instagram' }));
 
     expect(onChange).toHaveBeenLastCalledWith('stellar_tw');
   });

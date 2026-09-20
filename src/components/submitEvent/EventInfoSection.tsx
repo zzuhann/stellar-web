@@ -22,6 +22,7 @@ import TimePicker from '../TimePicker';
 import PlaceAutocomplete from '../forms/PlaceAutocomplete';
 import MultiImageUpload from '../images/MultiImageUpload';
 import Switch from '../ui/Switch';
+import SocialAccountRows from './SocialAccountRows';
 import { FieldErrors, UseFormRegister } from 'react-hook-form';
 import { EventSubmissionFormData } from '@/lib/validations';
 import { useAuthToken } from '@/hooks/useAuthToken';
@@ -108,6 +109,10 @@ type EventInfoSectionProps = {
   handleChangeReservationTime: (time: string) => void;
   reservationEnabled: boolean;
   onToggleReservation: () => void;
+  instagram: string;
+  threads: string;
+  handleChangeInstagram: (value: string) => void;
+  handleChangeThreads: (value: string) => void;
   setFieldRef: (name: string) => (el: HTMLElement | null) => void;
   progress: EventFormProgress;
 };
@@ -133,6 +138,10 @@ const EventInfoSection = ({
   handleChangeReservationTime,
   reservationEnabled,
   onToggleReservation,
+  instagram,
+  threads,
+  handleChangeInstagram,
+  handleChangeThreads,
   setFieldRef,
   progress,
 }: EventInfoSectionProps) => {
@@ -315,6 +324,54 @@ const EventInfoSection = ({
         )}
       </div>
 
+      {/* 聯絡資訊 */}
+      <div
+        className={sectionDivider}
+        role="group"
+        aria-labelledby="social-media-title"
+        ref={setFieldRef('instagram')}
+      >
+        <h3 id="social-media-title" className={sectionTitle}>
+          社群媒體（請填寫 ID 即可，而非完整網址）
+        </h3>
+        <p id="social-media-hint" className={helperText}>
+          請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗
+        </p>
+
+        <div className={gridContainer} style={{ marginTop: '8px' }}>
+          {errors.instagram && errors.instagram.type === 'custom' && (
+            <p
+              id="social-media-error"
+              className={errorText}
+              style={{ marginTop: '8px' }}
+              role="alert"
+            >
+              {errors.instagram.message}
+            </p>
+          )}
+          <SocialAccountRows
+            fieldId="instagram"
+            fieldLabel="Instagram"
+            placeholderExample="boynextdoor_official"
+            initialValue={instagram}
+            onChange={handleChangeInstagram}
+            disabled={isPending}
+            describedBy="social-media-hint"
+          />
+          <SocialAccountRows
+            fieldId="threads"
+            fieldLabel="Threads"
+            placeholderExample="_stellar.tw"
+            initialValue={threads}
+            onChange={handleChangeThreads}
+            disabled={isPending}
+            describedBy="social-media-hint"
+          />
+        </div>
+        <input type="hidden" {...register('instagram')} aria-hidden="true" />
+        <input type="hidden" {...register('threads')} aria-hidden="true" />
+      </div>
+
       {/* 預約資訊 */}
       <div className={sectionDivider} role="group" aria-labelledby="reservation-title">
         <div className={reservationToggleRow}>
@@ -453,63 +510,6 @@ const EventInfoSection = ({
             {errors.description.message}
           </p>
         )}
-      </div>
-
-      {/* 聯絡資訊 */}
-      <div
-        className={sectionDivider}
-        role="group"
-        aria-labelledby="social-media-title"
-        ref={setFieldRef('instagram')}
-      >
-        <h3 id="social-media-title" className={sectionTitle}>
-          社群媒體（請填寫 ID 即可，而非完整網址）
-        </h3>
-        <p id="social-media-hint" className={helperText}>
-          請提供主要公布資訊的社群平台，請至少填寫一項，若無則會審核失敗
-        </p>
-        <p className={helperText}>
-          若為聯合主辦，可以用半形逗號分隔 id，例如: stellar_tw, stellar_jp
-        </p>
-
-        <div className={gridContainer} style={{ marginTop: '8px' }}>
-          {errors.instagram && errors.instagram.type === 'custom' && (
-            <p
-              id="social-media-error"
-              className={errorText}
-              style={{ marginTop: '8px' }}
-              role="alert"
-            >
-              {errors.instagram.message}
-            </p>
-          )}
-          <div className={formGroup}>
-            <label className={label} htmlFor="instagram">
-              Instagram
-            </label>
-            <input
-              className={input}
-              id="instagram"
-              type="text"
-              placeholder="填寫 id 例如: boynextdoor_official"
-              {...register('instagram')}
-              aria-describedby="social-media-hint"
-            />
-          </div>
-          <div className={formGroup}>
-            <label className={label} htmlFor="threads">
-              Threads
-            </label>
-            <input
-              className={input}
-              id="threads"
-              type="text"
-              placeholder="填寫 id 例如: _stellar.tw"
-              {...register('threads')}
-              aria-describedby="social-media-hint"
-            />
-          </div>
-        </div>
       </div>
     </>
   );

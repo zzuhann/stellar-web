@@ -82,9 +82,15 @@ function Harness({
   const startDate = useWatch({ control, name: 'startDate' }) ?? '';
   const endDate = useWatch({ control, name: 'endDate' }) ?? '';
   const description = useWatch({ control, name: 'description' }) ?? '';
+  const instagram = useWatch({ control, name: 'instagram' }) ?? '';
+  const threads = useWatch({ control, name: 'threads' }) ?? '';
   const reservationDate = useWatch({ control, name: 'reservationDate' }) ?? '';
   const reservationTime = useWatch({ control, name: 'reservationTime' }) ?? '';
 
+  const handleChangeInstagram = (value: string) =>
+    setValue('instagram', value, { shouldValidate: true, shouldDirty: true });
+  const handleChangeThreads = (value: string) =>
+    setValue('threads', value, { shouldValidate: true, shouldDirty: true });
   const handleChangeReservationDate = (date: string) =>
     setValue('reservationDate', date, { shouldDirty: true });
   const handleChangeReservationTime = (time: string) =>
@@ -123,6 +129,10 @@ function Harness({
         handleChangeReservationTime={handleChangeReservationTime}
         reservationEnabled={reservationEnabled}
         onToggleReservation={handleToggleReservation}
+        instagram={instagram}
+        threads={threads}
+        handleChangeInstagram={handleChangeInstagram}
+        handleChangeThreads={handleChangeThreads}
         setFieldRef={() => () => {}}
         progress={{ completed: 0, total: 5, segments: [false, false, false, false, false] }}
       />
@@ -216,5 +226,65 @@ describe('EventInfoSection 預約開關', () => {
     fireEvent.click(screen.getByText('送出'));
 
     await vi.waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe('EventInfoSection 主辦社群多列輸入', () => {
+  it('編輯模式帶入逗號分隔字串時，正確 split 顯示成多列並各自帶入正確值', () => {
+    render(
+      <Harness
+        initialEnabled={false}
+        initialValues={{ instagram: 'stellar_tw,stellar_jp', threads: 'stellar_thread' }}
+        onSubmit={vi.fn()}
+      />
+    );
+
+    expect((screen.getByLabelText('Instagram 帳號 1') as HTMLInputElement).value).toBe(
+      'stellar_tw'
+    );
+    expect((screen.getByLabelText('Instagram 帳號 2') as HTMLInputElement).value).toBe(
+      'stellar_jp'
+    );
+    // Threads 只有一個帳號時不需要編號，直接用欄位本身的 label 關聯
+    expect((screen.getByLabelText('Threads') as HTMLInputElement).value).toBe('stellar_thread');
+  });
+
+  it('新增一列並填寫後送出，instagram 欄位是 join 回去的逗號+空格字串', async () => {
+    const onSubmit = vi.fn();
+    render(
+      <Harness
+        initialEnabled={false}
+        initialValues={{ instagram: 'stellar_tw', threads: '' }}
+        onSubmit={onSubmit}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '新增共同主辦 - Instagram' }));
+    fireEvent.change(screen.getByLabelText('Instagram 帳號 2'), {
+      target: { value: 'stellar_jp' },
+    });
+    fireEvent.click(screen.getByText('送出'));
+
+    await vi.waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    const submittedData = onSubmit.mock.calls[0][0] as EventSubmissionFormData;
+    expect(submittedData.instagram).toBe('stellar_tw, stellar_jp');
+  });
+
+  it('移除一列後送出，不會殘留逗號夾空值', async () => {
+    const onSubmit = vi.fn();
+    render(
+      <Harness
+        initialEnabled={false}
+        initialValues={{ instagram: 'stellar_tw,stellar_jp', threads: '' }}
+        onSubmit={onSubmit}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: '移除 Instagram 帳號 2' }));
+    fireEvent.click(screen.getByText('送出'));
+
+    await vi.waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    const submittedData = onSubmit.mock.calls[0][0] as EventSubmissionFormData;
+    expect(submittedData.instagram).toBe('stellar_tw');
   });
 });

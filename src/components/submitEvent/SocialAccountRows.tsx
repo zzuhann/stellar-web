@@ -139,7 +139,12 @@ const SocialAccountRows = ({
           </div>
         ))}
       </div>
-      <button type="button" className={addRowButton} onClick={handleAddRow}>
+      <button
+        type="button"
+        className={addRowButton}
+        onClick={handleAddRow}
+        aria-label={`新增共同主辦 - ${fieldLabel}`}
+      >
         <PlusIcon width={16} height={16} aria-hidden="true" />
         新增共同主辦
       </button>

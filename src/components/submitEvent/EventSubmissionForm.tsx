@@ -355,6 +355,14 @@ function EventSubmissionForm({
     setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
   };
 
+  const handleChangeInstagram = (value: string) => {
+    setValue('instagram', value, { shouldValidate: true, shouldDirty: true });
+  };
+
+  const handleChangeThreads = (value: string) => {
+    setValue('threads', value, { shouldValidate: true, shouldDirty: true });
+  };
+
   // 預約開始時間不做即時驗證，避免只選日期未選時間時就先跳出錯誤，送出時才驗證
   const handleChangeReservationDate = (date: string) => {
     setValue('reservationDate', date, { shouldDirty: true });
@@ -495,10 +503,10 @@ function EventSubmissionForm({
     'startDate',
     'endDate',
     'addressName',
+    'instagram',
     'reservationUrl',
     'reservationTime',
     'description',
-    'instagram',
   ];
   const handleInvalidSubmit = (errors: FieldErrors<EventSubmissionFormData>) => {
     scrollToFirstErrorField(
@@ -653,6 +661,10 @@ function EventSubmissionForm({
             handleChangeReservationTime={handleChangeReservationTime}
             reservationEnabled={reservationEnabled}
             onToggleReservation={handleToggleReservation}
+            instagram={instagram}
+            threads={threads}
+            handleChangeInstagram={handleChangeInstagram}
+            handleChangeThreads={handleChangeThreads}
             setFieldRef={setFieldRef}
             progress={formProgress}
           />
