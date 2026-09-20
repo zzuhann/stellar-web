@@ -11,6 +11,8 @@ import {
   reservationTimeRow,
   reservationTimeField,
   reservationLabelRow,
+  reservationToggleRow,
+  reservationToggleText,
   clearReservationButton,
 } from './styles';
 import ImageUpload from '../images/ImageUpload';
@@ -19,6 +21,7 @@ import DatePicker from '../DatePicker';
 import TimePicker from '../TimePicker';
 import PlaceAutocomplete from '../forms/PlaceAutocomplete';
 import MultiImageUpload from '../images/MultiImageUpload';
+import Switch from '../ui/Switch';
 import { FieldErrors, UseFormRegister } from 'react-hook-form';
 import { EventSubmissionFormData } from '@/lib/validations';
 import { useAuthToken } from '@/hooks/useAuthToken';
@@ -103,6 +106,8 @@ type EventInfoSectionProps = {
   reservationTime: string;
   handleChangeReservationDate: (date: string) => void;
   handleChangeReservationTime: (time: string) => void;
+  reservationEnabled: boolean;
+  onToggleReservation: () => void;
   setFieldRef: (name: string) => (el: HTMLElement | null) => void;
   progress: EventFormProgress;
 };
@@ -126,6 +131,8 @@ const EventInfoSection = ({
   reservationTime,
   handleChangeReservationDate,
   handleChangeReservationTime,
+  reservationEnabled,
+  onToggleReservation,
   setFieldRef,
   progress,
 }: EventInfoSectionProps) => {
@@ -310,92 +317,105 @@ const EventInfoSection = ({
 
       {/* 預約資訊 */}
       <div className={sectionDivider} role="group" aria-labelledby="reservation-title">
-        <h3 id="reservation-title" className={sectionTitle}>
-          預約資訊（選填）
-        </h3>
-        <p id="reservation-hint" className={helperText}>
-          若此活動需要預約或報名，可提供預約網址與開始預約日期、時間，不需預約則可略過。
-        </p>
-
-        <div
-          className={formGroup}
-          style={{ marginTop: '12px' }}
-          ref={setFieldRef('reservationUrl')}
-        >
-          <label className={label} htmlFor="reservationUrl">
-            預約網址
-          </label>
-          <input
-            className={input}
-            id="reservationUrl"
-            type="url"
-            inputMode="url"
-            placeholder="https://forms.gle/xxxx 或預約頁面網址"
-            {...register('reservationUrl')}
-            aria-invalid={!!errors.reservationUrl}
-            aria-describedby={errors.reservationUrl ? 'reservationUrl-error' : undefined}
+        <div className={reservationToggleRow}>
+          <div className={reservationToggleText}>
+            <h3 id="reservation-title" className={sectionTitle} style={{ marginBottom: 0 }}>
+              需要事先預約或報名嗎？
+            </h3>
+            <p id="reservation-hint" className={helperText}>
+              開啟後可填寫預約網址與開始預約日期、時間
+            </p>
+          </div>
+          <Switch
+            checked={reservationEnabled}
+            onChange={onToggleReservation}
+            label="需要事先預約或報名"
           />
-          {errors.reservationUrl && (
-            <p id="reservationUrl-error" className={errorText} role="alert">
-              {errors.reservationUrl.message}
-            </p>
-          )}
         </div>
 
-        <div
-          className={formGroup}
-          style={{ marginTop: '12px' }}
-          role="group"
-          aria-labelledby="reservationStartAt-label"
-          ref={setFieldRef('reservationTime')}
-        >
-          <div className={reservationLabelRow}>
-            <label id="reservationStartAt-label" className={label}>
-              預約開始時間
-            </label>
-            {(reservationDate || reservationTime) && (
-              <button
-                type="button"
-                className={clearReservationButton}
-                aria-label="清空預約開始時間"
-                onClick={() => {
-                  handleChangeReservationDate('');
-                  handleChangeReservationTime('');
-                }}
-              >
-                <XMarkIcon width={14} height={14} aria-hidden="true" />
-                清空
-              </button>
-            )}
-          </div>
-          <div className={reservationTimeRow}>
-            <div className={reservationTimeField}>
-              <DatePicker
-                value={reservationDate}
-                onChange={handleChangeReservationDate}
-                placeholder="選擇日期"
-                disabled={isPending}
-                error={!!errors.reservationTime}
+        {reservationEnabled && (
+          <>
+            <div
+              className={formGroup}
+              style={{ marginTop: '12px' }}
+              ref={setFieldRef('reservationUrl')}
+            >
+              <label className={label} htmlFor="reservationUrl">
+                預約網址
+              </label>
+              <input
+                className={input}
+                id="reservationUrl"
+                type="url"
+                inputMode="url"
+                placeholder="https://forms.gle/xxxx 或預約頁面網址"
+                {...register('reservationUrl')}
+                aria-invalid={!!errors.reservationUrl}
+                aria-describedby={errors.reservationUrl ? 'reservationUrl-error' : undefined}
               />
-              <input type="hidden" {...register('reservationDate')} aria-hidden="true" />
+              {errors.reservationUrl && (
+                <p id="reservationUrl-error" className={errorText} role="alert">
+                  {errors.reservationUrl.message}
+                </p>
+              )}
             </div>
-            <div className={reservationTimeField}>
-              <TimePicker
-                value={reservationTime}
-                onChange={handleChangeReservationTime}
-                placeholder="選擇時間"
-                disabled={isPending}
-                error={!!errors.reservationTime}
-              />
-              <input type="hidden" {...register('reservationTime')} aria-hidden="true" />
+
+            <div
+              className={formGroup}
+              style={{ marginTop: '12px' }}
+              role="group"
+              aria-labelledby="reservationStartAt-label"
+              ref={setFieldRef('reservationTime')}
+            >
+              <div className={reservationLabelRow}>
+                <label id="reservationStartAt-label" className={label}>
+                  預約開始時間
+                </label>
+                {(reservationDate || reservationTime) && (
+                  <button
+                    type="button"
+                    className={clearReservationButton}
+                    aria-label="清空預約開始時間"
+                    onClick={() => {
+                      handleChangeReservationDate('');
+                      handleChangeReservationTime('');
+                    }}
+                  >
+                    <XMarkIcon width={14} height={14} aria-hidden="true" />
+                    清空
+                  </button>
+                )}
+              </div>
+              <div className={reservationTimeRow}>
+                <div className={reservationTimeField}>
+                  <DatePicker
+                    value={reservationDate}
+                    onChange={handleChangeReservationDate}
+                    placeholder="選擇日期"
+                    disabled={isPending}
+                    error={!!errors.reservationTime}
+                  />
+                  <input type="hidden" {...register('reservationDate')} aria-hidden="true" />
+                </div>
+                <div className={reservationTimeField}>
+                  <TimePicker
+                    value={reservationTime}
+                    onChange={handleChangeReservationTime}
+                    placeholder="選擇時間"
+                    disabled={isPending}
+                    error={!!errors.reservationTime}
+                  />
+                  <input type="hidden" {...register('reservationTime')} aria-hidden="true" />
+                </div>
+              </div>
+              {errors.reservationTime && (
+                <p id="reservationStartAt-error" className={errorText} role="alert">
+                  {errors.reservationTime.message}
+                </p>
+              )}
             </div>
-          </div>
-          {errors.reservationTime && (
-            <p id="reservationStartAt-error" className={errorText} role="alert">
-              {errors.reservationTime.message}
-            </p>
-          )}
-        </div>
+          </>
+        )}
       </div>
 
       {/* 活動描述 */}

@@ -108,6 +108,18 @@ export const reservationLabelRow = css({
   gap: '2',
 });
 
+export const reservationToggleRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '4',
+});
+
+export const reservationToggleText = css({
+  flex: '1',
+  minWidth: '0',
+});
+
 export const clearReservationButton = css({
   display: 'inline-flex',
   alignItems: 'center',

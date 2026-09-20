@@ -18,7 +18,7 @@ import {
   taipeiDateTimeToTimestamp,
 } from '@/utils';
 import { scrollToFirstErrorField } from '@/utils/formHelpers';
-import { buildReservationPayload } from './reservationPayload';
+import { buildReservationPayload, shouldEnableReservationByDefault } from './reservationPayload';
 import { computeEventFormProgress } from './formProgress';
 import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
@@ -192,6 +192,9 @@ function EventSubmissionForm({
     }
     return [];
   });
+  const [reservationEnabled, setReservationEnabled] = useState(() =>
+    shouldEnableReservationByDefault(existingEvent?.reservation)
+  );
   const [mainImageUrl, setMainImageUrl] = useState<string>(existingEvent?.mainImage || '');
   const [detailImageUrls, setDetailImageUrls] = useState<string[]>(() => {
     if (existingEvent?.detailImage) {
@@ -359,6 +362,17 @@ function EventSubmissionForm({
 
   const handleChangeReservationTime = (time: string) => {
     setValue('reservationTime', time, { shouldDirty: true });
+  };
+
+  // 關閉開關時清空已填寫的預約資料，不是只隱藏——避免送出時殘留使用者看不到的舊值
+  const handleToggleReservation = () => {
+    const next = !reservationEnabled;
+    setReservationEnabled(next);
+    if (!next) {
+      setValue('reservationUrl', '', { shouldDirty: true });
+      handleChangeReservationDate('');
+      handleChangeReservationTime('');
+    }
   };
 
   const handleChangeImages = (imageUrls: string[]) => {
@@ -637,6 +651,8 @@ function EventSubmissionForm({
             reservationTime={reservationTime}
             handleChangeReservationDate={handleChangeReservationDate}
             handleChangeReservationTime={handleChangeReservationTime}
+            reservationEnabled={reservationEnabled}
+            onToggleReservation={handleToggleReservation}
             setFieldRef={setFieldRef}
             progress={formProgress}
           />
