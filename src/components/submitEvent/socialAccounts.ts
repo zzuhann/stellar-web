@@ -16,10 +16,12 @@ export function splitSocialAccounts(value: string): string[] {
 
 /**
  * 將多列輸入的值 join 回逗號分隔字串。
- * 過濾空白列，避免使用者新增列未填或刪除文字留空時產生 "a, , b" 這種夾空值的結果。
+ * 每一列自己也可能殘留舊式逗號字串（例如使用者貼上 "a,, b,"），先攤平拆解、trim、
+ * 濾空，確保不管使用者是分開打多列還是貼在單一列用逗號分隔，結果都一致。
  */
 export function joinSocialAccounts(accounts: string[]): string {
   return accounts
+    .flatMap((account) => account.split(','))
     .map((account) => account.trim())
     .filter((account) => account !== '')
     .join(SOCIAL_ACCOUNT_SEPARATOR);

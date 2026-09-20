@@ -132,6 +132,7 @@ const SocialAccountRows = ({
                 className={removeRowButton}
                 aria-label={`移除 ${fieldLabel} 帳號 ${index + 1}`}
                 onClick={() => handleRemoveRow(index)}
+                disabled={disabled}
               >
                 <XMarkIcon width={16} height={16} aria-hidden="true" />
               </button>
@@ -144,6 +145,7 @@ const SocialAccountRows = ({
         className={addRowButton}
         onClick={handleAddRow}
         aria-label={`新增共同主辦 - ${fieldLabel}`}
+        disabled={disabled}
       >
         <PlusIcon width={16} height={16} aria-hidden="true" />
         新增共同主辦

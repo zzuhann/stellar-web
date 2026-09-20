@@ -54,6 +54,16 @@ describe('joinSocialAccounts', () => {
   it('空陣列 join 回空字串', () => {
     expect(joinSocialAccounts([])).toBe('');
   });
+
+  it('單一列內殘留舊式逗號字串時，join 前會先拆解、trim、濾空，攤平成乾淨帳號陣列', () => {
+    expect(joinSocialAccounts(['a,, b,', 'c'])).toBe('a, b, c');
+  });
+
+  it('不論分開打多列或全部貼在單一列用逗號分隔，join 結果都一致', () => {
+    const separateRows = joinSocialAccounts(['a', 'b', 'c']);
+    const singleRowPasted = joinSocialAccounts(['a,, b,', 'c']);
+    expect(singleRowPasted).toBe(separateRows);
+  });
 });
 
 describe('split/join 往返穩定性（既有逗號字串 → 拆列顯示 → 使用者不改動 → 再 join 回去）', () => {

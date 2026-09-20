@@ -120,4 +120,32 @@ describe('SocialAccountRows', () => {
     const inputs = screen.getAllByPlaceholderText('boynextdoor_official') as HTMLInputElement[];
     inputs.forEach((el) => expect(el.disabled).toBe(true));
   });
+
+  it('disabled 為 true 時，新增和移除按鈕都被停用，點擊不會觸發 onChange', () => {
+    const onChange = vi.fn();
+    render(
+      <SocialAccountRows
+        fieldId="instagram"
+        fieldLabel="Instagram"
+        placeholderExample="boynextdoor_official"
+        initialValue="stellar_tw,stellar_jp"
+        onChange={onChange}
+        disabled
+      />
+    );
+
+    const addButton = screen.getByRole('button', {
+      name: '新增共同主辦 - Instagram',
+    }) as HTMLButtonElement;
+    const removeButton = screen.getByRole('button', {
+      name: '移除 Instagram 帳號 2',
+    }) as HTMLButtonElement;
+    expect(addButton.disabled).toBe(true);
+    expect(removeButton.disabled).toBe(true);
+
+    fireEvent.click(addButton);
+    fireEvent.click(removeButton);
+
+    expect(onChange).not.toHaveBeenCalled();
+  });
 });
