@@ -337,7 +337,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
                     {parseSocialMediaHandles(event.socialMedia.threads).map((handle, idx, arr) => (
                       <span key={handle}>
                         <a
-                          href={`https://www.threads.net/@${handle}`}
+                          href={`https://www.threads.com/@${handle}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           style={{ color: 'var(--colors-stellar-blue-500)' }}

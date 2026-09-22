@@ -343,7 +343,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
                     {parseSocialMediaHandles(event.socialMedia.threads).map((handle, idx, arr) => (
                       <span key={handle}>
                         <ExternalLink
-                          href={`https://www.threads.net/@${handle}`}
+                          href={`https://www.threads.com/@${handle}`}
                           platform="threads"
                           eventPage="/event/[id]"
                           contentId={event.id}

@@ -127,7 +127,7 @@ export default function RootLayout({
               logo: 'https://cdn.stellar-zone.com/images/og-image.png',
               sameAs: [
                 'https://www.instagram.com/stellar_tw',
-                'https://www.threads.net/@stellar_tw',
+                'https://www.threads.com/@stellar_tw',
               ],
             }),
           }}

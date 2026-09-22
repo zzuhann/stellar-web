@@ -242,7 +242,7 @@ export default function ContactPage() {
             </a>
             ，或是私訊 Threads{' '}
             <a
-              href="https://www.threads.net/@_stellar.tw"
+              href="https://www.threads.com/@_stellar.tw"
               target="_blank"
               rel="noopener noreferrer"
               className={emailLink}
