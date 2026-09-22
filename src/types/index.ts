@@ -95,9 +95,19 @@ export interface ApiResponse<T = unknown> {
   error?: string;
 }
 
+// GET /events 回傳的活動項目：datetime 已改為 ISO 8601 字串（跟 /events/map-data 一致）。
+// 其他回傳活動資料的 API（收藏、我的投稿等）沒有跟進，仍是 CoffeeEvent 的 FirebaseTimestamp 格式，
+// 所以不能直接改 CoffeeEvent 本身，只針對這支 API 的 response 另外定義型別。
+export type EventListItem = Omit<CoffeeEvent, 'datetime'> & {
+  datetime: {
+    start: string;
+    end: string;
+  };
+};
+
 // Events API 回應格式
 export interface EventsResponse {
-  events: CoffeeEvent[];
+  events: EventListItem[];
   pagination: {
     page: number;
     limit: number;
