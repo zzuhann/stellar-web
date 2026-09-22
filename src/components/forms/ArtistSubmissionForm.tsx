@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { FieldErrors, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { UserIcon, CalendarIcon, PhotoIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
 import { artistSubmissionSchema, ArtistSubmissionFormData } from '@/lib/validations';
 import { useArtistStore } from '@/store';
@@ -73,14 +72,11 @@ const formGroup = css({
 
 const label = css({
   textStyle: 'bodySmall',
-  fontWeight: 'medium',
+  fontWeight: 'bold',
   color: 'color.text.primary',
   display: 'flex',
   alignItems: 'center',
   gap: '2',
-  '@media (min-width: 768px)': {
-    textStyle: 'body',
-  },
   '& svg': {
     width: '18px',
     height: '18px',
@@ -537,7 +533,6 @@ export default function ArtistSubmissionForm({
         {/* 英文藝名 */}
         <div className={formGroup}>
           <label className={label} htmlFor="stageName">
-            <UserIcon aria-hidden="true" />
             <div>
               藝名（請填寫官方正名的英文名稱）<span aria-hidden="true">*</span>
             </div>
@@ -606,7 +601,6 @@ export default function ArtistSubmissionForm({
         {/* 生日 */}
         <div className={formGroup} ref={birthdayFieldRef}>
           <label className={label} htmlFor="birthday">
-            <CalendarIcon aria-hidden="true" />
             <div>
               生日<span aria-hidden="true">*</span>
               <span className="sr-only">（必填）</span>
@@ -635,7 +629,6 @@ export default function ArtistSubmissionForm({
         >
           <div className={formGroup}>
             <label id="profileImage-label" className={label}>
-              <PhotoIcon aria-hidden="true" />
               <div>
                 藝人照片<span aria-hidden="true">*</span>
                 <span className="sr-only">（必填）</span>

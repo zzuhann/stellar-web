@@ -8,8 +8,6 @@ const buttonGroup = css({
   flexDirection: 'column',
   gap: '3',
   paddingTop: '6',
-  borderTop: '1px solid',
-  borderTopColor: 'color.border.light',
   '@media (min-width: 480px)': {
     flexDirection: 'row',
     gap: '4',

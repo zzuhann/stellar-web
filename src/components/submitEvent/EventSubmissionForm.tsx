@@ -18,7 +18,7 @@ import {
   taipeiDateTimeToTimestamp,
 } from '@/utils';
 import { scrollToFirstErrorField } from '@/utils/formHelpers';
-import { buildReservationPayload } from './reservationPayload';
+import { buildReservationPayload, shouldEnableReservationByDefault } from './reservationPayload';
 import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
 import EventInfoSection from './EventInfoSection';
@@ -191,6 +191,9 @@ function EventSubmissionForm({
     }
     return [];
   });
+  const [reservationEnabled, setReservationEnabled] = useState(() =>
+    shouldEnableReservationByDefault(existingEvent?.reservation)
+  );
   const [mainImageUrl, setMainImageUrl] = useState<string>(existingEvent?.mainImage || '');
   const [detailImageUrls, setDetailImageUrls] = useState<string[]>(() => {
     if (existingEvent?.detailImage) {
@@ -242,6 +245,8 @@ function EventSubmissionForm({
   const startDate = useWatch({ control, name: 'startDate' }) ?? '';
   const endDate = useWatch({ control, name: 'endDate' }) ?? '';
   const description = useWatch({ control, name: 'description' }) ?? '';
+  const instagram = useWatch({ control, name: 'instagram' }) ?? '';
+  const threads = useWatch({ control, name: 'threads' }) ?? '';
   const reservationDate = useWatch({ control, name: 'reservationDate' }) ?? '';
   const reservationTime = useWatch({ control, name: 'reservationTime' }) ?? '';
 
@@ -337,6 +342,14 @@ function EventSubmissionForm({
     setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
   };
 
+  const handleChangeInstagram = (value: string) => {
+    setValue('instagram', value, { shouldValidate: true, shouldDirty: true });
+  };
+
+  const handleChangeThreads = (value: string) => {
+    setValue('threads', value, { shouldValidate: true, shouldDirty: true });
+  };
+
   // 預約開始時間不做即時驗證，避免只選日期未選時間時就先跳出錯誤，送出時才驗證
   const handleChangeReservationDate = (date: string) => {
     setValue('reservationDate', date, { shouldDirty: true });
@@ -344,6 +357,17 @@ function EventSubmissionForm({
 
   const handleChangeReservationTime = (time: string) => {
     setValue('reservationTime', time, { shouldDirty: true });
+  };
+
+  // 關閉開關時清空已填寫的預約資料，不是只隱藏——避免送出時殘留使用者看不到的舊值
+  const handleToggleReservation = () => {
+    const next = !reservationEnabled;
+    setReservationEnabled(next);
+    if (!next) {
+      setValue('reservationUrl', '', { shouldDirty: true });
+      handleChangeReservationDate('');
+      handleChangeReservationTime('');
+    }
   };
 
   const handleChangeImages = (imageUrls: string[]) => {
@@ -461,15 +485,15 @@ function EventSubmissionForm({
   const FIELD_ORDER = [
     'artistIds',
     'title',
-    'mainImage',
     'startDate',
     'endDate',
     'addressName',
+    'instagram',
     'reservationUrl',
     'reservationTime',
-    'description',
+    'mainImage',
     'detailImage',
-    'instagram',
+    'description',
   ];
   const handleInvalidSubmit = (errors: FieldErrors<EventSubmissionFormData>) => {
     scrollToFirstErrorField(
@@ -622,6 +646,12 @@ function EventSubmissionForm({
             reservationTime={reservationTime}
             handleChangeReservationDate={handleChangeReservationDate}
             handleChangeReservationTime={handleChangeReservationTime}
+            reservationEnabled={reservationEnabled}
+            onToggleReservation={handleToggleReservation}
+            instagram={instagram}
+            threads={threads}
+            handleChangeInstagram={handleChangeInstagram}
+            handleChangeThreads={handleChangeThreads}
             setFieldRef={setFieldRef}
           />
         )}

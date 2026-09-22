@@ -315,7 +315,7 @@ export default function EventPreviewDialog({ event, onClose }: EventPreviewDialo
                       (handle, index, handles) => (
                         <span key={handle}>
                           <a
-                            href={`https://www.threads.net/@${handle}`}
+                            href={`https://www.threads.com/@${handle}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className={link}

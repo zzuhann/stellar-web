@@ -8,7 +8,7 @@ export const formGroup = css({
 
 export const label = css({
   textStyle: 'bodySmall',
-  fontWeight: 'medium',
+  fontWeight: 'bold',
   color: 'color.text.primary',
   display: 'flex',
   alignItems: 'center',
@@ -106,6 +106,18 @@ export const reservationLabelRow = css({
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: '2',
+});
+
+export const reservationToggleRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '4',
+});
+
+export const reservationToggleText = css({
+  flex: '1',
+  minWidth: '0',
 });
 
 export const clearReservationButton = css({
