@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { eventsApi } from '@/lib/api';
-import { CoffeeEvent, EventSearchParams } from '@/types';
+import { EventListItem, EventSearchParams } from '@/types';
 
 interface FilterOptions {
   search?: string;
@@ -16,7 +16,7 @@ interface FilterOptions {
 }
 
 export interface EventsResponse {
-  events: CoffeeEvent[];
+  events: EventListItem[];
   pagination: {
     page: number;
     limit: number;
@@ -34,7 +34,7 @@ export interface EventsResponse {
 export function useEventFilters(filters: FilterOptions) {
   return useQuery({
     queryKey: ['events', filters],
-    queryFn: async (): Promise<CoffeeEvent[]> => {
+    queryFn: async (): Promise<EventListItem[]> => {
       const params: EventSearchParams = {};
 
       // 只添加有值的參數

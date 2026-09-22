@@ -165,9 +165,15 @@ export const formatReservationDateTime = (startAt: FirebaseTimestamp): string =>
 };
 
 // 簡短日期範圍，格式為「M/D」或「M/D - M/D」，明確使用 Asia/Taipei 時區（不受瀏覽器時區影響）
-export const formatEventDateShort = (start: FirebaseTimestamp, end: FirebaseTimestamp): string => {
-  const s = firebaseTimestampToDate(start);
-  const e = firebaseTimestampToDate(end);
+// 接受 FirebaseTimestamp 或 ISO 字串：GET /events 已改回傳 ISO 字串，其他呼叫端仍是舊格式
+export const formatEventDateShort = (
+  start: FirebaseTimestamp | string,
+  end: FirebaseTimestamp | string
+): string => {
+  const toDate = (value: FirebaseTimestamp | string): Date =>
+    typeof value === 'string' ? new Date(value) : firebaseTimestampToDate(value);
+  const s = toDate(start);
+  const e = toDate(end);
 
   const formatter = new Intl.DateTimeFormat('zh-TW', {
     timeZone: 'Asia/Taipei',

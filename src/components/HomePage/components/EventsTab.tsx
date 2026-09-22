@@ -1,4 +1,4 @@
-import { CoffeeEvent } from '@/types';
+import { EventListItem } from '@/types';
 import WeekEventCard from './WeekEventCard';
 import EmptyState from '../../EmptyState';
 import { css } from '@/styled-system/css';
@@ -50,7 +50,7 @@ function EventCardSkeleton() {
 }
 
 interface EventsTabProps {
-  events: CoffeeEvent[];
+  events: EventListItem[];
   loading: boolean;
 }
 
