@@ -91,7 +91,7 @@ interface EventBottomBarProps {
 }
 
 export default function EventBottomBar({ event }: EventBottomBarProps) {
-  const { user, toggleAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const favoriteToggle = useFavoriteToggle();
   const { data: favoriteStatus, isLoading: isFavoriteStatusLoading } = useFavoriteStatus(event.id);
   const { share } = useWebShare();
@@ -132,7 +132,7 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
 
   const handleLoginToFavorite = () => {
     setIsSheetOpen(false);
-    toggleAuthModal(undefined, () => {
+    openAuthModal(undefined, () => {
       favoriteToggle.mutate({ eventId: event.id, isFavorited: false });
     });
   };

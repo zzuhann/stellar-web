@@ -91,7 +91,7 @@ interface FavoriteButtonProps {
 }
 
 export default function FavoriteButton({ eventId, eventTitle }: FavoriteButtonProps) {
-  const { user, toggleAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const favoriteToggle = useFavoriteToggle();
   const { data: favoriteStatus, isLoading: isFavoriteStatusLoading } = useFavoriteStatus(eventId);
 
@@ -99,7 +99,7 @@ export default function FavoriteButton({ eventId, eventTitle }: FavoriteButtonPr
 
   const handleFavoriteClick = () => {
     if (!user) {
-      toggleAuthModal(undefined, () => {
+      openAuthModal(undefined, () => {
         favoriteToggle.mutate({
           eventId,
           isFavorited,

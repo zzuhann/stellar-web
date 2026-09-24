@@ -89,7 +89,7 @@ const titleText = css({
 });
 
 const Header = () => {
-  const { authModalOpen, toggleAuthModal } = useAuth();
+  const { authModalOpen, closeAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const closeMobileMenu = () => setMobileMenuOpen(false);
   const pathname = usePathname();
@@ -149,7 +149,7 @@ const Header = () => {
       </header>
 
       <MobileMenu isOpen={mobileMenuOpen} closeMobileMenu={closeMobileMenu} />
-      <AuthModal isOpen={authModalOpen} onClose={toggleAuthModal} initialMode="signin" />
+      <AuthModal isOpen={authModalOpen} onClose={closeAuthModal} initialMode="signin" />
     </>
   );
 };

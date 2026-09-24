@@ -16,7 +16,8 @@ vi.mock('next/navigation', () => ({
 vi.mock('@/lib/auth-context', () => ({
   useAuth: () => ({
     authModalOpen: false,
-    toggleAuthModal: vi.fn(),
+    openAuthModal: vi.fn(),
+    closeAuthModal: vi.fn(),
   }),
 }));
 
