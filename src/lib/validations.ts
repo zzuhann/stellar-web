@@ -101,7 +101,7 @@ export const artistSubmissionSchema = z.object({
     .string()
     .min(1, '請填寫生日')
     .regex(/^\d{4}-\d{2}-\d{2}$/, '請選擇有效的生日日期')
-    .refine((date) => !isNaN(Date.parse(date)), '請選擇有效的生日日期'),
+    .refine((date) => isValidCalendarDateString(date), '請選擇有效的生日日期'),
   profileImage: z
     .string()
     .min(1, '請上傳藝人照片')

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { eventSubmissionSchema } from './validations';
+import { eventSubmissionSchema, artistSubmissionSchema } from './validations';
 
 const validData = {
   title: '測試活動',
@@ -269,5 +269,46 @@ describe('eventSubmissionSchema', () => {
         expect(result.error.issues.some((i) => i.message === '請選擇有效的預約時間')).toBe(true);
       }
     });
+  });
+});
+
+const validArtistData = {
+  stageName: 'Test Artist',
+  stageNameZh: '測試藝人',
+  realName: '',
+  birthday: '1998-05-10',
+  profileImage: 'https://r2.example.com/artist.jpg',
+};
+
+describe('artistSubmissionSchema', () => {
+  it('合法資料通過驗證', () => {
+    expect(artistSubmissionSchema.safeParse(validArtistData).success).toBe(true);
+  });
+
+  it('birthday 是不存在的日期（2 月 31 日）時驗證失敗', () => {
+    const result = artistSubmissionSchema.safeParse({
+      ...validArtistData,
+      birthday: '2026-02-31',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.some((i) => i.message === '請選擇有效的生日日期')).toBe(true);
+    }
+  });
+
+  it('非閏年的 2 月 29 日驗證失敗', () => {
+    const result = artistSubmissionSchema.safeParse({
+      ...validArtistData,
+      birthday: '2026-02-29',
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it('閏年的 2 月 29 日通過驗證', () => {
+    const result = artistSubmissionSchema.safeParse({
+      ...validArtistData,
+      birthday: '2028-02-29',
+    });
+    expect(result.success).toBe(true);
   });
 });
