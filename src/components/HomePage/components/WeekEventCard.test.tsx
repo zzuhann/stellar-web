@@ -49,4 +49,22 @@ describe('WeekEventCard', () => {
     expect(screen.getByText('5/3 - 5/9')).toBeTruthy();
     expect(screen.queryByText(/Invalid Date/i)).toBeNull();
   });
+
+  // 部署順序依賴新前端能相容舊後端（仍回傳 Timestamp 格式）的過渡期，鎖住這個相容性保證。
+  // EventListItem.datetime 型別已宣告為 string，但過渡期間實際 runtime 資料可能仍是舊格式，故此處刻意 cast 來模擬。
+  it('datetime 為舊格式 FirebaseTimestamp 物件時，仍正確渲染日期範圍而非 Invalid Date', () => {
+    const legacyTimestampEvent = {
+      ...baseEvent,
+      datetime: {
+        // 與 baseEvent 同一組日期（Taipei 2026/5/3 - 2026/5/9）的 _seconds 等價值
+        start: { _seconds: 1777737600, _nanoseconds: 0 },
+        end: { _seconds: 1778342399, _nanoseconds: 0 },
+      },
+    } as unknown as EventListItem;
+
+    render(<WeekEventCard event={legacyTimestampEvent} />);
+
+    expect(screen.getByText('5/3 - 5/9')).toBeTruthy();
+    expect(screen.queryByText(/Invalid Date/i)).toBeNull();
+  });
 });
