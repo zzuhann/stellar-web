@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { css } from '@/styled-system/css';
-import { CoffeeEvent, FirebaseTimestamp } from '@/types';
+import { EventListItem } from '@/types';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 import { formatEventDateShort } from '@/utils';
 import { sendGAEvent } from '@next/third-parties/google';
@@ -103,16 +103,13 @@ const cityBadge = css({
 });
 
 interface WeekEventCardProps {
-  event: CoffeeEvent;
+  event: EventListItem;
   isFirst?: boolean;
 }
 
 export default function WeekEventCard({ event, isFirst }: WeekEventCardProps) {
   const { user } = useAuth();
-  const dateRange = formatEventDateShort(
-    event.datetime.start as FirebaseTimestamp,
-    event.datetime.end as FirebaseTimestamp
-  );
+  const dateRange = formatEventDateShort(event.datetime.start, event.datetime.end);
   const href = `/event/${event.slug ?? event.id}`;
 
   const handleClick = () => {
