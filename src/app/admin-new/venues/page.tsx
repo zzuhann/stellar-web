@@ -8,8 +8,6 @@ import { css } from '@/styled-system/css';
 import { useQueryState, parseAsInt } from '@/hooks/useQueryState';
 import { QueryStateProvider, useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
 import { adminApi, venueApi, handleApiError } from '@/lib/api';
-import { revalidatePaths } from '@/lib/revalidate';
-import { showToast } from '@/lib/toast';
 import queryKey from '@/hooks/queryKey';
 import AdminSidebar from '@/components/admin-new/AdminSidebar';
 import StatusDropdown from '@/components/admin-new/StatusDropdown';
@@ -17,6 +15,7 @@ import VenuesTable from '@/components/admin-new/VenuesTable';
 import VenueBatchActionBar, {
   type VenueBatchAction,
 } from '@/components/admin-new/VenueBatchActionBar';
+import { useVenueBatchMutation } from '@/components/admin-new/hooks/useVenueBatchMutation';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import type { Venue } from '@/types';
 
@@ -199,38 +198,8 @@ function AdminVenuesInner() {
 
   // ─── Batch action mutation ─────────────────────────────────────────────────
 
-  const batchMutation = useMutation({
-    mutationFn: async (action: VenueBatchAction) => {
-      const ids = Array.from(selectedIds);
-      if (action === 'approve') {
-        return venueApi.batchReviewVenues(ids.map((venueId) => ({ venueId, status: 'active' })));
-      }
-      if (action === 'reject') {
-        return venueApi.batchReviewVenues(ids.map((venueId) => ({ venueId, status: 'rejected' })));
-      }
-      if (action === 'online') {
-        return venueApi.batchStatusVenues(ids.map((venueId) => ({ venueId, status: 'active' })));
-      }
-      if (action === 'offline') {
-        return venueApi.batchStatusVenues(ids.map((venueId) => ({ venueId, status: 'inactive' })));
-      }
-    },
-    onSuccess: (_data, variables) => {
-      const ids = Array.from(selectedIds);
-      const count = ids.length;
-      if (variables === 'approve') showToast.success(`已審核通過 ${count} 間場地`);
-      else if (variables === 'reject') showToast.success(`已拒絕 ${count} 間場地`);
-      else if (variables === 'online') showToast.success(`已上架 ${count} 間場地`);
-      else if (variables === 'offline') showToast.success(`已下架 ${count} 間場地`);
-      queryClient.invalidateQueries({ queryKey: queryKey.adminVenues() });
-      revalidatePaths(['/venues']);
-      setSelectedIds(new Set());
-      setBatchAction(null);
-      setBatchError(null);
-    },
-    onError: (err) => {
-      setBatchError(handleApiError(err));
-    },
+  const batchMutation = useVenueBatchMutation(selectedIds, {
+    onError: setBatchError,
   });
 
   // ─── Delete mutation ───────────────────────────────────────────────────────
@@ -378,7 +347,14 @@ function AdminVenuesInner() {
         confirmLabel="確認"
         confirmVariant={batchAction ? BATCH_DIALOG_CONFIG[batchAction].confirmVariant : 'primary'}
         onConfirm={() => {
-          if (batchAction) batchMutation.mutate(batchAction);
+          if (batchAction)
+            batchMutation.mutate(batchAction, {
+              onSuccess: () => {
+                setSelectedIds(new Set());
+                setBatchAction(null);
+                setBatchError(null);
+              },
+            });
         }}
         onClose={() => {
           setBatchAction(null);
