@@ -40,12 +40,13 @@ const EventCarousel = ({
   return (
     <div className={carouselWrapper}>
       <div className={scrollContainer} ref={containerRef}>
-        {events.map((event) => (
+        {events.map((event, index) => (
           <EventCarouselCard
             key={event.id}
             event={event}
             artistId={artistId}
             onBeforeNavigate={onBeforeNavigate}
+            priority={index === 0}
           />
         ))}
       </div>

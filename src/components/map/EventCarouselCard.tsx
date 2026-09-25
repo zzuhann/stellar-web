@@ -125,9 +125,15 @@ export interface EventCarouselCardProps {
   event: MapEvent;
   artistId: string;
   onBeforeNavigate?: () => void;
+  priority?: boolean;
 }
 
-const EventCarouselCard = ({ event, artistId, onBeforeNavigate }: EventCarouselCardProps) => {
+const EventCarouselCard = ({
+  event,
+  artistId,
+  onBeforeNavigate,
+  priority,
+}: EventCarouselCardProps) => {
   const { user } = useAuth();
   const [isNavigating, setIsNavigating] = useState(false);
   const dateRange =
@@ -162,7 +168,14 @@ const EventCarouselCard = ({ event, artistId, onBeforeNavigate }: EventCarouselC
       {/* Image area */}
       <div className={imageArea}>
         {event.mainImage ? (
-          <Image src={event.mainImage} alt={event.title} fill sizes="160px" className={image} />
+          <Image
+            src={event.mainImage}
+            alt={event.title}
+            fill
+            sizes="160px"
+            className={image}
+            priority={priority}
+          />
         ) : (
           <div className={placeholderBg} />
         )}
