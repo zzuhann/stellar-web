@@ -9,7 +9,6 @@ export const ERROR_CODE_MESSAGES: Record<string, string> = {
   FAVORITE_NOT_FOUND: '收藏的活動不存在',
   EVENT_NOT_FAVORITABLE: '只有已通過審核的活動可以收藏',
   EVENT_NOT_FOUND: '活動不存在或已被刪除',
-  EVENT_ALREADY_CLAIMED: '此活動已被其他人認領',
   EVENT_EDIT_FORBIDDEN: '沒有權限編輯此活動',
   EVENT_DELETE_FORBIDDEN: '沒有權限刪除此活動',
   EVENT_RESUBMIT_FORBIDDEN: '沒有權限重新送審此活動',

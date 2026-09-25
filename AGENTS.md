@@ -217,7 +217,6 @@ useEffect(() => {
 功能設計規格在 `specs/features/` 下：
 
 - `specs/features/events/` — 活動資料模型
-- `specs/features/event-claim/design-frontend.md` — 活動認領前端設計
 - `specs/features/page-view-tracking/design-frontend.md` — 瀏覽量追蹤前端設計
 - `specs/features/top-artists/design-frontend.md` — 熱門藝人首頁區塊
 
