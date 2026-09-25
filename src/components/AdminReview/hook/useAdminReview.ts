@@ -31,16 +31,29 @@ export default function useAdminReview(tab: 'artists' | 'events') {
         reason?: string;
       }>
     ) => {
-      if (updates.length > 1) await artistsApi.batchReview(updates);
-      else if (updates[0].status === 'approved')
+      if (updates.length > 1) return artistsApi.batchReview(updates);
+
+      if (updates[0].status === 'approved')
         await artistsApi.approve(updates[0].artistId, updates[0].groupNames);
       else
         await artistsApi.reject(updates[0].artistId, {
           reason: updates[0].reason || '藝人已存在',
         });
+
+      // approve/reject 回傳 void，另外抓一次拿到 slug 才能 revalidate /map/[slug]；
+      // 抓取失敗不擋審核成功流程，只是少清到這個藝人的頁面快取
+      return artistsApi
+        .getById(updates[0].artistId)
+        .then((artist) => [artist])
+        .catch(() => []);
     },
-    onSuccess: () => {
+    onSuccess: (reviewedArtists) => {
+      revalidatePaths([
+        '/',
+        ...reviewedArtists.flatMap((artist) => (artist.slug ? [`/map/${artist.slug}`] : [])),
+      ]);
       queryClient.invalidateQueries({ queryKey: artistKey });
+      queryClient.invalidateQueries({ queryKey: ['top-artists'] });
       showToast.success('審核完成');
     },
     onError: () => showToast.error('操作失敗，此筆資料可能已被其他管理員處理，請重新整理頁面'),
