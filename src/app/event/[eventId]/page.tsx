@@ -7,6 +7,13 @@ import type { CoffeeEvent, FirebaseTimestamp } from '@/types';
 
 export const revalidate = 7200; // ISR: 2 hours
 
+// Empty array: no paths pre-rendered at build time, but this marks the segment
+// as SSG-eligible so on-demand visits get cached (runtime ISR) instead of the
+// route falling back to fully dynamic/SSR rendering.
+export async function generateStaticParams() {
+  return [];
+}
+
 interface PageProps {
   params: Promise<{
     eventId: string;

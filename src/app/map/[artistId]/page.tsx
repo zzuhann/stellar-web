@@ -7,6 +7,13 @@ import MapPageClient from '@/components/map/MapPage';
 
 export const revalidate = 86400; // ISR: 24 hours
 
+// Empty array: no paths pre-rendered at build time, but this marks the segment
+// as SSG-eligible so on-demand visits get cached (runtime ISR) instead of the
+// route falling back to fully dynamic/SSR rendering.
+export async function generateStaticParams() {
+  return [];
+}
+
 interface MapPageProps {
   params: Promise<{
     artistId: string;
