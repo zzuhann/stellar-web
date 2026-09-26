@@ -199,6 +199,7 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
                 fill
                 sizes="100px"
                 className={imageCss}
+                priority
               />
             ) : (
               <div className={placeholderBg} />

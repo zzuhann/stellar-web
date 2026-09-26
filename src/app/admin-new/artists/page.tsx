@@ -7,6 +7,7 @@ import { css } from '@/styled-system/css';
 import { useQueryState, parseAsInt } from '@/hooks/useQueryState';
 import { QueryStateProvider, useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
 import { adminApi } from '@/lib/api';
+import { revalidatePublicPages } from '@/lib/revalidate';
 import queryKey from '@/hooks/queryKey';
 import AdminSidebar from '@/components/admin-new/AdminSidebar';
 import StatusDropdown from '@/components/admin-new/StatusDropdown';
@@ -146,6 +147,7 @@ function AdminArtistsInner() {
 
   async function handleBatchDelete(ids: string[]) {
     await adminApi.deleteArtistsBatch(ids);
+    revalidatePublicPages();
     refetch();
   }
 

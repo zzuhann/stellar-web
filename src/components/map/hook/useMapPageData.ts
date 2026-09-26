@@ -1,16 +1,12 @@
 import { useArtist } from '@/hooks/useArtist';
 import { useMapData } from '@/hooks/useMapData';
-import { useSearchParams } from 'next/navigation';
 
 type UseMapPageDataProps = {
-  propsSearch?: string;
-  propsArtistId?: string;
+  artistId: string;
 };
 
-const useMapPageData = ({ propsSearch, propsArtistId }: UseMapPageDataProps) => {
-  const searchParams = useSearchParams();
-  const search = propsSearch || searchParams?.get('search') || '';
-  const artistId = propsArtistId || searchParams?.get('artistId') || '';
+const useMapPageData = ({ artistId }: UseMapPageDataProps) => {
+  const search = '';
 
   // 先解析 artist（支援 slug 或 ID），拿到 Firestore ID 後再查地圖資料
   const { data: artistData, isLoading: isArtistLoading } = useArtist(artistId);

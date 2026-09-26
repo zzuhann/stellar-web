@@ -1,15 +1,9 @@
 import { revalidatePath } from 'next/cache';
 import { NextResponse } from 'next/server';
 
-export async function POST(request: Request) {
-  try {
-    const { paths } = (await request.json()) as { paths: string[] };
-    paths.forEach((path) => {
-      revalidatePath(path);
-      if (path === '/venues') revalidatePath('/venues/[id]', 'page');
-    });
-    return NextResponse.json({ revalidated: true, paths });
-  } catch {
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
-  }
+// 清掉全部公開頁的 ISR 快取，不再依 body 精準列路徑。
+// 決策見 specs/_decisions/isr-cache-invalidation.md。
+export async function POST() {
+  revalidatePath('/', 'layout');
+  return NextResponse.json({ revalidated: true });
 }

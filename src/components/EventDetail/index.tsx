@@ -19,19 +19,13 @@ import BackToHomeButton from './BackToHomeButton';
 import ShareHandler from './ShareHandler';
 import DesktopFavoriteButton from './DesktopFavoriteButton';
 import { CoffeeEvent } from '@/types';
-import {
-  formatEventDate,
-  formatReservationDateTime,
-  generateGoogleCalendarUrl,
-  generateGoogleCalendarUrlAtTime,
-  isHttpUrl,
-  isPastTimestamp,
-} from '@/utils';
+import { formatEventDate, generateGoogleCalendarUrl, isHttpUrl } from '@/utils';
 import PageViewTracker from '@/components/PageViewTracker';
 import EventViewTracker from '@/components/EventViewTracker';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import MoreEventsCarousel from './MoreEventsCarousel';
 import EventLocationLink from './EventLocationLink';
+import ReservationReminderRow from './ReservationReminderRow';
 
 const pageContainer = css({
   minHeight: '100vh',
@@ -140,17 +134,6 @@ const addToCalendarHint = css({
   marginTop: '0.5',
 });
 
-// 「預約開始時間」列專用：時間文字與提醒 hint 並排同一行，跟其他列的上下堆疊不同
-const reservationCalendarContent = css({
-  flex: '1',
-  minWidth: '0',
-  display: 'flex',
-  flexWrap: 'wrap',
-  alignItems: 'baseline',
-  columnGap: '2',
-  rowGap: '0.5',
-});
-
 const reservationLink = css({
   display: 'inline-flex',
   alignItems: 'center',
@@ -250,11 +233,6 @@ const EventDetail = ({ event }: EventDetailProps) => {
       });
     });
   }
-
-  // 預約開始時間已過去時，不再顯示「提醒我預約」（已經過去的時間點沒辦法再加行事曆提醒）
-  const isReservationExpired = event.reservation?.startAt
-    ? isPastTimestamp(event.reservation.startAt)
-    : false;
 
   const primaryArtist = event.artists?.[0];
   const breadcrumbItems = [
@@ -463,57 +441,15 @@ const EventDetail = ({ event }: EventDetailProps) => {
                   </div>
                 )}
 
-                {event.reservation?.startAt &&
-                  (isReservationExpired ? (
-                    <div className={detailItem}>
-                      <div className={detailIcon}>
-                        <CalendarIcon
-                          width={20}
-                          height={20}
-                          color="var(--color-text-secondary)"
-                          aria-hidden="true"
-                        />
-                        <span className="sr-only">預約開始時間</span>
-                      </div>
-                      <div className={detailContent}>
-                        <div className={detailValue}>
-                          {formatReservationDateTime(event.reservation.startAt)}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <ExternalLink
-                      href={generateGoogleCalendarUrlAtTime({
-                        title: `[預約提醒] - ${event.title}`,
-                        startAt: event.reservation.startAt,
-                        location: `${event.location.name} ${event.location.address}`,
-                        eventSlugOrId: event.slug ?? event.id,
-                      })}
-                      platform="reservation_calendar"
-                      eventPage="/event/[id]"
-                      contentId={event.id}
-                      className={dateRowLink}
-                    >
-                      <div className={detailIcon}>
-                        <CalendarIcon
-                          width={20}
-                          height={20}
-                          color="var(--color-text-secondary)"
-                          aria-hidden="true"
-                        />
-                        <span className="sr-only">預約開始時間，點擊提醒我預約</span>
-                      </div>
-                      <div className={reservationCalendarContent}>
-                        <div className={detailValue}>
-                          {formatReservationDateTime(event.reservation.startAt)}
-                        </div>
-                        <div className={addToCalendarHint} style={{ marginTop: 0 }}>
-                          提醒我預約
-                          <ArrowTopRightOnSquareIcon width={12} height={12} aria-hidden="true" />
-                        </div>
-                      </div>
-                    </ExternalLink>
-                  ))}
+                {event.reservation?.startAt && (
+                  <ReservationReminderRow
+                    startAt={event.reservation.startAt}
+                    eventTitle={event.title}
+                    locationText={`${event.location.name} ${event.location.address}`}
+                    eventSlugOrId={event.slug ?? event.id}
+                    eventId={event.id}
+                  />
+                )}
               </div>
             </div>
           )}
