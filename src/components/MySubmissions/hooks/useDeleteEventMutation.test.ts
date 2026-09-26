@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import useDeleteEventMutation from './useDeleteEventMutation';
 import { eventsApi } from '@/lib/api';
-import { revalidatePaths } from '@/lib/revalidate';
+import { revalidatePublicPages } from '@/lib/revalidate';
 import showToast from '@/lib/toast';
 import type { DeleteEventVariables } from './useDeleteEventMutation';
 
@@ -13,7 +13,7 @@ vi.mock('@/lib/api', () => ({
 }));
 
 vi.mock('@/lib/revalidate', () => ({
-  revalidatePaths: vi.fn(),
+  revalidatePublicPages: vi.fn(),
 }));
 
 vi.mock('@/lib/toast', () => ({
@@ -67,15 +67,11 @@ describe('useDeleteEventMutation', () => {
     expect(invalidateQueriesMock).toHaveBeenCalledWith({ queryKey: ['events'] });
     expect(invalidateQueriesMock).toHaveBeenCalledWith({ queryKey: ['map-data'] });
     expect(invalidateQueriesMock).toHaveBeenCalledWith({ queryKey: ['user-submissions'] });
-    expect(revalidatePaths).toHaveBeenCalledWith([
-      '/event/event-1-slug',
-      '/',
-      '/map/artist-1-slug',
-    ]);
+    expect(revalidatePublicPages).toHaveBeenCalledTimes(1);
     expect(showToast.success).toHaveBeenCalledWith('刪除成功');
   });
 
-  it('刪除失敗時顯示錯誤 toast，不 invalidate', async () => {
+  it('刪除失敗時顯示錯誤 toast，不 invalidate、不清快取', async () => {
     const requestError = new Error('server error');
     deleteMock.mockRejectedValueOnce(requestError);
 
@@ -88,5 +84,6 @@ describe('useDeleteEventMutation', () => {
 
     expect(showToast.error).toHaveBeenCalledWith('server error');
     expect(invalidateQueriesMock).not.toHaveBeenCalled();
+    expect(revalidatePublicPages).not.toHaveBeenCalled();
   });
 });

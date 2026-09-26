@@ -1,5 +1,5 @@
 import { eventsApi } from '@/lib/api';
-import { revalidatePaths } from '@/lib/revalidate';
+import { revalidatePublicPages } from '@/lib/revalidate';
 import showToast from '@/lib/toast';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -14,8 +14,8 @@ const useDeleteEventMutation = () => {
 
   return useMutation({
     mutationFn: ({ eventId }: DeleteEventVariables) => eventsApi.delete(eventId),
-    onSuccess: (_, { eventId, slug, artistSlugs = [] }) => {
-      revalidatePaths([`/event/${slug ?? eventId}`, '/', ...artistSlugs.map((s) => `/map/${s}`)]);
+    onSuccess: (_, { eventId }) => {
+      revalidatePublicPages();
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['map-data'] });
       queryClient.invalidateQueries({ queryKey: ['user-submissions'] });

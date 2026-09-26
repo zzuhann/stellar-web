@@ -1,6 +1,6 @@
 import { eventsApi, handleApiError } from '@/lib/api';
 import showToast from '@/lib/toast';
-import { revalidatePaths } from '@/lib/revalidate';
+import { revalidatePublicPages } from '@/lib/revalidate';
 import { CoffeeEvent, UpdateEventRequest } from '@/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
@@ -14,12 +14,7 @@ const useUpdateEventMutation = ({ onSuccess }: UseUpdateEventMutationProps) => {
     mutationFn: ({ id, data }: { id: string; data: UpdateEventRequest }) =>
       eventsApi.update(id, data),
     onSuccess: (updatedEvent) => {
-      revalidatePaths([
-        '/',
-        '/venues',
-        `/event/${updatedEvent.slug ?? updatedEvent.id}`,
-        ...updatedEvent.artists.map((a) => `/map/${a.slug ?? a.id}`),
-      ]);
+      revalidatePublicPages();
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['venues'] });
       queryClient.invalidateQueries({ queryKey: ['home-venues'] });

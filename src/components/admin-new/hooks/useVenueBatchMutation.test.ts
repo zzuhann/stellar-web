@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useVenueBatchMutation } from './useVenueBatchMutation';
 import { venueApi, handleApiError } from '@/lib/api';
-import { revalidatePaths } from '@/lib/revalidate';
+import { revalidatePublicPages } from '@/lib/revalidate';
 import { showToast } from '@/lib/toast';
 
 const invalidateQueriesMock = vi.fn();
@@ -13,7 +13,7 @@ vi.mock('@/lib/api', () => ({
 }));
 
 vi.mock('@/lib/revalidate', () => ({
-  revalidatePaths: vi.fn(),
+  revalidatePublicPages: vi.fn(),
 }));
 
 vi.mock('@/lib/toast', () => ({
@@ -49,7 +49,7 @@ beforeEach(() => {
 });
 
 describe('useVenueBatchMutation', () => {
-  it('批次核准成功後，revalidate 場地列表與每個場地的詳情頁', async () => {
+  it('批次核准成功後，清全部公開頁快取', async () => {
     batchReviewVenuesMock.mockResolvedValueOnce({ message: 'ok' });
     const selectedIds = new Set(['venue-1', 'venue-2']);
 
@@ -64,11 +64,11 @@ describe('useVenueBatchMutation', () => {
       { venueId: 'venue-1', status: 'active' },
       { venueId: 'venue-2', status: 'active' },
     ]);
-    expect(revalidatePaths).toHaveBeenCalledWith(['/venues', '/venues/venue-1', '/venues/venue-2']);
+    expect(revalidatePublicPages).toHaveBeenCalledTimes(1);
     expect(showToast.success).toHaveBeenCalledWith('已審核通過 2 間場地');
   });
 
-  it('批次上下架也會 revalidate 每個場地的詳情頁', async () => {
+  it('批次上下架也會清全部公開頁快取', async () => {
     batchStatusVenuesMock.mockResolvedValueOnce({ message: 'ok' });
     const selectedIds = new Set(['venue-3']);
 
@@ -82,11 +82,11 @@ describe('useVenueBatchMutation', () => {
     expect(batchStatusVenuesMock).toHaveBeenCalledWith([
       { venueId: 'venue-3', status: 'inactive' },
     ]);
-    expect(revalidatePaths).toHaveBeenCalledWith(['/venues', '/venues/venue-3']);
+    expect(revalidatePublicPages).toHaveBeenCalledTimes(1);
     expect(showToast.success).toHaveBeenCalledWith('已下架 1 間場地');
   });
 
-  it('API 失敗時呼叫 onError，不 revalidate', async () => {
+  it('API 失敗時呼叫 onError，不清快取', async () => {
     const requestError = new Error('server error');
     batchReviewVenuesMock.mockRejectedValueOnce(requestError);
     handleApiErrorMock.mockReturnValueOnce('操作失敗，請稍後再試');
@@ -101,6 +101,6 @@ describe('useVenueBatchMutation', () => {
     });
 
     expect(onError).toHaveBeenCalledWith('操作失敗，請稍後再試');
-    expect(revalidatePaths).not.toHaveBeenCalled();
+    expect(revalidatePublicPages).not.toHaveBeenCalled();
   });
 });

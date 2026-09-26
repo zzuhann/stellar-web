@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import useUpdateEventMutation from './useUpdateEventMutation';
 import { eventsApi, handleApiError } from '@/lib/api';
-import { revalidatePaths } from '@/lib/revalidate';
+import { revalidatePublicPages } from '@/lib/revalidate';
 import showToast from '@/lib/toast';
 import type { CoffeeEvent, UpdateEventRequest } from '@/types';
 
@@ -14,7 +14,7 @@ vi.mock('@/lib/api', () => ({
 }));
 
 vi.mock('@/lib/revalidate', () => ({
-  revalidatePaths: vi.fn(),
+  revalidatePublicPages: vi.fn(),
 }));
 
 vi.mock('@/lib/toast', () => ({
@@ -73,7 +73,7 @@ describe('useUpdateEventMutation', () => {
     expect(showToast.success).toHaveBeenCalledWith('更新成功');
   });
 
-  it('更新成功後也會 revalidate 活動與藝人頁面路徑', async () => {
+  it('更新成功後清全部公開頁快取', async () => {
     const updatedEvent = buildUpdatedEvent();
     updateMock.mockResolvedValueOnce(updatedEvent);
 
@@ -84,12 +84,7 @@ describe('useUpdateEventMutation', () => {
       await Promise.resolve();
     });
 
-    expect(revalidatePaths).toHaveBeenCalledWith([
-      '/',
-      '/venues',
-      '/event/event-1-slug',
-      '/map/artist-1-slug',
-    ]);
+    expect(revalidatePublicPages).toHaveBeenCalledTimes(1);
   });
 
   it('更新失敗時顯示錯誤 toast，不 invalidate', async () => {
@@ -107,5 +102,6 @@ describe('useUpdateEventMutation', () => {
     expect(handleApiErrorMock).toHaveBeenCalledWith(requestError, '更新失敗');
     expect(showToast.error).toHaveBeenCalledWith('更新失敗，請稍後再試');
     expect(invalidateQueriesMock).not.toHaveBeenCalled();
+    expect(revalidatePublicPages).not.toHaveBeenCalled();
   });
 });

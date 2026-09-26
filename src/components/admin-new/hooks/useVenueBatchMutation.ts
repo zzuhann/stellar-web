@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { venueApi, handleApiError } from '@/lib/api';
-import { revalidatePaths } from '@/lib/revalidate';
+import { revalidatePublicPages } from '@/lib/revalidate';
 import { showToast } from '@/lib/toast';
 import queryKey from '@/hooks/queryKey';
 import type { VenueBatchAction } from '@/components/admin-new/VenueBatchActionBar';
@@ -35,8 +35,7 @@ export function useVenueBatchMutation(
       else if (variables === 'online') showToast.success(`已上架 ${count} 間場地`);
       else if (variables === 'offline') showToast.success(`已下架 ${count} 間場地`);
       queryClient.invalidateQueries({ queryKey: queryKey.adminVenues() });
-      // 批次動作會影響每個被選場地自己的詳情頁，不只場地列表
-      revalidatePaths(['/venues', ...ids.map((venueId) => `/venues/${venueId}`)]);
+      revalidatePublicPages();
     },
     onError: (err) => {
       options?.onError?.(handleApiError(err));
