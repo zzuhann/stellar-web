@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
+import { revalidatePublicPages } from '@/lib/revalidate';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import type { Artist } from '@/types';
 
@@ -23,6 +24,7 @@ export default function DeleteArtistDialog({
   const deleteMutation = useMutation({
     mutationFn: (id: string) => adminApi.deleteArtist(id),
     onSuccess: () => {
+      revalidatePublicPages();
       queryClient.invalidateQueries({ queryKey: ['admin-artists'] });
       onSuccess();
     },

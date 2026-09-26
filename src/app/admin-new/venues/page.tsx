@@ -8,6 +8,7 @@ import { css } from '@/styled-system/css';
 import { useQueryState, parseAsInt } from '@/hooks/useQueryState';
 import { QueryStateProvider, useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
 import { adminApi, venueApi, handleApiError } from '@/lib/api';
+import { revalidatePublicPages } from '@/lib/revalidate';
 import queryKey from '@/hooks/queryKey';
 import AdminSidebar from '@/components/admin-new/AdminSidebar';
 import StatusDropdown from '@/components/admin-new/StatusDropdown';
@@ -207,6 +208,7 @@ function AdminVenuesInner() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => venueApi.permanentDeleteVenue(id),
     onSuccess: () => {
+      revalidatePublicPages();
       queryClient.invalidateQueries({ queryKey: queryKey.adminVenues() });
       setDeleteTarget(null);
       setDeleteError(null);

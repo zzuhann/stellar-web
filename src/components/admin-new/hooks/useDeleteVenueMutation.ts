@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { venueApi, handleApiError } from '@/lib/api';
+import { revalidatePublicPages } from '@/lib/revalidate';
 import queryKey from '@/hooks/queryKey';
 
 export function useDeleteVenueMutation(
@@ -13,6 +14,7 @@ export function useDeleteVenueMutation(
   return useMutation({
     mutationFn: () => venueApi.permanentDeleteVenue(venueId),
     onSuccess: () => {
+      revalidatePublicPages();
       queryClient.invalidateQueries({ queryKey: queryKey.adminVenues() });
       router.push('/admin-new/venues');
     },

@@ -14,6 +14,7 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { Artist, UpdateArtistRequest } from '@/types';
 import { artistsApi, handleApiError } from '@/lib/api';
+import { revalidatePublicPages } from '@/lib/revalidate';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import showToast from '@/lib/toast';
 import { uploadImageToAPI } from '@/lib/r2-upload';
@@ -394,6 +395,9 @@ export default function ArtistSubmissionForm({
       return updatedArtist;
     },
     onSuccess: () => {
+      // 本人投稿編輯若原本已上架，編輯後不會改回待審，仍屬公開可見資料變動，一律清快取。
+      // admin-new 編輯已上架藝人也共用這個 mutation，同樣需要清快取
+      revalidatePublicPages();
       queryClient.invalidateQueries({ queryKey: ['user-submissions'] });
       showToast.success('更新成功');
       onSuccess?.();
