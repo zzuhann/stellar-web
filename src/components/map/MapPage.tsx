@@ -65,7 +65,7 @@ export default function MapPage({ artistId }: MapPageProps) {
   const router = useRouter();
   const { user } = useAuth();
   const { mapEvents, isMapLoading, artistData, isArtistLoading } = useMapPageData({
-    propsArtistId: artistId,
+    artistId,
   });
 
   const { latitude, longitude } = useMapNewLocation();

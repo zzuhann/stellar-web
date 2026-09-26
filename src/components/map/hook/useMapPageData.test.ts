@@ -11,10 +11,6 @@ vi.mock('@/lib/firebase', () => ({
   db: {},
 }));
 
-vi.mock('next/navigation', () => ({
-  useSearchParams: () => ({ get: () => null }),
-}));
-
 vi.mock('@/hooks/useArtist');
 vi.mock('@/hooks/useMapData');
 
@@ -61,7 +57,7 @@ describe('useMapPageData', () => {
     it('map data 查詢應立刻啟用', () => {
       vi.mocked(useArtist).mockReturnValue(artistLoading);
 
-      renderHook(() => useMapPageData({}));
+      renderHook(() => useMapPageData({ artistId: '' }));
 
       expect(vi.mocked(useMapData)).toHaveBeenCalledWith(
         expect.objectContaining({ enabled: true })
@@ -71,7 +67,7 @@ describe('useMapPageData', () => {
     it('artistId 不傳給 map data', () => {
       vi.mocked(useArtist).mockReturnValue(artistLoading);
 
-      renderHook(() => useMapPageData({}));
+      renderHook(() => useMapPageData({ artistId: '' }));
 
       expect(vi.mocked(useMapData)).toHaveBeenCalledWith(
         expect.objectContaining({ artistId: undefined })
@@ -83,7 +79,7 @@ describe('useMapPageData', () => {
     it('map data 查詢應暫停（enabled: false）', () => {
       vi.mocked(useArtist).mockReturnValue(artistLoading);
 
-      renderHook(() => useMapPageData({ propsArtistId: 'bts' }));
+      renderHook(() => useMapPageData({ artistId: 'bts' }));
 
       expect(vi.mocked(useMapData)).toHaveBeenCalledWith(
         expect.objectContaining({ enabled: false })
@@ -95,7 +91,7 @@ describe('useMapPageData', () => {
     it('map data 查詢應使用 artist.id（Firestore ID），而非 slug', () => {
       vi.mocked(useArtist).mockReturnValue(artistLoaded(mockArtist()));
 
-      renderHook(() => useMapPageData({ propsArtistId: 'bts' }));
+      renderHook(() => useMapPageData({ artistId: 'bts' }));
 
       expect(vi.mocked(useMapData)).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -108,7 +104,7 @@ describe('useMapPageData', () => {
     it('即使 propsArtistId 傳的是 Firestore ID，map data 仍使用解析後的 artist.id', () => {
       vi.mocked(useArtist).mockReturnValue(artistLoaded(mockArtist()));
 
-      renderHook(() => useMapPageData({ propsArtistId: 'firestore-id-123' }));
+      renderHook(() => useMapPageData({ artistId: 'firestore-id-123' }));
 
       expect(vi.mocked(useMapData)).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -121,7 +117,7 @@ describe('useMapPageData', () => {
     it('artist 沒有 slug 時（舊資料），map data 仍使用 artist.id', () => {
       vi.mocked(useArtist).mockReturnValue(artistLoaded(mockArtist({ slug: undefined })));
 
-      renderHook(() => useMapPageData({ propsArtistId: 'firestore-id-123' }));
+      renderHook(() => useMapPageData({ artistId: 'firestore-id-123' }));
 
       expect(vi.mocked(useMapData)).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -137,7 +133,7 @@ describe('useMapPageData', () => {
       const artist = mockArtist();
       vi.mocked(useArtist).mockReturnValue(artistLoaded(artist));
 
-      const { result } = renderHook(() => useMapPageData({ propsArtistId: 'bts' }));
+      const { result } = renderHook(() => useMapPageData({ artistId: 'bts' }));
 
       expect(result.current.artistData).toEqual(artist);
     });
@@ -145,7 +141,7 @@ describe('useMapPageData', () => {
     it('mapEvents 預設為空陣列', () => {
       vi.mocked(useArtist).mockReturnValue(artistLoading);
 
-      const { result } = renderHook(() => useMapPageData({ propsArtistId: 'bts' }));
+      const { result } = renderHook(() => useMapPageData({ artistId: 'bts' }));
 
       expect(result.current.mapEvents).toEqual([]);
     });
