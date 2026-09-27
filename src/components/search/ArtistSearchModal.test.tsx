@@ -122,6 +122,35 @@ describe('ArtistSearchModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('works normally when opened on a non-home page: search and result click keep the real pathname as event_page (TC-016)', async () => {
+    mockPathname = '/map/xxx';
+    searchResults.push({ id: 'new-artist', stageName: '新藝人' });
+    const onClose = vi.fn();
+    const user = userEvent.setup();
+
+    render(<ArtistSearchModal isOpen={true} onClose={onClose} entryPoint="header" />);
+
+    expect(sendGAEvent).toHaveBeenCalledWith(
+      'event',
+      'search_artist',
+      expect.objectContaining({ event_page: '/map/xxx', entry_point: 'header' })
+    );
+
+    await user.type(screen.getByRole('textbox', { name: '搜尋藝人' }), '新藝人');
+    await user.click(screen.getByRole('button', { name: '新藝人' }));
+
+    expect(sendGAEvent).toHaveBeenCalledWith(
+      'event',
+      'click_artist',
+      expect.objectContaining({
+        event_page: '/map/xxx',
+        entry_point: 'header',
+        content_id: 'new-artist',
+      })
+    );
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('pressing Escape closes the modal regardless of which element has focus (TC-011)', async () => {
     searchResults.push({ id: 'artist-3', stageName: '找得到的藝人' });
     const onClose = vi.fn();
