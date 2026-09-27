@@ -1,12 +1,11 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { useRef } from 'react';
 import BirthdayTab from './BirthdayTab';
 import { useSearchModalStore } from '@/store/useSearchModalStore';
+import useSearchSectionEntry from '../hook/useSearchSectionEntry';
 
-// WeekArtistCard imports @/lib/auth-context, which initializes real Firebase; mock it away
-// like the sibling entry-point tests do so this stays a pure store-wiring test.
+// WeekArtistCard imports @/lib/auth-context, which initializes real Firebase; mock it away like the sibling entry-point tests do so this stays a pure store-wiring test.
 vi.mock('@/lib/auth-context', () => ({
   useAuth: () => ({ user: null }),
 }));
@@ -14,16 +13,14 @@ vi.mock('@/lib/auth-context', () => ({
 const resetStore = () =>
   useSearchModalStore.setState({ isOpen: false, entryPoint: null, triggerRef: null });
 
-// Mirrors the exact wiring in HomePage/index.tsx: onSearchClick calls the shared store's
-// open() with entryPoint='search_section' and the ref forwarded down to SearchSection.
+// Uses the actual production hook (also used by HomePage/index.tsx) instead of a hand-copied wiring, so this test can't drift from HomePage's real wiring.
 function Wrapper() {
-  const openSearchModal = useSearchModalStore((state) => state.open);
-  const searchTriggerRef = useRef<HTMLButtonElement>(null);
+  const { searchTriggerRef, onSearchClick } = useSearchSectionEntry();
   return (
     <BirthdayTab
       artists={[]}
       loading={false}
-      onSearchClick={() => openSearchModal('search_section', searchTriggerRef)}
+      onSearchClick={onSearchClick}
       searchTriggerRef={searchTriggerRef}
     />
   );

@@ -14,7 +14,7 @@ import TrendingEventsSection from '@/components/HomePage/components/TrendingEven
 import TopArtistsSection from '@/components/HomePage/components/TopArtistsSection';
 import HomeVenuesSection from '@/components/HomePage/components/HomeVenuesSection';
 import { usePageView } from '@/hooks/usePageView';
-import { useSearchModalStore } from '@/store/useSearchModalStore';
+import useSearchSectionEntry from './hook/useSearchSectionEntry';
 
 export const pageContainer = css({
   minHeight: '100vh',
@@ -46,8 +46,7 @@ export const contentWrapper = css({
 const HEADER_HEIGHT = 70;
 
 function HomePageContent() {
-  const openSearchModal = useSearchModalStore((state) => state.open);
-  const searchTriggerRef = useRef<HTMLButtonElement>(null);
+  const { searchTriggerRef, onSearchClick } = useSearchSectionEntry();
   const weekSectionRef = useRef<HTMLElement>(null);
 
   usePageView({ eventPage: '/' });
@@ -110,7 +109,7 @@ function HomePageContent() {
                 <BirthdayTab
                   artists={weekBirthdayArtists}
                   loading={isArtistsLoading}
-                  onSearchClick={() => openSearchModal('search_section', searchTriggerRef)}
+                  onSearchClick={onSearchClick}
                   searchTriggerRef={searchTriggerRef}
                 />
               </div>
