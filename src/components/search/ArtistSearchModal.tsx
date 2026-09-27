@@ -205,6 +205,7 @@ export default function ArtistSearchModal({
   });
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const authHandoffTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Clear input on any isOpen true->false flip (incl. external route-change closes) via useState, not a ref, per React's "adjusting state when a prop changes" pattern (refs can't be touched during render).
   const [previousIsOpen, setPreviousIsOpen] = useState(isOpen);
@@ -242,11 +243,26 @@ export default function ArtistSearchModal({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Cleanup runs both on unmount and before every pathname change, cancelling a pending handoff so AuthModal doesn't pop up after the user has already navigated away.
+  useEffect(() => {
+    return () => {
+      if (authHandoffTimerRef.current) {
+        clearTimeout(authHandoffTimerRef.current);
+        authHandoffTimerRef.current = null;
+      }
+    };
+  }, [pathname]);
+
   const handleAddArtistClick = () => {
+    // A handoff is already scheduled (e.g. a double-click); toggleAuthModal flips a boolean, so a second call would close AuthModal and drop its redirect.
+    if (authHandoffTimerRef.current) return;
     onClose();
     if (!user) {
       // Delay past this modal's own exit transition, else its fading overlay covers AuthModal and useFocusTrap's rAF return-focus can steal back the focus AuthModal's autofocus just grabbed.
-      setTimeout(() => toggleAuthModal('/submit-artist'), SEARCH_MODAL_EXIT_TRANSITION_MS);
+      authHandoffTimerRef.current = setTimeout(() => {
+        authHandoffTimerRef.current = null;
+        toggleAuthModal('/submit-artist');
+      }, SEARCH_MODAL_EXIT_TRANSITION_MS);
     } else {
       router.push('/submit-artist');
     }

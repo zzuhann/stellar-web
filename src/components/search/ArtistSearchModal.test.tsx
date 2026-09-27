@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRef, useState } from 'react';
@@ -259,6 +259,99 @@ describe('ArtistSearchModal', () => {
 
     expect(onClose).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(toggleAuthModal).toHaveBeenCalledWith('/submit-artist'));
+  });
+
+  it('登入框的 300ms 延遲在元件卸載後不會觸發 (unmount cancels the pending auth handoff)', () => {
+    mockUser = null;
+    searchResults.push({ id: 'artist-6', stageName: '任一藝人' });
+    const onClose = vi.fn();
+
+    vi.useFakeTimers();
+    try {
+      const { unmount } = render(
+        <ArtistSearchModal isOpen={true} onClose={onClose} entryPoint="header" />
+      );
+      fireEvent.change(screen.getByRole('textbox', { name: '搜尋藝人' }), {
+        target: { value: '任一藝人' },
+      });
+      fireEvent.click(screen.getByText(/點擊前往新增藝人/));
+
+      unmount();
+      vi.advanceTimersByTime(300);
+
+      expect(toggleAuthModal).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('登入框的 300ms 延遲內若 pathname 改變則不觸發 (route change cancels the pending auth handoff)', () => {
+    mockUser = null;
+    mockPathname = '/';
+    searchResults.push({ id: 'artist-7', stageName: '任一藝人' });
+    const onClose = vi.fn();
+
+    vi.useFakeTimers();
+    try {
+      const { rerender } = render(
+        <ArtistSearchModal isOpen={true} onClose={onClose} entryPoint="header" />
+      );
+      fireEvent.change(screen.getByRole('textbox', { name: '搜尋藝人' }), {
+        target: { value: '任一藝人' },
+      });
+      fireEvent.click(screen.getByText(/點擊前往新增藝人/));
+
+      mockPathname = '/map/other-artist';
+      rerender(<ArtistSearchModal isOpen={true} onClose={onClose} entryPoint="header" />);
+      vi.advanceTimersByTime(300);
+
+      expect(toggleAuthModal).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('未登入時連點「新增藝人」CTA 只會呼叫一次 toggleAuthModal (double-click guard, TC-015)', () => {
+    mockUser = null;
+    searchResults.push({ id: 'artist-8', stageName: '任一藝人' });
+    const onClose = vi.fn();
+
+    vi.useFakeTimers();
+    try {
+      render(<ArtistSearchModal isOpen={true} onClose={onClose} entryPoint="header" />);
+      fireEvent.change(screen.getByRole('textbox', { name: '搜尋藝人' }), {
+        target: { value: '任一藝人' },
+      });
+      const cta = screen.getByText(/點擊前往新增藝人/);
+      fireEvent.click(cta);
+      fireEvent.click(cta);
+
+      vi.advanceTimersByTime(300);
+
+      expect(toggleAuthModal).toHaveBeenCalledTimes(1);
+      expect(toggleAuthModal).toHaveBeenCalledWith('/submit-artist');
+      expect(onClose).toHaveBeenCalledTimes(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('已登入時連點「新增藝人」CTA 導向安全，不會重複切換登入框 (router.push is not a toggle, TC-005)', () => {
+    mockUser = { uid: 'user-1' };
+    searchResults.push({ id: 'artist-9', stageName: '任一藝人' });
+    const onClose = vi.fn();
+
+    render(<ArtistSearchModal isOpen={true} onClose={onClose} entryPoint="header" />);
+    fireEvent.change(screen.getByRole('textbox', { name: '搜尋藝人' }), {
+      target: { value: '任一藝人' },
+    });
+    const cta = screen.getByText(/點擊前往新增藝人/);
+    fireEvent.click(cta);
+    fireEvent.click(cta);
+
+    // router.push (unlike toggleAuthModal) isn't a toggle, so repeated calls to the same route are harmless.
+    expect(push).toHaveBeenCalledWith('/submit-artist');
+    expect(toggleAuthModal).not.toHaveBeenCalled();
   });
 
   it('顯示既有的空狀態／載入中／結果文案，樣式不變 (TC-025)', async () => {

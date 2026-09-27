@@ -56,13 +56,24 @@ const resetStore = () =>
 
 describe('GlobalSearchModal route-change close (TC-019)', () => {
   beforeEach(() => {
-    mockPathname = '/';
     resetStore();
   });
 
   afterEach(cleanup);
 
-  it('closes and clears its input on a route change, including a dynamic-segment swap like /map/A -> /map/B', async () => {
+  it.each([
+    {
+      label: 'root to a dynamic segment (/ -> /map/some-other-artist)',
+      from: '/',
+      to: '/map/some-other-artist',
+    },
+    {
+      label: 'same dynamic segment, different param (/map/A -> /map/B)',
+      from: '/map/artist-a',
+      to: '/map/artist-b',
+    },
+  ])('closes and clears its input on a route change: $label', async ({ from, to }) => {
+    mockPathname = from;
     const user = userEvent.setup();
     useSearchModalStore.getState().open('header', { current: null });
     const { rerender } = render(<GlobalSearchModal />);
@@ -70,11 +81,13 @@ describe('GlobalSearchModal route-change close (TC-019)', () => {
     const input = await screen.findByRole('textbox', { name: '搜尋藝人' });
     await user.type(input, '不會保留');
 
-    // Simulate a route change, including the same dynamic segment with a different param.
-    mockPathname = '/map/some-other-artist';
+    mockPathname = to;
     rerender(<GlobalSearchModal />);
 
     await waitFor(() => expect(useSearchModalStore.getState().isOpen).toBe(false));
+
+    // Assert the input is already cleared before reopening, not just after.
+    expect((input as HTMLInputElement).value).toBe('');
 
     // Reopen from the same store and confirm the input came back empty.
     useSearchModalStore.getState().open('header', { current: null });
