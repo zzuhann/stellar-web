@@ -126,6 +126,7 @@ function ServerPage({ id }: { id: string }) {
 | Event Page  | `event_page`  | 事件   | 20260406 |
 | User ID     | `user_id`     | 事件   | TODO     |
 | Content ID  | `content_id`  | 事件   | TODO     |
+| Entry Point | `entry_point` | 事件   | TODO     |
 
 ---
 
