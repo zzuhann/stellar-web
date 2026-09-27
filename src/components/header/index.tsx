@@ -9,6 +9,7 @@ import { css } from '@/styled-system/css';
 import { useHeaderTitleStore } from '@/store/useHeaderTitleStore';
 import DesktopNav from './DesktopNav';
 import BurgerButton from './BurgerButton';
+import HeaderSearchButton from './HeaderSearchButton';
 import MobileMenu from './MobileMenu';
 import ShareButton from '../ShareButton';
 import MobileBackButton, { shouldShowMobileBackButton } from './MobileBackButton';
@@ -139,6 +140,7 @@ const Header = () => {
             },
           })}
         >
+          <HeaderSearchButton />
           <ShareButton />
           <BurgerButton
             onClick={() => setMobileMenuOpen(true)}
