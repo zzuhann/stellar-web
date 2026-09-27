@@ -173,8 +173,7 @@ describe('ArtistSearchModal', () => {
 
     const onClose = vi.fn();
     const user = userEvent.setup();
-    // useFocusTrap only returns focus when isActive flips true->false, so isOpen must be
-    // real state here (a static prop would never let that transition happen).
+    // useFocusTrap only returns focus when isActive flips true->false, so isOpen must be real state here (a static prop would never let that transition happen).
     function Wrapper() {
       const [isOpen, setIsOpen] = useState(true);
       return (
@@ -207,12 +206,12 @@ describe('ArtistSearchModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('clears the input whenever isOpen flips to false, however it closed (route-change close, TC-019)', () => {
+  it('clears the input whenever isOpen flips to false, however it closed (route-change close, TC-019)', async () => {
+    const user = userEvent.setup();
     const { rerender } = render(
       <ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />
     );
-    const input = screen.getByRole('textbox', { name: '搜尋藝人' }) as HTMLInputElement;
-    input.value = '不會保留';
+    await user.type(screen.getByRole('textbox', { name: '搜尋藝人' }), '不會保留');
 
     rerender(<ArtistSearchModal isOpen={false} onClose={vi.fn()} entryPoint="header" />);
     rerender(<ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />);
@@ -231,7 +230,8 @@ describe('ArtistSearchModal', () => {
     await user.click(screen.getByText(/點擊前往新增藝人/));
 
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(toggleAuthModal).toHaveBeenCalledWith('/submit-artist');
+    // AuthModal opens after the search modal's own exit transition, not in the same tick.
+    await waitFor(() => expect(toggleAuthModal).toHaveBeenCalledWith('/submit-artist'));
   });
 
   it('已登入點「新增藝人」CTA：關閉搜尋 modal 並導向 /submit-artist (TC-005/027)', async () => {
@@ -258,7 +258,7 @@ describe('ArtistSearchModal', () => {
     await user.click(screen.getByText(/點擊前往新增藝人/));
 
     expect(onClose).toHaveBeenCalledTimes(1);
-    expect(toggleAuthModal).toHaveBeenCalledWith('/submit-artist');
+    await waitFor(() => expect(toggleAuthModal).toHaveBeenCalledWith('/submit-artist'));
   });
 
   it('顯示既有的空狀態／載入中／結果文案，樣式不變 (TC-025)', async () => {
