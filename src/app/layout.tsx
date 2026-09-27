@@ -8,6 +8,7 @@ import { QueryProvider } from '@/lib/query-client';
 import { LoadingProvider } from '@/lib/loading-context';
 import StyledToaster from '@/components/StyledToaster';
 import Header from '@/components/header';
+import GlobalSearchModal from '@/components/search/GlobalSearchModal';
 import FooterWrapper from '@/components/layout/FooterWrapper';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -140,6 +141,7 @@ export default function RootLayout({
             <LoadingProvider>
               <ShareProvider>
                 <Header />
+                <GlobalSearchModal />
                 {children}
                 <Analytics />
                 <SpeedInsights />
