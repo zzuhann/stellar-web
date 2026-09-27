@@ -168,6 +168,9 @@ const artistList = css({
   marginBottom: '4',
 });
 
+// Must match modalOverlay/modalContent's 0.3s transition above so AuthModal opens after this modal has fully faded out.
+const SEARCH_MODAL_EXIT_TRANSITION_MS = 300;
+
 interface ArtistSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -203,10 +206,7 @@ export default function ArtistSearchModal({
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Clear input whenever isOpen flips to false — including an external close (route change)
-  // that never goes through any of the click/Escape handlers below. Tracked via useState (not
-  // a ref) per React's "adjusting state when a prop changes" pattern: refs can't be read or
-  // written during render, only state can.
+  // Clear input on any isOpen true->false flip (incl. external route-change closes) via useState, not a ref, per React's "adjusting state when a prop changes" pattern (refs can't be touched during render).
   const [previousIsOpen, setPreviousIsOpen] = useState(isOpen);
   if (previousIsOpen !== isOpen) {
     setPreviousIsOpen(isOpen);
@@ -230,8 +230,7 @@ export default function ArtistSearchModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.uid]);
 
-  // Escape must close the modal from anywhere inside it (input, result card, or the CTA),
-  // so the listener lives at the document level rather than on any single focusable element.
+  // Listener lives at document level so Escape closes the modal from any focused child (input, result card, or the CTA).
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -243,12 +242,11 @@ export default function ArtistSearchModal({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // 已知 bug 修正：搜尋 modal (z-index 1000) 蓋在 AuthModal (z-index 50) 之上，
-  // 未登入時點 CTA 若不先關閉搜尋 modal，AuthModal 會被蓋住看不到。
   const handleAddArtistClick = () => {
     onClose();
     if (!user) {
-      toggleAuthModal('/submit-artist');
+      // Delay past this modal's own exit transition, else its fading overlay covers AuthModal and useFocusTrap's rAF return-focus can steal back the focus AuthModal's autofocus just grabbed.
+      setTimeout(() => toggleAuthModal('/submit-artist'), SEARCH_MODAL_EXIT_TRANSITION_MS);
     } else {
       router.push('/submit-artist');
     }
