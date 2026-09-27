@@ -10,8 +10,7 @@ const ArtistSearchModal = dynamic(() => import('./ArtistSearchModal'), {
   loading: () => null,
 });
 
-// Mounted once at layout level so header/TopArtistsSection/SearchSection across every
-// page share this single modal instance instead of each owning their own.
+// Mounted once at layout level so header/TopArtistsSection/SearchSection share this single modal instance instead of each owning their own.
 export default function GlobalSearchModal() {
   const isOpen = useSearchModalStore((state) => state.isOpen);
   const entryPoint = useSearchModalStore((state) => state.entryPoint);
@@ -20,8 +19,7 @@ export default function GlobalSearchModal() {
   const pathname = usePathname();
   const previousPathnameRef = useRef(pathname);
 
-  // A route change (link nav, back/forward, or a dynamic segment swap like /map/A -> /map/B)
-  // ends the current search session even though this component itself never unmounts.
+  // A route change (link nav, back/forward, or a dynamic segment swap like /map/A -> /map/B) ends the search session even though this component itself never unmounts.
   useEffect(() => {
     if (previousPathnameRef.current !== pathname) {
       previousPathnameRef.current = pathname;

@@ -12,14 +12,18 @@ const headerSearchButton = css({
   color: 'color.text.primary',
   cursor: 'pointer',
   padding: '2',
-  // Explicit min size (not just BurgerButton's own box) to guarantee the 44x44 touch target
-  // acceptance criterion regardless of icon/padding sizing drift.
+  // Explicit min size (not just the box) to guarantee the 44x44 touch target regardless of icon/padding sizing drift.
   minWidth: '44px',
   minHeight: '44px',
   borderRadius: 'radius.sm',
   transition: 'background 0.2s ease',
   '&:hover': {
     background: 'color.background.secondary',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
   },
   '@media (max-width: 768px)': {
     display: 'flex',

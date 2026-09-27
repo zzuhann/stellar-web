@@ -9,8 +9,7 @@ import { useSearchModalStore } from '@/store/useSearchModalStore';
 import { shouldShowBirthdayHat } from '@/utils/birthdayHelpers';
 import { TopArtist } from '@/lib/api';
 
-// h2 and the pill are siblings on purpose — nesting the pill inside <h2> would make
-// "搜尋藝人" leak into the heading's accessible name.
+// h2 and the pill are siblings on purpose, else nesting the pill inside <h2> leaks "搜尋藝人" into the heading's accessible name.
 const titleRow = css({
   display: 'flex',
   flexWrap: 'wrap',
@@ -24,8 +23,7 @@ const heading = css({
   minWidth: '0',
 });
 
-// Pushes the pill to the right both on the shared row and, once wrapped at narrow widths
-// (375px baseline), on its own row — a single margin-left:auto covers both layouts.
+// A single margin-left:auto pushes the pill right both on the shared row and, once wrapped at 375px, on its own row.
 const searchPill = css({
   marginLeft: 'auto',
   flexShrink: '0',
