@@ -20,9 +20,7 @@ vi.mock('@/lib/auth-context', () => ({
   }),
 }));
 
-// 這幾個子元件本身有各自的重度依賴（AuthModal -> SignInForm -> ...），
-// 跟這裡要驗證的行為（Header 不會因為路徑而整個 unmount、MobileBackButton 狀態不被清空）無關，
-// 用簡單 stub 隔離，避免測試因為無關的 provider 缺失而失敗。
+// Stub out heavy child deps unrelated to the behavior under test (Header not unmounting across routes).
 vi.mock('./DesktopNav', () => ({
   default: () => <nav aria-label="stub-desktop-nav" />,
 }));
@@ -79,10 +77,18 @@ describe('Header', () => {
     expect(screen.getByRole('button', { name: '返回上一頁' })).not.toBeNull();
   });
 
-  it('分享按鈕已從 header 移除（改放到 map bottom sheet／event bottom bar）', () => {
+  it('手機版 header 在 map 頁只有返回／搜尋／選單三顆按鈕（不含分享，已移到 map bottom sheet）', () => {
     mockPathname = '/map/wonwoo';
     render(<Header />);
-    expect(screen.queryByRole('button', { name: '分享' })).toBeNull();
+    const buttonNames = screen.getAllByRole('button').map((btn) => btn.getAttribute('aria-label'));
+    expect(buttonNames.sort()).toEqual(['搜尋藝人', '開啟選單', '返回上一頁'].sort());
+  });
+
+  it('手機版 header 在 event 頁只有返回／搜尋／選單三顆按鈕（不含分享，已移到 event bottom bar）', () => {
+    mockPathname = '/event/wonwoo-2026-07-BWwLJk';
+    render(<Header />);
+    const buttonNames = screen.getAllByRole('button').map((btn) => btn.getAttribute('aria-label'));
+    expect(buttonNames.sort()).toEqual(['搜尋藝人', '開啟選單', '返回上一頁'].sort());
   });
 
   describe('title 顯示（useHeaderTitleStore）', () => {
@@ -92,7 +98,7 @@ describe('Header', () => {
 
     it('title 為 null（非 map 頁）→ 不渲染 title 容器', () => {
       render(<Header />);
-      // 排除 sr-only 的 <h1>STELLAR | 台灣生日應援地圖平台</h1>，只看 title 區塊用的 <span>
+      // Exclude the sr-only <h1> so this only matches the title block's <span>
       expect(screen.queryByText(/生日應援地圖/, { selector: 'span' })).toBeNull();
     });
 
