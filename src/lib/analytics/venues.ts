@@ -13,11 +13,24 @@ interface VenueCardEventParams extends VenueEventBaseParams {
   venueId: string;
   venueRegion: string;
   listPosition: number;
+  // Phase 2.8: currently-effective list sort ('composite' | 'newest' | 'eventCount').
+  // Only meaningful for the /venues list page; the homepage card variant has no sort
+  // semantics (fixed sort=random), so HomeVenueCardEventParams omits it below.
+  listSort: string;
 }
 
-type HomeVenueCardEventParams = Omit<VenueCardEventParams, 'userId'>;
+type HomeVenueCardEventParams = Omit<VenueCardEventParams, 'userId' | 'listSort'>;
 
 interface VenueFilterEventParams extends VenueEventBaseParams {
+  filterRegion: string;
+  filterCapacity: string;
+  searchQuery: string;
+  resultCount: number;
+}
+
+interface VenueSortEventParams extends VenueEventBaseParams {
+  sortFrom: string;
+  sortTo: string;
   filterRegion: string;
   filterCapacity: string;
   searchQuery: string;
@@ -50,6 +63,7 @@ export function trackViewVenueCard({
   venueId,
   venueRegion,
   listPosition,
+  listSort,
 }: VenueCardEventParams) {
   trackVenueEvent('view_venue_card', {
     event_page: VENUES_LIST_EVENT_PAGE,
@@ -57,6 +71,7 @@ export function trackViewVenueCard({
     content_id: toVenueContentId(venueId),
     venue_region: venueRegion,
     list_position: listPosition,
+    list_sort: listSort,
   });
 }
 
@@ -65,6 +80,7 @@ export function trackClickVenueDetail({
   venueId,
   venueRegion,
   listPosition,
+  listSort,
 }: VenueCardEventParams) {
   trackVenueEvent('click_venue_detail', {
     event_page: VENUES_LIST_EVENT_PAGE,
@@ -72,6 +88,7 @@ export function trackClickVenueDetail({
     content_id: toVenueContentId(venueId),
     venue_region: venueRegion,
     list_position: listPosition,
+    list_sort: listSort,
   });
 }
 
@@ -121,6 +138,28 @@ export function trackFilterVenues({
     event_page: VENUES_LIST_EVENT_PAGE,
     user_id: userId ?? '',
     content_id: '',
+    filter_region: filterRegion,
+    filter_capacity: filterCapacity,
+    search_query: searchQuery,
+    result_count: resultCount,
+  });
+}
+
+export function trackSortVenues({
+  userId,
+  sortFrom,
+  sortTo,
+  filterRegion,
+  filterCapacity,
+  searchQuery,
+  resultCount,
+}: VenueSortEventParams) {
+  trackVenueEvent('sort_venues', {
+    event_page: VENUES_LIST_EVENT_PAGE,
+    user_id: userId ?? '',
+    content_id: '',
+    sort_from: sortFrom,
+    sort_to: sortTo,
     filter_region: filterRegion,
     filter_capacity: filterCapacity,
     search_query: searchQuery,

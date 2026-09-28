@@ -7,7 +7,7 @@ import { venueApi } from '@/lib/api';
 import queryKey from '@/hooks/queryKey';
 import { useAuth } from '@/lib/auth-context';
 import { usePageView } from '@/hooks/usePageView';
-import { trackFilterVenues } from '@/lib/analytics/venues';
+import { trackFilterVenues, trackSortVenues } from '@/lib/analytics/venues';
 import { useQueryState } from '@/hooks/useQueryState';
 import { useQueryStateContext } from '@/hooks/useQueryStateContext';
 import { parseVenueCapacity, parseVenuePage, parseVenueSort } from '@/utils/venues';
@@ -218,6 +218,18 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
   const handleSortChange = (nextSort: VenueSort) => {
     if (nextSort === sort) return;
 
+    // resultCount reflects the list as filtered under the sort about to be replaced,
+    // not the (not-yet-fetched) result of the new sort — see tracking.md L210.
+    trackSortVenues({
+      userId: user?.uid,
+      sortFrom: sort,
+      sortTo: nextSort,
+      filterRegion: region,
+      filterCapacity: capacity,
+      searchQuery: search,
+      resultCount: venues.length,
+    });
+
     sessionStorage.removeItem(SCROLL_KEY);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     mergeUpdates(() => {
@@ -278,7 +290,13 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
             </div>
           ) : (
             venues.map((venue, index) => (
-              <VenueCard key={venue.id} venue={venue} listPosition={index + 1} userId={user?.uid} />
+              <VenueCard
+                key={venue.id}
+                venue={venue}
+                listPosition={index + 1}
+                userId={user?.uid}
+                listSort={sort}
+              />
             ))
           )}
         </section>

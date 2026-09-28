@@ -3,9 +3,12 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   trackClickEventDetail,
   trackClickHomeVenueDetail,
+  trackClickVenueDetail,
   trackClickVenueListCta,
   trackFilterVenues,
+  trackSortVenues,
   trackViewHomeVenueCard,
+  trackViewVenueCard,
 } from './venues';
 
 vi.mock('@next/third-parties/google', () => ({ sendGAEvent: vi.fn() }));
@@ -57,6 +60,94 @@ describe('trackFilterVenues', () => {
       filter_capacity: '20-40',
       search_query: 'ABC Mart',
       result_count: 5,
+    });
+  });
+});
+
+describe('列表頁卡片曝光/點擊帶 list_sort（Phase 2.8）', () => {
+  it('trackViewVenueCard 送出目前生效的 list_sort', () => {
+    trackViewVenueCard({
+      userId: 'user-1',
+      venueId: 'venue-1',
+      venueRegion: '台北',
+      listPosition: 3,
+      listSort: 'newest',
+    });
+
+    expect(sendGAEvent).toHaveBeenCalledWith('event', 'view_venue_card', {
+      event_page: '/venues',
+      user_id: 'user-1',
+      content_id: 'venue_venue-1',
+      venue_region: '台北',
+      list_position: 3,
+      list_sort: 'newest',
+    });
+  });
+
+  it('trackClickVenueDetail 送出目前生效的 list_sort，未登入時 user_id 送空字串', () => {
+    trackClickVenueDetail({
+      venueId: 'venue-2',
+      venueRegion: '高雄',
+      listPosition: 1,
+      listSort: 'composite',
+    });
+
+    expect(sendGAEvent).toHaveBeenCalledWith('event', 'click_venue_detail', {
+      event_page: '/venues',
+      user_id: '',
+      content_id: 'venue_venue-2',
+      venue_region: '高雄',
+      list_position: 1,
+      list_sort: 'composite',
+    });
+  });
+});
+
+describe('trackSortVenues（Phase 2.8 新增事件）', () => {
+  it('送出 sort_from/sort_to 與當下的 filter/搜尋/結果數，content_id 沿用 filter_venues 的空字串寫法', () => {
+    trackSortVenues({
+      userId: 'user-1',
+      sortFrom: 'composite',
+      sortTo: 'newest',
+      filterRegion: '台北',
+      filterCapacity: '20-40',
+      searchQuery: 'ABC',
+      resultCount: 12,
+    });
+
+    expect(sendGAEvent).toHaveBeenCalledWith('event', 'sort_venues', {
+      event_page: '/venues',
+      user_id: 'user-1',
+      content_id: '',
+      sort_from: 'composite',
+      sort_to: 'newest',
+      filter_region: '台北',
+      filter_capacity: '20-40',
+      search_query: 'ABC',
+      result_count: 12,
+    });
+  });
+
+  it('未登入時 user_id 送空字串，sort_from/sort_to 不因未登入而受影響', () => {
+    trackSortVenues({
+      sortFrom: 'newest',
+      sortTo: 'composite',
+      filterRegion: '全部',
+      filterCapacity: 'all',
+      searchQuery: '',
+      resultCount: 0,
+    });
+
+    expect(sendGAEvent).toHaveBeenCalledWith('event', 'sort_venues', {
+      event_page: '/venues',
+      user_id: '',
+      content_id: '',
+      sort_from: 'newest',
+      sort_to: 'composite',
+      filter_region: '全部',
+      filter_capacity: 'all',
+      search_query: '',
+      result_count: 0,
     });
   });
 });

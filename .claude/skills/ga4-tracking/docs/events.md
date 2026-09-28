@@ -283,6 +283,51 @@
 
 ---
 
+## Venues
+
+### view_venue_card / click_venue_detail
+
+場地卡片在 `/venues` 列表頁進入視窗（曝光）或被點擊進入詳情頁。`list_sort`（Phase 2.8 新增，2026-09-28）記錄卡片曝光/點擊當下 `/venues` 生效的排序值，讓 GA4 能依排序分組算 CTR。首頁隨機場地卡片（`placement: homepage_random`）固定 `sort=random`，沒有排序語意，不帶這個參數。
+
+| 參數          | 值（列表頁）                            | 值（首頁隨機卡片） |
+| ------------- | --------------------------------------- | ------------------ |
+| event_page    | `/venues`                               | `/`                |
+| placement     | -                                       | `homepage_random`  |
+| user_id       | 用戶 UID（未登入傳空字串）              | -（首頁版本不帶）  |
+| content_id    | `venue_{venueId}`                       | `venue_{venueId}`  |
+| venue_region  | venueRegion                             | venueRegion        |
+| list_position | listPosition                            | listPosition       |
+| list_sort     | `composite` \| `newest` \| `eventCount` | -（不帶）          |
+
+**實作位置：**
+
+- `src/lib/analytics/venues.ts`（`trackViewVenueCard`、`trackClickVenueDetail`、`trackViewHomeVenueCard`、`trackClickHomeVenueDetail`）
+- `src/components/venues/VenueCard.tsx`（列表頁，`listSort` 來自 `VenuesClient` 目前生效的 `sort` state）
+- `src/components/HomePage/components/HomeVenueCard.tsx`（首頁隨機卡片，不傳 `listSort`）
+
+### sort_venues
+
+使用者在 `/venues` 排序 dropdown 選取一個新選項時觸發（Phase 2.8 新增，2026-09-28）。只在**實際切換**到不同排序值時送出，選到跟目前相同的值不送。`sort_from`/`sort_to` 一律是 `'composite' | 'newest' | 'eventCount'` 三個字面值之一，未帶 `sort` URL 參數（預設排序）記為 `composite`，不會是空字串或 undefined。
+
+| 參數            | 值                                          |
+| --------------- | ------------------------------------------- |
+| event_page      | `/venues`                                   |
+| user_id         | 用戶 UID（未登入傳空字串）                  |
+| content_id      | `''`（比照 `filter_venues` 的既有寫法）     |
+| sort_from       | 切換前生效的排序值                          |
+| sort_to         | 切換後的排序值                              |
+| filter_region   | 切換當下的地區篩選值                        |
+| filter_capacity | 切換當下的容納人數篩選值                    |
+| search_query    | 切換當下的搜尋關鍵字                        |
+| result_count    | 切換當下（filter 後、換 sort 前）的結果筆數 |
+
+**實作位置：**
+
+- `src/lib/analytics/venues.ts`（`trackSortVenues`）
+- `src/app/venues/(list)/VenuesClient.tsx`（`handleSortChange`）
+
+---
+
 ## Map & Event Detail
 
 ### share_event

@@ -122,43 +122,49 @@ interface VenueCardProps {
   venue: Venue;
   listPosition: number;
   userId?: string;
+  // Currently-effective /venues sort, threaded into the card's GA events (Phase 2.8).
+  listSort: string;
 }
 
-function hasViewedCardInSession(venueId: string): boolean {
+// Keyed by listSort too (not just venueId): switching sort re-exposes a card under a
+// different list_sort value, which GA needs to see as a fresh exposure — otherwise
+// per-sort CTR denominators undercount whichever sort a venue was first seen under.
+function hasViewedCardInSession(venueId: string, listSort: string): boolean {
   try {
-    return sessionStorage.getItem(`venues:viewed_card:${venueId}`) === '1';
+    return sessionStorage.getItem(`venues:viewed_card:${listSort}:${venueId}`) === '1';
   } catch {
     return false;
   }
 }
 
-function markViewedCardInSession(venueId: string): void {
+function markViewedCardInSession(venueId: string, listSort: string): void {
   try {
-    sessionStorage.setItem(`venues:viewed_card:${venueId}`, '1');
+    sessionStorage.setItem(`venues:viewed_card:${listSort}:${venueId}`, '1');
   } catch {
     // ignore storage write failures in private mode
   }
 }
 
-export default function VenueCard({ venue, listPosition, userId }: VenueCardProps) {
+export default function VenueCard({ venue, listPosition, userId, listSort }: VenueCardProps) {
   const cardRef = useRef<HTMLAnchorElement>(null);
   const photos = [...(venue.coverPhoto ? [venue.coverPhoto] : []), ...(venue.otherPhotos ?? [])];
 
   useEffect(() => {
     const element = cardRef.current;
-    if (!element || hasViewedCardInSession(venue.id)) return;
+    if (!element || hasViewedCardInSession(venue.id, listSort)) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const isVisible = entries.some((entry) => entry.isIntersecting);
         if (!isVisible) return;
 
-        markViewedCardInSession(venue.id);
+        markViewedCardInSession(venue.id, listSort);
         trackViewVenueCard({
           userId,
           venueId: venue.id,
           venueRegion: venue.region,
           listPosition,
+          listSort,
         });
         observer.disconnect();
       },
@@ -167,7 +173,7 @@ export default function VenueCard({ venue, listPosition, userId }: VenueCardProp
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [listPosition, userId, venue.id, venue.region]);
+  }, [listPosition, listSort, userId, venue.id, venue.region]);
 
   const handleClick = () => {
     trackClickVenueDetail({
@@ -175,6 +181,7 @@ export default function VenueCard({ venue, listPosition, userId }: VenueCardProp
       venueId: venue.id,
       venueRegion: venue.region,
       listPosition,
+      listSort,
     });
     sessionStorage.setItem(SCROLL_KEY, window.scrollY.toString());
   };
