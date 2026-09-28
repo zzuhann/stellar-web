@@ -22,6 +22,7 @@
 
 - `src/hooks/usePageView.ts`
 - `src/components/PageViewTracker.tsx`
+- `src/components/map/MapPage.tsx`（藝人地圖頁直接呼叫 `usePageView`，2026-06-06 commit `42b238c` 的 map-new→map 改名曾移除，2026-09-28 補回）
 
 ---
 

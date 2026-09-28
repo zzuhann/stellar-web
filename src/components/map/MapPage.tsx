@@ -8,6 +8,7 @@ import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
+import { usePageView } from '@/hooks/usePageView';
 import useMapPageData from '@/components/map/hook/useMapPageData';
 import useMapNewLocation from './hooks/useMapNewLocation';
 import { useMapNewState } from './hooks/useMapNewState';
@@ -67,6 +68,9 @@ export default function MapPage({ artistId }: MapPageProps) {
   const { mapEvents, isMapLoading, artistData, isArtistLoading } = useMapPageData({
     artistId,
   });
+
+  // Restore page_view lost in 42b238c's map-new→map rename; artistId is a required prop so it's always ready here.
+  usePageView({ eventPage: '/map/[artistId]', contentId: artistId });
 
   const { latitude, longitude } = useMapNewLocation();
 
