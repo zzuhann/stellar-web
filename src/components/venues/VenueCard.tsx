@@ -122,6 +122,8 @@ interface VenueCardProps {
   venue: Venue;
   listPosition: number;
   userId?: string;
+  // Currently-effective /venues sort, threaded into the card's GA events (Phase 2.8).
+  listSort: string;
 }
 
 function hasViewedCardInSession(venueId: string): boolean {
@@ -140,7 +142,7 @@ function markViewedCardInSession(venueId: string): void {
   }
 }
 
-export default function VenueCard({ venue, listPosition, userId }: VenueCardProps) {
+export default function VenueCard({ venue, listPosition, userId, listSort }: VenueCardProps) {
   const cardRef = useRef<HTMLAnchorElement>(null);
   const photos = [...(venue.coverPhoto ? [venue.coverPhoto] : []), ...(venue.otherPhotos ?? [])];
 
@@ -159,6 +161,7 @@ export default function VenueCard({ venue, listPosition, userId }: VenueCardProp
           venueId: venue.id,
           venueRegion: venue.region,
           listPosition,
+          listSort,
         });
         observer.disconnect();
       },
@@ -167,7 +170,7 @@ export default function VenueCard({ venue, listPosition, userId }: VenueCardProp
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [listPosition, userId, venue.id, venue.region]);
+  }, [listPosition, listSort, userId, venue.id, venue.region]);
 
   const handleClick = () => {
     trackClickVenueDetail({
@@ -175,6 +178,7 @@ export default function VenueCard({ venue, listPosition, userId }: VenueCardProp
       venueId: venue.id,
       venueRegion: venue.region,
       listPosition,
+      listSort,
     });
     sessionStorage.setItem(SCROLL_KEY, window.scrollY.toString());
   };

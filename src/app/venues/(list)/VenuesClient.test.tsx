@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { QueryStateProvider } from '@/hooks/useQueryStateContext';
 import { venueApi } from '@/lib/api';
+import { trackClickVenueDetail, trackSortVenues, trackViewVenueCard } from '@/lib/analytics/venues';
 import VenuesClient from './VenuesClient';
 
 // jsdom does not implement ResizeObserver; VenueFilters (rendered by VenuesClient) only
@@ -13,6 +14,27 @@ class ResizeObserverStub {
   disconnect() {}
 }
 vi.stubGlobal('ResizeObserver', ResizeObserverStub);
+
+// VenueCard (rendered for real, not mocked, so list_sort wiring is exercised end-to-end)
+// fires its view-card tracking from an IntersectionObserver callback. jsdom has none.
+class ImmediateIntersectionObserverStub {
+  private callback: IntersectionObserverCallback;
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback;
+  }
+  observe() {
+    this.callback([{ isIntersecting: true } as IntersectionObserverEntry], this as never);
+  }
+  disconnect() {}
+  unobserve() {}
+  takeRecords() {
+    return [];
+  }
+  root = null;
+  rootMargin = '';
+  thresholds = [];
+}
+vi.stubGlobal('IntersectionObserver', ImmediateIntersectionObserverStub);
 
 // ─── next/navigation mock（比照 useQueryStateContext.test.tsx 的既有 pattern）───
 
@@ -50,6 +72,7 @@ vi.mock('@/hooks/usePageView', () => ({
 
 vi.mock('@/lib/analytics/venues', () => ({
   trackFilterVenues: vi.fn(),
+  trackSortVenues: vi.fn(),
   trackViewVenueCard: vi.fn(),
   trackClickVenueDetail: vi.fn(),
   toVenueContentId: (id: string) => `venue_${id}`,
@@ -59,6 +82,28 @@ const EMPTY_RESPONSE = {
   venues: [],
   pagination: { page: 1, limit: 20, total: 0, totalPages: 0 },
 };
+
+const VENUE_FIXTURE = {
+  id: 'venue-1',
+  name: '測試場地',
+  address: '台北市測試路 1 號',
+  region: '台北',
+  lat: 25,
+  lng: 121,
+  nearestMrt: null,
+  mrtWalkMinutes: null,
+  capacityRange: '20-40' as const,
+  eventCount: 3,
+  coverPhoto: null,
+  status: 'active' as const,
+};
+
+function oneVenueResponse() {
+  return {
+    venues: [VENUE_FIXTURE],
+    pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
+  };
+}
 
 function renderVenuesClient() {
   const queryClient = new QueryClient({
@@ -359,5 +404,117 @@ describe('VenuesClient 排序快速連續切換的 race condition（Phase 2.8）
     const menu3 = await openSortMenu();
     const selected = within(menu3).getByRole('menuitemradio', { name: /生咖數最多/ });
     expect(selected.getAttribute('aria-checked')).toBe('true');
+  });
+});
+
+// ─── sort_venues 事件與卡片 list_sort（GA 埋點補做）────────────────────────
+
+describe('VenuesClient sort_venues 事件（GA 埋點補做）', () => {
+  it('切換排序時送出一次 sort_venues，sort_from 為切換前生效值（未帶 URL 參數時預設為 composite），帶當下 filter/search/result_count', async () => {
+    setMockSearchParams([
+      ['region', '台北'],
+      ['capacity', '20-40'],
+      ['q', 'abc'],
+    ]);
+    vi.mocked(venueApi.getVenues).mockResolvedValue(oneVenueResponse());
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /最新上架/ }));
+
+    expect(trackSortVenues).toHaveBeenCalledTimes(1);
+    expect(trackSortVenues).toHaveBeenCalledWith({
+      userId: undefined,
+      sortFrom: 'composite',
+      sortTo: 'newest',
+      filterRegion: '台北',
+      filterCapacity: '20-40',
+      searchQuery: 'abc',
+      resultCount: 1,
+    });
+  });
+
+  it('選擇跟目前相同的排序值時，不送出 sort_venues', async () => {
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+    const callsBefore = vi.mocked(venueApi.getVenues).mock.calls.length;
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /綜合排序/ }));
+
+    expect(trackSortVenues).not.toHaveBeenCalled();
+    // 沒有實際切換也不該觸發新的列表請求
+    expect(venueApi.getVenues).toHaveBeenCalledTimes(callsBefore);
+  });
+
+  it('連續切換兩次排序，第二次事件的 sort_from 是第一次切換後生效的值，不是原始預設值', async () => {
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu1 = await openSortMenu();
+    fireEvent.click(within(menu1).getByRole('menuitemradio', { name: /最新上架/ }));
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalledTimes(2));
+
+    const menu2 = await openSortMenu();
+    fireEvent.click(within(menu2).getByRole('menuitemradio', { name: /生咖數最多/ }));
+
+    expect(trackSortVenues).toHaveBeenLastCalledWith(
+      expect.objectContaining({ sortFrom: 'newest', sortTo: 'eventCount' })
+    );
+  });
+});
+
+// ─── 卡片曝光／點擊帶當下生效的 list_sort（GA 埋點補做）────────────────────
+
+describe('VenuesClient 列表卡片 list_sort（GA 埋點補做）', () => {
+  it('卡片曝光帶當下生效的排序值（預設 composite）', async () => {
+    vi.mocked(venueApi.getVenues).mockResolvedValue(oneVenueResponse());
+    renderVenuesClient();
+
+    await waitFor(() => {
+      expect(trackViewVenueCard).toHaveBeenCalledWith(
+        expect.objectContaining({ venueId: 'venue-1', listSort: 'composite' })
+      );
+    });
+  });
+
+  it('卡片點擊帶當下生效的排序值', async () => {
+    vi.mocked(venueApi.getVenues).mockResolvedValue(oneVenueResponse());
+    renderVenuesClient();
+
+    const cardLink = await screen.findByRole('link', { name: /測試場地/ });
+    fireEvent.click(cardLink);
+
+    expect(trackClickVenueDetail).toHaveBeenCalledWith(
+      expect.objectContaining({ venueId: 'venue-1', listSort: 'composite' })
+    );
+  });
+
+  it('切換排序後，新出現的卡片曝光帶新的排序值', async () => {
+    const venueB = { ...VENUE_FIXTURE, id: 'venue-2', name: '第二個場地' };
+    vi.mocked(venueApi.getVenues)
+      .mockResolvedValueOnce(oneVenueResponse())
+      .mockResolvedValueOnce({
+        venues: [venueB],
+        pagination: { page: 1, limit: 20, total: 1, totalPages: 1 },
+      });
+
+    renderVenuesClient();
+    await waitFor(() =>
+      expect(trackViewVenueCard).toHaveBeenCalledWith(
+        expect.objectContaining({ venueId: 'venue-1', listSort: 'composite' })
+      )
+    );
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /最新上架/ }));
+
+    await waitFor(() =>
+      expect(trackViewVenueCard).toHaveBeenCalledWith(
+        expect.objectContaining({ venueId: 'venue-2', listSort: 'newest' })
+      )
+    );
   });
 });
