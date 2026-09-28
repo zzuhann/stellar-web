@@ -45,7 +45,8 @@ const handleBarArea = css({
   display: 'flex',
   alignItems: 'center',
   paddingTop: '4',
-  paddingBottom: '4',
+  // 24px so the share pill's ::before touch-area expansion below doesn't reach the carousel.
+  paddingBottom: '6',
   flexShrink: 0,
   cursor: 'grab',
   userSelect: 'none',

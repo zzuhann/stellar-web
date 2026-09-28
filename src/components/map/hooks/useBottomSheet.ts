@@ -6,8 +6,7 @@ const PEEK_HEIGHT = 120;
 // Fraction of window height for half-open state
 const HALF_FRACTION = 0.55;
 
-// Elements inside the handle bar that should stay clickable/tappable instead of starting a drag
-// (or the tap-to-toggle that fires on drag end) tag themselves with this attribute.
+// Elements that should stay tappable instead of starting a drag (or the drag-end tap-toggle) tag themselves with this attribute.
 const NO_DRAG_SELECTOR = '[data-sheet-no-drag]';
 
 // Checked from both the mousedown and the native touchstart listener so the exclusion is symmetric.

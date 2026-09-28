@@ -123,8 +123,7 @@ describe('MapBottomSheet 手勢排除（data-sheet-no-drag）', () => {
     const notPrevented = fireEvent.touchStart(shareButton, { touches: [{ clientY: 300 }] });
     expect(notPrevented).toBe(true);
     fireEvent.touchEnd(shareButton);
-    // jsdom doesn't synthesize a click from touch events like real mobile browsers do;
-    // fire it explicitly to confirm the earlier touchstart didn't suppress it.
+    // jsdom doesn't synthesize a click from touch events like real browsers do, so fire it explicitly here.
     fireEvent.click(shareButton);
 
     expect(share).toHaveBeenCalledWith(shareData);
