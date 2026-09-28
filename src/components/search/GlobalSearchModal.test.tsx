@@ -2,6 +2,7 @@ import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useEffect, useState, type ComponentType } from 'react';
+import { sendGAEvent } from '@next/third-parties/google';
 import GlobalSearchModal from './GlobalSearchModal';
 import { useSearchModalStore } from '@/store/useSearchModalStore';
 
@@ -51,8 +52,28 @@ vi.mock('@/hooks/useScrollLock', () => ({
   useScrollLock: () => {},
 }));
 
+const sendGAEventMock = vi.mocked(sendGAEvent);
+
 const resetStore = () =>
   useSearchModalStore.setState({ isOpen: false, entryPoint: null, triggerRef: null });
+
+describe('GlobalSearchModal eager mount (perf)', () => {
+  beforeEach(() => {
+    resetStore();
+    sendGAEventMock.mockClear();
+  });
+
+  afterEach(cleanup);
+
+  it('mounts the modal hidden before the first open, without firing search_artist', async () => {
+    render(<GlobalSearchModal />);
+
+    // hidden: true — the dialog is aria-hidden while closed, which getByRole excludes by default.
+    const dialog = await screen.findByRole('dialog', { hidden: true });
+    expect(dialog.getAttribute('aria-hidden')).toBe('true');
+    expect(sendGAEventMock).not.toHaveBeenCalledWith('event', 'search_artist', expect.anything());
+  });
+});
 
 describe('GlobalSearchModal route-change close (TC-019)', () => {
   beforeEach(() => {

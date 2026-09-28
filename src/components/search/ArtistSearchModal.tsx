@@ -175,7 +175,8 @@ interface ArtistSearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   triggerRef?: React.RefObject<HTMLElement | null>;
-  entryPoint: SearchModalEntryPoint;
+  // Null before the first open in this session, since GlobalSearchModal now mounts this eagerly to preload its chunk.
+  entryPoint: SearchModalEntryPoint | null;
 }
 
 export default function ArtistSearchModal({

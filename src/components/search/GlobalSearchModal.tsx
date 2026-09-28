@@ -27,9 +27,7 @@ export default function GlobalSearchModal() {
     }
   }, [pathname, close]);
 
-  // Nothing has opened the modal yet in this session; skip mounting it at all.
-  if (!entryPoint) return null;
-
+  // Always mount (even before the first open) so the lazy chunk preloads right after hydration and the open transition can play on first click.
   return (
     <ArtistSearchModal
       isOpen={isOpen}
