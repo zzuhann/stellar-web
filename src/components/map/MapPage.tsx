@@ -133,7 +133,7 @@ export default function MapPage({ artistId }: MapPageProps) {
 
   const headerEyebrow = buildMapHeaderTitle(artistData?.stageName, artistData?.stageNameZh);
 
-  // 把藝人名稱灌進全域 Header 中間的標題區塊（名字 eyebrow + 固定主標題兩行），離開地圖頁時清空避免殘留
+  // Feed the artist name into the global Header title; clear on unmount to avoid stale title on other pages
   const setHeaderTitle = useHeaderTitleStore((state) => state.setTitle);
   useEffect(() => {
     if (!headerEyebrow) return;
