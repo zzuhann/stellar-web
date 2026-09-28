@@ -68,11 +68,11 @@ const handleBar = css({
 });
 
 const countRow = css({
+  position: 'relative',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'space-between',
+  justifyContent: 'center',
   width: '100%',
-  gap: '2',
   marginTop: '3',
 });
 
@@ -83,9 +83,12 @@ const countText = css({
 });
 
 // Same pill shape as TopArtistsSection's search pill, but keeps its border per the reviewed design.
+// Pinned to the row's right edge so the count text can be centered independently.
 const sharePill = css({
-  position: 'relative',
-  flexShrink: '0',
+  position: 'absolute',
+  right: '0',
+  top: '50%',
+  transform: 'translateY(-50%)',
   display: 'inline-flex',
   alignItems: 'center',
   gap: '1.5',
