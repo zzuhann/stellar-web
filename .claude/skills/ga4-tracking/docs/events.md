@@ -268,13 +268,14 @@
 
 分享活動或藝人頁面（PWA 模式下）。
 
-| 參數       | 值                                 |
-| ---------- | ---------------------------------- |
-| event_page | `/event/[id]` 或 `/map/[artistId]` |
-| user_id    | 用戶 UID                           |
-| content_id | eventId 或 artistId                |
+| 參數            | 值                                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------------------- |
+| event_page      | `/event/[id]` 或 `/map/[artistId]`                                                                                  |
+| user_id         | 用戶 UID                                                                                                            |
+| content_id      | eventId 或 artistId                                                                                                 |
+| button_location | `bottom_bar` / `bottom_sheet`（活動頁）、`map_bottom_sheet`（地圖頁）；`top_button` 已停用（header 分享按鈕已移除） |
 
-**實作位置：** `src/components/ShareButton.tsx`
+**實作位置：** `src/components/EventDetail/EventBottomBar.tsx`（活動頁）、`src/components/map/MapBottomSheet.tsx`（地圖頁）
 
 ---
 
