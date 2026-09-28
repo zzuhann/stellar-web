@@ -6,8 +6,10 @@ const useClientLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : 
 import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
-import { CalendarDaysIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowUpOnSquareIcon, CalendarDaysIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
+import { useWebShare } from '@/hooks/useWebShare';
+import { useShare } from '@/context/ShareContext';
 import EventCarousel from './EventCarousel';
 import { useBottomSheet } from './hooks/useBottomSheet';
 import Skeleton from '@/components/ui/Skeleton';
@@ -65,11 +67,56 @@ const handleBar = css({
   background: 'color.border.medium',
 });
 
+const countRow = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  width: '100%',
+  gap: '2',
+  marginTop: '3',
+});
+
 const countText = css({
   textStyle: 'bodySmall',
   color: 'color.text.primary',
   lineHeight: '1',
-  marginTop: '3',
+});
+
+// Same pill shape as TopArtistsSection's search pill, but keeps its border per the reviewed design.
+const sharePill = css({
+  position: 'relative',
+  flexShrink: '0',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '1.5',
+  paddingX: '3',
+  paddingY: '2',
+  borderRadius: '9999px',
+  background: 'color.background.primary',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  color: 'color.text.primary',
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
+  cursor: 'pointer',
+  transition: 'background 0.15s ease',
+  // Expand tap target toward the carousel below (not upward, to avoid overlapping the drag handle row above).
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: '0',
+    bottom: '-2',
+    left: '-2',
+    right: '-2',
+  },
+  '&:hover': {
+    background: 'color.background.secondary',
+  },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
 });
 
 const locationChip = css({
@@ -202,6 +249,8 @@ const MapBottomSheet = ({
   onDragMove,
 }: MapBottomSheetProps) => {
   const { user } = useAuth();
+  const { share } = useWebShare();
+  const { shareData } = useShare();
   const innerRef = useRef<HTMLDivElement>(null);
   const drawerInnerRef = useRef<HTMLDivElement>(null);
   const locationChipRef = useRef<HTMLDivElement>(null);
@@ -249,6 +298,16 @@ const MapBottomSheet = ({
     },
     [user, artistId]
   );
+
+  const handleShare = useCallback(() => {
+    sendGAEvent('event', 'share_event', {
+      event_page: '/map/[artistId]',
+      user_id: user?.uid ?? '',
+      content_id: artistId,
+      button_location: 'map_bottom_sheet',
+    });
+    share(shareData);
+  }, [user, artistId, share, shareData]);
 
   // Hook must be called unconditionally (React rules); empty state ignores height/drag values
   const { height, isAnimating, handleBarBind, onTransitionEnd, snapToHalf } = useBottomSheet({
@@ -409,7 +468,21 @@ const MapBottomSheet = ({
               ) : (
                 <div className={handleBar} />
               )}
-              <span className={countText}>{events.length} 個生日應援</span>
+              <div className={countRow}>
+                <span className={countText}>{events.length} 個生日應援</span>
+                <button
+                  type="button"
+                  className={sharePill}
+                  onClick={handleShare}
+                  // Button lives inside handleBarArea, which binds drag/tap-to-toggle on mousedown/touchstart;
+                  // stop propagation so tapping share doesn't also start a drag or expand/collapse the sheet.
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
+                >
+                  <ArrowUpOnSquareIcon width={16} height={16} aria-hidden="true" />
+                  分享
+                </button>
+              </div>
             </div>
 
             <div className={sideSlot} />
