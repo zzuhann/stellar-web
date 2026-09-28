@@ -126,17 +126,20 @@ interface VenueCardProps {
   listSort: string;
 }
 
-function hasViewedCardInSession(venueId: string): boolean {
+// Keyed by listSort too (not just venueId): switching sort re-exposes a card under a
+// different list_sort value, which GA needs to see as a fresh exposure — otherwise
+// per-sort CTR denominators undercount whichever sort a venue was first seen under.
+function hasViewedCardInSession(venueId: string, listSort: string): boolean {
   try {
-    return sessionStorage.getItem(`venues:viewed_card:${venueId}`) === '1';
+    return sessionStorage.getItem(`venues:viewed_card:${listSort}:${venueId}`) === '1';
   } catch {
     return false;
   }
 }
 
-function markViewedCardInSession(venueId: string): void {
+function markViewedCardInSession(venueId: string, listSort: string): void {
   try {
-    sessionStorage.setItem(`venues:viewed_card:${venueId}`, '1');
+    sessionStorage.setItem(`venues:viewed_card:${listSort}:${venueId}`, '1');
   } catch {
     // ignore storage write failures in private mode
   }
@@ -148,14 +151,14 @@ export default function VenueCard({ venue, listPosition, userId, listSort }: Ven
 
   useEffect(() => {
     const element = cardRef.current;
-    if (!element || hasViewedCardInSession(venue.id)) return;
+    if (!element || hasViewedCardInSession(venue.id, listSort)) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         const isVisible = entries.some((entry) => entry.isIntersecting);
         if (!isVisible) return;
 
-        markViewedCardInSession(venue.id);
+        markViewedCardInSession(venue.id, listSort);
         trackViewVenueCard({
           userId,
           venueId: venue.id,

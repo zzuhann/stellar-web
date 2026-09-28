@@ -517,4 +517,48 @@ describe('VenuesClient 列表卡片 list_sort（GA 埋點補做）', () => {
       )
     );
   });
+
+  it('同一個場地在 composite 排序曝光過，切到 newest 後再度出現時，仍要再送一次曝光（帶新的 list_sort）', async () => {
+    // 同一顆 venue 在兩次排序下都回傳，模擬使用者切排序後同一間場地仍在結果中的情況。
+    vi.mocked(venueApi.getVenues).mockResolvedValue(oneVenueResponse());
+
+    renderVenuesClient();
+    await waitFor(() =>
+      expect(trackViewVenueCard).toHaveBeenCalledWith(
+        expect.objectContaining({ venueId: 'venue-1', listSort: 'composite' })
+      )
+    );
+    expect(trackViewVenueCard).toHaveBeenCalledTimes(1);
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /最新上架/ }));
+
+    await waitFor(() =>
+      expect(trackViewVenueCard).toHaveBeenCalledWith(
+        expect.objectContaining({ venueId: 'venue-1', listSort: 'newest' })
+      )
+    );
+    expect(trackViewVenueCard).toHaveBeenCalledTimes(2);
+  });
+
+  it('同一個場地在同一個排序下重複出現（如分頁返回），不重送曝光事件', async () => {
+    vi.mocked(venueApi.getVenues).mockResolvedValue(oneVenueResponse());
+
+    const { unmount } = renderVenuesClient();
+    await waitFor(() =>
+      expect(trackViewVenueCard).toHaveBeenCalledWith(
+        expect.objectContaining({ venueId: 'venue-1', listSort: 'composite' })
+      )
+    );
+    expect(trackViewVenueCard).toHaveBeenCalledTimes(1);
+    unmount();
+
+    // 同一 session、同一排序下重新渲染（模擬同頁重新 mount，如分頁返回），
+    // sessionStorage 的去重 key 應該仍視為「已曝光過」而不重送。
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalledTimes(2));
+    await screen.findByRole('link', { name: /測試場地/ });
+
+    expect(trackViewVenueCard).toHaveBeenCalledTimes(1);
+  });
 });
