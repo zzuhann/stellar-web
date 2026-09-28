@@ -263,6 +263,26 @@
 
 ---
 
+### click_event_detail
+
+點擊活動卡片進入活動詳情頁 `/event/[slug]`。地圖頁與場地詳情頁都有觸發，參數不同。
+
+| 參數       | 值（地圖頁）                   | 值（場地詳情頁） |
+| ---------- | ------------------------------ | ---------------- |
+| event_page | `/map/[artistId]`              | `/venues/[id]`   |
+| user_id    | 用戶 UID                       | 用戶 UID         |
+| content_id | eventId                        | eventId          |
+| artist_id  | artistId                       | -                |
+| source     | `map_single_card` / `carousel` | -                |
+
+**實作位置：**
+
+- `src/components/map/MapSingleEventCard.tsx`（`source: map_single_card`）
+- `src/components/map/EventCarouselCard.tsx`（`source: carousel`）
+- `src/lib/analytics/venues.ts`（`trackClickEventDetail`）、`src/components/venues/PastEventsStrip.tsx`（場地詳情頁過往活動卡片，2026-09-28 新增）
+
+---
+
 ## Map & Event Detail
 
 ### share_event
