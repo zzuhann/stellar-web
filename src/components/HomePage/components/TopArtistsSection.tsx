@@ -34,8 +34,6 @@ const searchPill = css({
   paddingX: '2.5',
   paddingY: '1',
   borderRadius: '9999px',
-  border: '1px solid',
-  borderColor: 'color.primary',
   background: 'color.background.primary',
   color: 'color.primary',
   textStyle: 'bodySmall',
