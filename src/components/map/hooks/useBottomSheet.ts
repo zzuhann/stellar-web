@@ -6,11 +6,17 @@ const PEEK_HEIGHT = 120;
 // Fraction of window height for half-open state
 const HALF_FRACTION = 0.55;
 
+// Elements that should stay tappable instead of starting a drag (or the drag-end tap-toggle) tag themselves with this attribute.
+const NO_DRAG_SELECTOR = '[data-sheet-no-drag]';
+
+// Checked from both the mousedown and the native touchstart listener so the exclusion is symmetric.
+function isNoDragTarget(target: EventTarget | null): boolean {
+  return target instanceof Element && target.closest(NO_DRAG_SELECTOR) !== null;
+}
+
 export interface UseBottomSheetOptions {
   onExpandToHalf?: (triggerMethod: 'drag' | 'tap_handle') => void;
   halfHeight?: number;
-  /** Touch/mouse events targeting this element (or its descendants) will not start a drag */
-  excludeRef?: RefObject<HTMLElement | null>;
   initialHeight?: number;
   /** Ref to the DOM element that will have its transform mutated directly during drag */
   containerRef?: RefObject<HTMLElement | null>;
@@ -35,7 +41,6 @@ export interface UseBottomSheetReturn {
 export function useBottomSheet({
   onExpandToHalf,
   halfHeight: halfHeightProp,
-  excludeRef,
   initialHeight,
   containerRef,
   getTransform,
@@ -119,7 +124,7 @@ export function useBottomSheet({
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {
-      if (excludeRef?.current?.contains(e.target as Node)) return;
+      if (isNoDragTarget(e.target)) return;
       if (Date.now() - lastTouchEndTimeRef.current < 500) return;
       setIsAnimating(false);
       dragStateRef.current = {
@@ -148,7 +153,7 @@ export function useBottomSheet({
       document.addEventListener('mousemove', onMove, { passive: false });
       document.addEventListener('mouseup', onEnd);
     },
-    [excludeRef, getHalfHeight, handleDragEnd, applyDragHeight]
+    [getHalfHeight, handleDragEnd, applyDragHeight]
   );
 
   // Callback ref: attach native touchstart (passive:false) when element mounts, detach on unmount.
@@ -167,7 +172,7 @@ export function useBottomSheet({
       }
 
       const handler = (e: TouchEvent) => {
-        if (excludeRef?.current?.contains(e.target as Node)) return;
+        if (isNoDragTarget(e.target)) return;
         e.preventDefault();
         setIsAnimating(false);
         dragStateRef.current = {
@@ -201,7 +206,7 @@ export function useBottomSheet({
       touchStartHandlerRef.current = handler;
       el.addEventListener('touchstart', handler, { passive: false });
     },
-    [excludeRef, getHalfHeight, applyDragHeight]
+    [getHalfHeight, applyDragHeight]
   );
 
   const snapToHalf = useCallback(() => {

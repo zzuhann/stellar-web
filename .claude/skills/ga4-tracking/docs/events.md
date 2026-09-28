@@ -149,25 +149,27 @@
 
 開啟搜尋框，當使用者點擊搜尋按鈕開啟 modal 時觸發。
 
-| 參數       | 值       |
-| ---------- | -------- |
-| event_page | `/`      |
-| user_id    | 用戶 UID |
-| content_id | -        |
+| 參數        | 值                                          |
+| ----------- | ------------------------------------------- |
+| event_page  | 觸發當下實際頁面路徑（`usePathname()`）     |
+| user_id     | 用戶 UID                                    |
+| content_id  | -                                           |
+| entry_point | `header` / `top_artists` / `search_section` |
 
-**實作位置：** `src/components/search/ArtistSearchModal.tsx`
+**實作位置：** `src/components/search/ArtistSearchModal.tsx`（開啟 modal 的 `useEffect`）。`entry_point` 由呼叫端（`HeaderSearchButton` / `TopArtistsSection` / `SearchSection`）經 `useSearchModalStore` 傳入，同一次 modal session 內與 `click_artist` 的值一致。
 
 ### click_artist
 
 點擊藝人卡片，從搜尋結果跳轉到藝人地圖頁。
 
-| 參數       | 值       |
-| ---------- | -------- |
-| event_page | `/`      |
-| user_id    | 用戶 UID |
-| content_id | artistId |
+| 參數        | 值                                                   |
+| ----------- | ---------------------------------------------------- |
+| event_page  | 觸發當下實際頁面路徑（`usePathname()`）              |
+| user_id     | 用戶 UID                                             |
+| content_id  | artistId                                             |
+| entry_point | 與同一次 modal session 開啟時相同的 `entry_point` 值 |
 
-**實作位置：** `src/components/search/ArtistSearchModal.tsx`
+**實作位置：** `src/components/search/ArtistSearchModal.tsx`（`ArtistCardLink` 的 `onBeforeNavigate`）
 
 ---
 
@@ -266,13 +268,14 @@
 
 分享活動或藝人頁面（PWA 模式下）。
 
-| 參數       | 值                                 |
-| ---------- | ---------------------------------- |
-| event_page | `/event/[id]` 或 `/map/[artistId]` |
-| user_id    | 用戶 UID                           |
-| content_id | eventId 或 artistId                |
+| 參數            | 值                                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------------------- |
+| event_page      | `/event/[id]` 或 `/map/[artistId]`                                                                                  |
+| user_id         | 用戶 UID                                                                                                            |
+| content_id      | eventId 或 artistId                                                                                                 |
+| button_location | `bottom_bar` / `bottom_sheet`（活動頁）、`map_bottom_sheet`（地圖頁）；`top_button` 已停用（header 分享按鈕已移除） |
 
-**實作位置：** `src/components/ShareButton.tsx`
+**實作位置：** `src/components/EventDetail/EventBottomBar.tsx`（活動頁）、`src/components/map/MapBottomSheet.tsx`（地圖頁）
 
 ---
 

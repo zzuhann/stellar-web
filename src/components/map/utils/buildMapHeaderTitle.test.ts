@@ -4,25 +4,25 @@ import { buildMapHeaderTitle } from './buildMapHeaderTitle';
 describe('buildMapHeaderTitle', () => {
   // TC-003：stageName 與 stageNameZh 皆存在，中英混排空格規則
   it('stageName 與 stageNameZh 皆存在 → 兩者並列，英文/中文之間一個半形空格', () => {
-    expect(buildMapHeaderTitle('IU', '李知恩')).toBe('IU 李知恩的生日應援地圖');
+    expect(buildMapHeaderTitle('IU', '李知恩')).toBe('IU 李知恩');
   });
 
   // TC-002：只有 stageName（無 stageNameZh）
-  it('只有 stageName（stageNameZh 為 undefined） → 顯示 stageName + 的生日應援地圖', () => {
-    expect(buildMapHeaderTitle('BLACKPINK', undefined)).toBe('BLACKPINK 的生日應援地圖');
+  it('只有 stageName（stageNameZh 為 undefined） → 只顯示 stageName', () => {
+    expect(buildMapHeaderTitle('BLACKPINK', undefined)).toBe('BLACKPINK');
   });
 
-  it('只有 stageName（stageNameZh 為 null） → 顯示 stageName + 的生日應援地圖', () => {
-    expect(buildMapHeaderTitle('BLACKPINK', null)).toBe('BLACKPINK 的生日應援地圖');
+  it('只有 stageName（stageNameZh 為 null） → 只顯示 stageName', () => {
+    expect(buildMapHeaderTitle('BLACKPINK', null)).toBe('BLACKPINK');
   });
 
   // TC-012：stageNameZh 為空字串（非 undefined/null）也視為不存在
   it('stageNameZh 為空字串 "" → 視為不存在，只顯示 stageName，不出現多餘空白', () => {
-    expect(buildMapHeaderTitle('BLACKPINK', '')).toBe('BLACKPINK 的生日應援地圖');
+    expect(buildMapHeaderTitle('BLACKPINK', '')).toBe('BLACKPINK');
   });
 
   it('stageNameZh 為純空白字串 "   " → 同樣視為不存在，不出現多餘空白', () => {
-    expect(buildMapHeaderTitle('BLACKPINK', '   ')).toBe('BLACKPINK 的生日應援地圖');
+    expect(buildMapHeaderTitle('BLACKPINK', '   ')).toBe('BLACKPINK');
   });
 
   it('stageName 為純空白字串 "   " → 視為不存在，回傳空字串', () => {
@@ -34,9 +34,7 @@ describe('buildMapHeaderTitle', () => {
   });
 
   it('stageName 前後帶空白 → trim 後的值套用到最終回傳字串，不殘留頭尾空白', () => {
-    expect(buildMapHeaderTitle('  BLACKPINK  ', '  黑粉紅  ')).toBe(
-      'BLACKPINK 黑粉紅的生日應援地圖'
-    );
+    expect(buildMapHeaderTitle('  BLACKPINK  ', '  黑粉紅  ')).toBe('BLACKPINK 黑粉紅');
   });
 
   it('stageName 不存在（尚未載入） → 回傳空字串，不組出殘缺標題', () => {

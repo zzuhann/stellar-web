@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import dynamic from 'next/dynamic';
+import { useRef } from 'react';
 import { QueryStateProvider } from '@/hooks/useQueryStateContext';
 import WeekNavigation from '@/components/HomePage/components/WeekNavigation';
 import BirthdayTab from '@/components/HomePage/components/BirthdayTab';
@@ -15,11 +14,7 @@ import TrendingEventsSection from '@/components/HomePage/components/TrendingEven
 import TopArtistsSection from '@/components/HomePage/components/TopArtistsSection';
 import HomeVenuesSection from '@/components/HomePage/components/HomeVenuesSection';
 import { usePageView } from '@/hooks/usePageView';
-
-const ArtistSearchModal = dynamic(() => import('@/components/search/ArtistSearchModal'), {
-  ssr: false,
-  loading: () => null,
-});
+import useSearchSectionEntry from './hook/useSearchSectionEntry';
 
 export const pageContainer = css({
   minHeight: '100vh',
@@ -51,8 +46,7 @@ export const contentWrapper = css({
 const HEADER_HEIGHT = 70;
 
 function HomePageContent() {
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const searchTriggerRef = useRef<HTMLButtonElement>(null);
+  const { searchTriggerRef, onSearchClick } = useSearchSectionEntry();
   const weekSectionRef = useRef<HTMLElement>(null);
 
   usePageView({ eventPage: '/' });
@@ -115,7 +109,7 @@ function HomePageContent() {
                 <BirthdayTab
                   artists={weekBirthdayArtists}
                   loading={isArtistsLoading}
-                  onSearchClick={() => setSearchModalOpen(true)}
+                  onSearchClick={onSearchClick}
                   searchTriggerRef={searchTriggerRef}
                 />
               </div>
@@ -129,12 +123,6 @@ function HomePageContent() {
           </section>
         </section>
       </div>
-
-      <ArtistSearchModal
-        isOpen={searchModalOpen}
-        onClose={() => setSearchModalOpen(false)}
-        triggerRef={searchTriggerRef}
-      />
     </main>
   );
 }
