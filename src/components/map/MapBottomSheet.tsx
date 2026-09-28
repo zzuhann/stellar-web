@@ -82,7 +82,6 @@ const countText = css({
   lineHeight: '1',
 });
 
-// Same pill shape as TopArtistsSection's search pill, but keeps its border per the reviewed design.
 // Pinned to the row's right edge so the count text can be centered independently.
 const sharePill = css({
   position: 'absolute',
@@ -251,7 +250,6 @@ const MapBottomSheet = ({
   const { shareData } = useShare();
   const innerRef = useRef<HTMLDivElement>(null);
   const drawerInnerRef = useRef<HTMLDivElement>(null);
-  const locationChipRef = useRef<HTMLDivElement>(null);
   const carouselContainerRef = useRef<HTMLDivElement>(null);
   const [measuredHeight, setMeasuredHeight] = useState<number | undefined>(undefined);
   const [maxHeight, setMaxHeight] = useState(0);
@@ -311,7 +309,6 @@ const MapBottomSheet = ({
   const { height, isAnimating, handleBarBind, onTransitionEnd, snapToHalf } = useBottomSheet({
     onExpandToHalf: handleExpandToHalf,
     halfHeight: measuredHeight,
-    excludeRef: locationChipRef,
     initialHeight,
     containerRef: drawerInnerRef,
     getTransform: useCallback(
@@ -432,11 +429,8 @@ const MapBottomSheet = ({
           <div className={handleBarArea} data-testid="handle-bar-area" {...handleBarBind}>
             <div className={handleBarCenter}>
               {isLocationFiltered && onClearLocationFilter ? (
-                <div
-                  ref={locationChipRef}
-                  className={locationChip}
-                  onMouseDown={(e) => e.stopPropagation()}
-                >
+                // data-sheet-no-drag: keep this chip tappable, see useBottomSheet's NO_DRAG_SELECTOR
+                <div className={locationChip} data-sheet-no-drag="">
                   <span
                     className={locationChipText}
                     title={events[0]?.location?.name ?? events[0]?.location?.city ?? ''}
@@ -468,10 +462,8 @@ const MapBottomSheet = ({
                   type="button"
                   className={sharePill}
                   onClick={handleShare}
-                  // Button lives inside handleBarArea, which binds drag/tap-to-toggle on mousedown/touchstart;
-                  // stop propagation so tapping share doesn't also start a drag or expand/collapse the sheet.
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onTouchStart={(e) => e.stopPropagation()}
+                  // data-sheet-no-drag: keep this pill tappable, see useBottomSheet's NO_DRAG_SELECTOR
+                  data-sheet-no-drag=""
                 >
                   <ArrowUpOnSquareIcon width={16} height={16} aria-hidden="true" />
                   分享
