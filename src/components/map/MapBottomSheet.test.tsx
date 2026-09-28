@@ -3,8 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import MapBottomSheet from './MapBottomSheet';
 import { MapEvent } from '@/types';
 
-// jsdom doesn't implement ResizeObserver / matchMedia; the component only uses them for
-// height measurement and reduced-motion detection, neither of which is under test here.
+// jsdom lacks ResizeObserver / matchMedia; stub them since only share-button behavior is under test here.
 class ResizeObserverStub {
   observe() {}
   unobserve() {}
@@ -39,8 +38,7 @@ vi.mock('@/context/ShareContext', () => ({
   useShare: () => ({ shareData }),
 }));
 
-// EventCarousel has its own heavy deps (next/image, EventCarouselCard); irrelevant to the
-// share button behavior under test here, stub it out.
+// Stub EventCarousel: its own heavy deps (next/image, EventCarouselCard) are irrelevant here.
 vi.mock('./EventCarousel', () => ({
   default: () => <div data-testid="event-carousel-stub" />,
 }));
@@ -79,17 +77,83 @@ describe('MapBottomSheet 分享按鈕', () => {
     });
   });
 
-  it('點擊分享按鈕不會觸發 bottom sheet 展開／收合（不送出 map_bottom_sheet_expand 事件）', () => {
+  it('滑鼠完整序列（mouseDown → mouseUp → click）點分享，不觸發 bottom sheet 展開／收合，且高度不變', () => {
     render(<MapBottomSheet artistId="wonwoo" events={[baseEvent]} />);
+    const sheetInner = screen.getByTestId('bottom-sheet').firstElementChild as HTMLElement;
+    const transformBefore = sheetInner.style.transform;
 
     const shareButton = screen.getByRole('button', { name: '分享' });
     fireEvent.mouseDown(shareButton);
+    fireEvent.mouseUp(shareButton);
     fireEvent.click(shareButton);
 
+    expect(share).toHaveBeenCalledWith(shareData);
     expect(sendGAEvent).not.toHaveBeenCalledWith(
       'event',
       'map_bottom_sheet_expand',
       expect.anything()
     );
+    expect(sheetInner.style.transform).toBe(transformBefore);
+  });
+});
+
+describe('MapBottomSheet 手勢排除（data-sheet-no-drag）', () => {
+  beforeEach(() => {
+    sendGAEvent.mockClear();
+    share.mockClear();
+  });
+
+  it('原生 touchstart 打在把手空白處會呼叫 preventDefault（drag 正常啟動，作為對照組）', () => {
+    render(<MapBottomSheet artistId="wonwoo" events={[baseEvent]} />);
+    const handleBarArea = screen.getByTestId('handle-bar-area');
+
+    // fireEvent's return value mirrors element.dispatchEvent: false means preventDefault() was called.
+    const notPrevented = fireEvent.touchStart(handleBarArea, { touches: [{ clientY: 300 }] });
+
+    expect(notPrevented).toBe(false);
+    fireEvent.touchEnd(handleBarArea);
+  });
+
+  it('原生 touchstart/touchend 打在分享 pill 上不會呼叫 preventDefault，也不會啟動拖曳，click 仍能觸發分享', () => {
+    render(<MapBottomSheet artistId="wonwoo" events={[baseEvent]} />);
+    const sheetInner = screen.getByTestId('bottom-sheet').firstElementChild as HTMLElement;
+    const transformBefore = sheetInner.style.transform;
+    const shareButton = screen.getByRole('button', { name: '分享' });
+
+    const notPrevented = fireEvent.touchStart(shareButton, { touches: [{ clientY: 300 }] });
+    expect(notPrevented).toBe(true);
+    fireEvent.touchEnd(shareButton);
+    // jsdom doesn't synthesize a click from touch events like real mobile browsers do;
+    // fire it explicitly to confirm the earlier touchstart didn't suppress it.
+    fireEvent.click(shareButton);
+
+    expect(share).toHaveBeenCalledWith(shareData);
+    expect(sendGAEvent).toHaveBeenCalledWith('event', 'share_event', expect.anything());
+    expect(sendGAEvent).not.toHaveBeenCalledWith(
+      'event',
+      'map_bottom_sheet_expand',
+      expect.anything()
+    );
+    expect(sheetInner.style.transform).toBe(transformBefore);
+  });
+
+  it('location chip 的既有排除行為沒有壞掉：touchstart 不會 preventDefault，清除按鈕仍可點擊', () => {
+    const onClearLocationFilter = vi.fn();
+    render(
+      <MapBottomSheet
+        artistId="wonwoo"
+        events={[baseEvent]}
+        isLocationFiltered
+        onClearLocationFilter={onClearLocationFilter}
+      />
+    );
+
+    const clearButton = screen.getByRole('button', { name: '清除地點篩選' });
+    const notPrevented = fireEvent.touchStart(clearButton, { touches: [{ clientY: 300 }] });
+    expect(notPrevented).toBe(true);
+    fireEvent.touchEnd(clearButton);
+    fireEvent.click(clearButton);
+
+    expect(onClearLocationFilter).toHaveBeenCalledTimes(1);
   });
 });
