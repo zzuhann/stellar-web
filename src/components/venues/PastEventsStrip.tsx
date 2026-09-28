@@ -222,6 +222,10 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
               role="listitem"
               className={card}
               onClick={() => trackClickEventDetail({ userId: user?.uid, eventId: event.id })}
+              onAuxClick={(e) => {
+                // middle click opens a new tab, bypassing onClick, so track it separately
+                if (e.button === 1) trackClickEventDetail({ userId: user?.uid, eventId: event.id });
+              }}
             >
               <div className={coverWrap}>
                 {event.coverImage ? (

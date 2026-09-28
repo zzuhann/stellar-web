@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { VenueEventCard } from '@/types';
@@ -37,5 +37,17 @@ describe('PastEventsStrip 過往活動卡片點擊追蹤', () => {
     await user.click(card);
 
     expect(trackClickEventDetail).toHaveBeenCalledWith({ userId: 'user-1', eventId: 'event-1' });
+  });
+
+  it('中鍵點擊卡片送出 click_event_detail，右鍵點擊不送出', () => {
+    render(<PastEventsStrip events={[event]} />);
+    const card = screen.getByRole('listitem');
+
+    fireEvent(card, new MouseEvent('auxclick', { bubbles: true, button: 1 }));
+    expect(trackClickEventDetail).toHaveBeenCalledWith({ userId: 'user-1', eventId: 'event-1' });
+
+    vi.mocked(trackClickEventDetail).mockClear();
+    fireEvent(card, new MouseEvent('auxclick', { bubbles: true, button: 2 }));
+    expect(trackClickEventDetail).not.toHaveBeenCalled();
   });
 });
