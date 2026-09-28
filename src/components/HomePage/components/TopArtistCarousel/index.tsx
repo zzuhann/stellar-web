@@ -141,7 +141,7 @@ export default function TopArtistCarousel({
   onCardClick,
 }: TopArtistCarouselProps) {
   const swiperRef = useRef<SwiperType | null>(null);
-  const { user, toggleAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const [showLeftFade, setShowLeftFade] = useState(false);
   const [showRightFade, setShowRightFade] = useState(true);
 
@@ -156,7 +156,7 @@ export default function TopArtistCarousel({
 
     if (!user) {
       e.preventDefault();
-      toggleAuthModal('/submit-event');
+      openAuthModal('/submit-event');
     }
   };
 

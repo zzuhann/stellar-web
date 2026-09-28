@@ -14,7 +14,8 @@ interface AuthContextType {
   loading: boolean;
   signOut: () => Promise<void>;
   authModalOpen: boolean;
-  toggleAuthModal: (redirectTo?: string, onAuthSuccess?: () => void) => void;
+  openAuthModal: (redirectTo?: string, onAuthSuccess?: () => void) => void;
+  closeAuthModal: () => void;
   redirectUrl: string | null;
   refetchUserData: (uid?: string) => Promise<void>;
 }
@@ -73,21 +74,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return unsubscribe;
   }, []);
 
-  const toggleAuthModal = useCallback((redirectTo?: string, onAuthSuccess?: () => void) => {
+  // 明確的開/關而非 toggle:同一個 effect 在 React Strict Mode 下會被連續呼叫兩次，
+  // 若用 prev => !prev 純切換，兩次呼叫會互相抵銷（true → false）導致 modal 永遠不出現。
+  const openAuthModal = useCallback((redirectTo?: string, onAuthSuccess?: () => void) => {
     if (redirectTo) {
       setRedirectUrl(redirectTo);
     }
     if (onAuthSuccess) {
       pendingActionRef.current = onAuthSuccess;
     }
-    setAuthModalOpen((prev) => {
-      if (prev) {
-        // closing modal — clear redirect and pending action
-        setRedirectUrl(null);
-        pendingActionRef.current = null;
-      }
-      return !prev;
-    });
+    setAuthModalOpen(true);
+  }, []);
+
+  const closeAuthModal = useCallback(() => {
+    setRedirectUrl(null);
+    pendingActionRef.current = null;
+    setAuthModalOpen(false);
   }, []);
 
   useEffect(() => {
@@ -112,7 +114,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signOut: handleSignOut,
     authModalOpen,
-    toggleAuthModal,
+    openAuthModal,
+    closeAuthModal,
     redirectUrl,
     refetchUserData,
   };

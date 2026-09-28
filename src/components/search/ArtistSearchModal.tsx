@@ -175,7 +175,7 @@ interface ArtistSearchModalProps {
 
 export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: ArtistSearchModalProps) {
   const router = useRouter();
-  const { user, toggleAuthModal } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const [inputValue, setInputValue] = useState('');
   const debouncedSearchQuery = useDebounce(inputValue, 800);
 
@@ -282,7 +282,7 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
               <CTAButton
                 onClick={() => {
                   if (!user) {
-                    toggleAuthModal('/submit-artist');
+                    openAuthModal('/submit-artist');
                   } else {
                     router.push('/submit-artist');
                   }
@@ -303,7 +303,7 @@ export default function ArtistSearchModal({ isOpen, onClose, triggerRef }: Artis
               <CTAButton
                 onClick={() => {
                   if (!user) {
-                    toggleAuthModal('/submit-artist');
+                    openAuthModal('/submit-artist');
                   } else {
                     router.push('/submit-artist');
                   }

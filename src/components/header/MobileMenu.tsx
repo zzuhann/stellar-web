@@ -136,7 +136,7 @@ type MobileMenuProps = {
 };
 
 const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
-  const { user, userData, signOut, toggleAuthModal, loading } = useAuth();
+  const { user, userData, signOut, openAuthModal, loading } = useAuth();
   const pathname = usePathname();
 
   // 使用 focus trap 和 scroll lock
@@ -187,7 +187,7 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
               });
               if (!user) {
                 e.preventDefault();
-                toggleAuthModal('/submit-event');
+                openAuthModal('/submit-event');
               }
               closeMobileMenu();
             }}
@@ -205,7 +205,7 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
               });
               if (!user) {
                 e.preventDefault();
-                toggleAuthModal('/submit-artist');
+                openAuthModal('/submit-artist');
               }
               closeMobileMenu();
             }}
@@ -246,7 +246,7 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
                 <button
                   className={mobileMenuButton}
                   onClick={() => {
-                    toggleAuthModal();
+                    openAuthModal();
                     closeMobileMenu();
                   }}
                 >

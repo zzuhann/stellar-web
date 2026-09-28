@@ -42,7 +42,7 @@ const loadingPlaceholder = css({
 
 const DesktopNav = () => {
   const pathname = usePathname();
-  const { user, userData, signOut, toggleAuthModal, loading } = useAuth();
+  const { user, userData, signOut, openAuthModal, loading } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   if (loading) {
@@ -108,7 +108,7 @@ const DesktopNav = () => {
                 content_id: 'desktop_nav',
               });
               e.preventDefault();
-              toggleAuthModal('/submit-event');
+              openAuthModal('/submit-event');
             }}
           >
             舉辦生日應援
@@ -123,12 +123,12 @@ const DesktopNav = () => {
                 content_id: 'desktop_nav',
               });
               e.preventDefault();
-              toggleAuthModal('/submit-artist');
+              openAuthModal('/submit-artist');
             }}
           >
             新增藝人
           </Link>
-          <button className={memberButton} onClick={() => toggleAuthModal()}>
+          <button className={memberButton} onClick={() => openAuthModal()}>
             登入 / 註冊
           </button>
         </div>

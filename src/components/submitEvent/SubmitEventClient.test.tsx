@@ -1,18 +1,29 @@
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import SubmitEventClient from './SubmitEventClient';
 import useEventDetail from './hooks/useEventDetail';
 import showToast from '@/lib/toast';
 
 const pushMock = vi.fn();
 
-vi.mock('@/lib/auth-context', () => ({
-  useAuth: () => ({
-    user: { uid: 'user-1' },
+function createAuthMock(overrides: Partial<ReturnType<typeof defaultAuthState>> = {}) {
+  return { ...defaultAuthState(), ...overrides };
+}
+
+function defaultAuthState() {
+  return {
+    user: { uid: 'user-1' } as { uid: string } | null,
     loading: false,
     authModalOpen: false,
-    toggleAuthModal: vi.fn(),
-  }),
+    openAuthModal: vi.fn(),
+    closeAuthModal: vi.fn(),
+  };
+}
+
+let authState = createAuthMock();
+
+vi.mock('@/lib/auth-context', () => ({
+  useAuth: () => authState,
 }));
 
 function createSearchParamsMock(entries: [string, string][]) {
@@ -51,6 +62,7 @@ afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   currentSearchParams = createSearchParamsMock([]);
+  authState = createAuthMock();
 });
 
 describe('SubmitEventClient 編輯模式下活動資料查詢失敗', () => {
@@ -106,5 +118,48 @@ describe('SubmitEventClient 編輯模式下活動真的不存在（查詢成功�
 
     expect(showToast.warning).toHaveBeenCalledWith('活動不存在');
     expect(pushMock).toHaveBeenCalledWith('/my-submissions?tab=event');
+  });
+});
+
+describe('SubmitEventClient 登入 modal 行為（回歸測試：修正 toggleAuthModal race condition）', () => {
+  beforeEach(() => {
+    useEventDetailMock.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useEventDetail>);
+  });
+
+  it('未登入且 loading 完成時開啟登入 modal（openAuthModal 是明確設值，不是 toggle，呼叫多次也不會抵銷）', () => {
+    authState = createAuthMock({ user: null, authModalOpen: false });
+
+    render(<SubmitEventClient />);
+
+    expect(authState.openAuthModal).toHaveBeenCalled();
+  });
+
+  it('modal 關閉時若仍未登入就導回首頁，不論 modal 是誰打開的', () => {
+    // 模擬 modal 是被別的地方打開的（例如 header 或 401 攔截器），
+    // 而不是這個頁面自己的 effect 打開的
+    authState = createAuthMock({ user: null, authModalOpen: true });
+    const { rerender } = render(<SubmitEventClient />);
+
+    authState = createAuthMock({ user: null, authModalOpen: false });
+    rerender(<SubmitEventClient />);
+
+    expect(pushMock).toHaveBeenCalledWith('/');
+  });
+
+  it('登入成功後 modal 關閉且不會導回首頁（留在原頁面）', () => {
+    authState = createAuthMock({ user: null, authModalOpen: true });
+    const { rerender } = render(<SubmitEventClient />);
+
+    // 登入成功：user 有值、modal 關閉
+    authState = createAuthMock({ user: { uid: 'user-1' }, authModalOpen: false });
+    rerender(<SubmitEventClient />);
+
+    expect(pushMock).not.toHaveBeenCalledWith('/');
   });
 });
