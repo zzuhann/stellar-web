@@ -25,14 +25,14 @@ const heading = css({
 
 // A single margin-left:auto pushes the pill right both on the shared row and, once wrapped at 375px, on its own row.
 const searchPill = css({
+  position: 'relative',
   marginLeft: 'auto',
   flexShrink: '0',
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '2',
-  paddingX: '3',
-  paddingY: '2',
-  minHeight: '44px',
+  gap: '1.5',
+  paddingX: '2.5',
+  paddingY: '1',
   borderRadius: '9999px',
   border: '1px solid',
   borderColor: 'color.primary',
@@ -42,6 +42,15 @@ const searchPill = css({
   fontWeight: 'medium',
   cursor: 'pointer',
   transition: 'background 0.15s ease',
+  // Expand the tap target to 44px without inflating the pill's visual size (title-row siblings are on the same line, so vertical-only extension can't cover them).
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: '-2',
+    bottom: '-2',
+    left: '0',
+    right: '0',
+  },
   '&:hover': {
     background: 'stellarBlue.50',
   },

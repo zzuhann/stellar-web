@@ -136,7 +136,6 @@ const Header = () => {
             display: 'none',
             '@media (max-width: 768px)': {
               display: 'flex',
-              gap: '3',
             },
           })}
         >
