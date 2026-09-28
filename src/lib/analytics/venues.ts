@@ -33,6 +33,10 @@ interface VenueMapEventParams extends VenueEventBaseParams {
   venueId: string;
 }
 
+interface VenueEventDetailEventParams extends VenueEventBaseParams {
+  eventId: string;
+}
+
 function trackVenueEvent(eventName: string, payload: VenueAnalyticsPayload) {
   sendGAEvent('event', eventName, payload);
 }
@@ -139,5 +143,13 @@ export function trackClickVenueMap({ userId, venueId }: VenueMapEventParams) {
     user_id: userId ?? '',
     content_id: toVenueContentId(venueId),
     outbound_target: 'google_maps',
+  });
+}
+
+export function trackClickEventDetail({ userId, eventId }: VenueEventDetailEventParams) {
+  trackVenueEvent('click_event_detail', {
+    event_page: VENUE_DETAIL_EVENT_PAGE,
+    user_id: userId ?? '',
+    content_id: eventId,
   });
 }

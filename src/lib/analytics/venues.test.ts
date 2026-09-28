@@ -1,6 +1,7 @@
 import { sendGAEvent } from '@next/third-parties/google';
 import { describe, expect, it, vi } from 'vitest';
 import {
+  trackClickEventDetail,
   trackClickHomeVenueDetail,
   trackClickVenueListCta,
   trackFilterVenues,
@@ -56,6 +57,28 @@ describe('trackFilterVenues', () => {
       filter_capacity: '20-40',
       search_query: 'ABC Mart',
       result_count: 5,
+    });
+  });
+});
+
+describe('trackClickEventDetail', () => {
+  it('送出場地詳情頁的 click_event_detail，content_id 為 eventId 本身（不加 venue_ 前綴）', () => {
+    trackClickEventDetail({ userId: 'user-1', eventId: 'event-1' });
+
+    expect(sendGAEvent).toHaveBeenCalledWith('event', 'click_event_detail', {
+      event_page: '/venues/[id]',
+      user_id: 'user-1',
+      content_id: 'event-1',
+    });
+  });
+
+  it('未登入時 user_id 送空字串', () => {
+    trackClickEventDetail({ eventId: 'event-2' });
+
+    expect(sendGAEvent).toHaveBeenCalledWith('event', 'click_event_detail', {
+      event_page: '/venues/[id]',
+      user_id: '',
+      content_id: 'event-2',
     });
   });
 });

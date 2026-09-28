@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { css } from '@/styled-system/css';
 import type { VenueEventCard } from '@/types';
 import { formatDateRange } from '@/utils';
+import { useAuth } from '@/lib/auth-context';
+import { trackClickEventDetail } from '@/lib/analytics/venues';
 
 const section = css({
   paddingTop: '5',
@@ -179,6 +181,7 @@ interface PastEventsStripProps {
 }
 
 export default function PastEventsStrip({ events }: PastEventsStripProps) {
+  const { user } = useAuth();
   const trackRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState(1);
   const count = events.length;
@@ -218,6 +221,11 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
               href={`/event/${event.slug ?? event.id}`}
               role="listitem"
               className={card}
+              onClick={() => trackClickEventDetail({ userId: user?.uid, eventId: event.id })}
+              onAuxClick={(e) => {
+                // middle click opens a new tab, bypassing onClick, so track it separately
+                if (e.button === 1) trackClickEventDetail({ userId: user?.uid, eventId: event.id });
+              }}
             >
               <div className={coverWrap}>
                 {event.coverImage ? (

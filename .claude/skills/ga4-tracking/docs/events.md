@@ -22,6 +22,7 @@
 
 - `src/hooks/usePageView.ts`
 - `src/components/PageViewTracker.tsx`
+- `src/components/map/MapPage.tsx`（藝人地圖頁直接呼叫 `usePageView`，2026-06-06 commit `42b238c` 的 map-new→map 改名曾移除，2026-09-28 補回）
 
 ---
 
@@ -259,6 +260,26 @@
 | content_id | eventId           |
 
 **實作位置：** `src/components/map/hook/useMapSelection.ts`
+
+---
+
+### click_event_detail
+
+點擊活動卡片進入活動詳情頁 `/event/[slug]`。地圖頁與場地詳情頁都有觸發，參數不同。
+
+| 參數       | 值（地圖頁）                   | 值（場地詳情頁） |
+| ---------- | ------------------------------ | ---------------- |
+| event_page | `/map/[artistId]`              | `/venues/[id]`   |
+| user_id    | 用戶 UID                       | 用戶 UID         |
+| content_id | eventId                        | eventId          |
+| artist_id  | artistId                       | -                |
+| source     | `map_single_card` / `carousel` | -                |
+
+**實作位置：**
+
+- `src/components/map/MapSingleEventCard.tsx`（`source: map_single_card`）
+- `src/components/map/EventCarouselCard.tsx`（`source: carousel`）
+- `src/lib/analytics/venues.ts`（`trackClickEventDetail`）、`src/components/venues/PastEventsStrip.tsx`（場地詳情頁過往活動卡片，2026-09-28 新增）
 
 ---
 

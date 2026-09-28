@@ -22,6 +22,7 @@ export function usePageView({ eventPage, contentId = '' }: PageViewParams) {
       user_id: user?.uid ?? '',
       content_id: contentId,
     });
+    // user is excluded: login state changing shouldn't resend page_view
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [eventPage, contentId]);
 }
