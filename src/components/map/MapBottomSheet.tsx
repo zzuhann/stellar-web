@@ -153,11 +153,6 @@ const locationChipClose = css({
   lineHeight: '1',
 });
 
-const sideSlot = css({
-  width: '32px',
-  flexShrink: 0,
-});
-
 // Empty state
 const emptyPanel = css({
   position: 'fixed',
@@ -361,12 +356,10 @@ const MapBottomSheet = ({
         >
           <div ref={innerRef} style={{ paddingBottom: '16px' }}>
             <div className={handleBarArea} {...handleBarBind}>
-              <div className={sideSlot} />
               <div className={handleBarCenter}>
                 <div className={handleBar} />
                 <Skeleton width="80px" height="14px" borderRadius="4px" />
               </div>
-              <div className={sideSlot} />
             </div>
             <div
               style={{
@@ -434,8 +427,6 @@ const MapBottomSheet = ({
         {/* paddingBottom ensures scrollHeight naturally includes bottom spacing */}
         <div ref={innerRef} style={{ paddingBottom: '16px' }}>
           <div className={handleBarArea} data-testid="handle-bar-area" {...handleBarBind}>
-            <div className={sideSlot} />
-
             <div className={handleBarCenter}>
               {isLocationFiltered && onClearLocationFilter ? (
                 <div
@@ -484,8 +475,6 @@ const MapBottomSheet = ({
                 </button>
               </div>
             </div>
-
-            <div className={sideSlot} />
           </div>
 
           <EventCarousel
