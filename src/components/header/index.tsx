@@ -89,6 +89,24 @@ const titleText = css({
   fontSize: 'clamp(11px, 3.2vw, 14px)',
 });
 
+// Map page's eyebrow (artist name): small, secondary color, single line with ellipsis so the fixed heading below always stays intact.
+const titleEyebrow = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+  display: 'block',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+});
+
+// Map page's fixed heading ("生日應援地圖"): large, bold, primary color.
+const titleHeading = css({
+  textStyle: 'bodyStrong',
+  color: 'color.text.primary',
+  display: 'block',
+  whiteSpace: 'nowrap',
+});
+
 const Header = () => {
   const { authModalOpen, toggleAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -96,6 +114,7 @@ const Header = () => {
   const pathname = usePathname();
   const showMobileBackButton = shouldShowMobileBackButton(pathname);
   const title = useHeaderTitleStore((state) => state.title);
+  const eyebrow = useHeaderTitleStore((state) => state.eyebrow);
 
   return (
     <>
@@ -123,7 +142,14 @@ const Header = () => {
 
         {title && (
           <div className={titleContainer}>
-            <span className={titleText}>{title}</span>
+            {eyebrow ? (
+              <>
+                <span className={titleEyebrow}>{eyebrow}</span>
+                <span className={titleHeading}>{title}</span>
+              </>
+            ) : (
+              <span className={titleText}>{title}</span>
+            )}
           </div>
         )}
 

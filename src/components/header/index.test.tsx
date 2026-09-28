@@ -90,13 +90,22 @@ describe('Header', () => {
 
     it('title 為 null（非 map 頁）→ 不渲染 title 容器', () => {
       render(<Header />);
-      expect(screen.queryByText(/的生日應援地圖/)).toBeNull();
+      // 排除 sr-only 的 <h1>STELLAR | 台灣生日應援地圖平台</h1>，只看 title 區塊用的 <span>
+      expect(screen.queryByText(/生日應援地圖/, { selector: 'span' })).toBeNull();
     });
 
-    it('title 有值（map 頁設定後）→ 顯示完整文字，不截斷 DOM 內容', () => {
+    it('title 有值、無 eyebrow（非地圖頁用法）→ 顯示完整文字，不截斷 DOM 內容', () => {
       useHeaderTitleStore.getState().setTitle('Freen Sarocha Chankimha 的生日應援地圖');
       render(<Header />);
       expect(screen.getByText('Freen Sarocha Chankimha 的生日應援地圖')).not.toBeNull();
+    });
+
+    it('title 與 eyebrow 皆有值（地圖頁用法）→ 兩行都渲染，且 DOM 順序為「名字」在前、「生日應援地圖」在後（螢幕閱讀器唸法自然）', () => {
+      useHeaderTitleStore.getState().setTitle('生日應援地圖', 'Jeonghan 尹淨漢');
+      render(<Header />);
+
+      const titleContainer = screen.getByText('生日應援地圖').closest('div');
+      expect(titleContainer?.textContent).toBe('Jeonghan 尹淨漢生日應援地圖');
     });
   });
 });

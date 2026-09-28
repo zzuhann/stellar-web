@@ -5,10 +5,13 @@ import { create } from 'zustand';
 
 interface HeaderTitleState {
   title: string | null;
-  setTitle: (title: string | null) => void;
+  // Optional small label rendered above title (e.g. map page's artist name above the fixed "生日應援地圖" heading).
+  eyebrow: string | null;
+  setTitle: (title: string | null, eyebrow?: string | null) => void;
 }
 
 export const useHeaderTitleStore = create<HeaderTitleState>()((set) => ({
   title: null,
-  setTitle: (title) => set({ title }),
+  eyebrow: null,
+  setTitle: (title, eyebrow = null) => set({ title, eyebrow }),
 }));

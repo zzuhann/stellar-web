@@ -13,7 +13,7 @@ import useMapNewLocation from './hooks/useMapNewLocation';
 import { useMapNewState } from './hooks/useMapNewState';
 import { useMapStateStorage } from './hooks/useMapStateStorage';
 import { useHeaderTitleStore } from '@/store/useHeaderTitleStore';
-import { buildMapHeaderTitle } from './utils/buildMapHeaderTitle';
+import { buildMapHeaderTitle, MAP_HEADER_TITLE } from './utils/buildMapHeaderTitle';
 import MapBottomSheet from './MapBottomSheet';
 import MapSingleEventCard from './MapSingleEventCard';
 import { MapEvent } from '@/types';
@@ -131,15 +131,15 @@ export default function MapPage({ artistId }: MapPageProps) {
     }
   }, [isMapLoading, isArtistLoading, artistData, router]);
 
-  const headerTitle = buildMapHeaderTitle(artistData?.stageName, artistData?.stageNameZh);
+  const headerEyebrow = buildMapHeaderTitle(artistData?.stageName, artistData?.stageNameZh);
 
-  // 把藝人名稱灌進全域 Header 中間的標題區塊，離開地圖頁時清空避免殘留
+  // 把藝人名稱灌進全域 Header 中間的標題區塊（名字 eyebrow + 固定主標題兩行），離開地圖頁時清空避免殘留
   const setHeaderTitle = useHeaderTitleStore((state) => state.setTitle);
   useEffect(() => {
-    if (!headerTitle) return;
-    setHeaderTitle(headerTitle);
+    if (!headerEyebrow) return;
+    setHeaderTitle(MAP_HEADER_TITLE, headerEyebrow);
     return () => setHeaderTitle(null);
-  }, [headerTitle, setHeaderTitle]);
+  }, [headerEyebrow, setHeaderTitle]);
 
   if (!isMapLoading && !isArtistLoading && !artistData) return null;
 
