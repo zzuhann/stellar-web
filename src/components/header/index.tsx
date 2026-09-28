@@ -11,7 +11,6 @@ import DesktopNav from './DesktopNav';
 import BurgerButton from './BurgerButton';
 import HeaderSearchButton from './HeaderSearchButton';
 import MobileMenu from './MobileMenu';
-import ShareButton from '../ShareButton';
 import MobileBackButton, { shouldShowMobileBackButton } from './MobileBackButton';
 
 const headerContainer = css({
@@ -166,7 +165,6 @@ const Header = () => {
           })}
         >
           <HeaderSearchButton />
-          <ShareButton />
           <BurgerButton
             onClick={() => setMobileMenuOpen(true)}
             ariaExpanded={mobileMenuOpen}

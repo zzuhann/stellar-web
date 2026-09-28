@@ -20,7 +20,7 @@ vi.mock('@/lib/auth-context', () => ({
   }),
 }));
 
-// 這幾個子元件本身有各自的重度依賴（AuthModal -> SignInForm -> ...、ShareButton -> ShareContext），
+// 這幾個子元件本身有各自的重度依賴（AuthModal -> SignInForm -> ...），
 // 跟這裡要驗證的行為（Header 不會因為路徑而整個 unmount、MobileBackButton 狀態不被清空）無關，
 // 用簡單 stub 隔離，避免測試因為無關的 provider 缺失而失敗。
 vi.mock('./DesktopNav', () => ({
@@ -32,10 +32,6 @@ vi.mock('./MobileMenu', () => ({
 }));
 
 vi.mock('../auth/AuthModal', () => ({
-  default: () => null,
-}));
-
-vi.mock('../ShareButton', () => ({
   default: () => null,
 }));
 
@@ -81,6 +77,12 @@ describe('Header', () => {
     mockPathname = '/map/wonwoo';
     render(<Header />);
     expect(screen.getByRole('button', { name: '返回上一頁' })).not.toBeNull();
+  });
+
+  it('分享按鈕已從 header 移除（改放到 map bottom sheet／event bottom bar）', () => {
+    mockPathname = '/map/wonwoo';
+    render(<Header />);
+    expect(screen.queryByRole('button', { name: '分享' })).toBeNull();
   });
 
   describe('title 顯示（useHeaderTitleStore）', () => {
