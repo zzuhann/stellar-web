@@ -73,6 +73,14 @@ export const venueApi = {
     if (params.sort) {
       searchParams.set('sort', params.sort);
     }
+    // Only meaningful (and only ever sent by the caller) when sort='distance' — see
+    // VenueFilterParams. Values are already rounded to 3 decimals by the caller.
+    if (params.lat !== undefined) {
+      searchParams.set('lat', String(params.lat));
+    }
+    if (params.lng !== undefined) {
+      searchParams.set('lng', String(params.lng));
+    }
     if (params.page !== undefined) {
       searchParams.set('page', String(params.page));
     }

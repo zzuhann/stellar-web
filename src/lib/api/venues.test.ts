@@ -71,4 +71,23 @@ describe('venueApi', () => {
 
     expect(api.get).toHaveBeenCalledWith('/venues?page=1&limit=20');
   });
+
+  // venue-distance-sort
+  it('sort=distance 時附加 lat/lng 查詢參數', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { venues: [] } });
+
+    await venueApi.getVenues({ sort: 'distance', lat: 25.033, lng: 121.564, page: 1, limit: 20 });
+
+    expect(api.get).toHaveBeenCalledWith(
+      '/venues?sort=distance&lat=25.033&lng=121.564&page=1&limit=20'
+    );
+  });
+
+  it('未帶 lat/lng 時不附加對應參數（非 distance 排序的既有行為不受影響）', async () => {
+    vi.mocked(api.get).mockResolvedValueOnce({ data: { venues: [] } });
+
+    await venueApi.getVenues({ sort: 'newest', page: 1, limit: 20 });
+
+    expect(api.get).toHaveBeenCalledWith('/venues?sort=newest&page=1&limit=20');
+  });
 });
