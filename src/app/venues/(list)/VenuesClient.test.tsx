@@ -3,7 +3,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { QueryStateProvider } from '@/hooks/useQueryStateContext';
 import { venueApi } from '@/lib/api';
-import { trackClickVenueDetail, trackSortVenues, trackViewVenueCard } from '@/lib/analytics/venues';
+import {
+  trackClickVenueDetail,
+  trackResolveVenueGeolocation,
+  trackSortVenues,
+  trackViewVenueCard,
+} from '@/lib/analytics/venues';
+import { showToast } from '@/lib/toast';
+import { __resetVenueDistanceSortCacheForTests } from '@/components/venues/hooks/useVenueDistanceSort';
 import VenuesClient from './VenuesClient';
 
 // jsdom does not implement ResizeObserver; VenueFilters (rendered by VenuesClient) only
@@ -75,8 +82,52 @@ vi.mock('@/lib/analytics/venues', () => ({
   trackSortVenues: vi.fn(),
   trackViewVenueCard: vi.fn(),
   trackClickVenueDetail: vi.fn(),
+  trackResolveVenueGeolocation: vi.fn(),
   toVenueContentId: (id: string) => `venue_${id}`,
 }));
+
+vi.mock('@/lib/toast', () => ({
+  showToast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+    loading: vi.fn(),
+    dismiss: vi.fn(),
+  },
+}));
+
+// venue-distance-sort — IAB 判斷（比照上面 searchParams 的 lazy mock pattern）。
+// 預設非 IAB、判斷已完成，既有（與本功能無關）的測試不需要關心這個狀態。
+let currentIabState: { isInAppBrowser: boolean; loading: boolean } = {
+  isInAppBrowser: false,
+  loading: false,
+};
+function setMockIabState(state: { isInAppBrowser: boolean; loading: boolean }) {
+  currentIabState = state;
+}
+vi.mock('@/hooks/useIsInAppBrowser', () => ({
+  useIsInAppBrowser: () => currentIabState,
+}));
+
+// 真實 navigator.geolocation.getCurrentPosition（qa.md 情境 29–33 的既定 mock 策略：
+// 直接 mock 瀏覽器原生 API，不假設 useVenueDistanceSort 內部實作）。jsdom 預設不含
+// `geolocation`，符合「不支援 Geolocation API」情境（scenario 31）的預設狀態。
+function stubGeolocationApi(getCurrentPosition: ReturnType<typeof vi.fn>) {
+  Object.defineProperty(navigator, 'geolocation', {
+    value: { getCurrentPosition },
+    configurable: true,
+  });
+}
+function clearGeolocationApiStub() {
+  // configurable:true above allows this; reverts to jsdom's default
+  // ('geolocation' in navigator === false), matching an unsupported browser.
+  delete (navigator as unknown as { geolocation?: unknown }).geolocation;
+}
+
+type GeolocationSuccessCallback = (position: {
+  coords: { latitude: number; longitude: number };
+}) => void;
+type GeolocationErrorCallback = (error: { code: number }) => void;
 
 const EMPTY_RESPONSE = {
   venues: [],
@@ -109,13 +160,20 @@ function renderVenuesClient() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  return render(
+  // 用 function 每次產生「新」的 element（而非重複傳入同一個 JSX 物件參考）——React 對
+  // reference-identical 的 root element 會 bail out、完全不重新呼叫元件本體，導致
+  // mocked hook（如 useIsInAppBrowser）的最新回傳值永遠讀不到。
+  const buildTree = () => (
     <QueryClientProvider client={queryClient}>
       <QueryStateProvider>
         <VenuesClient regions={['全部', '台北']} />
       </QueryStateProvider>
     </QueryClientProvider>
   );
+  const result = render(buildTree());
+  // 強迫 mocked useIsInAppBrowser 等 hook 讀到最新的模組級狀態（如 currentIabState 轉換），
+  // 模擬真實 hook 在 loading 完成後觸發的那次 re-render。
+  return { ...result, rerenderSame: () => result.rerender(buildTree()) };
 }
 
 const getSortTrigger = () => screen.getByRole('button', { name: '排序' });
@@ -130,6 +188,8 @@ let historyPushSpy: ReturnType<typeof vi.spyOn>;
 
 beforeEach(() => {
   setMockSearchParams([]);
+  setMockIabState({ isInAppBrowser: false, loading: false });
+  __resetVenueDistanceSortCacheForTests();
   vi.mocked(venueApi.getVenues).mockReset();
   vi.mocked(venueApi.getVenues).mockResolvedValue(EMPTY_RESPONSE);
   historyReplaceSpy = vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
@@ -140,6 +200,8 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  clearGeolocationApiStub();
+  __resetVenueDistanceSortCacheForTests();
   vi.restoreAllMocks();
 });
 
@@ -560,5 +622,458 @@ describe('VenuesClient 列表卡片 list_sort（GA 埋點補做）', () => {
     await screen.findByRole('link', { name: /測試場地/ });
 
     expect(trackViewVenueCard).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// venue-distance-sort（qa.md 情境 27–38, 41）
+// ═══════════════════════════════════════════════════════════════════════════
+
+describe('venue-distance-sort — 進頁不觸發定位（qa.md 情境 27）', () => {
+  it('未選取「距離最近」時，不論是否帶其他篩選參數，不會呼叫 getCurrentPosition', async () => {
+    const getCurrentPosition = vi.fn();
+    stubGeolocationApi(getCurrentPosition);
+    setMockSearchParams([['region', '台北']]);
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    expect(getCurrentPosition).not.toHaveBeenCalled();
+  });
+});
+
+describe('venue-distance-sort — 選取「距離最近」的立即反饋（qa.md 情境 28）', () => {
+  it('點選後立即關閉選單、trigger 文字更新、URL 帶上 sort=distance，並顯示等待定位提示與 skeleton', async () => {
+    // 不觸發 success/error callback，模擬「正在等待使用者回應授權彈窗」這段期間。
+    const getCurrentPosition = vi.fn();
+    stubGeolocationApi(getCurrentPosition);
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+
+    expect(screen.queryByRole('menu')).toBeNull();
+    expect(screen.getByText('距離最近')).toBeTruthy();
+
+    const lastUrl = historyReplaceSpy.mock.calls.at(-1)?.[2] as string;
+    expect(new URLSearchParams(lastUrl.split('?')[1] ?? '').get('sort')).toBe('distance');
+
+    expect(screen.getByRole('status').textContent).toBe('正在取得你的位置…');
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('venue-distance-sort — 定位成功（qa.md 情境 29）', () => {
+  it('成功後以 rounded 座標打 API，取得距離排序結果', async () => {
+    const getCurrentPosition = vi.fn((success: GeolocationSuccessCallback) => {
+      success({ coords: { latitude: 25.0330123, longitude: 121.5644999 } });
+    });
+    stubGeolocationApi(getCurrentPosition);
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+
+    await waitFor(() => {
+      const lastCallArgs = vi.mocked(venueApi.getVenues).mock.calls.at(-1)?.[0];
+      expect(lastCallArgs?.sort).toBe('distance');
+      expect(lastCallArgs?.lat).toBe(25.033);
+      expect(lastCallArgs?.lng).toBe(121.564);
+    });
+
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+});
+
+describe('venue-distance-sort — 定位失敗 PERMISSION_DENIED（qa.md 情境 30）', () => {
+  it('顯示拒絕文案（warning，duration 5000）、排序退回綜合排序、URL 清除 sort=distance', async () => {
+    const getCurrentPosition = vi.fn((_success: unknown, error: GeolocationErrorCallback) => {
+      error({ code: 1 });
+    });
+    stubGeolocationApi(getCurrentPosition);
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+
+    await waitFor(() => {
+      expect(showToast.warning).toHaveBeenCalledWith(
+        expect.stringContaining('請至瀏覽器設定重新開啟定位權限'),
+        { duration: 5000 }
+      );
+    });
+
+    await waitFor(() => {
+      const lastUrl = historyReplaceSpy.mock.calls.at(-1)?.[2] as string;
+      expect(new URLSearchParams(lastUrl.split('?')[1] ?? '').has('sort')).toBe(false);
+    });
+
+    const menu2 = await openSortMenu();
+    const selected = within(menu2).getByRole('menuitemradio', { name: /綜合排序/ });
+    expect(selected.getAttribute('aria-checked')).toBe('true');
+  });
+});
+
+describe('venue-distance-sort — 瀏覽器不支援 geolocation（qa.md 情境 31）', () => {
+  it('不呼叫 getCurrentPosition，直接顯示不支援文案並退回綜合排序', async () => {
+    expect('geolocation' in navigator).toBe(false);
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+
+    await waitFor(() => {
+      expect(showToast.warning).toHaveBeenCalledWith('目前無法取得你的位置，已改用綜合排序。', {
+        duration: 5000,
+      });
+    });
+  });
+
+  it('非 IAB 從分享連結帶 ?sort=distance 進站時，瀏覽器不支援的行為與主動點選一致', async () => {
+    expect('geolocation' in navigator).toBe(false);
+    setMockSearchParams([['sort', 'distance']]);
+
+    renderVenuesClient();
+
+    await waitFor(() => {
+      expect(showToast.warning).toHaveBeenCalledWith('目前無法取得你的位置，已改用綜合排序。', {
+        duration: 5000,
+      });
+    });
+  });
+});
+
+describe('venue-distance-sort — TIMEOUT／POSITION_UNAVAILABLE（qa.md 情境 32）', () => {
+  it.each([2, 3])('error.code=%s 皆顯示不支援/逾時文案並退回綜合排序', async (code) => {
+    const getCurrentPosition = vi.fn((_success: unknown, error: GeolocationErrorCallback) => {
+      error({ code });
+    });
+    stubGeolocationApi(getCurrentPosition);
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+
+    await waitFor(() => {
+      expect(showToast.warning).toHaveBeenCalledWith('目前無法取得你的位置，已改用綜合排序。', {
+        duration: 5000,
+      });
+    });
+
+    const lastUrl = historyReplaceSpy.mock.calls.at(-1)?.[2] as string;
+    expect(new URLSearchParams(lastUrl.split('?')[1] ?? '').has('sort')).toBe(false);
+  });
+});
+
+describe('venue-distance-sort — 等待中切到其他排序，定位結果晚回不套用 UI（qa.md 情境 33）', () => {
+  it('切走後立即依新排序 fetch；稍後成功的定位結果不顯示 toast、不改 URL，但座標仍快取、GA 事件仍送出', async () => {
+    let capturedSuccess: GeolocationSuccessCallback | undefined;
+    const getCurrentPosition = vi.fn((success: GeolocationSuccessCallback) => {
+      capturedSuccess = success;
+    });
+    stubGeolocationApi(getCurrentPosition);
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu1 = await openSortMenu();
+    fireEvent.click(within(menu1).getByRole('menuitemradio', { name: /距離最近/ }));
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+
+    const menu2 = await openSortMenu();
+    fireEvent.click(within(menu2).getByRole('menuitemradio', { name: /最新上架/ }));
+
+    await waitFor(() => {
+      const lastCallArgs = vi.mocked(venueApi.getVenues).mock.calls.at(-1)?.[0];
+      expect(lastCallArgs?.sort).toBe('newest');
+    });
+
+    const urlCallsBeforeResolve = historyReplaceSpy.mock.calls.length;
+
+    act(() => {
+      capturedSuccess?.({ coords: { latitude: 25.033, longitude: 121.564 } });
+    });
+
+    await waitFor(() => {
+      expect(trackResolveVenueGeolocation).toHaveBeenCalledWith(
+        expect.objectContaining({ locationResult: 'granted', source: 'menu_select' })
+      );
+    });
+
+    expect(showToast.warning).not.toHaveBeenCalled();
+    expect(historyReplaceSpy.mock.calls.length).toBe(urlCallsBeforeResolve);
+
+    // 座標已寫入記憶體快取：切回「距離最近」不再重新呼叫 getCurrentPosition
+    getCurrentPosition.mockClear();
+    const menu3 = await openSortMenu();
+    fireEvent.click(within(menu3).getByRole('menuitemradio', { name: /距離最近/ }));
+    expect(getCurrentPosition).not.toHaveBeenCalled();
+  });
+});
+
+describe('venue-distance-sort — 已有座標時不重新定位，且每次請求帶相同座標（qa.md 情境 34）', () => {
+  it('換頁、換篩選、切到其他排序後切回，皆沿用快取座標，不重新呼叫 getCurrentPosition', async () => {
+    const getCurrentPosition = vi.fn((success: GeolocationSuccessCallback) => {
+      success({ coords: { latitude: 25.033, longitude: 121.564 } });
+    });
+    stubGeolocationApi(getCurrentPosition);
+    vi.mocked(venueApi.getVenues).mockResolvedValue({
+      venues: [VENUE_FIXTURE],
+      pagination: { page: 1, limit: 20, total: 40, totalPages: 2 },
+    });
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+    await waitFor(() => {
+      const last = vi.mocked(venueApi.getVenues).mock.calls.at(-1)?.[0];
+      expect(last?.lat).toBe(25.033);
+    });
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+
+    // 換頁
+    fireEvent.click(screen.getByRole('button', { name: '前往下一頁' }));
+    await waitFor(() => {
+      const last = vi.mocked(venueApi.getVenues).mock.calls.at(-1)?.[0];
+      expect(last?.page).toBe(2);
+      expect(last?.lat).toBe(25.033);
+      expect(last?.lng).toBe(121.564);
+    });
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+
+    // 換篩選（地區）
+    fireEvent.click(screen.getByRole('button', { name: '台北' }));
+    await waitFor(() => {
+      const last = vi.mocked(venueApi.getVenues).mock.calls.at(-1)?.[0];
+      expect(last?.region).toEqual(['台北']);
+      expect(last?.lat).toBe(25.033);
+    });
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+
+    // 切到其他排序 → 不帶 lat/lng
+    const menu2 = await openSortMenu();
+    fireEvent.click(within(menu2).getByRole('menuitemradio', { name: /最新上架/ }));
+    await waitFor(() => {
+      const last = vi.mocked(venueApi.getVenues).mock.calls.at(-1)?.[0];
+      expect(last?.sort).toBe('newest');
+      expect(last?.lat).toBeUndefined();
+      expect(last?.lng).toBeUndefined();
+    });
+
+    // 切回「距離最近」：不重新呼叫 getCurrentPosition，沿用快取座標。這裡不斷言
+    // venueApi.getVenues 的「最後一次呼叫」參數——這組 filter/page/座標組合在本測試較早
+    // 已經打過一次，React Query 的 staleTime 快取讓這次切回直接命中快取、不重新發
+    // request，是預期的既有快取行為，不是本情境要驗證的重點（本情境驗證的是「不重新
+    // 定位」，不是「每次都重新打 API」）。
+    const menu3 = await openSortMenu();
+    fireEvent.click(within(menu3).getByRole('menuitemradio', { name: /距離最近/ }));
+    await waitFor(() => {
+      const lastUrl = historyReplaceSpy.mock.calls.at(-1)?.[2] as string;
+      expect(new URLSearchParams(lastUrl.split('?')[1] ?? '').get('sort')).toBe('distance');
+    });
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('venue-distance-sort — 不寫入 localStorage/sessionStorage（qa.md 情境 35）', () => {
+  it('定位成功流程跑一次後，所有 Storage.setItem 呼叫都不含座標數值', async () => {
+    const getCurrentPosition = vi.fn((success: GeolocationSuccessCallback) => {
+      success({ coords: { latitude: 25.033, longitude: 121.564 } });
+    });
+    stubGeolocationApi(getCurrentPosition);
+    const setItemSpy = vi.spyOn(Storage.prototype, 'setItem');
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+
+    await waitFor(() => {
+      const last = vi.mocked(venueApi.getVenues).mock.calls.at(-1)?.[0];
+      expect(last?.lat).toBe(25.033);
+    });
+
+    const coordWrites = setItemSpy.mock.calls.filter(([, value]) =>
+      String(value).includes('25.033')
+    );
+    expect(coordWrites).toHaveLength(0);
+  });
+});
+
+describe('venue-distance-sort — IAB 開啟 ?sort=distance 連結（qa.md 情境 36）', () => {
+  it('loading 期間不呼叫定位、不顯示提示；resolve 為 IAB 後只清除 sort，其餘參數保留', async () => {
+    setMockIabState({ isInAppBrowser: false, loading: true });
+    setMockSearchParams([
+      ['sort', 'distance'],
+      ['region', '台北'],
+    ]);
+    const getCurrentPosition = vi.fn();
+    stubGeolocationApi(getCurrentPosition);
+
+    const { rerenderSame } = renderVenuesClient();
+
+    expect(getCurrentPosition).not.toHaveBeenCalled();
+    expect(screen.queryByText('正在取得你的位置…')).toBeNull();
+
+    setMockIabState({ isInAppBrowser: true, loading: false });
+    rerenderSame();
+
+    await waitFor(() => {
+      const lastUrl = historyReplaceSpy.mock.calls.at(-1)?.[2] as string;
+      const search = new URLSearchParams(lastUrl.split('?')[1] ?? '');
+      expect(search.has('sort')).toBe(false);
+      expect(search.get('region')).toBe('台北');
+    });
+
+    expect(getCurrentPosition).not.toHaveBeenCalled();
+  });
+});
+
+describe('venue-distance-sort — 非 IAB 開啟 ?sort=distance 連結（qa.md 情境 37）', () => {
+  it('loading 期間不呼叫定位、不顯示提示；resolve 為非 IAB 後直接進入等待定位狀態，不先顯示綜合排序結果', async () => {
+    setMockIabState({ isInAppBrowser: false, loading: true });
+    setMockSearchParams([['sort', 'distance']]);
+    const getCurrentPosition = vi.fn();
+    stubGeolocationApi(getCurrentPosition);
+    vi.mocked(venueApi.getVenues).mockResolvedValue(oneVenueResponse());
+
+    const { rerenderSame } = renderVenuesClient();
+
+    expect(getCurrentPosition).not.toHaveBeenCalled();
+    expect(screen.queryByText('正在取得你的位置…')).toBeNull();
+
+    setMockIabState({ isInAppBrowser: false, loading: false });
+    rerenderSame();
+
+    await waitFor(() => expect(getCurrentPosition).toHaveBeenCalledTimes(1));
+    // 不會先短暫顯示一份綜合排序的結果（composite 下本應出現的 venue-1 此刻不該出現）
+    expect(screen.queryByRole('link', { name: /測試場地/ })).toBeNull();
+  });
+});
+
+describe('venue-distance-sort — URL 永不出現座標（qa.md 情境 38）', () => {
+  it('定位成功、換頁等操作後，所有 history push/replace 的 URL 都不含 lat/lng', async () => {
+    const getCurrentPosition = vi.fn((success: GeolocationSuccessCallback) => {
+      success({ coords: { latitude: 25.033, longitude: 121.564 } });
+    });
+    stubGeolocationApi(getCurrentPosition);
+    vi.mocked(venueApi.getVenues).mockResolvedValue({
+      venues: [VENUE_FIXTURE],
+      pagination: { page: 1, limit: 20, total: 40, totalPages: 2 },
+    });
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+    await waitFor(() => {
+      const last = vi.mocked(venueApi.getVenues).mock.calls.at(-1)?.[0];
+      expect(last?.sort).toBe('distance');
+      expect(last?.lat).toBe(25.033);
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: '前往下一頁' }));
+    await waitFor(() => {
+      const last = vi.mocked(venueApi.getVenues).mock.calls.at(-1)?.[0];
+      expect(last?.page).toBe(2);
+    });
+
+    const allUrls = [...historyReplaceSpy.mock.calls, ...historyPushSpy.mock.calls].map(
+      (call) => call[2] as string
+    );
+    for (const url of allUrls) {
+      expect(url).not.toMatch(/lat=|lng=/);
+    }
+  });
+});
+
+describe('venue-distance-sort — sort_venues／list_sort（qa.md 情境 41）', () => {
+  it('從 dropdown 主動選取「距離最近」會觸發 sort_venues，sort_to=distance', async () => {
+    const getCurrentPosition = vi.fn((success: GeolocationSuccessCallback) => {
+      success({ coords: { latitude: 25.033, longitude: 121.564 } });
+    });
+    stubGeolocationApi(getCurrentPosition);
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+
+    expect(trackSortVenues).toHaveBeenCalledWith(
+      expect.objectContaining({ sortFrom: 'composite', sortTo: 'distance' })
+    );
+  });
+
+  it('從分享連結帶 ?sort=distance 進站不會觸發 sort_venues（由 resolve_venue_geolocation 的 source=share_link 涵蓋）', async () => {
+    setMockSearchParams([['sort', 'distance']]);
+    const getCurrentPosition = vi.fn((success: GeolocationSuccessCallback) => {
+      success({ coords: { latitude: 25.033, longitude: 121.564 } });
+    });
+    stubGeolocationApi(getCurrentPosition);
+
+    renderVenuesClient();
+
+    await waitFor(() => expect(getCurrentPosition).toHaveBeenCalledTimes(1));
+    expect(trackSortVenues).not.toHaveBeenCalled();
+    expect(trackResolveVenueGeolocation).toHaveBeenCalledWith(
+      expect.objectContaining({ locationResult: 'granted', source: 'share_link' })
+    );
+  });
+
+  it('距離排序生效時，卡片曝光的 list_sort 為 distance', async () => {
+    const getCurrentPosition = vi.fn((success: GeolocationSuccessCallback) => {
+      success({ coords: { latitude: 25.033, longitude: 121.564 } });
+    });
+    stubGeolocationApi(getCurrentPosition);
+    vi.mocked(venueApi.getVenues).mockResolvedValue(oneVenueResponse());
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+
+    await waitFor(() =>
+      expect(trackViewVenueCard).toHaveBeenCalledWith(
+        expect.objectContaining({ venueId: 'venue-1', listSort: 'distance' })
+      )
+    );
+  });
+
+  it('非 IAB 定位失敗自動退回綜合排序時，不會多觸發一次 distance→composite 的 sort_venues（系統自動 fallback，非使用者主動切換）', async () => {
+    const getCurrentPosition = vi.fn((_success: unknown, error: GeolocationErrorCallback) => {
+      error({ code: 1 });
+    });
+    stubGeolocationApi(getCurrentPosition);
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+
+    await waitFor(() => {
+      const lastUrl = historyReplaceSpy.mock.calls.at(-1)?.[2] as string;
+      expect(new URLSearchParams(lastUrl.split('?')[1] ?? '').has('sort')).toBe(false);
+    });
+
+    expect(trackSortVenues).not.toHaveBeenCalledWith(
+      expect.objectContaining({ sortFrom: 'distance', sortTo: 'composite' })
+    );
   });
 });

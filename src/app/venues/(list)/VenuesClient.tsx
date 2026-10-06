@@ -1,16 +1,22 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { css } from '@/styled-system/css';
 import { venueApi } from '@/lib/api';
 import queryKey from '@/hooks/queryKey';
 import { useAuth } from '@/lib/auth-context';
 import { usePageView } from '@/hooks/usePageView';
+import { useIsInAppBrowser } from '@/hooks/useIsInAppBrowser';
 import { trackFilterVenues, trackSortVenues } from '@/lib/analytics/venues';
+import { showToast } from '@/lib/toast';
 import { useQueryState } from '@/hooks/useQueryState';
 import { useQueryStateContext } from '@/hooks/useQueryStateContext';
 import { parseVenueCapacity, parseVenuePage, parseVenueSort } from '@/utils/venues';
+import {
+  useVenueDistanceSort,
+  type VenueGeolocationSource,
+} from '@/components/venues/hooks/useVenueDistanceSort';
 import VenueFilters, {
   type CapacityFilter,
   type VenueSort,
@@ -19,6 +25,13 @@ import VenueCard from '@/components/venues/VenueCard';
 import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
 import SubmissionsPagination from '@/components/ui/SubmissionsPagination';
 import ApiErrorState from '@/components/ui/ApiErrorState';
+
+// 定位失敗的 toast 文案（design-frontend.md「畫面規格 → 失敗提示」）：拒絕權限才有
+// 「去瀏覽器設定重新開啟」的專屬引導，不支援／逾時共用同一句通用訊息。
+const LOCATION_DENIED_MESSAGE =
+  '你拒絕了定位權限，已改用綜合排序。如需使用「距離最近」，請至瀏覽器設定重新開啟定位權限。';
+const LOCATION_UNAVAILABLE_MESSAGE = '目前無法取得你的位置，已改用綜合排序。';
+const LOCATION_TOAST_DURATION_MS = 5000;
 
 const SCROLL_KEY = 'venues_scrollY';
 
@@ -73,6 +86,15 @@ const emptyState = css({
   textStyle: 'bodySmall',
 });
 
+// 僅在「尚未取得座標、等待定位中」時顯示（design-frontend.md「列表載入狀態」）；
+// 一旦座標到手、進入單純的 API fetch 階段就不再顯示，畫面回到純 skeleton。
+const locationPrompt = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+  textAlign: 'center',
+  marginBottom: '1',
+});
+
 interface VenuesClientProps {
   // Precomputed server-side (see page.tsx) from a large, unpaginated fetch — kept
   // separate from the paginated list query so the two concerns don't get conflated.
@@ -121,6 +143,77 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
     }
   }, [rawParams.sort, setSort]);
 
+  // ─── venue-distance-sort：IAB 判斷與定位協調 ────────────────────────────
+  const { isInAppBrowser, loading: isInAppBrowserLoading } = useIsInAppBrowser();
+  const { coords, resolveGeolocation } = useVenueDistanceSort();
+  const [isAwaitingLocation, setIsAwaitingLocation] = useState(false);
+
+  // 給 async 的定位結果 callback 讀「當下」的 sort，判斷使用者是否已經切走
+  // （design-frontend.md「快速連續切換排序」edge case：稍後才回來的結果一律丟棄 UI 套用，
+  // 但座標仍寫入記憶體快取、GA 事件仍照常送出，由 useVenueDistanceSort 自己保證）。
+  const sortRef = useRef(sort);
+  useEffect(() => {
+    sortRef.current = sort;
+  }, [sort]);
+
+  const triggerDistanceSort = useCallback(
+    (source: VenueGeolocationSource) => {
+      if (coords || isAwaitingLocation) return;
+      setIsAwaitingLocation(true);
+      resolveGeolocation(user?.uid, source).then((result) => {
+        setIsAwaitingLocation(false);
+        // 使用者已經切到其他排序：GA 事件已經送出、座標（若成功）已經快取，
+        // 這裡不再套用任何 UI 效果（不顯示 toast、不改動 URL/排序）。
+        if (sortRef.current !== 'distance') return;
+        if (result.status === 'granted') return;
+
+        showToast.warning(
+          result.status === 'denied' ? LOCATION_DENIED_MESSAGE : LOCATION_UNAVAILABLE_MESSAGE,
+          { duration: LOCATION_TOAST_DURATION_MS }
+        );
+        mergeUpdates(() => {
+          setSort(null);
+        });
+      });
+    },
+    [coords, isAwaitingLocation, mergeUpdates, resolveGeolocation, setSort, user?.uid]
+  );
+
+  // IAB 判斷完成前不出手（避免在未知環境下誤觸定位）；判定為 IAB 時清除 URL 的
+  // sort=distance（design-frontend.md 流程 C）；判定為非 IAB 且尚無座標時，視同
+  // 使用者剛點了「距離最近」（流程 D：分享連結進站）。
+  useEffect(() => {
+    if (sort !== 'distance' || isInAppBrowserLoading) return;
+    if (isInAppBrowser) {
+      mergeUpdates(() => setSort(null));
+      return;
+    }
+    if (coords || isAwaitingLocation) return;
+    // Kicking off the actual geolocation request (and its isAwaitingLocation flag) is
+    // the whole point of this effect reacting to IAB resolution + URL sort=distance —
+    // not a derived-state calculation that belongs in render.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    triggerDistanceSort('share_link');
+  }, [
+    sort,
+    isInAppBrowserLoading,
+    isInAppBrowser,
+    coords,
+    isAwaitingLocation,
+    triggerDistanceSort,
+    mergeUpdates,
+    setSort,
+  ]);
+
+  // distance 排序必須有座標才能送出請求（缺座標送出會被後端 400）；IAB 或座標未就緒
+  // 時暫停查詢，畫面改走下方的「等待定位」skeleton。
+  const canFetchDistance = !isInAppBrowserLoading && !isInAppBrowser && !!coords;
+  const waitingForLocation = sort === 'distance' && !canFetchDistance;
+  // 「正在取得你的位置…」提示文字只在「確定非 IAB、且還沒有座標」時出現——IAB 判斷中
+  // 或已取得座標時都不顯示（design-frontend.md「列表載入狀態」）。
+  const showLocationPrompt =
+    sort === 'distance' && !isInAppBrowserLoading && !isInAppBrowser && !coords;
+
   const queryParams = {
     region: region === '全部' ? undefined : [region],
     capacityRange: capacity === 'all' ? undefined : capacity,
@@ -128,6 +221,8 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
     // 'composite' 是新預設值，不送給後端（比照 region/capacityRange 預設值不送的既有慣例）；
     // 後端未帶 sort 時本就等同 composite。
     sort: sort === 'composite' ? undefined : sort,
+    lat: sort === 'distance' && coords ? coords.lat : undefined,
+    lng: sort === 'distance' && coords ? coords.lng : undefined,
     page: pageNum,
     limit: PAGE_LIMIT,
     status: 'active' as const,
@@ -140,13 +235,18 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
       search: queryParams.search,
       sort,
       page: pageNum,
+      lat: queryParams.lat,
+      lng: queryParams.lng,
     }),
     queryFn: () => venueApi.getVenues(queryParams),
+    // distance 排序沒有座標前不送出請求（送出會被後端 400）；其他排序一律照常。
+    enabled: sort !== 'distance' || canFetchDistance,
     staleTime: 5 * 60 * 1000,
   });
 
   const venues = data?.venues ?? [];
   const pagination = data?.pagination;
+  const isLoadingList = isLoading || waitingForLocation;
 
   // Restore scroll position on back navigation (popstate fires even when component is cached)
   useEffect(() => {
@@ -236,6 +336,12 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
       setSort(nextSort === 'composite' ? null : nextSort);
       setPageNum(null);
     });
+
+    // URL/trigger 文字立即反映新選項，不等待定位結果（design-frontend.md 流程 A 第 2
+    // 步）；已有快取座標時 triggerDistanceSort 內部會直接 no-op。
+    if (nextSort === 'distance') {
+      triggerDistanceSort('menu_select');
+    }
   };
 
   const handlePageChange = (nextPage: number) => {
@@ -276,14 +382,23 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
         />
 
         <div aria-live="polite" aria-atomic="true" className="sr-only">
-          {isLoading ? '載入中' : `找到 ${venues.length} 個場地`}
+          {isLoadingList ? '載入中' : `找到 ${venues.length} 個場地`}
         </div>
 
         <section aria-label="場地列表" className={listSection}>
           {isError ? (
             <ApiErrorState message="載入場地列表失敗，請重新整理頁面" onRetry={() => refetch()} />
-          ) : isLoading ? (
-            Array.from({ length: 6 }, (_, i) => <VenueCardSkeleton key={i} />)
+          ) : isLoadingList ? (
+            <>
+              {showLocationPrompt && (
+                <p className={locationPrompt} role="status" aria-live="polite">
+                  正在取得你的位置…
+                </p>
+              )}
+              {Array.from({ length: 6 }, (_, i) => (
+                <VenueCardSkeleton key={i} />
+              ))}
+            </>
           ) : venues.length === 0 ? (
             <div className={emptyState}>
               沒有符合條件的場地。試試調整地區、容納人數或搜尋關鍵字。
@@ -296,12 +411,14 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
                 listPosition={index + 1}
                 userId={user?.uid}
                 listSort={sort}
+                userCoords={coords}
+                isInAppBrowser={isInAppBrowser}
               />
             ))
           )}
         </section>
 
-        {!isLoading && !isError && pagination && (
+        {!isLoadingList && !isError && pagination && (
           <SubmissionsPagination
             currentPage={pagination.page}
             totalPages={pagination.totalPages}
