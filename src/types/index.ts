@@ -471,10 +471,14 @@ export interface VenueFilterParams {
   region?: string[];
   capacityRange?: CapacityRange;
   search?: string;
-  sort?: 'composite' | 'eventCount' | 'name' | 'newest' | 'random';
+  sort?: 'composite' | 'eventCount' | 'name' | 'newest' | 'random' | 'distance';
   page?: number;
   limit?: number;
   status?: 'active' | 'inactive' | 'pending' | 'rejected' | 'all';
+  // Only meaningful when sort='distance'; rounded to 3 decimals by the caller before
+  // being sent (venue-distance-sort). Ignored by the backend for any other sort.
+  lat?: number;
+  lng?: number;
 }
 
 export interface VenuesPagination {
