@@ -5,6 +5,7 @@ import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { ArrowPathIcon } from '@heroicons/react/24/solid';
 import { css } from '@/styled-system/css';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useIsInAppBrowser } from '@/hooks/useIsInAppBrowser';
 import { CAPACITY_OPTIONS, type CapacityFilter } from './venueCapacity';
 
 export type { CapacityFilter };
@@ -296,13 +297,21 @@ const clearFiltersIcon = css({
   height: '14px',
 });
 
-export type VenueSort = 'composite' | 'eventCount' | 'newest';
+export type VenueSort = 'composite' | 'eventCount' | 'newest' | 'distance';
 
 const SORT_OPTIONS: { id: VenueSort; label: string }[] = [
   { id: 'composite', label: '綜合排序' },
   { id: 'newest', label: '最新上架' },
   { id: 'eventCount', label: '生咖數最多' },
 ];
+
+// 「距離最近」只在確定不是 in-app browser 時追加（venue-distance-sort）。IAB 判斷尚未
+// 完成（loading）期間一律當作 IAB 處理（保守預設只顯示 3 個選項），避免「先顯示 4 個、
+// 判定為 IAB 後又消失一個」的閃爍——design-frontend.md「排序選單選項」。
+const DISTANCE_SORT_OPTION: { id: VenueSort; label: string } = {
+  id: 'distance',
+  label: '距離最近',
+};
 
 interface VenueFiltersProps {
   regions: string[];
@@ -445,9 +454,15 @@ export default function VenueFilters({
     };
   }, []);
 
+  const { isInAppBrowser, loading: isInAppBrowserLoading } = useIsInAppBrowser();
+  const sortOptions =
+    !isInAppBrowserLoading && !isInAppBrowser
+      ? [...SORT_OPTIONS, DISTANCE_SORT_OPTION]
+      : SORT_OPTIONS;
+
   const selectedCapacityLabel =
     CAPACITY_OPTIONS.find((opt) => opt.id === capacity)?.label ?? '不限人數';
-  const selectedSortOption = SORT_OPTIONS.find((opt) => opt.id === sort) ?? SORT_OPTIONS[0];
+  const selectedSortOption = sortOptions.find((opt) => opt.id === sort) ?? SORT_OPTIONS[0];
 
   // 用即時的 searchInput（而非 debounce 後才寫入 URL 的 search prop），讓按鈕出現/
   // 消失的時機跟輸入框本身一樣即時，不需要等 800ms debounce 結束。
@@ -596,7 +611,7 @@ export default function VenueFilters({
 
           {sortOpen && (
             <div className={sortDropdownMenu} role="menu" aria-label="排序">
-              {SORT_OPTIONS.map((opt) => (
+              {sortOptions.map((opt) => (
                 <button
                   key={opt.id}
                   type="button"

@@ -3,6 +3,11 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import VenueFilters from './VenueFilters';
 
+const mockUseIsInAppBrowser = vi.fn();
+vi.mock('@/hooks/useIsInAppBrowser', () => ({
+  useIsInAppBrowser: () => mockUseIsInAppBrowser(),
+}));
+
 // jsdom does not implement ResizeObserver; VenueFilters only uses it to toggle
 // the region row's scroll fade indicators, which isn't under test here.
 class ResizeObserverStub {
@@ -13,6 +18,12 @@ class ResizeObserverStub {
 vi.stubGlobal('ResizeObserver', ResizeObserverStub);
 
 afterEach(cleanup);
+
+beforeEach(() => {
+  // 預設模擬 IAB 判斷尚未完成（真實 hook 的初始值）——除了明確測試「距離最近」選項
+  // 的 describe block，其餘既有測試不關心 IAB，保守預設維持既有 3 個選項不變。
+  mockUseIsInAppBrowser.mockReturnValue({ isInAppBrowser: false, loading: true });
+});
 
 const baseProps = {
   regions: ['全部', '台北'],
@@ -226,6 +237,62 @@ describe('VenueFilters 排序下拉選單（Phase 2.8）', () => {
     await user.keyboard('{Enter}');
 
     expect(screen.getByRole('menu')).toBeTruthy();
+  });
+});
+
+// qa.md 情境 26：Dropdown 選項數量與 IAB 判斷（含 loading 狀態轉換）
+describe('VenueFilters 距離最近選項與 IAB 判斷（venue-distance-sort）', () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  const getSortTrigger = () => screen.getByRole('button', { name: '排序' });
+  const getOptionLabels = () => {
+    fireEvent.click(getSortTrigger());
+    const menu = screen.getByRole('menu');
+    return within(menu)
+      .getAllByRole('menuitemradio')
+      .map((o) => o.textContent);
+  };
+
+  it('IAB 判斷 loading 中：只顯示既有 3 個選項，不出現「距離最近」', () => {
+    mockUseIsInAppBrowser.mockReturnValue({ isInAppBrowser: false, loading: true });
+    render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    const labels = getOptionLabels();
+    expect(labels).toHaveLength(3);
+    expect(labels.some((l) => l?.includes('距離最近'))).toBe(false);
+  });
+
+  it('判定為非 IAB：追加顯示「距離最近」為第四個選項', () => {
+    mockUseIsInAppBrowser.mockReturnValue({ isInAppBrowser: false, loading: false });
+    render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    const labels = getOptionLabels();
+    expect(labels).toHaveLength(4);
+    expect(labels[3]).toContain('距離最近');
+  });
+
+  it('判定為 IAB：維持只顯示既有 3 個選項', () => {
+    mockUseIsInAppBrowser.mockReturnValue({ isInAppBrowser: true, loading: false });
+    render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    const labels = getOptionLabels();
+    expect(labels).toHaveLength(3);
+    expect(labels.some((l) => l?.includes('距離最近'))).toBe(false);
+  });
+
+  it('loading → 非 IAB 的轉換過程中，不會出現「距離最近」忽隱忽現的中間狀態', () => {
+    mockUseIsInAppBrowser.mockReturnValue({ isInAppBrowser: false, loading: true });
+    const { rerender } = render(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    expect(getOptionLabels()).toHaveLength(3);
+    fireEvent.click(getSortTrigger()); // 關閉選單，避免下一次開啟時重複計算
+
+    mockUseIsInAppBrowser.mockReturnValue({ isInAppBrowser: false, loading: false });
+    rerender(<VenueFilters {...baseProps} sort="composite" search="" />);
+
+    expect(getOptionLabels()).toHaveLength(4);
   });
 });
 
