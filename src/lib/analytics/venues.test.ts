@@ -6,6 +6,7 @@ import {
   trackClickVenueDetail,
   trackClickVenueListCta,
   trackFilterVenues,
+  trackResolveVenueGeolocation,
   trackSortVenues,
   trackViewHomeVenueCard,
   trackViewVenueCard,
@@ -149,6 +150,62 @@ describe('trackSortVenues（Phase 2.8 新增事件）', () => {
       search_query: '',
       result_count: 0,
     });
+  });
+});
+
+// qa.md 情境 40：resolve_venue_geolocation（venue-distance-sort 新增事件）
+describe('trackResolveVenueGeolocation（venue-distance-sort 新增事件）', () => {
+  const combinations: Array<
+    ['granted' | 'denied' | 'unsupported' | 'timeout', 'menu_select' | 'share_link']
+  > = [
+    ['granted', 'menu_select'],
+    ['granted', 'share_link'],
+    ['denied', 'menu_select'],
+    ['denied', 'share_link'],
+    ['unsupported', 'menu_select'],
+    ['unsupported', 'share_link'],
+    ['timeout', 'menu_select'],
+    ['timeout', 'share_link'],
+  ];
+
+  it.each(combinations)(
+    'location_result=%s, source=%s 正確帶出對應參數',
+    (locationResult, source) => {
+      trackResolveVenueGeolocation({ userId: 'user-1', locationResult, source });
+
+      expect(sendGAEvent).toHaveBeenCalledWith('event', 'resolve_venue_geolocation', {
+        event_page: '/venues',
+        user_id: 'user-1',
+        content_id: '',
+        location_result: locationResult,
+        source,
+      });
+    }
+  );
+
+  it('未登入時 user_id 送空字串', () => {
+    trackResolveVenueGeolocation({ locationResult: 'granted', source: 'menu_select' });
+
+    expect(sendGAEvent).toHaveBeenCalledWith('event', 'resolve_venue_geolocation', {
+      event_page: '/venues',
+      user_id: '',
+      content_id: '',
+      location_result: 'granted',
+      source: 'menu_select',
+    });
+  });
+
+  it('payload 白名單：不含座標、距離數值、accuracy 或任何非規格允許的鍵', () => {
+    trackResolveVenueGeolocation({
+      userId: 'user-1',
+      locationResult: 'granted',
+      source: 'share_link',
+    });
+
+    const payload = vi.mocked(sendGAEvent).mock.calls.at(-1)?.[2] as Record<string, unknown>;
+    expect(Object.keys(payload).sort()).toEqual(
+      ['content_id', 'event_page', 'location_result', 'source', 'user_id'].sort()
+    );
   });
 });
 

@@ -28,6 +28,11 @@ interface VenueFilterEventParams extends VenueEventBaseParams {
   resultCount: number;
 }
 
+interface ResolveVenueGeolocationEventParams extends VenueEventBaseParams {
+  locationResult: 'granted' | 'denied' | 'unsupported' | 'timeout';
+  source: 'menu_select' | 'share_link';
+}
+
 interface VenueSortEventParams extends VenueEventBaseParams {
   sortFrom: string;
   sortTo: string;
@@ -164,6 +169,22 @@ export function trackSortVenues({
     filter_capacity: filterCapacity,
     search_query: searchQuery,
     result_count: resultCount,
+  });
+}
+
+// 距離排序定位授權結果（venue-distance-sort 新增）。不得帶座標、距離數值或 accuracy
+// ——隱私硬規則見 tracking.md「隱私硬規則」，payload 只允許 location_result/source 兩個值。
+export function trackResolveVenueGeolocation({
+  userId,
+  locationResult,
+  source,
+}: ResolveVenueGeolocationEventParams) {
+  trackVenueEvent('resolve_venue_geolocation', {
+    event_page: VENUES_LIST_EVENT_PAGE,
+    user_id: userId ?? '',
+    content_id: '',
+    location_result: locationResult,
+    source,
   });
 }
 
