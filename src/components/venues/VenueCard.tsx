@@ -3,8 +3,11 @@
 import { useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { UsersIcon, StarIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { trackClickVenueDetail, trackViewVenueCard } from '@/lib/analytics/venues';
+import { formatVenueDistance } from '@/utils/formatVenueDistance';
+import { haversineDistanceMeters, isMissingVenueCoords, type Coordinates } from '@/utils/geo';
 import type { Venue } from '@/types';
 import { CAPACITY_RANGE_LABEL } from './venueCapacity';
 import { VENUE_CARD_BODY_MIN_HEIGHT } from './venueCardLayout';
@@ -65,10 +68,39 @@ const regionBadge = css({
 const mrtRow = css({
   display: 'flex',
   alignItems: 'center',
-  gap: '1',
+  gap: '2',
   marginTop: '2',
   textStyle: 'caption',
   color: 'color.text.secondary',
+});
+
+// 捷運資訊：flex:1 + minWidth:0 讓文字能被壓縮到比內容窄，ellipsis 才生效；過長站名
+// 截斷而非換行，避免這排因內容多寡而長高（design-frontend.md「捷運站名過長時的擠壓規則」）。
+const mrtInfo = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1',
+  flex: '1',
+  minWidth: '0',
+});
+
+const mrtText = css({
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+});
+
+// 距離永遠貼右、永遠不縮不換行（這排的主要決策資訊，不能被捷運站名擠到看不清楚）。
+// marginLeft:'auto' 而非 justify-content:'space-between'：只剩一個 flex item 時
+// space-between 會貼左，auto margin 才能保證距離永遠貼右，不論左側有沒有捷運內容。
+const distanceInfo = css({
+  display: 'flex',
+  alignItems: 'center',
+  gap: '1',
+  flexShrink: '0',
+  marginLeft: 'auto',
+  whiteSpace: 'nowrap',
+  fontVariantNumeric: 'tabular-nums',
 });
 
 const hostTagsRow = css({
@@ -124,6 +156,16 @@ interface VenueCardProps {
   userId?: string;
   // Currently-effective /venues sort, threaded into the card's GA events (Phase 2.8).
   listSort: string;
+  // venue-distance-sort: cached user coords for this browse session (null until
+  // resolved, or always null in an in-app browser). Distance display is gated on this
+  // being non-null, independent of `listSort` — requirements.md「授權後，距離顯示與
+  // 排序選項脫鉤」, once granted it keeps showing across every sort, not just 'distance'.
+  userCoords?: Coordinates | null;
+  // Defensive, matches design-frontend.md「IAB 環境或該場地缺座標時，不顯示距離文字，
+  // 即使已授權」— in real app flow userCoords is never populated inside an IAB (the
+  // geolocation request is never triggered there), but the card still guards explicitly
+  // rather than relying on that invariant holding elsewhere.
+  isInAppBrowser?: boolean;
 }
 
 // Keyed by listSort too (not just venueId): switching sort re-exposes a card under a
@@ -145,9 +187,21 @@ function markViewedCardInSession(venueId: string, listSort: string): void {
   }
 }
 
-export default function VenueCard({ venue, listPosition, userId, listSort }: VenueCardProps) {
+export default function VenueCard({
+  venue,
+  listPosition,
+  userId,
+  listSort,
+  userCoords,
+  isInAppBrowser,
+}: VenueCardProps) {
   const cardRef = useRef<HTMLAnchorElement>(null);
   const photos = [...(venue.coverPhoto ? [venue.coverPhoto] : []), ...(venue.otherPhotos ?? [])];
+
+  const distanceText =
+    !isInAppBrowser && userCoords && !isMissingVenueCoords(venue.lat, venue.lng)
+      ? formatVenueDistance(haversineDistanceMeters(userCoords, { lat: venue.lat, lng: venue.lng }))
+      : null;
 
   useEffect(() => {
     const element = cardRef.current;
@@ -197,13 +251,23 @@ export default function VenueCard({ venue, listPosition, userId, listSort }: Ven
           <span className={regionBadge}>{venue.region}</span>
         </div>
 
-        {venue.nearestMrt && (
+        {(venue.nearestMrt || distanceText) && (
           <div className={mrtRow}>
-            <MrtIcon size={14} />
-            <span>
-              {venue.nearestMrt}
-              {venue.mrtWalkMinutes ? ` ${venue.mrtWalkMinutes} 分鐘` : ''}
-            </span>
+            {venue.nearestMrt && (
+              <div className={mrtInfo}>
+                <MrtIcon size={14} />
+                <span className={mrtText}>
+                  {venue.nearestMrt}
+                  {venue.mrtWalkMinutes ? ` ${venue.mrtWalkMinutes} 分鐘` : ''}
+                </span>
+              </div>
+            )}
+            {distanceText && (
+              <span className={distanceInfo}>
+                <MapPinIcon aria-hidden="true" width={14} height={14} />
+                {distanceText}
+              </span>
+            )}
           </div>
         )}
 
@@ -217,8 +281,8 @@ export default function VenueCard({ venue, listPosition, userId, listSort }: Ven
           </div>
         )}
 
-        {(venue.nearestMrt || (venue.hostTags && venue.hostTags.length > 0)) && (
-          <div className={sectionDivider} />
+        {(venue.nearestMrt || distanceText || (venue.hostTags && venue.hostTags.length > 0)) && (
+          <div className={sectionDivider} data-testid="section-divider" />
         )}
 
         {(venue.capacityRange || venue.eventCount > 0) && (

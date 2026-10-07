@@ -15,7 +15,7 @@ export function deriveVenueRegions(venues: Pick<Venue, 'region'>[]): string[] {
   return ['全部', ...unique];
 }
 
-const VALID_SORT_VALUES: VenueSort[] = ['composite', 'eventCount', 'newest'];
+const VALID_SORT_VALUES: VenueSort[] = ['composite', 'eventCount', 'newest', 'distance'];
 
 /**
  * Unknown/illegal `sort` URL values fall back to the new default `composite`

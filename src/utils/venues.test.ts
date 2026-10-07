@@ -24,6 +24,10 @@ describe('parseVenueSort', () => {
     expect(parseVenueSort('newest')).toBe('newest');
   });
 
+  it('distance 視為合法值（venue-distance-sort）', () => {
+    expect(parseVenueSort('distance')).toBe('distance');
+  });
+
   it('不合法值 fallback 為新預設值 composite（Phase 2.8：2026-09 裁定推翻原 newest 預設）', () => {
     expect(parseVenueSort('random')).toBe('composite');
     expect(parseVenueSort('')).toBe('composite');

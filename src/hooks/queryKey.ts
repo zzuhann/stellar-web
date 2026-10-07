@@ -13,6 +13,10 @@ const queryKey = {
     search?: string;
     sort?: string;
     page?: number;
+    // Only present when sort='distance' (venue-distance-sort) — included so paging/
+    // filtering while coords are cached still produces a fresh cache entry per request.
+    lat?: number;
+    lng?: number;
   }) => ['venues', params],
   artistEvents: (artistId: string) => ['artist-events', artistId],
   adminEvents: (params: {
