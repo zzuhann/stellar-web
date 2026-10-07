@@ -25,23 +25,43 @@ describe('formatVenueDistance', () => {
     expect(formatVenueDistance(949)).toBe('距離你約 900 公尺');
   });
 
-  it('950 公尺 → 距離你約 1.0 公里（四捨五入後達 1000，改用公里格式）', () => {
-    expect(formatVenueDistance(950)).toBe('距離你約 1.0 公里');
+  it('950 公尺 → 距離你約 1 公里（四捨五入後達 1000，改用公里格式）', () => {
+    expect(formatVenueDistance(950)).toBe('距離你約 1 公里');
   });
 
-  it('999 公尺 → 距離你約 1.0 公里', () => {
-    expect(formatVenueDistance(999)).toBe('距離你約 1.0 公里');
+  it('999 公尺 → 距離你約 1 公里', () => {
+    expect(formatVenueDistance(999)).toBe('距離你約 1 公里');
   });
 
-  it('1000 公尺整 → 距離你約 1.0 公里', () => {
-    expect(formatVenueDistance(1000)).toBe('距離你約 1.0 公里');
+  it('1000 公尺整 → 距離你約 1 公里', () => {
+    expect(formatVenueDistance(1000)).toBe('距離你約 1 公里');
   });
 
-  it('1000.4 公尺 → 距離你約 1.0 公里', () => {
-    expect(formatVenueDistance(1000.4)).toBe('距離你約 1.0 公里');
+  it('1000.4 公尺 → 距離你約 1 公里', () => {
+    expect(formatVenueDistance(1000.4)).toBe('距離你約 1 公里');
   });
 
-  it('大於 1 公里時四捨五入到小數第 1 位（如 1234m → 距離你約 1.2 公里）', () => {
-    expect(formatVenueDistance(1234)).toBe('距離你約 1.2 公里');
+  it('1050 公尺 → 距離你約 1.1 公里', () => {
+    expect(formatVenueDistance(1050)).toBe('距離你約 1.1 公里');
+  });
+
+  it('2000 公尺 → 距離你約 2 公里（.0 省略）', () => {
+    expect(formatVenueDistance(2000)).toBe('距離你約 2 公里');
+  });
+
+  it('9940 公尺 → 距離你約 9.9 公里', () => {
+    expect(formatVenueDistance(9940)).toBe('距離你約 9.9 公里');
+  });
+
+  it('9950 公尺 → 距離你約 10 公里（不出現 10.0）', () => {
+    expect(formatVenueDistance(9950)).toBe('距離你約 10 公里');
+  });
+
+  it('10500 公尺 → 距離你約 11 公里', () => {
+    expect(formatVenueDistance(10500)).toBe('距離你約 11 公里');
+  });
+
+  it('180000 公尺 → 距離你約 180 公里', () => {
+    expect(formatVenueDistance(180000)).toBe('距離你約 180 公里');
   });
 });
