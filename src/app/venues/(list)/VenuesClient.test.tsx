@@ -830,6 +830,55 @@ describe('venue-distance-sort — 等待中切到其他排序，定位結果晚�
     fireEvent.click(within(menu3).getByRole('menuitemradio', { name: /距離最近/ }));
     expect(getCurrentPosition).not.toHaveBeenCalled();
   });
+
+  // qa.md 情境 33 失敗分支（2026-10-07 使用者裁定 + Codex 第三輪 code review 要求補測）：
+  // 已切到其他排序後，稍後才回來的定位結果若是失敗，同樣不套用任何 UI 效果——不跳 toast、
+  // 排序不變（維持使用者切換後的選項）、URL 不變；但 GA 事件仍要照常送出。
+  it('切走後定位才失敗：不顯示 toast、排序不變、URL 不變，GA 事件仍送出', async () => {
+    let capturedError: GeolocationErrorCallback | undefined;
+    const getCurrentPosition = vi.fn(
+      (_success: GeolocationSuccessCallback, error: GeolocationErrorCallback) => {
+        capturedError = error;
+      }
+    );
+    stubGeolocationApi(getCurrentPosition);
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu1 = await openSortMenu();
+    fireEvent.click(within(menu1).getByRole('menuitemradio', { name: /距離最近/ }));
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+
+    const menu2 = await openSortMenu();
+    fireEvent.click(within(menu2).getByRole('menuitemradio', { name: /最新上架/ }));
+
+    await waitFor(() => {
+      const lastCallArgs = vi.mocked(venueApi.getVenues).mock.calls.at(-1)?.[0];
+      expect(lastCallArgs?.sort).toBe('newest');
+    });
+
+    const urlCallsBeforeResolve = historyReplaceSpy.mock.calls.length;
+
+    act(() => {
+      capturedError?.({ code: 1 });
+    });
+
+    await waitFor(() => {
+      expect(trackResolveVenueGeolocation).toHaveBeenCalledWith(
+        expect.objectContaining({ locationResult: 'denied', source: 'menu_select' })
+      );
+    });
+
+    // 不顯示 toast、不改 URL（排序沒被拉回/清掉）。
+    expect(showToast.warning).not.toHaveBeenCalled();
+    expect(historyReplaceSpy.mock.calls.length).toBe(urlCallsBeforeResolve);
+
+    // 排序仍是使用者切換後選的「最新上架」。
+    const menu3 = await openSortMenu();
+    const selected = within(menu3).getByRole('menuitemradio', { name: /最新上架/ });
+    expect(selected.getAttribute('aria-checked')).toBe('true');
+  });
 });
 
 describe('venue-distance-sort — 已有座標時不重新定位，且每次請求帶相同座標（qa.md 情境 34）', () => {
