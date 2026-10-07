@@ -782,6 +782,8 @@ describe('venue-distance-sort — 等待中切到其他排序，定位結果晚�
       capturedSuccess = success;
     });
     stubGeolocationApi(getCurrentPosition);
+    // 需要卡片本身有座標才能驗證「晚到成功後卡片仍顯示距離」，換掉預設的 EMPTY_RESPONSE。
+    vi.mocked(venueApi.getVenues).mockResolvedValue(oneVenueResponse());
 
     renderVenuesClient();
     await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
@@ -812,6 +814,15 @@ describe('venue-distance-sort — 等待中切到其他排序，定位結果晚�
 
     expect(showToast.warning).not.toHaveBeenCalled();
     expect(historyReplaceSpy.mock.calls.length).toBe(urlCallsBeforeResolve);
+
+    // qa.md 情境 33（2026-10-07 使用者裁定）：排序維持使用者切換後選的那個（這裡是
+    // 「最新上架」，不跳回/不被拉回 distance）、不跳 toast、不改 URL——以上已驗證；
+    // 但卡片仍要照常顯示距離文字，因為顯示條件只看「本次瀏覽期間是否已取得座標」，
+    // 與目前選中哪個排序無關（requirements.md 第 29 行「距離顯示與排序選項脫鉤」）。
+    await waitFor(() => {
+      expect(screen.getByRole('link', { name: /測試場地/ }).textContent).toMatch(/公尺|公里/);
+    });
+    expect(screen.getByText('最新上架')).toBeTruthy();
 
     // 座標已寫入記憶體快取：切回「距離最近」不再重新呼叫 getCurrentPosition
     getCurrentPosition.mockClear();
