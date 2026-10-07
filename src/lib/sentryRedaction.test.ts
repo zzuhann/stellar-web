@@ -109,6 +109,47 @@ describe('redactSentryEvent — transaction spans', () => {
     expect(spanData['url.query']).not.toContain('121.564');
   });
 
+  it('裸 `url` key（xhr/fetch span 的 base attribute，Codex 第二輪 code review 補上）被遮蔽', () => {
+    const event = baseEvent({
+      type: 'transaction',
+      spans: [
+        {
+          data: { url: '/venues?sort=distance&lat=25.033&lng=121.564' },
+          span_id: 'span-1',
+          start_timestamp: 0,
+          trace_id: 'trace-1',
+        },
+      ],
+    });
+
+    const result = redactSentryEvent(event);
+    const spanData = result.spans?.[0]?.data as Record<string, unknown>;
+
+    expect(spanData.url).not.toContain('25.033');
+    expect(spanData.url).toContain('lat=REDACTED');
+    expect(spanData.url).toContain('sort=distance');
+  });
+
+  it('http.fragment 刻意不遮蔽（只會是 hash 片段，非 query-string 形狀，這個應用從未寫入座標）', () => {
+    const event = baseEvent({
+      type: 'transaction',
+      spans: [
+        {
+          data: { 'http.fragment': '#section-1', 'http.url': 'https://x.com/a?lat=1&lng=2' },
+          span_id: 'span-1',
+          start_timestamp: 0,
+          trace_id: 'trace-1',
+        },
+      ],
+    });
+
+    const result = redactSentryEvent(event);
+    const spanData = result.spans?.[0]?.data as Record<string, unknown>;
+
+    expect(spanData['http.fragment']).toBe('#section-1');
+    expect(spanData['http.url']).not.toContain('lat=1');
+  });
+
   it('url.full 被遮蔽', () => {
     const event = baseEvent({
       type: 'transaction',

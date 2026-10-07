@@ -22,12 +22,34 @@ function redactRequestEventData(request: Event['request']): void {
   }
 }
 
-// span/trace data 裡可能帶座標的欄位名稱（已對照已安裝的 @sentry/browser 原始碼查證，
-// node_modules/@sentry/browser/build/npm/cjs/prod/tracing/request.js：outgoing
-// xhr/fetch span 會設定 `http.url`/`url.full`（完整 URL）與 `http.query`（含開頭 ?
-// 的 query string）；`http.target` 是伺服端慣例但這裡一併處理，欄位不存在時原樣跳過，
-// 不報錯——與後端 stellar/src/utils/sentryRedaction.ts 的欄位清單保持一致，方便兩邊比對）。
-const URL_LIKE_DATA_KEYS = ['url.full', 'http.url', 'http.target'] as const;
+// span/trace data 裡可能帶座標的欄位名稱。Codex 第二輪 code review 指出原清單漏了
+// 裸 `url` 這個 key，已對已安裝的 @sentry/browser（10.62.0）/@sentry/core 原始碼重新
+// 逐一核對所有會把 outgoing request URL 寫進 span attributes 的路徑：
+// - node_modules/@sentry/core/build/cjs/fetch.js:189-209（getFetchSpanAttributes，
+//   fetch span 的 base attributes）：設定裸 `url`（原始、可能是相對路徑的 URL 字串，
+//   行 191）、`http.url`（完整 URL，行 199）、`http.query`（純 query string，行 203）、
+//   `http.fragment`（hash，行 206）。
+// - node_modules/@sentry/browser/build/npm/cjs/prod/tracing/request.js:35-44
+//   （instrumentOutgoingRequests 的 fetch 分支）：在上面的 base attributes 之上再疊
+//   一次 `http.url`/`url.full`，兩者保證同值。
+// - 同檔案 170-181 行（xhrCallback，xhr span attributes）：同樣設定裸 `url`（行
+//   170）、`http.url`/`url.full`（行 173/176）、`http.query`（行 180）、`http.fragment`
+//   （行 181）。
+// - node_modules/@sentry/browser/build/npm/cjs/prod/integrations/httpcontext.js：
+//   會把 `url.full` 寫進頁面自己的 root span（processSegmentSpan），但來源是
+//   `window.location.href`（頁面本身網址），座標從未寫進瀏覽器網址列，不會帶座標；
+//   仍一併遮蔽，不依賴這個隱含前提。
+// - node_modules/@sentry/browser-utils/build/cjs/metrics/resourceTiming.js：resource
+//   timing span 只有時間戳數值屬性，沒有任何 URL 類欄位，確認不需要處理。
+//
+// `http.fragment` 不納入遮蔽清單：它只會是 URL 的 hash 片段本身（不含 `?`、非
+// query-string 形狀），這個應用從未把任何資料寫進 URL fragment，也沒有其他座標
+// 來源會流進這個欄位；用 redactCoordsFromQueryString 處理非 query-string 格式的字串
+// 語意上不對，故刻意排除。
+// `http.target` 是伺服端慣例，瀏覽器 span 不會設定，這裡仍一併處理（欄位不存在時
+// 原樣跳過，不報錯）——與後端 stellar/src/utils/sentryRedaction.ts 的欄位清單保持
+// 一致，方便兩邊比對。
+const URL_LIKE_DATA_KEYS = ['url', 'url.full', 'http.url', 'http.target'] as const;
 const QUERY_STRING_DATA_KEYS = ['url.query', 'http.query'] as const;
 
 function redactUrlLikeDataFields(data: Record<string, unknown> | undefined): void {
