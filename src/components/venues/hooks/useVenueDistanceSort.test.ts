@@ -183,6 +183,66 @@ describe('useVenueDistanceSort — 定位失敗', () => {
   });
 });
 
+// Codex 第三輪 code review（情境 C）：定位 pending 中離頁再返回（元件卸載又重新掛載），
+// 新 instance 要正確同步到同一份請求的最終結果，不論成功或失敗。
+describe('useVenueDistanceSort — pending 中卸載又重新掛載', () => {
+  it('舊 instance 發起請求後卸載，新 instance 掛載並沿用同一個 pending promise，成功後新 instance 的 coords 要更新', async () => {
+    let capturedSuccess: GeolocationSuccessCallback | undefined;
+    const getCurrentPosition = stubGeolocation();
+    getCurrentPosition.mockImplementation((success: GeolocationSuccessCallback) => {
+      capturedSuccess = success;
+    });
+
+    const first = renderHook(() => useVenueDistanceSort());
+    const firstPromise = first.result.current.resolveGeolocation('user-1', 'menu_select');
+    first.unmount();
+
+    // 新 instance 掛載時，請求仍在 pending（尚未呼叫 capturedSuccess），coords 應為 null。
+    const second = renderHook(() => useVenueDistanceSort());
+    expect(second.result.current.coords).toBeNull();
+
+    // 新 instance 沿用同一個 in-flight 請求（不重複呼叫 getCurrentPosition）。
+    const secondPromise = second.result.current.resolveGeolocation('user-1', 'menu_select');
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      capturedSuccess?.({ coords: { latitude: 25.033, longitude: 121.564 } });
+    });
+    await Promise.all([firstPromise, secondPromise]);
+
+    // 關鍵斷言：新 instance（仍活著）的 coords 要同步更新，不能永遠停在 null。
+    await waitFor(() => {
+      expect(second.result.current.coords).toEqual({ lat: 25.033, lng: 121.564 });
+    });
+  });
+
+  it('舊 instance 發起請求後卸載，新 instance 掛載並沿用同一個 pending promise，失敗時新 instance 也拿到正確的失敗結果', async () => {
+    let capturedError: GeolocationErrorCallback | undefined;
+    const getCurrentPosition = stubGeolocation();
+    getCurrentPosition.mockImplementation(
+      (_success: GeolocationSuccessCallback, error: GeolocationErrorCallback) => {
+        capturedError = error;
+      }
+    );
+
+    const first = renderHook(() => useVenueDistanceSort());
+    first.result.current.resolveGeolocation('user-1', 'menu_select');
+    first.unmount();
+
+    const second = renderHook(() => useVenueDistanceSort());
+    const secondPromise = second.result.current.resolveGeolocation('user-1', 'menu_select');
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      capturedError?.({ code: 1 });
+    });
+
+    const result = await secondPromise;
+    expect(result).toEqual({ status: 'denied' });
+    expect(second.result.current.coords).toBeNull();
+  });
+});
+
 describe('useVenueDistanceSort — 進行中的請求去重', () => {
   it('第一次呼叫尚未 resolve 時再次呼叫，沿用同一個 in-flight promise，不重複呼叫 getCurrentPosition', async () => {
     let capturedSuccess: GeolocationSuccessCallback | undefined;
