@@ -177,6 +177,20 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
           )}
 
           <Link
+            href="/venues"
+            className={mobileMenuButton}
+            onClick={() => {
+              sendGAEvent('event', 'nav_venues', {
+                event_page: pathname,
+                user_id: user?.uid ?? '',
+                content_id: 'mobile_menu',
+              });
+              closeMobileMenu();
+            }}
+          >
+            找生咖場地
+          </Link>
+          <Link
             href="/submit-event"
             className={mobileMenuButton}
             onClick={(e) => {

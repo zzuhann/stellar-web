@@ -64,6 +64,19 @@ const DesktopNav = () => {
           )}
           <Link
             className={styledLink}
+            href="/venues"
+            onClick={() =>
+              sendGAEvent('event', 'nav_venues', {
+                event_page: pathname,
+                user_id: user?.uid ?? '',
+                content_id: 'desktop_nav',
+              })
+            }
+          >
+            找生咖場地
+          </Link>
+          <Link
+            className={styledLink}
             href="/submit-event"
             onClick={() =>
               sendGAEvent('event', 'nav_submit_event', {
@@ -98,6 +111,19 @@ const DesktopNav = () => {
         </div>
       ) : (
         <div className={rightSection}>
+          <Link
+            className={styledLink}
+            href="/venues"
+            onClick={() =>
+              sendGAEvent('event', 'nav_venues', {
+                event_page: pathname,
+                user_id: '',
+                content_id: 'desktop_nav',
+              })
+            }
+          >
+            找生咖場地
+          </Link>
           <Link
             className={styledLink}
             href="/submit-event"
