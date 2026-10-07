@@ -265,7 +265,6 @@ export default function VenueCard({
             {distanceText && (
               <span className={distanceInfo}>
                 <MapPinIcon aria-hidden="true" width={14} height={14} />
-                <span className="sr-only">距離你</span>
                 {distanceText}
               </span>
             )}

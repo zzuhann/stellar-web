@@ -130,17 +130,16 @@ describe('VenueCard 距離顯示（venue-distance-sort）', () => {
     expect(screen.getByText(/約|公尺內|公里/)).toBeTruthy();
   });
 
-  it('sr-only 前綴「距離你」接在可見文字前，組成完整 accessible name', () => {
+  it('可見文字本身已含「距離你」前綴，不再需要額外的 sr-only 節點', () => {
     renderCard({
       venue: { ...BASE_VENUE, lat: 25.033, lng: 121.564 },
       userCoords: { lat: 25.033, lng: 121.564 },
     });
 
-    // 整張卡片是同一個 <Link>，sr-only 前綴併入其 accessible name
-    const link = screen.getByRole('link', { name: /距離你\s*100 公尺內/ });
+    // 整張卡片是同一個 <Link>，可見文字本身就構成完整的 accessible name，
+    // 2026-10 文案裁定移除了先前額外疊加的 sr-only「距離你」節點（已多餘）。
+    const link = screen.getByRole('link', { name: /距離你 100 公尺內/ });
     expect(link).toBeTruthy();
-    expect(screen.getByText('距離你')).toBeTruthy();
-    // 可見文字本身不變，視覺上仍會 render 出「100 公尺內」
-    expect(link.textContent).toContain('100 公尺內');
+    expect(screen.getByText('距離你 100 公尺內')).toBeTruthy();
   });
 });
