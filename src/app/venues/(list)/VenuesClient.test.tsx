@@ -1061,6 +1061,84 @@ describe('venue-distance-sort — URL 永不出現座標（qa.md 情境 38）', 
   });
 });
 
+// Codex 第三輪 code review（情境 C）：定位失敗的 .then() 回調過去用「發起定位請求那一刻」
+// 凍結的 mergeUpdates/setSort 閉包，若使用者在等待期間改了篩選，失敗時清除 sort 會連帶
+// 把篩選還原回發起時的舊值；且沒有卸載防護，卸載後定位結果回來仍會嘗試改 URL/跳 toast。
+describe('venue-distance-sort — 失敗時不還原篩選、卸載後不改網址（Codex 第三輪 code review 情境 C）', () => {
+  it('等待中切換地區篩選，之後定位失敗 → 地區篩選保留，只清除 sort', async () => {
+    let capturedError: GeolocationErrorCallback | undefined;
+    const getCurrentPosition = vi.fn(
+      (_success: GeolocationSuccessCallback, error: GeolocationErrorCallback) => {
+        capturedError = error;
+      }
+    );
+    stubGeolocationApi(getCurrentPosition);
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+
+    // 等待定位期間切換地區篩選
+    fireEvent.click(screen.getByRole('button', { name: '台北' }));
+    await waitFor(() => {
+      const lastUrl = historyReplaceSpy.mock.calls.at(-1)?.[2] as string;
+      expect(new URLSearchParams(lastUrl.split('?')[1] ?? '').get('region')).toBe('台北');
+    });
+
+    // 定位才失敗
+    act(() => {
+      capturedError?.({ code: 1 });
+    });
+
+    await waitFor(() => {
+      expect(showToast.warning).toHaveBeenCalled();
+    });
+
+    const lastUrl = historyReplaceSpy.mock.calls.at(-1)?.[2] as string;
+    const search = new URLSearchParams(lastUrl.split('?')[1] ?? '');
+    expect(search.has('sort')).toBe(false);
+    // 關鍵斷言：地區篩選沒有被定位失敗的回調用舊的 mergeUpdates 閉包蓋回去。
+    expect(search.get('region')).toBe('台北');
+  });
+
+  it('等待中卸載元件，之後定位失敗 → 不呼叫 router.replace、不跳 toast（GA 事件仍照常送出）', async () => {
+    let capturedError: GeolocationErrorCallback | undefined;
+    const getCurrentPosition = vi.fn(
+      (_success: GeolocationSuccessCallback, error: GeolocationErrorCallback) => {
+        capturedError = error;
+      }
+    );
+    stubGeolocationApi(getCurrentPosition);
+
+    const { unmount } = renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /距離最近/ }));
+    expect(getCurrentPosition).toHaveBeenCalledTimes(1);
+
+    const replaceCallsBeforeUnmount = historyReplaceSpy.mock.calls.length;
+    unmount();
+
+    act(() => {
+      capturedError?.({ code: 1 });
+    });
+
+    await waitFor(() => {
+      expect(trackResolveVenueGeolocation).toHaveBeenCalledWith(
+        expect.objectContaining({ locationResult: 'denied', source: 'menu_select' })
+      );
+    });
+
+    // 卸載後定位結果才回來：不該再改 URL、不該再跳 toast。
+    expect(historyReplaceSpy.mock.calls.length).toBe(replaceCallsBeforeUnmount);
+    expect(showToast.warning).not.toHaveBeenCalled();
+  });
+});
+
 describe('venue-distance-sort — sort_venues／list_sort（qa.md 情境 41）', () => {
   it('從 dropdown 主動選取「距離最近」會觸發 sort_venues，sort_to=distance', async () => {
     const getCurrentPosition = vi.fn((success: GeolocationSuccessCallback) => {

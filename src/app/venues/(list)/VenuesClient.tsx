@@ -156,11 +156,40 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
     sortRef.current = sort;
   }, [sort]);
 
+  // Codex 第三輪 code review（情境 C）：`mergeUpdates`／`setSort` 都是 useCallback
+  // 包過的函式，依賴 `params`——使用者每改一次篩選，context 就會重新產生一份新的
+  // `mergeUpdates`/`setSort`。但 `triggerDistanceSort` 的 `.then()` callback 是在
+  // 「發起定位請求的那一刻」就把當下的 `mergeUpdates`/`setSort` 閉包凍結起來，等定位
+  // 結果非同步回來時再呼叫——若使用者在等待期間改了地區/容納人數/搜尋，這個閉包仍是
+  // 「發起時」那份舊的 `mergeUpdates`，裡面關閉的 `params` 也是舊的，呼叫它會把使用者
+  // 後來的篩選變更整個蓋回舊值，只是想清掉 `sort` 卻連帶還原了篩選。改用 ref 讓 `.then()`
+  // 永遠讀「呼叫當下最新」的 `mergeUpdates`/`setSort`，而不是「發起定位請求那一刻」的。
+  const mergeUpdatesRef = useRef(mergeUpdates);
+  useEffect(() => {
+    mergeUpdatesRef.current = mergeUpdates;
+  }, [mergeUpdates]);
+  const setSortRef = useRef(setSort);
+  useEffect(() => {
+    setSortRef.current = setSort;
+  }, [setSort]);
+
+  // 同一輪 review（情境 C）：元件若在定位 pending 期間卸載（如使用者離開 /venues），
+  // 定位結果回來時不該再改 URL／跳 toast——GA 事件不受這個guard 影響，照常送出
+  // （由 useVenueDistanceSort 內部無條件處理，與這裡的 UI 副作用是兩件事）。
+  const isMountedRef = useRef(true);
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const triggerDistanceSort = useCallback(
     (source: VenueGeolocationSource) => {
       if (coords || isAwaitingLocation) return;
       setIsAwaitingLocation(true);
       resolveGeolocation(user?.uid, source).then((result) => {
+        if (!isMountedRef.current) return;
         setIsAwaitingLocation(false);
         // 使用者已經切到其他排序：GA 事件已經送出、座標（若成功）已經快取，
         // 這裡不再套用任何 UI 效果（不顯示 toast、不改動 URL/排序）。
@@ -171,12 +200,12 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
           result.status === 'denied' ? LOCATION_DENIED_MESSAGE : LOCATION_UNAVAILABLE_MESSAGE,
           { duration: LOCATION_TOAST_DURATION_MS }
         );
-        mergeUpdates(() => {
-          setSort(null);
+        mergeUpdatesRef.current(() => {
+          setSortRef.current(null);
         });
       });
     },
-    [coords, isAwaitingLocation, mergeUpdates, resolveGeolocation, setSort, user?.uid]
+    [coords, isAwaitingLocation, resolveGeolocation, user?.uid]
   );
 
   // IAB 判斷完成前不出手（避免在未知環境下誤觸定位）；判定為 IAB 時清除 URL 的
