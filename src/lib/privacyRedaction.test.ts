@@ -51,6 +51,35 @@ describe('redactCoordsFromUrl', () => {
     expect(result).not.toContain('121.564');
     expect(result).not.toContain('?');
   });
+
+  // Codex 第三輪 code review：URLSearchParams 對畸形 percent-encoding 的 query key 有
+  // 容錯（trailing 單獨的 `%` 不會拋例外，只是被當字面字元留著），導致 `la%74%` 被
+  // lenient 解碼成 "lat%"（而非嚴格解碼會拋例外的結果），比對不到 COORD_QUERY_KEYS、
+  // 座標因此繞過舊版遮蔽流出去。改用嚴格 decodeURIComponent 後，這類 key 解碼失敗 →
+  // 整段 query fail closed 捨棄（不是「挑出看起來正常的其他 key 繼續處理」）。
+  describe('fail closed：query 中任一 key 解碼失敗', () => {
+    it('la%74%=25.033（解碼後近似 "lat" 但實際解碼會拋例外）→ 整段 query 被捨棄，不洩漏座標', () => {
+      const malformed = '/venues?la%74%=25.033&lng=121.564&region=台北';
+      const result = redactCoordsFromUrl(malformed);
+      expect(result).not.toContain('25.033');
+      expect(result).not.toContain('121.564');
+      expect(result).not.toContain('?');
+    });
+
+    it('lat%=25.033（乾淨的 "lat" 後面多一個畸形 %）→ 整段 query 被捨棄', () => {
+      expect(redactCoordsFromUrl('/venues?lat%=25.033')).toBe('/venues');
+    });
+
+    it('絕對 URL 遇到畸形 key 時，fail closed 仍保留 origin，只捨棄 query', () => {
+      const result = redactCoordsFromUrl('https://api.stellar-zone.com/venues?la%74%=25.033');
+      expect(result).toBe('https://api.stellar-zone.com/venues');
+    });
+
+    it('畸形 key 出現在非第一個參數時，前面已經「看起來正常」的參數也要一併捨棄（不是挑著處理）', () => {
+      const result = redactCoordsFromUrl('/venues?region=台北&lat%=25.033');
+      expect(result).toBe('/venues');
+    });
+  });
 });
 
 describe('redactCoordsFromQueryString', () => {
@@ -82,5 +111,10 @@ describe('redactCoordsFromQueryString', () => {
 
   it('空字串輸入回傳空字串', () => {
     expect(redactCoordsFromQueryString('')).toBe('');
+  });
+
+  it('畸形 key（la%74%=25.033）解碼失敗 → fail closed 回傳空字串，不洩漏座標', () => {
+    expect(redactCoordsFromQueryString('la%74%=25.033&lng=121.564')).toBe('');
+    expect(redactCoordsFromQueryString('?la%74%=25.033')).toBe('');
   });
 });
