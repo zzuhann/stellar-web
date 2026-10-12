@@ -662,7 +662,7 @@ export default function VenueForm(props: VenueFormProps) {
       if (form.hostTags.length > 0) data.hostTags = form.hostTags;
       if (socialMedia) data.socialMedia = socialMedia;
       if (form.preferredContact) data.preferredContact = form.preferredContact;
-      if (form.contactUrl) data.contactUrl = form.contactUrl;
+      if (form.contactUrl.trim()) data.contactUrl = form.contactUrl.trim();
       if (coordinates.lat !== null) data.lat = coordinates.lat;
       if (coordinates.lng !== null) data.lng = coordinates.lng;
       if (coordinates.placeId) data.placeId = coordinates.placeId;
@@ -680,7 +680,7 @@ export default function VenueForm(props: VenueFormProps) {
         otherPhotos: form.otherPhotos,
         hostTags: form.hostTags,
         preferredContact: (form.preferredContact as PreferredContact) || undefined,
-        contactUrl: form.contactUrl || undefined,
+        contactUrl: form.contactUrl.trim() || undefined,
         socialMedia,
       });
     }
