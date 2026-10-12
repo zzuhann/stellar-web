@@ -16,7 +16,7 @@ export const isPastTimestamp = (timestamp: FirebaseTimestamp, now: Date = new Da
 // 判斷是否為結構完整的 http(s) 網址；顯示端（要不要渲染成連結）跟 lib/validations.ts
 // 的表單驗證共用同一套標準
 export const isHttpUrl = (url: string): boolean => {
-  if (!/^https?:\/\//i.test(url)) return false;
+  if (!/^https?:\/\//.test(url)) return false;
   try {
     new URL(url);
     return true;

@@ -492,8 +492,8 @@ describe('getTaipeiToday', () => {
 });
 
 describe('isHttpUrl', () => {
-  it('accepts uppercase scheme and rejects scheme without slashes', () => {
-    expect(isHttpUrl('HTTPS://example.com')).toBe(true);
+  it('rejects uppercase scheme and scheme without slashes', () => {
+    expect(isHttpUrl('HTTPS://example.com')).toBe(false);
     expect(isHttpUrl('https:example.com')).toBe(false);
     expect(isHttpUrl('ftp://example.com')).toBe(false);
   });
