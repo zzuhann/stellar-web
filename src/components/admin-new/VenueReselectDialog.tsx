@@ -160,8 +160,10 @@ export default function VenueReselectDialog({
   const [choice, setChoice] = useState<PlaceReselectAddressChoice | undefined>();
 
   const { unchanged, linkableEvents, linkableEventCount, address, google } = preview;
-  const choiceRequired = address.choiceRequired;
   const addressEmpty = !address.current.trim();
+  // Backend keeps the current address when Google returns none, so no choice is offered
+  const googleAddressEmpty = !address.google.trim() && !google.formattedAddress.trim();
+  const choiceRequired = address.choiceRequired && !googleAddressEmpty;
   const needsRepreview = errorKind === 'address-changed';
   const missingChoice = choiceRequired && !choice && !needsRepreview;
 
@@ -197,7 +199,12 @@ export default function VenueReselectDialog({
       autoFocusCancel
     >
       <div className={content}>
-        {addressEmpty && !choiceRequired && (
+        {googleAddressEmpty && (
+          <p className={note}>
+            {addressEmpty ? '地址維持空白' : 'Google 沒有提供地址，將保留目前地址'}
+          </p>
+        )}
+        {addressEmpty && !googleAddressEmpty && !choiceRequired && (
           <p className={note}>地址原為空，將使用 Google 地址：{google.formattedAddress}</p>
         )}
         {formAddressDiffers && <p className={note}>表單中未儲存的地址修改會被覆蓋</p>}

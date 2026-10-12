@@ -183,6 +183,17 @@ describe('F3 預覽成功各結果', () => {
     ).toBeTruthy();
   });
 
+  it('Google 地址為空時卡片顯示（Google 未提供）', async () => {
+    previewMock.mockResolvedValue(
+      makePreview({ google: { formattedAddress: '' }, address: { google: '' } })
+    );
+    renderPlace();
+    await selectPlace();
+
+    const card = within(screen.getByRole('region', { name: '新地點預覽' }));
+    expect(card.getByText('（Google 未提供）')).toBeTruthy();
+  });
+
   it.each([
     [2, '地點相同，套用後會更新座標，並補連 2 場活動', '更新座標並補連'],
     [0, '地點相同，套用後會以 Google 資料更新座標，沒有可補連的活動', '更新座標'],

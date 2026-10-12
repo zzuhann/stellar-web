@@ -313,6 +313,14 @@ function describeApplyError(error: ParsedReselectError): {
       kind: 'address-changed',
     };
   }
+  if (error.status === 422 && error.code === 'TOO_MANY_LINKABLE_EVENTS') {
+    const count = (error.details as { linkableEventCount?: number } | undefined)
+      ?.linkableEventCount;
+    return {
+      message: `${GENERIC_APPLY_ERROR}符合條件的活動共 ${count ?? '過多'} 場，超過上限 400，無法套用。`,
+      kind: 'generic',
+    };
+  }
   if (error.status === 429) {
     return {
       message: '操作太頻繁，沒有任何資料被修改，請稍候幾秒再試。',
@@ -602,7 +610,9 @@ export default function VenueReselectPlace({
                 )}
                 {preview.unchanged && <span className={badge}>與目前相同</span>}
               </div>
-              <p className={infoValue}>{preview.google.formattedAddress}</p>
+              <p className={infoValue}>
+                {preview.google.formattedAddress.trim() || '（Google 未提供）'}
+              </p>
               <p className={`${infoValue} ${coordText}`}>
                 {`${preview.google.lat}, ${preview.google.lng}`}
               </p>

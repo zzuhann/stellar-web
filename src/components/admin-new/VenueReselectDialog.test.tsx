@@ -243,6 +243,31 @@ describe('F6 地址選擇', () => {
   });
 });
 
+describe('F6 補充：Google 沒有提供地址', () => {
+  it.each([
+    ['現有地址非空', '台北市中山區舊地址 1 號', 'Google 沒有提供地址，將保留目前地址'],
+    ['現有地址也為空', '', '地址維持空白'],
+  ])('%s：無 radio、顯示說明、不帶 addressChoice', async (_name, current, text) => {
+    previewMock.mockResolvedValue(
+      makePreview({
+        google: { formattedAddress: '  ' },
+        address: { current, google: '', sameAfterNormalize: false, choiceRequired: false },
+      })
+    );
+    applyMock.mockResolvedValue(makeResult());
+    const { dialog } = await openDialog();
+    const d = within(dialog);
+
+    expect(d.queryByRole('radio')).toBeNull();
+    expect(dialog.textContent).toContain(text);
+    expect(dialog.textContent).not.toContain('地址原為空，將使用 Google 地址');
+    fireEvent.click(d.getByRole('button', { name: '確認套用' }));
+
+    await waitFor(() => expect(applyMock).toHaveBeenCalledTimes(1));
+    expect(applyMock.mock.calls[0][1]).not.toHaveProperty('addressChoice');
+  });
+});
+
 describe('F7 取消不寫入', () => {
   const closers: Array<[string, (dialog: HTMLElement) => Promise<void> | void]> = [
     [
@@ -353,6 +378,16 @@ describe('F10 寫入錯誤各狀態', () => {
     await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
     expect(screen.queryByRole('region', { name: '新地點預覽' })).toBeNull();
     expect(screen.getByLabelText('搜尋地點')).toBeTruthy();
+  });
+
+  it('422 TOO_MANY_LINKABLE_EVENTS：顯示實際總數與上限', async () => {
+    applyMock.mockRejectedValue(
+      apiError(422, { code: 'TOO_MANY_LINKABLE_EVENTS', details: { linkableEventCount: 523 } })
+    );
+    const { d } = await submitWithChoice();
+
+    const alert = await d.findByRole('alert');
+    expect(alert.textContent).toContain('共 523 場，超過上限 400，無法套用');
   });
 
   it.each([
