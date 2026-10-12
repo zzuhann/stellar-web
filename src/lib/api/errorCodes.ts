@@ -53,4 +53,5 @@ export const FIELD_LABELS: Record<string, string> = {
   preferredContact: '偏好聯繫方式',
   socialMedia: '社群帳號',
   contactUrl: '預約表單連結',
+  submitterEmail: '信箱',
 };

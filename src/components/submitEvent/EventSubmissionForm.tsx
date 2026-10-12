@@ -666,6 +666,7 @@ function EventSubmissionForm({
             <input
               className={emailInput}
               type="email"
+              maxLength={254}
               name="email"
               autoComplete="email"
               placeholder="example@email.com"
