@@ -1,10 +1,6 @@
 import { AxiosError } from 'axios';
 import { describe, expect, it } from 'vitest';
-import {
-  getPlaceKind,
-  hasMissingCoordinates,
-  parsePlaceReselectError,
-} from './venuePlaceReselectHelpers';
+import { getPlaceKind, parsePlaceReselectError } from './venuePlaceReselectHelpers';
 
 describe('getPlaceKind', () => {
   it.each([
@@ -17,20 +13,6 @@ describe('getPlaceKind', () => {
     ['Xyz9abcdef', 'other', 'Xyz9'],
   ])('%s -> %s', (placeId, kind, prefix) => {
     expect(getPlaceKind(placeId)).toEqual({ kind, prefix });
-  });
-});
-
-describe('hasMissingCoordinates', () => {
-  it.each([
-    [0, 0, true],
-    [undefined, undefined, true],
-    [null, 121, true],
-    [25, undefined, true],
-    [Number.NaN, 121, true],
-    [25.04, 121.56, false],
-    [0, 121.5, false],
-  ])('(%s, %s) -> %s', (lat, lng, expected) => {
-    expect(hasMissingCoordinates(lat, lng)).toBe(expected);
   });
 });
 

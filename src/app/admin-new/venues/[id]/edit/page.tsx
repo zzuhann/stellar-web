@@ -116,7 +116,8 @@ export default function VenueEditPage() {
     );
   }
 
-  if (isError || !venue) {
+  // Keep the form when a background refetch fails but we still hold data
+  if (!venue) {
     return (
       <div className={pageWrapper}>
         <div className={container}>
@@ -161,6 +162,11 @@ export default function VenueEditPage() {
           返回場地列表
         </Link>
         <h1 className={pageTitle}>編輯場地</h1>
+        {isError && (
+          <div className={`${formErrorBanner} ${css({ marginBottom: '4' })}`} role="alert">
+            重新整理資料失敗，目前顯示的可能不是最新內容。
+          </div>
+        )}
         <VenueForm
           mode="edit"
           initialValues={initialValues}

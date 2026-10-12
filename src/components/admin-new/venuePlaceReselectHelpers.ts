@@ -14,16 +14,6 @@ export function getPlaceKind(placeId: string | null | undefined): {
   return { kind: 'other', prefix };
 }
 
-// Backend treats lat=lng=0 as "no coordinates"; a single 0 is a valid coordinate
-export function hasMissingCoordinates(
-  lat: number | null | undefined,
-  lng: number | null | undefined
-): boolean {
-  if (typeof lat !== 'number' || typeof lng !== 'number') return true;
-  if (Number.isNaN(lat) || Number.isNaN(lng)) return true;
-  return lat === 0 && lng === 0;
-}
-
 export interface ParsedReselectError {
   status?: number;
   code?: string;

@@ -4,7 +4,8 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { ExclamationTriangleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import PlaceAutocomplete from '@/components/forms/PlaceAutocomplete';
-import type { placesApi } from '@/lib/api';
+import { placesApi } from '@/lib/api';
+import { isMissingVenueCoords } from '@/utils/geo';
 import type { PlaceReselectAddressChoice } from '@/types';
 import VenueReselectDialog, {
   ADDRESS_TYPE_REMINDER,
@@ -14,7 +15,6 @@ import { usePlaceReselectPreviewMutation } from './hooks/usePlaceReselectPreview
 import { usePlaceReselectApplyMutation } from './hooks/usePlaceReselectApplyMutation';
 import {
   getPlaceKind,
-  hasMissingCoordinates,
   parsePlaceReselectError,
   type ParsedReselectError,
 } from './venuePlaceReselectHelpers';
@@ -264,6 +264,10 @@ const bannerClose = css({
 
 const GENERIC_APPLY_ERROR = '套用失敗，沒有任何資料被修改，請稍後重試。';
 
+function tooManyMessage(count: number | undefined) {
+  return `符合條件的活動共 ${count ?? '過多'} 場，超過單次上限 400 場，無法套用。請聯繫工程師處理。`;
+}
+
 interface PreviewErrorView {
   message: string;
   canRetry: boolean;
@@ -283,7 +287,7 @@ function describePreviewError(error: ParsedReselectError): PreviewErrorView {
     const count = (error.details as { linkableEventCount?: number } | undefined)
       ?.linkableEventCount;
     return {
-      message: `符合條件的活動有 ${count ?? '過多'} 場，超過單次可處理的上限，無法在後台一次補連，請聯絡工程師處理。`,
+      message: tooManyMessage(count),
       canRetry: false,
     };
   }
@@ -317,7 +321,7 @@ function describeApplyError(error: ParsedReselectError): {
     const count = (error.details as { linkableEventCount?: number } | undefined)
       ?.linkableEventCount;
     return {
-      message: `${GENERIC_APPLY_ERROR}符合條件的活動共 ${count ?? '過多'} 場，超過上限 400，無法套用。`,
+      message: tooManyMessage(count),
       kind: 'generic',
     };
   }
@@ -369,7 +373,6 @@ export default function VenueReselectPlace({
   placeApi,
 }: VenueReselectPlaceProps) {
   const panelId = useId();
-  const panelRef = useRef<HTMLDivElement>(null);
 
   const [expanded, setExpanded] = useState(false);
   const [selected, setSelected] = useState<SelectedPlace | null>(null);
@@ -383,6 +386,12 @@ export default function VenueReselectPlace({
     null
   );
 
+  const [detailsErrorPlaceId, setDetailsErrorPlaceId] = useState<string | null>(null);
+
+  const panelRef = useRef<HTMLDivElement>(null);
+  // Last place the user asked to select; lets us drop late responses for an older pick
+  const latestPlaceIdRef = useRef<string | null>(null);
+
   const previewMutation = usePlaceReselectPreviewMutation(venueId);
   const applyMutation = usePlaceReselectApplyMutation(venueId);
 
@@ -391,21 +400,75 @@ export default function VenueReselectPlace({
     ? describePreviewError(parsePlaceReselectError(previewMutation.error))
     : null;
 
-  useEffect(() => {
-    if (expanded) panelRef.current?.querySelector('input')?.focus();
-  }, [expanded]);
-
   const { kind, prefix } = getPlaceKind(place.placeId);
-  const coordsMissing = hasMissingCoordinates(place.lat, place.lng);
+  const coordsMissing = isMissingVenueCoords(place.lat, place.lng);
   const hasProblem = kind === 'address' || kind === 'unset' || coordsMissing;
 
+  // A new pick or any typing makes the previous preview stale, so it must not stay applicable
+  function invalidateSelection() {
+    setSelected(null);
+    setDialogOpen(false);
+    setApplyError(null);
+    setDetailsErrorPlaceId(null);
+    previewMutation.reset();
+  }
+
+  const baseApi = placeApi ?? placesApi;
+  // PlaceAutocomplete only calls onPlaceSelect when details succeed, so observe its api instead
+  const trackedApi: typeof placesApi = {
+    ...baseApi,
+    getDetails: async (placeId: string) => {
+      latestPlaceIdRef.current = placeId;
+      invalidateSelection();
+      try {
+        const details = await baseApi.getDetails(placeId);
+        const loc = details.geometry?.location;
+        if (!loc?.lat || !loc?.lng) markDetailsFailed(placeId);
+        return details;
+      } catch (err) {
+        markDetailsFailed(placeId);
+        throw err;
+      }
+    },
+  };
+
+  function markDetailsFailed(placeId: string) {
+    if (latestPlaceIdRef.current === placeId) setDetailsErrorPlaceId(placeId);
+  }
+
+  function handleSearchInput() {
+    if (!selected && !preview && !detailsErrorPlaceId) return;
+    latestPlaceIdRef.current = null;
+    invalidateSelection();
+  }
+
+  async function handleRetryDetails() {
+    const placeId = detailsErrorPlaceId;
+    if (!placeId) return;
+    setDetailsErrorPlaceId(null);
+    latestPlaceIdRef.current = placeId;
+    try {
+      const details = await baseApi.getDetails(placeId);
+      const loc = details.geometry?.location;
+      if (!loc?.lat || !loc?.lng) {
+        markDetailsFailed(placeId);
+        return;
+      }
+      handlePlaceSelect({ place_id: placeId, name: details.name });
+    } catch {
+      markDetailsFailed(placeId);
+    }
+  }
+
   function clearSelection() {
+    latestPlaceIdRef.current = null;
     setSelected(null);
     setDialogOpen(false);
     setApplyError(null);
     previewMutation.reset();
     applyMutation.reset();
     setSearchKey((k) => k + 1);
+    setDetailsErrorPlaceId(null);
   }
 
   function handleToggle() {
@@ -419,6 +482,7 @@ export default function VenueReselectPlace({
   }
 
   function handlePlaceSelect(picked: { place_id: string; name: string }) {
+    if (latestPlaceIdRef.current && latestPlaceIdRef.current !== picked.place_id) return;
     setSelected({ placeId: picked.place_id, name: picked.name });
     previewMutation.mutate(picked.place_id);
   }
@@ -460,6 +524,10 @@ export default function VenueReselectPlace({
       }
     );
   }
+
+  useEffect(() => {
+    if (expanded) panelRef.current?.querySelector('input')?.focus();
+  }, [expanded]);
 
   const kindBadge =
     kind === 'store' ? (
@@ -558,18 +626,30 @@ export default function VenueReselectPlace({
 
       {expanded && (
         <div id={panelId} ref={panelRef} className={reselectPanel}>
-          <div role="group" aria-labelledby={`${panelId}-label`}>
+          <div role="group" aria-labelledby={`${panelId}-label`} onInput={handleSearchInput}>
             <span id={`${panelId}-label`} className={searchLabel}>
               搜尋新地點
               <span className={searchLabelSub}>請從建議清單選一筆，不要只輸入文字</span>
             </span>
-            <PlaceAutocomplete key={searchKey} onPlaceSelect={handlePlaceSelect} api={placeApi} />
+            <PlaceAutocomplete key={searchKey} onPlaceSelect={handlePlaceSelect} api={trackedApi} />
           </div>
 
           {previewMutation.isPending && (
             <div className={statusRow} role="status">
               <span className={spinner} aria-hidden="true" />
               檢查中…
+            </div>
+          )}
+
+          {detailsErrorPlaceId && (
+            <div className={errorBox} role="alert">
+              <div className={errorMessageRow}>
+                <ExclamationTriangleIcon aria-hidden="true" />
+                <span>無法取得這個地點的座標，請重新搜尋或選擇其他地點。</span>
+              </div>
+              <button type="button" className={retryBtn} onClick={handleRetryDetails}>
+                重試
+              </button>
             </div>
           )}
 

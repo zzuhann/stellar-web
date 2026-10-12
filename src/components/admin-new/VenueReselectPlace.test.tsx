@@ -237,7 +237,7 @@ describe('F4 預覽錯誤各狀態', () => {
     [
       '422 候選過多',
       apiError(422, { code: 'TOO_MANY_LINKABLE_EVENTS', details: { linkableEventCount: 523 } }),
-      '符合條件的活動有 523 場，超過單次可處理的上限，無法在後台一次補連，請聯絡工程師處理。',
+      '符合條件的活動共 523 場，超過單次上限 400 場，無法套用。請聯繫工程師處理。',
       false,
     ],
     ['500', apiError(500), '檢查失敗，請稍後再試。', true],

@@ -387,7 +387,9 @@ describe('F10 寫入錯誤各狀態', () => {
     const { d } = await submitWithChoice();
 
     const alert = await d.findByRole('alert');
-    expect(alert.textContent).toContain('共 523 場，超過上限 400，無法套用');
+    expect(alert.textContent).toBe(
+      '符合條件的活動共 523 場，超過單次上限 400 場，無法套用。請聯繫工程師處理。'
+    );
   });
 
   it.each([
