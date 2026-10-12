@@ -101,6 +101,7 @@ describe('VenueForm contactUrl', () => {
     'ftp://example.com',
     'javascript:alert(1)',
     'https:example.com',
+    'HTTPS://example.com',
   ])('拒絕非 http(s) 網址 %s 並顯示錯誤', (value) => {
     const onSubmit = fillAndSubmit(value);
     const input = screen.getByLabelText('預約表單連結');
