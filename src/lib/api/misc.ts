@@ -13,6 +13,10 @@ export function handleApiError(error: unknown, fallbackMessage = '發生未知�
 
   if (data?.code === 'VALIDATION_ERROR') {
     const fieldLabel = data.field ? FIELD_LABELS[data.field] : undefined;
+    // Backend reasons in Chinese are user-readable; English ones are not
+    if (data.error && /[\u4e00-\u9fff]/.test(data.error)) {
+      return fieldLabel ? `${fieldLabel}：${data.error}` : data.error;
+    }
     return fieldLabel ? `${fieldLabel}格式不正確，請確認後再試` : '輸入資料格式有誤，請確認後再試';
   }
   if (data?.code && ERROR_CODE_MESSAGES[data.code]) return ERROR_CODE_MESSAGES[data.code];
