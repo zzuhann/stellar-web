@@ -11,6 +11,7 @@ import type { CreateVenueData, UpdateVenueData, CapacityRange } from '@/types';
 import type { UploadResponse } from '@/lib/r2-upload';
 import type { placesApi } from '@/lib/api';
 import { REGIONS } from '@/constants';
+import { isHttpUrl } from '@/utils';
 import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
 
 // Edit-only block; lazy so create mode (incl. public /submit-venue) never loads it
@@ -349,6 +350,7 @@ const statusBadge = cva({
 
 const REGION_OPTIONS = [...REGIONS, '其他'];
 const CAPACITY_OPTIONS: CapacityRange[] = ['20以下', '20-40', '40-60', '60以上'];
+const CONTACT_URL_MAX_LENGTH = 500;
 const MAX_HOST_TAGS = 5;
 
 type PreferredContact = 'instagram' | 'threads' | 'line' | 'form' | 'other';
@@ -544,6 +546,7 @@ interface FormErrors {
   capacityRange?: string;
   socialMedia?: string;
   coverPhoto?: string;
+  contactUrl?: string;
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -610,6 +613,12 @@ export default function VenueForm(props: VenueFormProps) {
   const [hostTagInput, setHostTagInput] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
 
+  // Hidden field must neither be validated nor submitted
+  const showContactUrl =
+    form.preferredContact === 'line' ||
+    form.preferredContact === 'form' ||
+    form.preferredContact === 'other';
+
   function validate(): boolean {
     const next: FormErrors = {};
     if (!form.name.trim()) next.name = '請填寫場地名稱';
@@ -626,6 +635,12 @@ export default function VenueForm(props: VenueFormProps) {
     }
     if (props.mode === 'create' && !form.coverPhoto) {
       next.coverPhoto = '請上傳封面圖片';
+    }
+    const contactUrl = showContactUrl ? form.contactUrl.trim() : '';
+    if (contactUrl.length > CONTACT_URL_MAX_LENGTH) {
+      next.contactUrl = '網址不能超過 500 個字';
+    } else if (contactUrl && !isHttpUrl(contactUrl)) {
+      next.contactUrl = '請輸入完整網址（以 http:// 或 https:// 開頭）';
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -659,7 +674,7 @@ export default function VenueForm(props: VenueFormProps) {
       if (form.hostTags.length > 0) data.hostTags = form.hostTags;
       if (socialMedia) data.socialMedia = socialMedia;
       if (form.preferredContact) data.preferredContact = form.preferredContact;
-      if (form.contactUrl) data.contactUrl = form.contactUrl;
+      if (showContactUrl && form.contactUrl.trim()) data.contactUrl = form.contactUrl.trim();
       if (coordinates.lat !== null) data.lat = coordinates.lat;
       if (coordinates.lng !== null) data.lng = coordinates.lng;
       if (coordinates.placeId) data.placeId = coordinates.placeId;
@@ -677,7 +692,7 @@ export default function VenueForm(props: VenueFormProps) {
         otherPhotos: form.otherPhotos,
         hostTags: form.hostTags,
         preferredContact: (form.preferredContact as PreferredContact) || undefined,
-        contactUrl: form.contactUrl || undefined,
+        contactUrl: showContactUrl ? form.contactUrl.trim() || undefined : undefined,
         socialMedia,
       });
     }
@@ -948,9 +963,7 @@ export default function VenueForm(props: VenueFormProps) {
         </div>
 
         {/* contactUrl — shown for line / form / other */}
-        {(form.preferredContact === 'line' ||
-          form.preferredContact === 'form' ||
-          form.preferredContact === 'other') && (
+        {showContactUrl && (
           <div className={fieldGroup}>
             <label htmlFor="venue-contact-url" className={label}>
               預約表單連結
@@ -959,10 +972,17 @@ export default function VenueForm(props: VenueFormProps) {
               id="venue-contact-url"
               type="text"
               className={inputStyle}
-              placeholder="https://... 或 Line ID"
+              placeholder="https://line.me/... 或預約表單網址"
               value={form.contactUrl}
               onChange={(e) => setField('contactUrl', e.target.value)}
+              aria-invalid={errors.contactUrl ? 'true' : undefined}
+              aria-describedby={errors.contactUrl ? 'venue-contact-url-error' : undefined}
             />
+            {errors.contactUrl && (
+              <span id="venue-contact-url-error" className={fieldError} role="alert">
+                {errors.contactUrl}
+              </span>
+            )}
           </div>
         )}
 
