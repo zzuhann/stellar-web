@@ -492,6 +492,12 @@ describe('getTaipeiToday', () => {
 });
 
 describe('isHttpUrl', () => {
+  it('accepts uppercase scheme and rejects scheme without slashes', () => {
+    expect(isHttpUrl('HTTPS://example.com')).toBe(true);
+    expect(isHttpUrl('https:example.com')).toBe(false);
+    expect(isHttpUrl('ftp://example.com')).toBe(false);
+  });
+
   it('合法的 https 網址回傳 true', () => {
     expect(isHttpUrl('https://forms.gle/xxxx')).toBe(true);
   });

@@ -74,6 +74,15 @@ describe('handleApiError', () => {
     );
   });
 
+  it('falls back to the generic message when VALIDATION_ERROR has no error text', () => {
+    expect(handleApiError(apiError({ code: 'VALIDATION_ERROR', field: 'contactUrl' }))).toBe(
+      '預約表單連結格式不正確，請確認後再試'
+    );
+    expect(handleApiError(apiError({ code: 'VALIDATION_ERROR' }))).toBe(
+      '輸入資料格式有誤，請確認後再試'
+    );
+  });
+
   it('uses the fallback for non-Axios errors', () => {
     expect(handleApiError(new Error('network failed'), '載入失敗')).toBe('載入失敗');
   });
