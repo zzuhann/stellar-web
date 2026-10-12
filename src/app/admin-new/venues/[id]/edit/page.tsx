@@ -179,6 +179,13 @@ export default function VenueEditPage() {
             setDeleteDialogOpen(true);
           }}
           canDelete={canDelete}
+          place={{
+            venueId,
+            placeId: venue.placeId,
+            address: venue.address,
+            lat: venue.lat,
+            lng: venue.lng,
+          }}
         />
       </div>
 
