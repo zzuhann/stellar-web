@@ -51,6 +51,18 @@ describe('handleApiError', () => {
     ).toBe('請輸入有效的網址');
   });
 
+  it('does not prefix generic field keys shared across forms', () => {
+    expect(
+      handleApiError(
+        apiError({
+          error: '活動描述不能超過 2000 個字',
+          code: 'VALIDATION_ERROR',
+          field: 'description',
+        })
+      )
+    ).toBe('活動描述不能超過 2000 個字');
+  });
+
   it('falls back to the generic message when the reason is not Chinese', () => {
     expect(
       handleApiError(
