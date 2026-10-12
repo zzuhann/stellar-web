@@ -389,8 +389,12 @@ export default function VenueReselectPlace({
   const [detailsErrorPlaceId, setDetailsErrorPlaceId] = useState<string | null>(null);
 
   const panelRef = useRef<HTMLDivElement>(null);
-  // Last place the user asked to select; lets us drop late responses for an older pick
-  const latestPlaceIdRef = useRef<string | null>(null);
+  // Bumped on every new pick, typing, cancel and collapse; a details response only counts
+  // while its token is still the latest. Comparing placeId alone can't tell re-picks apart.
+  const requestTokenRef = useRef(0);
+  // Set when the latest details call succeeded; PlaceAutocomplete calls onPlaceSelect right
+  // after, and we only accept that call if it matches (stale/cancelled picks never get here)
+  const acceptedPickRef = useRef<{ token: number; placeId: string } | null>(null);
 
   const previewMutation = usePlaceReselectPreviewMutation(venueId);
   const applyMutation = usePlaceReselectApplyMutation(venueId);
@@ -413,55 +417,51 @@ export default function VenueReselectPlace({
     previewMutation.reset();
   }
 
+  function cancelPendingRequests() {
+    requestTokenRef.current += 1;
+    acceptedPickRef.current = null;
+  }
+
   const baseApi = placeApi ?? placesApi;
   // PlaceAutocomplete only calls onPlaceSelect when details succeed, so observe its api instead
   const trackedApi: typeof placesApi = {
     ...baseApi,
     getDetails: async (placeId: string) => {
-      latestPlaceIdRef.current = placeId;
+      cancelPendingRequests();
+      const token = requestTokenRef.current;
       invalidateSelection();
       try {
         const details = await baseApi.getDetails(placeId);
+        if (token !== requestTokenRef.current) return details;
         const loc = details.geometry?.location;
-        if (!loc?.lat || !loc?.lng) markDetailsFailed(placeId);
+        if (!loc?.lat || !loc?.lng) setDetailsErrorPlaceId(placeId);
+        else acceptedPickRef.current = { token, placeId };
         return details;
       } catch (err) {
-        markDetailsFailed(placeId);
+        if (token === requestTokenRef.current) setDetailsErrorPlaceId(placeId);
         throw err;
       }
     },
   };
 
-  function markDetailsFailed(placeId: string) {
-    if (latestPlaceIdRef.current === placeId) setDetailsErrorPlaceId(placeId);
-  }
-
   function handleSearchInput() {
-    if (!selected && !preview && !detailsErrorPlaceId) return;
-    latestPlaceIdRef.current = null;
+    cancelPendingRequests();
     invalidateSelection();
   }
 
   async function handleRetryDetails() {
     const placeId = detailsErrorPlaceId;
     if (!placeId) return;
-    setDetailsErrorPlaceId(null);
-    latestPlaceIdRef.current = placeId;
     try {
-      const details = await baseApi.getDetails(placeId);
-      const loc = details.geometry?.location;
-      if (!loc?.lat || !loc?.lng) {
-        markDetailsFailed(placeId);
-        return;
-      }
+      const details = await trackedApi.getDetails(placeId);
       handlePlaceSelect({ place_id: placeId, name: details.name });
     } catch {
-      markDetailsFailed(placeId);
+      // trackedApi already surfaced the error
     }
   }
 
   function clearSelection() {
-    latestPlaceIdRef.current = null;
+    cancelPendingRequests();
     setSelected(null);
     setDialogOpen(false);
     setApplyError(null);
@@ -482,7 +482,15 @@ export default function VenueReselectPlace({
   }
 
   function handlePlaceSelect(picked: { place_id: string; name: string }) {
-    if (latestPlaceIdRef.current && latestPlaceIdRef.current !== picked.place_id) return;
+    const accepted = acceptedPickRef.current;
+    if (
+      !accepted ||
+      accepted.token !== requestTokenRef.current ||
+      accepted.placeId !== picked.place_id
+    ) {
+      return;
+    }
+    acceptedPickRef.current = null;
     setSelected({ placeId: picked.place_id, name: picked.name });
     previewMutation.mutate(picked.place_id);
   }

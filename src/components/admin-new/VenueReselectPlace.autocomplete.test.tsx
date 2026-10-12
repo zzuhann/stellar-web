@@ -135,4 +135,86 @@ describe('重新選擇流程的 PlaceAutocomplete 失敗處理', () => {
 
     await waitFor(() => expect(screen.queryByRole('button', { name: '套用新地點' })).toBeNull());
   }, 15000);
+
+  describe('details 等待中的請求失效', () => {
+    function deferred<T>() {
+      let resolve!: (v: T) => void;
+      const promise = new Promise<T>((r) => (resolve = r));
+      return { promise, resolve };
+    }
+    const settle = () => new Promise((r) => setTimeout(r, 50));
+
+    it('(a) 等待中繼續輸入：回應抵達後不出現預覽、不呼叫 preview', async () => {
+      const d = deferred<ReturnType<typeof details>>();
+      const getDetails = vi.fn(() => d.promise);
+      const user = userEvent.setup();
+      setup(getDetails);
+
+      await pick(user, 'AA', 'A店');
+      await waitFor(() => expect(getDetails).toHaveBeenCalledTimes(1));
+      await user.type(screen.getByRole('combobox'), 'x');
+      d.resolve(details('A店'));
+      await settle();
+
+      expect(screen.queryByRole('button', { name: '套用新地點' })).toBeNull();
+      expect(screen.queryByRole('region', { name: '新地點預覽' })).toBeNull();
+      expect(previewMock).not.toHaveBeenCalled();
+    }, 15000);
+
+    it('(b) 等待中按取消：回應抵達後不出現預覽，再展開也沒有', async () => {
+      const d = deferred<ReturnType<typeof details>>();
+      const getDetails = vi.fn(() => d.promise);
+      const user = userEvent.setup();
+      setup(getDetails);
+
+      await pick(user, 'AA', 'A店');
+      await waitFor(() => expect(getDetails).toHaveBeenCalledTimes(1));
+      fireEvent.click(screen.getByRole('button', { name: '取消重新選擇' }));
+      d.resolve(details('A店'));
+      await settle();
+      fireEvent.click(screen.getByRole('button', { name: '重新選擇地點' }));
+      await settle();
+
+      expect(screen.queryByRole('button', { name: '套用新地點' })).toBeNull();
+      expect(screen.queryByRole('region', { name: '新地點預覽' })).toBeNull();
+      expect(previewMock).not.toHaveBeenCalled();
+    }, 15000);
+
+    it.each([
+      ['後送先回', 'new-first'],
+      ['先送先回', 'old-first'],
+    ])(
+      '(c) 同一地點連選兩次只採用最新一次（%s）',
+      async (_name, order) => {
+        const d1 = deferred<ReturnType<typeof details>>();
+        const d2 = deferred<ReturnType<typeof details>>();
+        const getDetails = vi.fn().mockReturnValueOnce(d1.promise).mockReturnValueOnce(d2.promise);
+        previewMock.mockResolvedValue(makePreview());
+        const user = userEvent.setup();
+        setup(getDetails);
+
+        await pick(user, 'AA', 'A店');
+        await waitFor(() => expect(getDetails).toHaveBeenCalledTimes(1));
+        await pick(user, 'AA', 'A店');
+        await waitFor(() => expect(getDetails).toHaveBeenCalledTimes(2));
+
+        if (order === 'new-first') {
+          d2.resolve(details('最新A'));
+          await settle();
+          d1.resolve(details('舊A'));
+        } else {
+          d1.resolve(details('舊A'));
+          await settle();
+          d2.resolve(details('最新A'));
+        }
+
+        const card = await screen.findByRole('region', { name: '新地點預覽' });
+        await settle();
+        expect(card.textContent).toContain('最新A');
+        expect(card.textContent).not.toContain('舊A');
+        expect(previewMock).toHaveBeenCalledTimes(1);
+      },
+      20000
+    );
+  });
 });

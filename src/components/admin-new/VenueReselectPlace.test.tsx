@@ -15,7 +15,9 @@ import {
 
 vi.mock('@/lib/api', () => ({
   venueApi: { previewPlaceReselect: vi.fn(), applyPlaceReselect: vi.fn() },
-  placesApi: {},
+  placesApi: {
+    getDetails: async () => ({ name: '新店家咖啡', geometry: { location: { lat: 25, lng: 121 } } }),
+  },
 }));
 vi.mock('@/lib/revalidate', () => ({ revalidatePublicPages: vi.fn() }));
 vi.mock('next/link', () => ({
@@ -26,7 +28,9 @@ vi.mock('@/components/images/MultiImageUpload', () => ({ default: () => null }))
 vi.mock('@/components/forms/PlaceAutocomplete', () => ({
   default: ({
     onPlaceSelect,
+    api,
   }: {
+    api: { getDetails: (id: string) => Promise<unknown> };
     onPlaceSelect: (p: {
       place_id: string;
       address: string;
@@ -39,15 +43,16 @@ vi.mock('@/components/forms/PlaceAutocomplete', () => ({
       <input aria-label="搜尋地點" />
       <button
         type="button"
-        onClick={() =>
+        onClick={async () => {
+          await api.getDetails('ChIJnewPlace0001');
           onPlaceSelect({
             place_id: 'ChIJnewPlace0001',
             address: '台北市大安區新地址 2 號',
             coordinates: { lat: 25.033, lng: 121.543 },
             name: '新店家咖啡',
             city: '台北',
-          })
-        }
+          });
+        }}
       >
         模擬選擇地點
       </button>

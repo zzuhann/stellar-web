@@ -71,6 +71,18 @@ const formErrorBanner = css({
   color: 'red.700',
 });
 
+const refetchErrorBanner = css({
+  paddingX: '4',
+  paddingY: '3',
+  marginBottom: '4',
+  borderRadius: 'radius.md',
+  background: 'red.50',
+  border: '1px solid',
+  borderColor: 'red.200',
+  textStyle: 'bodySmall',
+  color: 'red.700',
+});
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function VenueEditPage() {
@@ -163,7 +175,7 @@ export default function VenueEditPage() {
         </Link>
         <h1 className={pageTitle}>編輯場地</h1>
         {isError && (
-          <div className={`${formErrorBanner} ${css({ marginBottom: '4' })}`} role="alert">
+          <div className={refetchErrorBanner} role="alert">
             重新整理資料失敗，目前顯示的可能不是最新內容。
           </div>
         )}
