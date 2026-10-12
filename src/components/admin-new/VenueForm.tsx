@@ -541,6 +541,16 @@ interface FormErrors {
   capacityRange?: string;
   socialMedia?: string;
   coverPhoto?: string;
+  contactUrl?: string;
+}
+
+function isHttpUrl(value: string): boolean {
+  try {
+    const { protocol } = new URL(value);
+    return protocol === 'http:' || protocol === 'https:';
+  } catch {
+    return false;
+  }
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -615,6 +625,10 @@ export default function VenueForm(props: VenueFormProps) {
     }
     if (props.mode === 'create' && !form.coverPhoto) {
       next.coverPhoto = '請上傳封面圖片';
+    }
+    const contactUrl = form.contactUrl.trim();
+    if (contactUrl && !isHttpUrl(contactUrl)) {
+      next.contactUrl = '請輸入完整網址（以 https:// 開頭）';
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -931,10 +945,17 @@ export default function VenueForm(props: VenueFormProps) {
               id="venue-contact-url"
               type="text"
               className={inputStyle}
-              placeholder="https://... 或 Line ID"
+              placeholder="https://line.me/... 或預約表單網址"
               value={form.contactUrl}
               onChange={(e) => setField('contactUrl', e.target.value)}
+              aria-invalid={errors.contactUrl ? 'true' : undefined}
+              aria-describedby={errors.contactUrl ? 'venue-contact-url-error' : undefined}
             />
+            {errors.contactUrl && (
+              <span id="venue-contact-url-error" className={fieldError} role="alert">
+                {errors.contactUrl}
+              </span>
+            )}
           </div>
         )}
 

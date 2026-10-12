@@ -64,6 +64,53 @@ describe('VenueForm create mode', () => {
   });
 });
 
+describe('VenueForm contactUrl', () => {
+  function fillAndSubmit(contactUrl: string | null) {
+    const onSubmit = vi.fn();
+    render(<VenueForm mode="create" onSubmit={onSubmit} isSubmitting={false} submitError={null} />);
+    fireEvent.change(screen.getByLabelText(/場地名稱/), { target: { value: '測試場地' } });
+    fireEvent.change(screen.getByLabelText(/地址/), { target: { value: '測試地址' } });
+    fireEvent.click(screen.getByRole('button', { name: '請選擇地區' }));
+    fireEvent.click(screen.getByRole('option', { name: '台北' }));
+    fireEvent.click(screen.getByRole('button', { name: '請選擇容納人數範圍' }));
+    fireEvent.click(screen.getByRole('option', { name: '20-40人' }));
+    fireEvent.change(screen.getByLabelText('Instagram'), { target: { value: '@stellar' } });
+    fireEvent.click(screen.getByRole('button', { name: '模擬封面上傳' }));
+    if (contactUrl !== null) {
+      fireEvent.click(screen.getByRole('button', { name: /IG 私訊/ }));
+      fireEvent.click(screen.getByRole('option', { name: /LINE/i }));
+      fireEvent.change(screen.getByLabelText('預約表單連結'), { target: { value: contactUrl } });
+    }
+    fireEvent.click(screen.getByRole('button', { name: '新增場地' }));
+    return onSubmit;
+  }
+
+  it.each(['@abc123', 'line.me/xxx'])('拒絕非網址 %s 並顯示錯誤', (value) => {
+    const onSubmit = fillAndSubmit(value);
+    expect(screen.getByText('請輸入完整網址（以 https:// 開頭）')).toBeTruthy();
+    expect(screen.getByLabelText('預約表單連結').getAttribute('aria-invalid')).toBe('true');
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('接受完整 https 網址', () => {
+    const onSubmit = fillAndSubmit('https://line.me/ti/p/xxx');
+    expect(onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ contactUrl: 'https://line.me/ti/p/xxx' })
+    );
+  });
+
+  it('空值仍為選填', () => {
+    const onSubmit = fillAndSubmit('');
+    expect(onSubmit).toHaveBeenCalled();
+  });
+
+  it('placeholder 不含 LINE ID', () => {
+    fillAndSubmit('');
+    const placeholder = screen.getByLabelText('預約表單連結').getAttribute('placeholder') ?? '';
+    expect(placeholder).not.toMatch(/line id/i);
+  });
+});
+
 describe('VenueForm edit mode', () => {
   it('舊資料缺少新增必填欄位時仍可儲存其他修改', () => {
     const onSubmit = vi.fn();
