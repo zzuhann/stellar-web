@@ -712,6 +712,7 @@ export default function ArtistSubmissionForm({
             <input
               className={input}
               type="email"
+              maxLength={254}
               name="email"
               autoComplete="email"
               aria-label="電子信箱"

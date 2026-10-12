@@ -44,4 +44,5 @@ export const FIELD_LABELS: Record<string, string> = {
   'location.coordinates': '地點座標',
   limit: '筆數',
   status: '狀態',
+  submitterEmail: '信箱',
 };

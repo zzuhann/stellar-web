@@ -32,6 +32,14 @@ describe('handleApiError', () => {
     ).toBe('藝名格式不正確，請確認後再試');
   });
 
+  it('names the email field when submitterEmail fails validation', () => {
+    expect(
+      handleApiError(
+        apiError({ error: 'Invalid email', code: 'VALIDATION_ERROR', field: 'submitterEmail' })
+      )
+    ).toBe('信箱格式不正確，請確認後再試');
+  });
+
   it('uses the fallback for non-Axios errors', () => {
     expect(handleApiError(new Error('network failed'), '載入失敗')).toBe('載入失敗');
   });
