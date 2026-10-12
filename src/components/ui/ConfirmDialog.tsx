@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { Description, Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react';
 import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
@@ -26,13 +27,32 @@ const panelWrapper = css({
   padding: '4',
 });
 
-const dialogBox = css({
-  background: 'white',
-  borderRadius: 'radius.lg',
-  boxShadow: 'shadow.lg',
-  maxWidth: '420px',
-  width: '100%',
-  overflow: 'hidden',
+const dialogBox = cva({
+  base: {
+    background: 'white',
+    borderRadius: 'radius.lg',
+    boxShadow: 'shadow.lg',
+    maxWidth: '420px',
+    width: '100%',
+    overflow: 'hidden',
+  },
+  variants: {
+    // Only with children: long content scrolls inside the panel, footer stays put
+    withContent: {
+      true: {
+        display: 'flex',
+        flexDirection: 'column',
+        maxWidth: '480px',
+        maxHeight: 'calc(100dvh - token(spacing.8))',
+      },
+    },
+  },
+});
+
+const scrollBody = css({
+  flex: '1 1 auto',
+  minHeight: 0,
+  overflowY: 'auto',
 });
 
 const dialogHeader = css({
@@ -78,12 +98,22 @@ const inlineError = css({
   color: 'red.600',
 });
 
-const dialogFooter = css({
-  display: 'flex',
-  gap: '2',
-  paddingX: '5',
-  paddingBottom: '5',
-  paddingTop: '2',
+const dialogFooter = cva({
+  base: {
+    display: 'flex',
+    gap: '2',
+    paddingX: '5',
+    paddingBottom: '5',
+    paddingTop: '2',
+  },
+  variants: {
+    withContent: {
+      true: {
+        flexShrink: 0,
+        paddingBottom: 'calc(token(spacing.5) + env(safe-area-inset-bottom))',
+      },
+    },
+  },
 });
 
 const dialogBtn = cva({
@@ -150,6 +180,12 @@ export interface ConfirmDialogProps {
   onClose: () => void;
   isLoading?: boolean;
   error?: string | null;
+  // Optional rich content under the description; scrolls inside the dialog when tall
+  children?: ReactNode;
+  confirmDisabled?: boolean;
+  // Safer initial focus for dialogs whose confirm action is hard to undo
+  autoFocusCancel?: boolean;
+  confirmDescribedBy?: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -165,6 +201,10 @@ export default function ConfirmDialog({
   onClose,
   isLoading = false,
   error,
+  children,
+  confirmDisabled = false,
+  autoFocusCancel = false,
+  confirmDescribedBy,
 }: ConfirmDialogProps) {
   function handleClose() {
     if (!isLoading) onClose();
@@ -174,7 +214,7 @@ export default function ConfirmDialog({
     <Dialog open={open} onClose={handleClose} role="alertdialog" className={dialogRoot}>
       <DialogBackdrop className={backdrop} />
       <div className={panelWrapper}>
-        <DialogPanel className={dialogBox}>
+        <DialogPanel className={dialogBox({ withContent: Boolean(children) })}>
           <div className={dialogHeader}>
             <DialogTitle className={dialogTitleStyle}>
               <ExclamationTriangleIcon
@@ -193,18 +233,26 @@ export default function ConfirmDialog({
               <XMarkIcon width={20} height={20} aria-hidden="true" />
             </button>
           </div>
-          <Description className={dialogBody}>{description}</Description>
+          {children ? (
+            <div className={scrollBody}>
+              <Description className={dialogBody}>{description}</Description>
+              {children}
+            </div>
+          ) : (
+            <Description className={dialogBody}>{description}</Description>
+          )}
           {error && (
             <div className={inlineError} role="alert">
               {error}
             </div>
           )}
-          <div className={dialogFooter}>
+          <div className={dialogFooter({ withContent: Boolean(children) })}>
             <button
               type="button"
               className={dialogBtn({ variant: 'cancel' })}
               onClick={handleClose}
               disabled={isLoading}
+              data-autofocus={autoFocusCancel ? '' : undefined}
             >
               {cancelLabel}
             </button>
@@ -212,7 +260,8 @@ export default function ConfirmDialog({
               type="button"
               className={dialogBtn({ variant: confirmVariant })}
               onClick={onConfirm}
-              disabled={isLoading}
+              disabled={isLoading || confirmDisabled}
+              aria-describedby={confirmDescribedBy}
             >
               {isLoading && <div className={spinner} aria-hidden="true" />}
               {confirmLabel}

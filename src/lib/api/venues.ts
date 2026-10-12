@@ -4,6 +4,9 @@ import {
   VenueDetail,
   UpdateVenueData,
   CreateVenueData,
+  PlaceReselectAddressChoice,
+  VenuePlaceReselectPreview,
+  VenuePlaceReselectResult,
 } from '@/types';
 import api from './client';
 import type { PlaceDetails, PlacePrediction } from '@/types';
@@ -111,6 +114,25 @@ export const venueApi = {
     updates: Array<{ venueId: string; status: 'active' | 'inactive' }>
   ): Promise<{ message: string }> => {
     const response = await api.patch<{ message: string }>('/venues/batch-status', { updates });
+    return response.data;
+  },
+
+  previewPlaceReselect: async (id: string, placeId: string): Promise<VenuePlaceReselectPreview> => {
+    const response = await api.post<VenuePlaceReselectPreview>(
+      `/venues/admin/${id}/place-reselect/preview`,
+      { placeId }
+    );
+    return response.data;
+  },
+
+  applyPlaceReselect: async (
+    id: string,
+    body: { placeId: string; addressChoice?: PlaceReselectAddressChoice }
+  ): Promise<VenuePlaceReselectResult> => {
+    const response = await api.post<VenuePlaceReselectResult>(
+      `/venues/admin/${id}/place-reselect`,
+      body
+    );
     return response.data;
   },
 

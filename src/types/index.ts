@@ -378,6 +378,45 @@ export interface VenueDetail {
   events: VenueEventCard[];
 }
 
+// ─── 後台場地重新選擇地點（venue-place-reselect）─────────────────────────────
+
+export type PlaceReselectAddressChoice = 'existing' | 'google';
+
+export interface PlaceReselectLinkableEvent {
+  id: string;
+  title: string;
+}
+
+export interface VenuePlaceReselectPreview {
+  placeId: string;
+  unchanged: boolean;
+  google: {
+    formattedAddress: string;
+    lat: number;
+    lng: number;
+    isAddressType: boolean;
+  };
+  address: {
+    current: string;
+    google: string;
+    sameAfterNormalize: boolean;
+    choiceRequired: boolean;
+  };
+  // 最多 100 筆名單；linkableEventCount 才是實際總數
+  linkableEvents: PlaceReselectLinkableEvent[];
+  linkableEventCount: number;
+}
+
+export interface VenuePlaceReselectResult {
+  venueId: string;
+  placeId: string;
+  lat: number;
+  lng: number;
+  address: string;
+  linkedEvents: PlaceReselectLinkableEvent[];
+  linkedCount: number;
+}
+
 export interface Venue {
   id: string;
   name: string;

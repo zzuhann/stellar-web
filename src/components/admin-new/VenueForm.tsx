@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import Link from 'next/link';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
@@ -12,6 +12,9 @@ import type { UploadResponse } from '@/lib/r2-upload';
 import type { placesApi } from '@/lib/api';
 import { REGIONS } from '@/constants';
 import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
+
+// Edit-only block; lazy so create mode (incl. public /submit-venue) never loads it
+const VenueReselectPlace = lazy(() => import('./VenueReselectPlace'));
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
@@ -570,6 +573,14 @@ interface VenueFormEditProps extends VenueFormBaseProps {
   isStatusChanging: boolean;
   onDeleteClick: () => void;
   canDelete: boolean;
+  // Saved place data; omit to hide the "reselect place" block
+  place?: {
+    venueId: string;
+    placeId: string;
+    address: string;
+    lat?: number | null;
+    lng?: number | null;
+  };
 }
 
 export type VenueFormProps = VenueFormCreateProps | VenueFormEditProps;
@@ -732,6 +743,23 @@ export default function VenueForm(props: VenueFormProps) {
               />
               {coordinates.lat !== null && <p className={fieldHint}>✓ 已取得座標</p>}
             </div>
+            <div className={divider} />
+          </>
+        )}
+
+        {/* place reselect (edit only) */}
+        {props.mode === 'edit' && props.place && (
+          <>
+            <Suspense fallback={null}>
+              <VenueReselectPlace
+                venueId={props.place.venueId}
+                venueName={props.initialValues.name}
+                place={props.place}
+                formAddress={form.address}
+                onAddressSync={(address) => setForm((prev) => ({ ...prev, address }))}
+                placeApi={placeApi}
+              />
+            </Suspense>
             <div className={divider} />
           </>
         )}

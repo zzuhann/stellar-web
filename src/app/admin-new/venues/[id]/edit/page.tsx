@@ -71,6 +71,18 @@ const formErrorBanner = css({
   color: 'red.700',
 });
 
+const refetchErrorBanner = css({
+  paddingX: '4',
+  paddingY: '3',
+  marginBottom: '4',
+  borderRadius: 'radius.md',
+  background: 'red.50',
+  border: '1px solid',
+  borderColor: 'red.200',
+  textStyle: 'bodySmall',
+  color: 'red.700',
+});
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function VenueEditPage() {
@@ -116,7 +128,8 @@ export default function VenueEditPage() {
     );
   }
 
-  if (isError || !venue) {
+  // Keep the form when a background refetch fails but we still hold data
+  if (!venue) {
     return (
       <div className={pageWrapper}>
         <div className={container}>
@@ -161,6 +174,11 @@ export default function VenueEditPage() {
           返回場地列表
         </Link>
         <h1 className={pageTitle}>編輯場地</h1>
+        {isError && (
+          <div className={refetchErrorBanner} role="alert">
+            重新整理資料失敗，目前顯示的可能不是最新內容。
+          </div>
+        )}
         <VenueForm
           mode="edit"
           initialValues={initialValues}
@@ -179,6 +197,13 @@ export default function VenueEditPage() {
             setDeleteDialogOpen(true);
           }}
           canDelete={canDelete}
+          place={{
+            venueId,
+            placeId: venue.placeId,
+            address: venue.address,
+            lat: venue.lat,
+            lng: venue.lng,
+          }}
         />
       </div>
 
