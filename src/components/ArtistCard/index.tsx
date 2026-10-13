@@ -120,9 +120,11 @@ const spinner = css({
 interface ArtistCardProps {
   artist: Artist;
   isPending?: boolean;
+  // Search-modal result cards for the submit-artist entry show who the artist is, not how many events they have.
+  hideEventCount?: boolean;
 }
 
-const ArtistCard = ({ artist, isPending }: ArtistCardProps) => {
+const ArtistCard = ({ artist, isPending, hideEventCount }: ArtistCardProps) => {
   const birthdayText = formatBirthdayMonthDay(artist.birthday ?? '');
 
   return (
@@ -147,15 +149,17 @@ const ArtistCard = ({ artist, isPending }: ArtistCardProps) => {
           <span aria-hidden="true">🎂：</span>
           <span className="birthday-date">{birthdayText}</span>
         </div>
-        <div className={eventStatus}>
-          <span aria-hidden="true">📍</span>
-          <span className={srOnly}>目前生日應援數量：</span>
-          <span>
-            {artist.coffeeEventCount !== undefined && artist.coffeeEventCount > 0
-              ? `${artist.coffeeEventCount} 個生日應援`
-              : '目前無任何生日應援'}
-          </span>
-        </div>
+        {!hideEventCount && (
+          <div className={eventStatus}>
+            <span aria-hidden="true">📍</span>
+            <span className={srOnly}>目前生日應援數量：</span>
+            <span>
+              {artist.coffeeEventCount !== undefined && artist.coffeeEventCount > 0
+                ? `${artist.coffeeEventCount} 個生日應援`
+                : '目前無任何生日應援'}
+            </span>
+          </div>
+        )}
       </div>
       {isPending && (
         <div className={loadingOverlay}>

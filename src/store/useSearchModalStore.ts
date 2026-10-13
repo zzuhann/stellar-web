@@ -2,7 +2,11 @@
 import { create } from 'zustand';
 import { RefObject } from 'react';
 
-export type SearchModalEntryPoint = 'header' | 'top_artists' | 'search_section';
+export type SearchModalEntryPoint =
+  | 'header'
+  | 'top_artists'
+  | 'search_section'
+  | 'submit_artist_page';
 
 interface SearchModalState {
   isOpen: boolean;

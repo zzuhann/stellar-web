@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { artistsApi } from '@/lib/api';
 import { css } from '@/styled-system/css';
 import ArtistSubmissionForm from '@/components/forms/ArtistSubmissionForm';
+import ArtistSearchEntryButton from '@/components/forms/ArtistSearchEntryButton';
 import { showToast } from '@/lib/toast';
 import Loading from '@/components/Loading';
 
@@ -166,6 +167,7 @@ export default function SubmitArtistClient() {
 
   return (
     <main className={mainContent}>
+      {!isEditMode && <ArtistSearchEntryButton />}
       <ArtistSubmissionForm
         mode={isEditMode ? 'edit' : 'create'}
         existingArtist={existingArtist}
