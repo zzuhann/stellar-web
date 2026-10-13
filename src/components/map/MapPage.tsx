@@ -156,7 +156,6 @@ export default function MapPage({ artistId }: MapPageProps) {
       <div className={pageContainer} id="main-content">
         <div className={mapArea}>
           <MapSection
-            artistId={artistId}
             mapEvents={mapEvents}
             artistData={artistData ?? null}
             latitude={latitude}

@@ -47,10 +47,6 @@ interface VenueContactEventParams extends VenueEventBaseParams {
   contactType: string;
 }
 
-interface VenueMapEventParams extends VenueEventBaseParams {
-  venueId: string;
-}
-
 interface VenueEventDetailEventParams extends VenueEventBaseParams {
   eventId: string;
 }
@@ -194,15 +190,6 @@ export function trackClickVenueContact({ userId, venueId, contactType }: VenueCo
     user_id: userId ?? '',
     content_id: toVenueContentId(venueId),
     contact_type: contactType,
-  });
-}
-
-export function trackClickVenueMap({ userId, venueId }: VenueMapEventParams) {
-  trackVenueEvent('click_venue_map', {
-    event_page: VENUE_DETAIL_EVENT_PAGE,
-    user_id: userId ?? '',
-    content_id: toVenueContentId(venueId),
-    outbound_target: 'google_maps',
   });
 }
 

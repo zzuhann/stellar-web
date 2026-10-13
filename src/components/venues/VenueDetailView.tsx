@@ -4,11 +4,7 @@ import Link from 'next/link';
 import { css } from '@/styled-system/css';
 import { useAuth } from '@/lib/auth-context';
 import { usePageView } from '@/hooks/usePageView';
-import {
-  toVenueContentId,
-  trackClickVenueContact,
-  trackClickVenueMap,
-} from '@/lib/analytics/venues';
+import { toVenueContentId, trackClickVenueContact } from '@/lib/analytics/venues';
 import type { Venue, VenueDetail } from '@/types';
 import { CAPACITY_RANGE_LABEL } from './venueCapacity';
 import Breadcrumb from '@/components/ui/Breadcrumb';
@@ -263,13 +259,6 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
 
   usePageView({ eventPage: '/venues/[id]', contentId: toVenueContentId(venue.id) });
 
-  const handleClickMap = () => {
-    trackClickVenueMap({
-      userId: user?.uid,
-      venueId: venue.id,
-    });
-  };
-
   const handleClickContact = () => {
     trackClickVenueContact({
       userId: user?.uid,
@@ -316,13 +305,7 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
               icon={<MapPinIcon width={16} height={16} aria-hidden="true" />}
               label="地址"
               value={
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={infoLink}
-                  onClick={handleClickMap}
-                >
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className={infoLink}>
                   {venue.address}
                   <span className={mapIconWrapper}>
                     <ArrowTopRightOnSquareIcon width={12} height={12} aria-hidden="true" />

@@ -2,8 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { css } from '@/styled-system/css';
-import { sendGAEvent } from '@next/third-parties/google';
-import { useAuth } from '@/lib/auth-context';
 
 const button = css({
   paddingY: '2.5',
@@ -34,25 +32,11 @@ const button = css({
   },
 });
 
-interface BackToHomeButtonProps {
-  eventId: string;
-}
-
-export default function BackToHomeButton({ eventId }: BackToHomeButtonProps) {
+export default function BackToHomeButton() {
   const router = useRouter();
-  const { user } = useAuth();
-
-  const handleClick = () => {
-    sendGAEvent('event', 'click_home', {
-      event_page: '/event/[id]',
-      user_id: user?.uid ?? '',
-      content_id: eventId,
-    });
-    router.push('/');
-  };
 
   return (
-    <button className={button} onClick={handleClick} type="button">
+    <button className={button} onClick={() => router.push('/')} type="button">
       回首頁
       <br />
       看更多藝人

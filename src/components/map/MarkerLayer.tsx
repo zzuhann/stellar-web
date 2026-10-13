@@ -2,14 +2,11 @@ import { useCallback, useMemo, useRef } from 'react';
 import { useMap } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import { DivIcon, Point } from 'leaflet';
-import { sendGAEvent } from '@next/third-parties/google';
 import { Artist, MapEvent } from '@/types';
-import { useAuth } from '@/lib/auth-context';
 import { createImageIcon } from '@/components/map/utils/createImageIcon';
 import MemoizedMarker from '@/components/map/components/MemoizedMarker';
 
 interface MarkerLayerProps {
-  artistId: string;
   mapEvents: MapEvent[];
   artistData: Artist | null;
   selectedEventId: string | null;
@@ -19,7 +16,6 @@ interface MarkerLayerProps {
 }
 
 const MarkerLayer = ({
-  artistId,
   mapEvents,
   artistData,
   selectedEventId,
@@ -28,7 +24,6 @@ const MarkerLayer = ({
   onClearSelection,
 }: MarkerLayerProps) => {
   const map = useMap();
-  const { user } = useAuth();
   // Tracks the pending moveend listener so we can remove it before rebinding
   const pendingMoveEndRef = useRef<(() => void) | null>(null);
   const profileImage = artistData?.profileImage;
@@ -164,16 +159,11 @@ const MarkerLayer = ({
         map.once('moveend', onMoveEnd);
         map.flyTo(clusterCenter, currentZoom);
       } else {
-        sendGAEvent('event', 'map_cluster_zoom_in', {
-          event_page: '/map/[artistId]',
-          user_id: user?.uid ?? '',
-          content_id: artistId,
-        });
         map.fitBounds(cluster.getBounds(), { animate: true, maxZoom: 16, padding: [20, 20] });
         onClearSelection();
       }
     },
-    [map, groupedEvents, onMultiMarkerClick, onClearSelection, user, artistId]
+    [map, groupedEvents, onMultiMarkerClick, onClearSelection]
   );
 
   const handleMarkerClick = useCallback(

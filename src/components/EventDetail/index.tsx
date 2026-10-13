@@ -475,7 +475,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
           {/* 底部按鈕群組 */}
           <div className={buttonGroup}>
             <BackToMapButton event={event} />
-            <BackToHomeButton eventId={event.id} />
+            <BackToHomeButton />
           </div>
         </div>
 
