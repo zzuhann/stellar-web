@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useId, useRef } from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { useSearchModalStore } from '@/store/useSearchModalStore';
@@ -17,7 +17,7 @@ const entryButton = css({
   border: '1px solid',
   borderColor: 'color.border.light',
   borderRadius: 'radius.lg',
-  color: 'color.text.disabled',
+  color: 'color.text.secondary',
   textStyle: 'body',
   textAlign: 'left',
   cursor: 'pointer',
@@ -41,6 +41,7 @@ interface ArtistSearchEntryButtonProps {
 // Looks like a search field but is a button: it only opens the global ArtistSearchModal.
 export default function ArtistSearchEntryButton({ labelId }: ArtistSearchEntryButtonProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const textId = useId();
   const open = useSearchModalStore((state) => state.open);
 
   return (
@@ -49,11 +50,12 @@ export default function ArtistSearchEntryButton({ labelId }: ArtistSearchEntryBu
       type="button"
       className={entryButton}
       aria-haspopup="dialog"
-      aria-labelledby={labelId}
+      // Include the visible text so voice control can target it (WCAG 2.5.3).
+      aria-labelledby={`${labelId} ${textId}`}
       onClick={() => open('submit_artist_page', buttonRef)}
     >
       <MagnifyingGlassIcon aria-hidden="true" />
-      <span>搜尋藝人、團體</span>
+      <span id={textId}>搜尋藝人、團體</span>
     </button>
   );
 }
