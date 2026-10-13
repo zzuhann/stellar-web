@@ -61,13 +61,14 @@ function mockArtistQuery(state: { data?: Artist; isSuccess?: boolean; isError?: 
 
 function renderForm(props: { preselectArtistId?: string } = {}) {
   const client = new QueryClient();
-  const ui = (
+  // Fresh JSX each time (same client) so rerender actually re-renders the form.
+  const buildUi = () => (
     <QueryClientProvider client={client}>
       <EventSubmissionForm mode="create" {...props} />
     </QueryClientProvider>
   );
-  const result = render(ui);
-  return { ...result, rerenderForm: () => result.rerender(ui) };
+  const result = render(buildUi());
+  return { ...result, rerenderForm: () => result.rerender(buildUi()) };
 }
 
 beforeEach(() => {
@@ -111,9 +112,13 @@ describe('EventSubmissionForm artistId 預選', () => {
 
     await user.click(screen.getByRole('button', { name: /請選擇藝人/ }));
     await user.click(screen.getByRole('button', { name: 'pick-other' }));
+    useArtistMock.mockClear();
     mockArtistQuery({ data: PRESELECTED, isSuccess: true });
     rerenderForm();
 
+    // The late success result must really reach the form, otherwise this test proves nothing.
+    expect(useArtistMock).toHaveBeenCalled();
+    expect(useArtistMock.mock.results.at(-1)?.value).toMatchObject({ isSuccess: true });
     expect(screen.getByRole('button', { name: /已選擇 OTHER/ })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /已選擇 ALPHA/ })).toBeNull();
   });
