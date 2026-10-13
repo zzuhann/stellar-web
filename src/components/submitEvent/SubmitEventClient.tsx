@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/lib/auth-context';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { css } from '@/styled-system/css';
 import EventSubmissionForm from '@/components/submitEvent/EventSubmissionForm';
 import ApiErrorState from '@/components/ui/ApiErrorState';
@@ -32,6 +32,13 @@ export default function SubmitEventClient() {
   const copyEventId = searchParams.get('copy');
   const isEditMode = !!editEventId;
   const isCopyMode = !!copyEventId;
+  // artistId only applies to create mode; edit/copy take precedence and ignore it.
+  const preselectArtistId =
+    (!isEditMode && !isCopyMode && searchParams.get('artistId')) || undefined;
+  // Captured once at mount so later query/artist changes don't alter the submit_event attribution.
+  const [entryPoint] = useState<'submit_artist_page' | undefined>(() =>
+    preselectArtistId ? 'submit_artist_page' : undefined
+  );
 
   // 編輯或複製模式下取得活動資料
   const eventId = editEventId || copyEventId;
@@ -132,6 +139,8 @@ export default function SubmitEventClient() {
       <EventSubmissionForm
         mode={mode}
         existingEvent={existingEvent || undefined}
+        preselectArtistId={preselectArtistId}
+        entryPoint={entryPoint}
         onSuccess={() => router.push('/my-submissions?tab=event')}
         onCancel={
           editEventId || copyEventId
