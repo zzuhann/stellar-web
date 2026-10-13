@@ -86,7 +86,7 @@ describe('ArtistSearchModal entryPoint=submit_artist_page', () => {
     expect(screen.getAllByText('新增應援')).toHaveLength(2);
   });
 
-  it('TC-004 / TC-020 點「查看應援」導向地圖頁，送 click_artist source=view_map 並關閉彈窗', async () => {
+  it('TC-004 / TC-020 點「查看應援」導向地圖頁，送 click_artist ui_source=view_map 並關閉彈窗', async () => {
     const { user, onClose } = await openAndSearch('submit_artist_page');
 
     await user.click(screen.getByRole('link', { name: '查看 ALPHA 的生日應援' }));
@@ -98,14 +98,14 @@ describe('ArtistSearchModal entryPoint=submit_artist_page', () => {
         event_page: '/submit-artist',
         content_id: 'a1',
         entry_point: 'submit_artist_page',
-        source: 'view_map',
+        ui_source: 'view_map',
       })
     );
     expect(push).toHaveBeenCalledWith('/map/artist-a');
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it('TC-005 / TC-021 點「新增應援」導向 /submit-event?artistId，送 source=add_event 並關閉彈窗', async () => {
+  it('TC-005 / TC-021 點「新增應援」導向 /submit-event?artistId，送 ui_source=add_event 並關閉彈窗', async () => {
     const { user, onClose } = await openAndSearch('submit_artist_page');
 
     await user.click(screen.getByRole('link', { name: '為 BETA 新增生日應援' }));
@@ -116,7 +116,7 @@ describe('ArtistSearchModal entryPoint=submit_artist_page', () => {
       expect.objectContaining({
         content_id: 'b2',
         entry_point: 'submit_artist_page',
-        source: 'add_event',
+        ui_source: 'add_event',
       })
     );
     expect(push).toHaveBeenCalledWith('/submit-event?artistId=b2');
@@ -192,7 +192,7 @@ describe('ArtistSearchModal entryPoint=submit_artist_page', () => {
 });
 
 describe('ArtistSearchModal 其他入口不受客製影響 (TC-009)', () => {
-  it('header：整卡可點、底部維持原文案、click_artist 不帶 source', async () => {
+  it('header：整卡可點、底部維持原文案、click_artist 不帶 ui_source', async () => {
     const { user } = await openAndSearch('header');
 
     expect(screen.queryByText('查看應援')).toBeNull();
@@ -210,7 +210,7 @@ describe('ArtistSearchModal 其他入口不受客製影響 (TC-009)', () => {
     });
   });
 
-  it('先以 submit_artist_page 開啟並關閉，再從 header 開啟：客製狀態不殘留，search_artist 不帶 source', () => {
+  it('先以 submit_artist_page 開啟並關閉，再從 header 開啟：客製狀態不殘留，search_artist 不帶 ui_source', () => {
     const { rerender } = render(
       <ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="submit_artist_page" />
     );

@@ -336,7 +336,7 @@ export default function ArtistSearchModal({
                           user_id: user?.uid ?? '',
                           content_id: artist.id,
                           entry_point: entryPoint,
-                          source,
+                          ui_source: source,
                         });
                         onClose();
                       }}
