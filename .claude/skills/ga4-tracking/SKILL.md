@@ -134,4 +134,3 @@ function ServerPage({ id }: { id: string }) {
 - `docs/events.md` - **已實作事件清單**（新增/修改事件時請更新）
 - `src/hooks/usePageView.ts` - 頁面瀏覽追蹤 hook
 - `src/components/PageViewTracker.tsx` - 頁面瀏覽追蹤元件（用於 Server Component）
-- `src/utils/pwa.ts` - PWA 模式判斷

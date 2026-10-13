@@ -243,9 +243,9 @@
 
 **實作位置：** `src/components/EventDetail/EventBottomBar.tsx`、`DesktopFavoriteButton.tsx`
 
-### click_instagram / click_threads / click_x
+### click_instagram / click_threads
 
-點擊外部社群連結。
+點擊外部社群連結。（`ExternalLink` 型別保留 `x`，但目前沒有呼叫端送 `click_x`）
 
 | 參數       | 值            |
 | ---------- | ------------- |
@@ -326,7 +326,7 @@
 | user_id    | 用戶 UID          |
 | content_id | eventId           |
 
-**實作位置：** `src/components/map/hook/useMapSelection.ts`
+**實作位置：** `src/components/map/MapPage.tsx`
 
 ---
 
@@ -386,15 +386,15 @@
 
 場地卡片在 `/venues` 列表頁進入視窗（曝光）或被點擊進入詳情頁。`list_sort`（Phase 2.8 新增，2026-09-28）記錄卡片曝光/點擊當下 `/venues` 生效的排序值，讓 GA4 能依排序分組算 CTR。首頁隨機場地卡片（`placement: homepage_random`）固定 `sort=random`，沒有排序語意，不帶這個參數。
 
-| 參數          | 值（列表頁）                            | 值（首頁隨機卡片） |
-| ------------- | --------------------------------------- | ------------------ |
-| event_page    | `/venues`                               | `/`                |
-| placement     | -                                       | `homepage_random`  |
-| user_id       | 用戶 UID（未登入傳空字串）              | -（首頁版本不帶）  |
-| content_id    | `venue_{venueId}`                       | `venue_{venueId}`  |
-| venue_region  | venueRegion                             | venueRegion        |
-| list_position | 跨頁絕對位置（第 2 頁第 1 張 = 21）     | listPosition       |
-| list_sort     | `composite` \| `newest` \| `eventCount` | -（不帶）          |
+| 參數          | 值（列表頁）                                          | 值（首頁隨機卡片） |
+| ------------- | ----------------------------------------------------- | ------------------ |
+| event_page    | `/venues`                                             | `/`                |
+| placement     | -                                                     | `homepage_random`  |
+| user_id       | 用戶 UID（未登入傳空字串）                            | -（首頁版本不帶）  |
+| content_id    | `venue_{venueId}`                                     | `venue_{venueId}`  |
+| venue_region  | venueRegion                                           | venueRegion        |
+| list_position | 跨頁絕對位置（第 2 頁第 1 張 = 21）                   | listPosition       |
+| list_sort     | `composite` \| `newest` \| `eventCount` \| `distance` | -（不帶）          |
 
 **實作位置：**
 
@@ -404,7 +404,7 @@
 
 ### sort_venues
 
-使用者在 `/venues` 排序 dropdown 選取一個新選項時觸發（Phase 2.8 新增，2026-09-28）。只在**實際切換**到不同排序值時送出，選到跟目前相同的值不送。`sort_from`/`sort_to` 一律是 `'composite' | 'newest' | 'eventCount'` 三個字面值之一，未帶 `sort` URL 參數（預設排序）記為 `composite`，不會是空字串或 undefined。
+使用者在 `/venues` 排序 dropdown 選取一個新選項時觸發（Phase 2.8 新增，2026-09-28）。只在**實際切換**到不同排序值時送出，選到跟目前相同的值不送。`sort_from`/`sort_to` 一律是 `'composite' | 'newest' | 'eventCount' | 'distance'` 四個字面值之一（`distance` 由 venue-distance-sort 加入），未帶 `sort` URL 參數（預設排序）記為 `composite`，不會是空字串或 undefined。
 
 | 參數            | 值                                                                      |
 | --------------- | ----------------------------------------------------------------------- |
