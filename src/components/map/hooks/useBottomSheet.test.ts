@@ -251,5 +251,35 @@ describe('useBottomSheet', () => {
 
       expect(onExpandToHalf).not.toHaveBeenCalled();
     });
+
+    it('已是 half-open 時小幅下拉又放手（仍在中點以上），不應呼叫 onExpandToHalf', () => {
+      const onExpandToHalf = vi.fn();
+      const { result } = renderHook(() =>
+        useBottomSheet({ onExpandToHalf, halfHeight: CONTENT_HEIGHT })
+      );
+
+      // peek → half-open via tap
+      act(() => {
+        result.current.handleBarBind.onMouseDown({ clientY: 500 } as React.MouseEvent);
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      });
+      onExpandToHalf.mockClear();
+
+      // Drag down 50px: 400 → 350, still > midPoint 204 → snaps back to half
+      act(() => {
+        result.current.handleBarBind.onMouseDown({ clientY: 300 } as React.MouseEvent);
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientY: 350 }));
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      });
+
+      expect(result.current.isHalfOpen).toBe(true);
+      expect(onExpandToHalf).not.toHaveBeenCalled();
+    });
   });
 });

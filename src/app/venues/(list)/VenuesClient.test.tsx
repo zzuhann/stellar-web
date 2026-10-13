@@ -528,6 +528,39 @@ describe('VenuesClient sort_venues 事件（GA 埋點補做）', () => {
   });
 });
 
+// ─── 分頁下的 list_position / result_count（GA 健檢 2026-10-13）─────────────
+
+describe('VenuesClient 分頁下的 list_position 與 result_count', () => {
+  it('第 2 頁第 1 張卡片的 list_position 是 21，不是從 1 重算', async () => {
+    setMockSearchParams([['page', '2']]);
+    vi.mocked(venueApi.getVenues).mockResolvedValue({
+      venues: [VENUE_FIXTURE],
+      pagination: { page: 2, limit: 20, total: 21, totalPages: 2 },
+    });
+    renderVenuesClient();
+
+    await waitFor(() => {
+      expect(trackViewVenueCard).toHaveBeenCalledWith(
+        expect.objectContaining({ venueId: 'venue-1', listPosition: 21 })
+      );
+    });
+  });
+
+  it('sort_venues 的 result_count 是全部頁數的總筆數，不是當頁筆數', async () => {
+    vi.mocked(venueApi.getVenues).mockResolvedValue({
+      venues: [VENUE_FIXTURE],
+      pagination: { page: 1, limit: 20, total: 57, totalPages: 3 },
+    });
+    renderVenuesClient();
+    await screen.findByRole('link', { name: /測試場地/ });
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /最新上架/ }));
+
+    expect(trackSortVenues).toHaveBeenCalledWith(expect.objectContaining({ resultCount: 57 }));
+  });
+});
+
 // ─── 卡片曝光／點擊帶當下生效的 list_sort（GA 埋點補做）────────────────────
 
 describe('VenuesClient 列表卡片 list_sort（GA 埋點補做）', () => {

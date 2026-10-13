@@ -186,6 +186,8 @@
 | user_id    | 用戶 UID      |
 | content_id | eventId       |
 
+未登入點收藏 → 登入成功後自動收藏的路徑也會送 `add_to_favorite`（2026-10-13 補上），`user_id` 取登入後的 UID。
+
 **實作位置：** `src/components/EventDetail/EventBottomBar.tsx`（手機）、`DesktopFavoriteButton.tsx`（桌機）；`FavoriteButton.tsx` 目前未被任何頁面使用
 
 ### click_favorite_logged_out
@@ -200,18 +202,6 @@
 不帶 `user_id`（未登入無值）。
 
 **實作位置：** `src/components/EventDetail/EventBottomBar.tsx`、`DesktopFavoriteButton.tsx`
-
-### click_home
-
-點擊「回首頁」按鈕。
-
-| 參數       | 值            |
-| ---------- | ------------- |
-| event_page | `/event/[id]` |
-| user_id    | 用戶 UID      |
-| content_id | eventId       |
-
-**實作位置：** `src/components/EventDetail/BackToHomeButton.tsx`
 
 ### click_instagram / click_threads / click_x
 
@@ -311,7 +301,7 @@
 | user_id       | 用戶 UID（未登入傳空字串）              | -（首頁版本不帶）  |
 | content_id    | `venue_{venueId}`                       | `venue_{venueId}`  |
 | venue_region  | venueRegion                             | venueRegion        |
-| list_position | listPosition                            | listPosition       |
+| list_position | 跨頁絕對位置（第 2 頁第 1 張 = 21）     | listPosition       |
 | list_sort     | `composite` \| `newest` \| `eventCount` | -（不帶）          |
 
 **實作位置：**
@@ -324,17 +314,17 @@
 
 使用者在 `/venues` 排序 dropdown 選取一個新選項時觸發（Phase 2.8 新增，2026-09-28）。只在**實際切換**到不同排序值時送出，選到跟目前相同的值不送。`sort_from`/`sort_to` 一律是 `'composite' | 'newest' | 'eventCount'` 三個字面值之一，未帶 `sort` URL 參數（預設排序）記為 `composite`，不會是空字串或 undefined。
 
-| 參數            | 值                                          |
-| --------------- | ------------------------------------------- |
-| event_page      | `/venues`                                   |
-| user_id         | 用戶 UID（未登入傳空字串）                  |
-| content_id      | `''`（比照 `filter_venues` 的既有寫法）     |
-| sort_from       | 切換前生效的排序值                          |
-| sort_to         | 切換後的排序值                              |
-| filter_region   | 切換當下的地區篩選值                        |
-| filter_capacity | 切換當下的容納人數篩選值                    |
-| search_query    | 切換當下的搜尋關鍵字                        |
-| result_count    | 切換當下（filter 後、換 sort 前）的結果筆數 |
+| 參數            | 值                                                                      |
+| --------------- | ----------------------------------------------------------------------- |
+| event_page      | `/venues`                                                               |
+| user_id         | 用戶 UID（未登入傳空字串）                                              |
+| content_id      | `''`（比照 `filter_venues` 的既有寫法）                                 |
+| sort_from       | 切換前生效的排序值                                                      |
+| sort_to         | 切換後的排序值                                                          |
+| filter_region   | 切換當下的地區篩選值                                                    |
+| filter_capacity | 切換當下的容納人數篩選值                                                |
+| search_query    | 切換當下的搜尋關鍵字                                                    |
+| result_count    | 切換當下（filter 後、換 sort 前）的結果總筆數（跨頁 total，非當頁筆數） |
 
 **實作位置：**
 

@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuth } from '@/lib/auth-context';
+import { auth } from '@/lib/firebase';
 import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import useFavoriteStatus from '@/hooks/useFavoriteStatus';
 import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
@@ -70,6 +71,12 @@ export default function DesktopFavoriteButton({ eventId }: DesktopFavoriteButton
       });
       toggleAuthModal(undefined, () => {
         favoriteToggle.mutate({ eventId, isFavorited: false });
+        // Closure `user` is still null here, read the freshly signed-in user from Firebase
+        sendGAEvent('event', 'add_to_favorite', {
+          event_page: '/event/[id]',
+          user_id: auth.currentUser?.uid ?? '',
+          content_id: eventId,
+        });
       });
       return;
     }

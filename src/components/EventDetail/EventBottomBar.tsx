@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
+import { auth } from '@/lib/firebase';
 import { useFavoriteToggle } from '@/hooks/useFavoriteToggle';
 import useFavoriteStatus from '@/hooks/useFavoriteStatus';
 import { useWebShare } from '@/hooks/useWebShare';
@@ -138,6 +139,12 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
     setIsSheetOpen(false);
     toggleAuthModal(undefined, () => {
       favoriteToggle.mutate({ eventId: event.id, isFavorited: false });
+      // Closure `user` is still null here, read the freshly signed-in user from Firebase
+      sendGAEvent('event', 'add_to_favorite', {
+        event_page: '/event/[id]',
+        user_id: auth.currentUser?.uid ?? '',
+        content_id: event.id,
+      });
     });
   };
 

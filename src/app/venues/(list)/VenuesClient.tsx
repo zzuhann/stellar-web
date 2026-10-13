@@ -275,6 +275,8 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
 
   const venues = data?.venues ?? [];
   const pagination = data?.pagination;
+  // Total across all pages; venues.length is only the current page (max PAGE_LIMIT)
+  const resultTotal = pagination?.total ?? venues.length;
   const isLoadingList = isLoading || waitingForLocation;
 
   // Restore scroll position on back navigation (popstate fires even when component is cached)
@@ -303,10 +305,10 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
       filterRegion: region,
       filterCapacity: capacity,
       searchQuery: search,
-      resultCount: venues.length,
+      resultCount: resultTotal,
     });
     shouldTrackFilterChange.current = false;
-  }, [capacity, isLoading, region, search, user?.uid, venues.length]);
+  }, [capacity, isLoading, region, search, user?.uid, resultTotal]);
 
   // Region and capacity are fully independent filters (2026-08-03 使用者裁定推翻
   // 原「切換地區重置容納人數」的既有行為) — changing one never touches the other,
@@ -356,7 +358,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
       filterRegion: region,
       filterCapacity: capacity,
       searchQuery: search,
-      resultCount: venues.length,
+      resultCount: resultTotal,
     });
 
     sessionStorage.removeItem(SCROLL_KEY);
@@ -437,7 +439,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
               <VenueCard
                 key={venue.id}
                 venue={venue}
-                listPosition={index + 1}
+                listPosition={(pageNum - 1) * PAGE_LIMIT + index + 1}
                 userId={user?.uid}
                 listSort={sort}
                 userCoords={coords}
