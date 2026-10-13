@@ -68,8 +68,6 @@ export default function MapPage({ artistId }: MapPageProps) {
     artistId,
   });
 
-  // Restore page_view lost in 42b238c's map-new→map rename; artistId is a required prop so it's always ready here.
-
   const { latitude, longitude } = useMapNewLocation();
 
   const { saveState, consumeRestoredState } = useMapStateStorage(artistId);

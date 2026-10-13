@@ -6,10 +6,12 @@
 
 2026-10-13 健檢整理，詳見 monorepo `specs/_ops/ga4-tracking-audit-2026-10-13.md`。
 
-1. **`page_view` 自 2026-10-14 起只剩 GA 原生版**：自訂的 `usePageView`（帶 `event_page`/`content_id`）已移除，改靠 GA 後台「加強型評估 → 根據瀏覽器記錄事件變更網頁」讓站內換頁也送原生 `page_view`。
-   - **之後**：分頁面用 `pagePath`（例：`pagePath` 開頭 `/map/`），不再有 `event_page`/`content_id`。網址裡是 slug 不是 id（活動頁 `/event/{slug 或 id}`、地圖頁 `/map/{artist slug 或 id}`），要跟 Firestore id 交叉比對（例：event-reservation 的曝光數）得先用 slug 對回 id。
+1. **`page_view` 自 2026-10-14 起單一來源、不重疊**：硬載入由 gtag 原生自動送；站內換頁由 `SoftNavigationPageView`（layout 全站一處）送，只在 pathname 改變時送，query string 變更（篩選、翻頁、切 tab）不送。舊的每頁自訂版 `usePageView`／`PageViewTracker`（帶 `event_page`/`content_id`）已移除。
+   - **GA 後台「加強型評估 → 網頁瀏覽 → 根據瀏覽器記錄事件變更網頁」必須關閉**：開啟會讓每次網址參數更新都算一次瀏覽（`/venues` 換篩選、首頁切 tab／換週都會灌水），也會跟 `SoftNavigationPageView` 重複。
+   - **之後**：分頁面用 `pagePath`（例：開頭 `/map/`），不再有 `event_page`/`content_id`/`user_id`。網址裡是 slug 不是 id（活動頁 `/event/{slug 或 id}`、地圖頁 `/map/{artist slug 或 id}`），跟 Firestore id 交叉比對（例：event-reservation 曝光數）要先用 slug 對回 id；場地頁 `/venues/{id}` 是 id，跟其他場地事件的 `content_id` 串接時要補 `venue_` 前綴。
    - **之前**：原生（硬載入）與自訂版同名並存，GA 內建「瀏覽量」重複計算。看 2026-10-14 以前的單頁瀏覽量要篩 `event_page != (not set)`。
    - **跨日比較**：上線當天起 GA 內建瀏覽量會下降（重複計算消失），不是流量下滑。各 `specs/features/*/tracking.md` 寫「`page_view`(event_page=X)」的公式，之後一律改讀成「`page_view`(pagePath 對應 X)」。
+   - **已知限制**：站內換頁的 `page_title` 可能是前一頁的標題（Next 更新 `<title>` 的時機晚於送出），看標題報表時以 `pagePath` 為準。
 2. **`click_event_detail` 混了兩個頁面**：地圖頁（帶 `artist_id`、`ui_source`）與場地詳情頁（`/venues/[id]`，不帶 `artist_id`）。算轉換率先用 `event_page` 拆開。
 3. **`search_artist` 是打開搜尋 modal 就送**，使用者還沒輸入。讀成「開啟搜尋」，不是「搜尋過」。
 4. **`view_venue_card` 是曝光事件**，次數跟著列表長度走。比較場地或排序時用比例（點擊 ÷ 曝光），不要比次數。
@@ -21,11 +23,17 @@
 
 ### page_view
 
-GA 原生事件，不由程式手動送（2026-10-14 起）。gtag 在頁面載入與站內換頁（瀏覽器記錄變更）時自動送出，帶 `page_location`／`page_path`／`page_title`。
+單一來源、不重疊（2026-10-14 起）：
 
-前提：GA 後台「資料串流 → 加強型評估 → 網頁瀏覽 → 根據瀏覽器記錄事件變更網頁」須開啟，否則站內換頁不會記錄。
+| 情境                                    | 誰送                     | 參數                                       |
+| --------------------------------------- | ------------------------ | ------------------------------------------ |
+| 硬載入（外部連結進站、重新整理）        | gtag 原生自動            | `page_location`／`page_path`／`page_title` |
+| 站內換頁（pathname 改變）               | `SoftNavigationPageView` | `page_location`（其餘由 gtag 補）          |
+| 只改 query string（篩選、翻頁、切 tab） | 不送                     | —                                          |
 
-舊的自訂版（`usePageView` hook／`PageViewTracker` 元件，帶 `event_page`/`content_id`）已移除，見「判讀陷阱」第 1 點。
+前提：GA 後台「資料串流 → 加強型評估 → 網頁瀏覽 → 進階設定 → 根據瀏覽器記錄事件變更網頁」**必須關閉**。
+
+**實作位置：** `src/components/SoftNavigationPageView.tsx`（掛在 `src/app/layout.tsx`）。舊的自訂版 `usePageView`／`PageViewTracker` 已移除，見「判讀陷阱」第 1 點。
 
 ---
 

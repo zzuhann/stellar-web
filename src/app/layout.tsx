@@ -15,6 +15,7 @@ import { SpeedInsights } from '@vercel/speed-insights/next';
 import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistration';
 import { ShareProvider } from '@/context/ShareContext';
 import ClarityInit from '@/components/ClarityInit';
+import SoftNavigationPageView from '@/components/SoftNavigationPageView';
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
@@ -145,6 +146,7 @@ export default function RootLayout({
                 <Analytics />
                 <SpeedInsights />
                 <ClarityInit />
+                <SoftNavigationPageView />
                 <ServiceWorkerRegistration />
                 <StyledToaster />
                 <FooterWrapper />

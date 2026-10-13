@@ -49,7 +49,7 @@ sendGAEvent('event', 'event_name', {
 
 ### 頁面瀏覽 (page_view)
 
-**不要手動送 `page_view`**。用 GA 原生的自動 page_view（含站內換頁，需 GA 後台開「根據瀏覽器記錄事件變更網頁」），分析時用 `pagePath` 區分頁面。自訂版 `usePageView`／`PageViewTracker` 已於 2026-10-14 移除：與原生同名會讓 GA 內建瀏覽量重複計算。
+**頁面不要各自送 `page_view`**。硬載入由 gtag 原生送，站內換頁由全站唯一的 `src/components/SoftNavigationPageView.tsx` 送（只看 pathname，query string 變更不送）。GA 後台「根據瀏覽器記錄事件變更網頁」必須關閉。分析用 `pagePath` 區分頁面。舊的每頁自訂版 `usePageView`／`PageViewTracker` 已於 2026-10-14 移除：與原生重疊會讓 GA 內建瀏覽量重複計算。
 
 ---
 
