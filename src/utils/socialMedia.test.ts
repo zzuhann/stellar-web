@@ -36,6 +36,7 @@ describe('cleanSocialMediaHandle', () => {
 
   it('只有 @ 回傳空字串', () => {
     expect(cleanSocialMediaHandle('@')).toBe('');
+    expect(cleanSocialMediaHandle('@ ')).toBe('');
   });
 });
 

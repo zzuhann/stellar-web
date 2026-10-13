@@ -212,6 +212,8 @@ interface BookingChannel {
 }
 
 function buildBookingChannel(venue: VenueDetail): BookingChannel | null {
+  const ig = cleanSocialMediaHandle(venue.socialMedia?.instagram ?? '');
+  const threads = cleanSocialMediaHandle(venue.socialMedia?.threads ?? '');
   switch (venue.preferredContact) {
     case 'form':
       if (venue.contactUrl) return { label: '查看預約資訊', url: venue.contactUrl };
@@ -220,18 +222,11 @@ function buildBookingChannel(venue: VenueDetail): BookingChannel | null {
       if (venue.contactUrl) return { label: 'LINE 聯繫', url: venue.contactUrl };
       break;
     case 'instagram':
-      if (venue.socialMedia?.instagram)
-        return {
-          label: '前往 Instagram 主頁',
-          url: `https://www.instagram.com/${cleanSocialMediaHandle(venue.socialMedia.instagram)}`,
-        };
+      if (ig) return { label: '前往 Instagram 主頁', url: `https://www.instagram.com/${ig}` };
       break;
     case 'threads':
-      if (venue.socialMedia?.threads)
-        return {
-          label: '前往 Threads 主頁',
-          url: `https://www.threads.com/@${cleanSocialMediaHandle(venue.socialMedia.threads)}`,
-        };
+      if (threads)
+        return { label: '前往 Threads 主頁', url: `https://www.threads.com/@${threads}` };
       break;
     case 'other':
       if (venue.contactUrl) return { label: '查看聯絡資訊', url: venue.contactUrl };
@@ -245,18 +240,11 @@ function buildSocialLink(
 ): { text: string; url: string; type: 'instagram' | 'threads' | 'line' } | null {
   const sm = venue.socialMedia;
   if (!sm) return null;
-  if (sm.instagram)
-    return {
-      text: `@${cleanSocialMediaHandle(sm.instagram)}`,
-      url: `https://www.instagram.com/${cleanSocialMediaHandle(sm.instagram)}`,
-      type: 'instagram',
-    };
-  if (sm.threads)
-    return {
-      text: `@${cleanSocialMediaHandle(sm.threads)}`,
-      url: `https://www.threads.com/@${cleanSocialMediaHandle(sm.threads)}`,
-      type: 'threads',
-    };
+  const ig = cleanSocialMediaHandle(sm.instagram ?? '');
+  const threads = cleanSocialMediaHandle(sm.threads ?? '');
+  if (ig) return { text: `@${ig}`, url: `https://www.instagram.com/${ig}`, type: 'instagram' };
+  if (threads)
+    return { text: `@${threads}`, url: `https://www.threads.com/@${threads}`, type: 'threads' };
   if (sm.line) return { text: sm.line, url: sm.line, type: 'line' };
   return null;
 }
