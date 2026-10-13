@@ -6,13 +6,15 @@ import showToast from '@/lib/toast';
 
 const pushMock = vi.fn();
 
+const authState = vi.hoisted(() => ({
+  user: { uid: 'user-1' } as { uid: string } | null,
+  loading: false,
+  authModalOpen: false,
+  toggleAuthModal: vi.fn(),
+}));
+
 vi.mock('@/lib/auth-context', () => ({
-  useAuth: () => ({
-    user: { uid: 'user-1' },
-    loading: false,
-    authModalOpen: false,
-    toggleAuthModal: vi.fn(),
-  }),
+  useAuth: () => authState,
 }));
 
 function createSearchParamsMock(entries: [string, string][]) {
@@ -41,16 +43,31 @@ vi.mock('@/lib/api', () => ({
 }));
 
 // EventSubmissionForm 拉了 react-hook-form / mutation hooks 等重依賴，非本次測試對象，改用輕量替身
+const formPropsSpy = vi.hoisted(() => vi.fn());
 vi.mock('@/components/submitEvent/EventSubmissionForm', () => ({
-  default: () => <div>event-submission-form-stub</div>,
+  default: (props: Record<string, unknown>) => {
+    formPropsSpy(props);
+    return <div>event-submission-form-stub</div>;
+  },
 }));
 
 const useEventDetailMock = vi.mocked(useEventDetail);
+
+const noEventDetail = {
+  data: undefined,
+  isLoading: false,
+  isError: false,
+  error: null,
+  refetch: vi.fn(),
+} as unknown as ReturnType<typeof useEventDetail>;
+
+const lastFormProps = () => formPropsSpy.mock.calls.at(-1)?.[0];
 
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
   currentSearchParams = createSearchParamsMock([]);
+  authState.user = { uid: 'user-1' };
 });
 
 describe('SubmitEventClient 編輯模式下活動資料查詢失敗', () => {
@@ -106,5 +123,103 @@ describe('SubmitEventClient 編輯模式下活動真的不存在（查詢成功�
 
     expect(showToast.warning).toHaveBeenCalledWith('活動不存在');
     expect(pushMock).toHaveBeenCalledWith('/my-submissions?tab=event');
+  });
+});
+
+describe('SubmitEventClient artistId 預選', () => {
+  it('TC-005 create 模式帶 artistId：把 artistId 與 entryPoint 傳給表單', () => {
+    currentSearchParams = createSearchParamsMock([['artistId', 'artist-9']]);
+    useEventDetailMock.mockReturnValue(noEventDetail);
+
+    render(<SubmitEventClient />);
+
+    expect(lastFormProps()).toMatchObject({
+      mode: 'create',
+      preselectArtistId: 'artist-9',
+      entryPoint: 'submit_artist_page',
+    });
+  });
+
+  it('TC-013 同時帶 edit：以 edit 為準，不傳 artistId 也不帶 entryPoint', () => {
+    currentSearchParams = createSearchParamsMock([
+      ['edit', 'event-1'],
+      ['artistId', 'artist-9'],
+    ]);
+    useEventDetailMock.mockReturnValue({
+      ...noEventDetail,
+      data: { id: 'event-1', createdBy: 'user-1' },
+    } as unknown as ReturnType<typeof useEventDetail>);
+
+    render(<SubmitEventClient />);
+
+    expect(lastFormProps().mode).toBe('edit');
+    expect(lastFormProps().preselectArtistId).toBeUndefined();
+    expect(lastFormProps().entryPoint).toBeUndefined();
+  });
+
+  it('TC-014 同時帶 copy：以 copy 為準，不傳 artistId 也不帶 entryPoint', () => {
+    currentSearchParams = createSearchParamsMock([
+      ['copy', 'event-1'],
+      ['artistId', 'artist-9'],
+    ]);
+    useEventDetailMock.mockReturnValue({
+      ...noEventDetail,
+      data: { id: 'event-1', createdBy: 'user-1' },
+    } as unknown as ReturnType<typeof useEventDetail>);
+
+    render(<SubmitEventClient />);
+
+    expect(lastFormProps().mode).toBe('copy');
+    expect(lastFormProps().preselectArtistId).toBeUndefined();
+    expect(lastFormProps().entryPoint).toBeUndefined();
+  });
+
+  it('TC-018 artistId 為空字串視為未提供', () => {
+    currentSearchParams = createSearchParamsMock([['artistId', '']]);
+    useEventDetailMock.mockReturnValue(noEventDetail);
+
+    render(<SubmitEventClient />);
+
+    expect(lastFormProps().preselectArtistId).toBeUndefined();
+    expect(lastFormProps().entryPoint).toBeUndefined();
+  });
+
+  it('TC-010 沒有 artistId 的 create 流程：不帶預選也不帶 entryPoint', () => {
+    useEventDetailMock.mockReturnValue(noEventDetail);
+
+    render(<SubmitEventClient />);
+
+    expect(lastFormProps().mode).toBe('create');
+    expect(lastFormProps().preselectArtistId).toBeUndefined();
+    expect(lastFormProps().entryPoint).toBeUndefined();
+  });
+
+  it('TC-015 未登入：不渲染表單（不套用預選）、開啟 AuthModal；登入後才帶 artistId 渲染表單', () => {
+    authState.user = null;
+    currentSearchParams = createSearchParamsMock([['artistId', 'artist-9']]);
+    useEventDetailMock.mockReturnValue(noEventDetail);
+    const { rerender } = render(<SubmitEventClient />);
+
+    expect(formPropsSpy).not.toHaveBeenCalled();
+    expect(authState.toggleAuthModal).toHaveBeenCalled();
+
+    authState.user = { uid: 'user-1' };
+    rerender(<SubmitEventClient />);
+
+    expect(lastFormProps()).toMatchObject({
+      preselectArtistId: 'artist-9',
+      entryPoint: 'submit_artist_page',
+    });
+  });
+
+  it('TC-022 entryPoint 在 mount 時記錄一次，之後 query 變動不會改變它', () => {
+    currentSearchParams = createSearchParamsMock([['artistId', 'artist-9']]);
+    useEventDetailMock.mockReturnValue(noEventDetail);
+    const { rerender } = render(<SubmitEventClient />);
+
+    currentSearchParams = createSearchParamsMock([]);
+    rerender(<SubmitEventClient />);
+
+    expect(lastFormProps().entryPoint).toBe('submit_artist_page');
   });
 });

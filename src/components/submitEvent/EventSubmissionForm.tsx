@@ -23,6 +23,7 @@ import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
 import EventInfoSection from './EventInfoSection';
 import useCreateEventMutation from './hooks/useCreateEventMutation';
+import usePreselectedArtist from './hooks/usePreselectedArtist';
 import useUpdateEventMutation from './hooks/useUpdateEventMutation';
 import useResubmitEventMutation from './hooks/useResubmitEventMutation';
 import ActionButtons from './ActionButtons';
@@ -145,6 +146,9 @@ interface EventSubmissionFormProps {
   existingEvent?: CoffeeEvent;
   onSuccess?: (event: CoffeeEvent) => void;
   onCancel?: () => void;
+  // Create mode only: artist to preselect from ?artistId=
+  preselectArtistId?: string;
+  entryPoint?: 'submit_artist_page';
 }
 
 function EventSubmissionForm({
@@ -152,6 +156,8 @@ function EventSubmissionForm({
   existingEvent,
   onSuccess,
   onCancel,
+  preselectArtistId,
+  entryPoint,
 }: EventSubmissionFormProps) {
   // 步驟：edit/copy mode直接跳到第二步，create mode 從第一步開始
   const [currentStep, setCurrentStep] = useState(mode === 'edit' || mode === 'copy' ? 2 : 1);
@@ -250,7 +256,7 @@ function EventSubmissionForm({
   const reservationDate = useWatch({ control, name: 'reservationDate' }) ?? '';
   const reservationTime = useWatch({ control, name: 'reservationTime' }) ?? '';
 
-  const createEventMutation = useCreateEventMutation({ onSuccess });
+  const createEventMutation = useCreateEventMutation({ onSuccess, entryPoint });
   const updateEventMutation = useUpdateEventMutation({ onSuccess });
   const resubmitEventMutation = useResubmitEventMutation();
 
@@ -271,7 +277,14 @@ function EventSubmissionForm({
     setLocationPlaceId(place.place_id);
   };
 
+  const { markUserChanged } = usePreselectedArtist({
+    artistId: mode === 'create' ? preselectArtistId : undefined,
+    // The artistIds form value follows selectedArtists via the sync effect below.
+    onPreselect: (artist) => setSelectedArtists([artist]),
+  });
+
   const handleArtistSelect = (artist: Artist) => {
+    markUserChanged();
     // 檢查是否已經選擇過這個藝人
     const isAlreadySelected = selectedArtists.some((selected) => selected.id === artist.id);
     if (!isAlreadySelected) {
@@ -287,6 +300,7 @@ function EventSubmissionForm({
   };
 
   const removeArtist = (artistId: string) => {
+    markUserChanged();
     const newSelectedArtists = selectedArtists.filter((artist) => artist.id !== artistId);
     setSelectedArtists(newSelectedArtists);
 

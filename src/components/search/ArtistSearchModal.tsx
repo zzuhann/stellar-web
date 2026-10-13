@@ -8,6 +8,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useScrollLock } from '@/hooks/useScrollLock';
 import { useFocusTrap } from '@/hooks/useFocusTrap';
 import ArtistCardLink from '../ArtistCard/ArtistCardLink';
+import SubmitArtistResultCard from './SubmitArtistResultCard';
 import { useAuth } from '@/lib/auth-context';
 import EmptyState from '../EmptyState';
 import CTAButton from '../CTAButton';
@@ -194,6 +195,7 @@ export default function ArtistSearchModal({
   const { data: searchResults = [], isLoading: searchLoading } =
     useArtistSearch(debouncedSearchQuery);
 
+  const isSubmitArtistEntry = entryPoint === 'submit_artist_page';
   const showResults = debouncedSearchQuery.trim().length > 0;
   const hasResults = searchResults.length > 0;
 
@@ -269,6 +271,16 @@ export default function ArtistSearchModal({
     }
   };
 
+  const bottomCta = isSubmitArtistEntry ? (
+    <CTAButton onClick={onClose}>找不到，繼續填寫表單</CTAButton>
+  ) : (
+    <CTAButton onClick={handleAddArtistClick}>
+      找不到藝人?
+      <br />
+      點擊前往新增藝人 ✨
+    </CTAButton>
+  );
+
   return (
     <div
       className={modalOverlay({ isOpen })}
@@ -313,8 +325,23 @@ export default function ArtistSearchModal({
           ) : hasResults ? (
             <>
               <div className={artistList}>
-                {searchResults.map((artist) => {
-                  return (
+                {searchResults.map((artist) =>
+                  isSubmitArtistEntry ? (
+                    <SubmitArtistResultCard
+                      key={artist.id}
+                      artist={artist}
+                      onBeforeNavigate={(source) => {
+                        sendGAEvent('event', 'click_artist', {
+                          event_page: pathname,
+                          user_id: user?.uid ?? '',
+                          content_id: artist.id,
+                          entry_point: entryPoint,
+                          ui_source: source,
+                        });
+                        onClose();
+                      }}
+                    />
+                  ) : (
                     <ArtistCardLink
                       key={artist.id}
                       artist={artist}
@@ -328,14 +355,10 @@ export default function ArtistSearchModal({
                         onClose();
                       }}
                     />
-                  );
-                })}
+                  )
+                )}
               </div>
-              <CTAButton onClick={handleAddArtistClick}>
-                找不到藝人?
-                <br />
-                點擊前往新增藝人 ✨
-              </CTAButton>
+              {bottomCta}
             </>
           ) : (
             <>
@@ -344,11 +367,7 @@ export default function ArtistSearchModal({
                 title="找不到該藝人"
                 description="試試其他關鍵字、檢查拼寫是否正確"
               />
-              <CTAButton onClick={handleAddArtistClick}>
-                找不到藝人?
-                <br />
-                點擊前往新增藝人 ✨
-              </CTAButton>
+              {bottomCta}
             </>
           )}
         </div>

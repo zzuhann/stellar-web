@@ -8,9 +8,11 @@ import { sendGAEvent } from '@next/third-parties/google';
 
 type UseCreateEventMutationProps = {
   onSuccess?: (event: CoffeeEvent) => void;
+  // Recorded when the page mounted (not read at submit time), so swapping artists doesn't change it.
+  entryPoint?: 'submit_artist_page';
 };
 
-const useCreateEventMutation = ({ onSuccess }: UseCreateEventMutationProps) => {
+const useCreateEventMutation = ({ onSuccess, entryPoint }: UseCreateEventMutationProps) => {
   const queryClient = useQueryClient();
   const router = useRouter();
   const { user } = useAuth();
@@ -26,6 +28,7 @@ const useCreateEventMutation = ({ onSuccess }: UseCreateEventMutationProps) => {
         event_page: '/submit-event',
         user_id: user?.uid ?? '',
         content_id: newEvent.id,
+        ...(entryPoint ? { entry_point: entryPoint } : {}),
       });
 
       showToast.success('投稿成功');

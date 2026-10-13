@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useId, useRef } from 'react';
 import { FieldErrors, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { css, cva } from '@/styled-system/css';
@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import ImageUpload from '@/components/images/ImageUpload';
 import BirthdayPicker from '@/components/forms/BirthdayPicker';
+import ArtistSearchEntryButton from '@/components/forms/ArtistSearchEntryButton';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { Artist, UpdateArtistRequest } from '@/types';
@@ -316,6 +317,7 @@ export default function ArtistSubmissionForm({
   const [submitterEmail, setSubmitterEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const birthdayFieldRef = useRef<HTMLDivElement>(null);
+  const searchEntryLabelId = useId();
   const router = useRouter();
   // 送出驗證失敗時：照舊 toast 第一個錯誤訊息；生日欄位額外捲動到可視範圍，
   // 因為它是三個 dropdown 疊在一起，使用者容易漏看紅框
@@ -534,6 +536,15 @@ export default function ArtistSubmissionForm({
       </div>
 
       <form className={form} aria-label="藝人投稿表單">
+        {mode !== 'edit' && (
+          <div className={formGroup}>
+            <span id={searchEntryLabelId} className={label}>
+              投稿前，先確認你想新增的藝人、團體是否存在
+            </span>
+            <ArtistSearchEntryButton labelId={searchEntryLabelId} />
+          </div>
+        )}
+
         {/* 英文藝名 */}
         <div className={formGroup}>
           <label className={label} htmlFor="stageName">

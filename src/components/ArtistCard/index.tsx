@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Artist } from '@/types';
 import { formatBirthdayMonthDay } from '@/utils/birthdayHelpers';
 import { css } from '@/styled-system/css';
@@ -7,6 +8,7 @@ import BirthdayHat from '@/components/BirthdayHat';
 const artistCardContainer = css({
   position: 'relative',
   display: 'flex',
+  flexWrap: 'wrap',
   alignItems: 'center',
   gap: '4',
   padding: '5',
@@ -120,9 +122,13 @@ const spinner = css({
 interface ArtistCardProps {
   artist: Artist;
   isPending?: boolean;
+  // Search-modal result cards for the submit-artist entry show who the artist is, not how many events they have.
+  hideEventCount?: boolean;
+  // Wraps under the artist info unless it fits as a third column (artistInfo has flex-basis 0).
+  actions?: ReactNode;
 }
 
-const ArtistCard = ({ artist, isPending }: ArtistCardProps) => {
+const ArtistCard = ({ artist, isPending, hideEventCount, actions }: ArtistCardProps) => {
   const birthdayText = formatBirthdayMonthDay(artist.birthday ?? '');
 
   return (
@@ -147,16 +153,19 @@ const ArtistCard = ({ artist, isPending }: ArtistCardProps) => {
           <span aria-hidden="true">🎂：</span>
           <span className="birthday-date">{birthdayText}</span>
         </div>
-        <div className={eventStatus}>
-          <span aria-hidden="true">📍</span>
-          <span className={srOnly}>目前生日應援數量：</span>
-          <span>
-            {artist.coffeeEventCount !== undefined && artist.coffeeEventCount > 0
-              ? `${artist.coffeeEventCount} 個生日應援`
-              : '目前無任何生日應援'}
-          </span>
-        </div>
+        {!hideEventCount && (
+          <div className={eventStatus}>
+            <span aria-hidden="true">📍</span>
+            <span className={srOnly}>目前生日應援數量：</span>
+            <span>
+              {artist.coffeeEventCount !== undefined && artist.coffeeEventCount > 0
+                ? `${artist.coffeeEventCount} 個生日應援`
+                : '目前無任何生日應援'}
+            </span>
+          </div>
+        )}
       </div>
+      {actions}
       {isPending && (
         <div className={loadingOverlay}>
           <div className={spinner} />
