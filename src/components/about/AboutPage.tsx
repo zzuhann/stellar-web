@@ -1,5 +1,3 @@
-'use client';
-
 import { css } from '@/styled-system/css';
 import StatCounter from './StatCounter';
 import FadeIn from '@/components/ui/FadeIn';

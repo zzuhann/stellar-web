@@ -1,6 +1,6 @@
-import { render, waitFor } from '@testing-library/react';
+import { cleanup, render, waitFor } from '@testing-library/react';
 import { StrictMode } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sendGAEvent } from '@next/third-parties/google';
 import SoftNavigationPageView from './SoftNavigationPageView';
 
@@ -26,6 +26,10 @@ describe('SoftNavigationPageView', () => {
     document.title = '首頁';
   });
 
+  afterEach(() => {
+    cleanup();
+  });
+
   it('初次載入不送（硬載入由 gtag 原生 page_view 負責），StrictMode 下也一樣', async () => {
     render(
       <StrictMode>
@@ -48,6 +52,31 @@ describe('SoftNavigationPageView', () => {
       page_title: '藝人地圖',
       page_referrer: `${window.location.origin}/`,
     });
+  });
+
+  it('連續換頁 /map/A → /map/B → /map/A 各送一次，referrer 跟著前一頁更新', async () => {
+    const { rerender } = render(<SoftNavigationPageView />);
+    const origin = window.location.origin;
+
+    for (const path of ['/map/a', '/map/b', '/map/a']) {
+      const before = pageViewCalls().length;
+      navigate(path);
+      rerender(<SoftNavigationPageView />);
+      await waitFor(() => expect(pageViewCalls()).toHaveLength(before + 1));
+    }
+
+    const sent = pageViewCalls().map(([, , params]) => params);
+    expect(sent).toEqual([
+      expect.objectContaining({ page_location: `${origin}/map/a`, page_referrer: `${origin}/` }),
+      expect.objectContaining({
+        page_location: `${origin}/map/b`,
+        page_referrer: `${origin}/map/a`,
+      }),
+      expect.objectContaining({
+        page_location: `${origin}/map/a`,
+        page_referrer: `${origin}/map/b`,
+      }),
+    ]);
   });
 
   it('只改 query string（篩選、翻頁、切 tab）不送', async () => {

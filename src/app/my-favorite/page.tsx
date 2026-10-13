@@ -1,5 +1,3 @@
-'use client';
-
 import { Suspense } from 'react';
 import MyFavorites from '@/components/MyFavorites';
 import Loading from '@/components/Loading';
