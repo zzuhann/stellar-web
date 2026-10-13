@@ -117,6 +117,10 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
 
   const handleFavoriteClick = () => {
     if (!user) {
+      sendGAEvent('event', 'click_favorite_logged_out', {
+        event_page: '/event/[id]',
+        content_id: event.id,
+      });
       setIsSheetOpen(true);
       return;
     }
