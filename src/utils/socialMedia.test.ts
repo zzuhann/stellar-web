@@ -21,6 +21,23 @@ describe('cleanSocialMediaHandle', () => {
     const result = cleanSocialMediaHandle('');
     expect(result).toBe('');
   });
+
+  it('移除 @ 後面的空白', () => {
+    expect(cleanSocialMediaHandle('@ FROZENHEART.CO')).toBe('FROZENHEART.CO');
+  });
+
+  it('移除連續多個開頭 @', () => {
+    expect(cleanSocialMediaHandle('@@name')).toBe('name');
+  });
+
+  it('前後空白與 @ 一併清掉', () => {
+    expect(cleanSocialMediaHandle('  @name  ')).toBe('name');
+  });
+
+  it('只有 @ 回傳空字串', () => {
+    expect(cleanSocialMediaHandle('@')).toBe('');
+    expect(cleanSocialMediaHandle('@ ')).toBe('');
+  });
 });
 
 describe('parseSocialMediaHandles', () => {
@@ -77,5 +94,14 @@ describe('parseSocialMediaHandles', () => {
   it('過濾掉空字串（開頭或結尾有逗號）', () => {
     const result = parseSocialMediaHandles(',account1,account2,');
     expect(result).toEqual(['account1', 'account2']);
+  });
+
+  it('@ 後有空白的多個帳號', () => {
+    expect(parseSocialMediaHandles('@ account1, @ account2')).toEqual(['account1', 'account2']);
+  });
+
+  it('只有 @ 的輸入回傳空陣列', () => {
+    expect(parseSocialMediaHandles('@')).toEqual([]);
+    expect(parseSocialMediaHandles('@, account1')).toEqual(['account1']);
   });
 });

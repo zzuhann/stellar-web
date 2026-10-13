@@ -1,8 +1,8 @@
 /**
- * 移除社交媒體帳號最前面的 @ 符號
+ * 移除社交媒體帳號前後空白與開頭所有連續的 @（含其後空白）
  */
 export const cleanSocialMediaHandle = (handle: string): string => {
-  return handle.startsWith('@') ? handle.slice(1) : handle;
+  return handle.trim().replace(/^@+\s*/, '');
 };
 
 /**
@@ -13,7 +13,6 @@ export const cleanSocialMediaHandle = (handle: string): string => {
 export const parseSocialMediaHandles = (handles: string): string[] => {
   return handles
     .split(',')
-    .map((handle) => handle.trim())
-    .filter((handle) => handle.length > 0)
-    .map((handle) => cleanSocialMediaHandle(handle));
+    .map((handle) => cleanSocialMediaHandle(handle))
+    .filter((handle) => handle.length > 0);
 };
