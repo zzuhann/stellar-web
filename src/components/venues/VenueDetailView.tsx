@@ -230,7 +230,7 @@ function buildBookingChannel(venue: VenueDetail): BookingChannel | null {
       if (venue.socialMedia?.threads)
         return {
           label: '前往 Threads 主頁',
-          url: `https://www.threads.com/@${venue.socialMedia.threads}`,
+          url: `https://www.threads.com/@${cleanSocialMediaHandle(venue.socialMedia.threads)}`,
         };
       break;
     case 'other':
@@ -247,12 +247,16 @@ function buildSocialLink(
   if (!sm) return null;
   if (sm.instagram)
     return {
-      text: sm.instagram,
+      text: `@${cleanSocialMediaHandle(sm.instagram)}`,
       url: `https://www.instagram.com/${cleanSocialMediaHandle(sm.instagram)}`,
       type: 'instagram',
     };
   if (sm.threads)
-    return { text: sm.threads, url: `https://www.threads.com/@${sm.threads}`, type: 'threads' };
+    return {
+      text: `@${cleanSocialMediaHandle(sm.threads)}`,
+      url: `https://www.threads.com/@${cleanSocialMediaHandle(sm.threads)}`,
+      type: 'threads',
+    };
   if (sm.line) return { text: sm.line, url: sm.line, type: 'line' };
   return null;
 }
