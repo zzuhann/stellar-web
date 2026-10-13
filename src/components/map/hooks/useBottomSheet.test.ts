@@ -281,5 +281,55 @@ describe('useBottomSheet', () => {
       expect(result.current.isHalfOpen).toBe(true);
       expect(onExpandToHalf).not.toHaveBeenCalled();
     });
+
+    it('半開後內容變高（halfHeight 400 → 450），小幅下拉仍不算展開', () => {
+      const onExpandToHalf = vi.fn();
+      const { result, rerender } = renderHook(
+        ({ halfHeight }) => useBottomSheet({ onExpandToHalf, halfHeight }),
+        { initialProps: { halfHeight: CONTENT_HEIGHT } }
+      );
+
+      act(() => {
+        result.current.handleBarBind.onMouseDown({ clientY: 500 } as React.MouseEvent);
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      });
+      onExpandToHalf.mockClear();
+      rerender({ halfHeight: 450 });
+
+      // Sheet sits at 400, drag down 50 → 350, midPoint = 120 + 330 * 0.3 = 219
+      act(() => {
+        result.current.handleBarBind.onMouseDown({ clientY: 300 } as React.MouseEvent);
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientY: 350 }));
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      });
+
+      expect(onExpandToHalf).not.toHaveBeenCalled();
+    });
+
+    it('initialHeight 高於 peek 但在中點以下，往上拖超過中點仍算展開', () => {
+      const onExpandToHalf = vi.fn();
+      const { result } = renderHook(() =>
+        useBottomSheet({ onExpandToHalf, halfHeight: CONTENT_HEIGHT, initialHeight: 150 })
+      );
+
+      // 150 → 350 (> midPoint 204)
+      act(() => {
+        result.current.handleBarBind.onMouseDown({ clientY: 500 } as React.MouseEvent);
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mousemove', { bubbles: true, clientY: 300 }));
+      });
+      act(() => {
+        document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      });
+
+      expect(onExpandToHalf).toHaveBeenCalledWith('drag');
+    });
   });
 });
