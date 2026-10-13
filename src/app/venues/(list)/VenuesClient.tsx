@@ -6,7 +6,6 @@ import { css } from '@/styled-system/css';
 import { venueApi } from '@/lib/api';
 import queryKey from '@/hooks/queryKey';
 import { useAuth } from '@/lib/auth-context';
-import { usePageView } from '@/hooks/usePageView';
 import { useIsInAppBrowser } from '@/hooks/useIsInAppBrowser';
 import { trackFilterVenues, trackSortVenues } from '@/lib/analytics/venues';
 import { showToast } from '@/lib/toast';
@@ -129,8 +128,6 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
   });
 
   const shouldTrackFilterChange = useRef(false);
-
-  usePageView({ eventPage: '/venues' });
 
   // 帶不合法 `sort` 值的 URL（如 ?sort=foo）：不只是用預設值渲染，還要把網址列的亂碼值
   // 清掉（router.replace 語意，不留 history entry），比照「清除篩選」對不合法值的處理方式

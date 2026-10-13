@@ -7,7 +7,7 @@
 
 ## 頁面瀏覽
 
-不需要手動規劃，統一用 `usePageView` hook 或 `PageViewTracker` 元件。
+不需要手動規劃，也不要手動送：GA 原生 `page_view` 會在載入與站內換頁時自動送出，分析用 `pagePath` 區分頁面（自訂版已於 2026-10-14 移除，避免同名重複計算）。
 詳見 `page-view-tracking` skill。
 
 ---

@@ -49,29 +49,7 @@ sendGAEvent('event', 'event_name', {
 
 ### 頁面瀏覽 (page_view)
 
-使用 `usePageView` hook 或 `PageViewTracker` 元件：
-
-```typescript
-// Client Component 使用 hook
-import { usePageView } from '@/hooks/usePageView';
-
-function MyPage() {
-  usePageView({ eventPage: '/my-page', contentId: 'optional-id' });
-  return <div>...</div>;
-}
-
-// Server Component 使用元件
-import PageViewTracker from '@/components/PageViewTracker';
-
-function ServerPage({ id }: { id: string }) {
-  return (
-    <div>
-      <PageViewTracker eventPage="/page/[id]" contentId={id} />
-      ...
-    </div>
-  );
-}
-```
+**不要手動送 `page_view`**。用 GA 原生的自動 page_view（含站內換頁，需 GA 後台開「根據瀏覽器記錄事件變更網頁」），分析時用 `pagePath` 區分頁面。自訂版 `usePageView`／`PageViewTracker` 已於 2026-10-14 移除：與原生同名會讓 GA 內建瀏覽量重複計算。
 
 ---
 
@@ -132,5 +110,3 @@ function ServerPage({ id }: { id: string }) {
 ## 相關檔案
 
 - `docs/events.md` - **已實作事件清單**（新增/修改事件時請更新）
-- `src/hooks/usePageView.ts` - 頁面瀏覽追蹤 hook
-- `src/components/PageViewTracker.tsx` - 頁面瀏覽追蹤元件（用於 Server Component）

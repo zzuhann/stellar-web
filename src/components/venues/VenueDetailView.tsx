@@ -3,8 +3,7 @@
 import Link from 'next/link';
 import { css } from '@/styled-system/css';
 import { useAuth } from '@/lib/auth-context';
-import { usePageView } from '@/hooks/usePageView';
-import { toVenueContentId, trackClickVenueContact } from '@/lib/analytics/venues';
+import { trackClickVenueContact } from '@/lib/analytics/venues';
 import type { Venue, VenueDetail } from '@/types';
 import { CAPACITY_RANGE_LABEL } from './venueCapacity';
 import Breadcrumb from '@/components/ui/Breadcrumb';
@@ -256,8 +255,6 @@ export default function VenueDetailView({ venue, relatedVenues }: VenueDetailVie
   const socialLink = buildSocialLink(venue);
   const bookingChannel = buildBookingChannel(venue);
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${venue.lat},${venue.lng}&query_place_id=${venue.placeId}`;
-
-  usePageView({ eventPage: '/venues/[id]', contentId: toVenueContentId(venue.id) });
 
   const handleClickContact = () => {
     trackClickVenueContact({

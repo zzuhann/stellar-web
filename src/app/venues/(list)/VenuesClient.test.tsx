@@ -73,10 +73,6 @@ vi.mock('@/lib/auth-context', () => ({
   useAuth: () => ({ user: null }),
 }));
 
-vi.mock('@/hooks/usePageView', () => ({
-  usePageView: () => {},
-}));
-
 vi.mock('@/lib/analytics/venues', () => ({
   trackFilterVenues: vi.fn(),
   trackSortVenues: vi.fn(),

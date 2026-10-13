@@ -6,7 +6,10 @@
 
 2026-10-13 健檢整理，詳見 monorepo `specs/_ops/ga4-tracking-audit-2026-10-13.md`。
 
-1. **`page_view` 有兩個來源**：gtag 硬載入時自動送一次，`usePageView` 再送一次自訂版（帶 `event_page`/`content_id`）。算單一頁面瀏覽量一律篩 `event_page != (not set)`，不要直接用 GA 內建的「瀏覽量」。
+1. **`page_view` 自 2026-10-14 起只剩 GA 原生版**：自訂的 `usePageView`（帶 `event_page`/`content_id`）已移除，改靠 GA 後台「加強型評估 → 根據瀏覽器記錄事件變更網頁」讓站內換頁也送原生 `page_view`。
+   - **之後**：分頁面用 `pagePath`（例：`pagePath` 開頭 `/map/`），不再有 `event_page`/`content_id`。網址裡是 slug 不是 id（活動頁 `/event/{slug 或 id}`、地圖頁 `/map/{artist slug 或 id}`），要跟 Firestore id 交叉比對（例：event-reservation 的曝光數）得先用 slug 對回 id。
+   - **之前**：原生（硬載入）與自訂版同名並存，GA 內建「瀏覽量」重複計算。看 2026-10-14 以前的單頁瀏覽量要篩 `event_page != (not set)`。
+   - **跨日比較**：上線當天起 GA 內建瀏覽量會下降（重複計算消失），不是流量下滑。各 `specs/features/*/tracking.md` 寫「`page_view`(event_page=X)」的公式，之後一律改讀成「`page_view`(pagePath 對應 X)」。
 2. **`click_event_detail` 混了兩個頁面**：地圖頁（帶 `artist_id`、`ui_source`）與場地詳情頁（`/venues/[id]`，不帶 `artist_id`）。算轉換率先用 `event_page` 拆開。
 3. **`search_artist` 是打開搜尋 modal 就送**，使用者還沒輸入。讀成「開啟搜尋」，不是「搜尋過」。
 4. **`view_venue_card` 是曝光事件**，次數跟著列表長度走。比較場地或排序時用比例（點擊 ÷ 曝光），不要比次數。
@@ -18,25 +21,11 @@
 
 ### page_view
 
-頁面瀏覽事件，使用 `usePageView` hook 或 `PageViewTracker` 元件。
+GA 原生事件，不由程式手動送（2026-10-14 起）。gtag 在頁面載入與站內換頁（瀏覽器記錄變更）時自動送出，帶 `page_location`／`page_path`／`page_title`。
 
-| 頁面     | event_page        | content_id | 狀態 |
-| -------- | ----------------- | ---------- | ---- |
-| 首頁     | `/`               | -          | ✅   |
-| 活動詳情 | `/event/[id]`     | eventId    | ✅   |
-| 藝人地圖 | `/map/[artistId]` | artistId   | ✅   |
-| 我的收藏 | `/my-favorite`    | -          | ✅   |
-| 設定     | `/settings`       | -          | ✅   |
-| 提交活動 | `/submit-event`   | -          | ✅   |
-| 提交藝人 | `/submit-artist`  | -          | ✅   |
+前提：GA 後台「資料串流 → 加強型評估 → 網頁瀏覽 → 根據瀏覽器記錄事件變更網頁」須開啟，否則站內換頁不會記錄。
 
-**實作位置：**
-
-- `src/hooks/usePageView.ts`
-- `src/components/PageViewTracker.tsx`
-- `src/components/map/MapPage.tsx`（藝人地圖頁直接呼叫 `usePageView`，2026-06-06 commit `42b238c` 的 map-new→map 改名曾移除，2026-09-28 補回）
-
-另外 gtag 本身在硬載入時也會自動送 `page_view`（不帶 `event_page`），見上方「判讀陷阱」第 1 點。
+舊的自訂版（`usePageView` hook／`PageViewTracker` 元件，帶 `event_page`/`content_id`）已移除，見「判讀陷阱」第 1 點。
 
 ---
 
