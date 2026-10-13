@@ -413,7 +413,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
         />
 
         <div aria-live="polite" aria-atomic="true" className="sr-only">
-          {isLoadingList ? '載入中' : `找到 ${resultTotal} 個場地`}
+          {isError ? '載入場地列表失敗' : isLoadingList ? '載入中' : `找到 ${resultTotal} 個場地`}
         </div>
 
         <section aria-label="場地列表" className={listSection}>

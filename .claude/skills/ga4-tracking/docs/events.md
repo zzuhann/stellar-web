@@ -304,13 +304,13 @@
 
 點擊活動詳情頁下方的相關活動卡片。
 
-| 參數       | 值                 |
-| ---------- | ------------------ |
-| event_page | 由呼叫端傳入的頁面 |
-| user_id    | 用戶 UID           |
-| content_id | 由呼叫端傳入的 id  |
+| 參數       | 值                                                   |
+| ---------- | ---------------------------------------------------- |
+| event_page | `/event/[id]`                                        |
+| user_id    | 用戶 UID                                             |
+| content_id | **被點擊的相關活動** eventId（目的地，不是目前頁面） |
 
-**實作位置：** `src/components/EventDetail/RelatedEventCard.tsx`
+**實作位置：** `src/components/EventDetail/RelatedEventCard.tsx`（唯一呼叫端 `MoreEventsCarousel.tsx`）
 
 ---
 

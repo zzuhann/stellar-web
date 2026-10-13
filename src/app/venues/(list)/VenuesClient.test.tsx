@@ -343,6 +343,8 @@ describe('VenuesClient 排序切換 API 失敗（Phase 2.8）', () => {
     fireEvent.click(within(menu).getByRole('menuitemradio', { name: /最新上架/ }));
 
     await screen.findByText('載入場地列表失敗，請重新整理頁面');
+    // Live region announces the failure instead of "找到 0 個場地"
+    expect(screen.getByText('載入場地列表失敗')).toBeTruthy();
 
     const retryButton = screen.getByRole('button', { name: '重試' });
     expect(retryButton.querySelector('svg')).toBeTruthy();
