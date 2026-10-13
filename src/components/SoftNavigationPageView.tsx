@@ -14,11 +14,25 @@ export default function SoftNavigationPageView() {
   const pathname = usePathname();
   // Previous pathname instead of an "is first run" flag: survives StrictMode's double effect
   const lastPathname = useRef(pathname);
+  const lastUrl = useRef<string | null>(null);
 
   useEffect(() => {
+    if (lastUrl.current === null) lastUrl.current = window.location.href;
     if (lastPathname.current === pathname) return;
     lastPathname.current = pathname;
-    sendGAEvent('event', 'page_view', { page_location: window.location.href });
+
+    // Wait a frame so Next has swapped <title> for the new route
+    const frame = requestAnimationFrame(() => {
+      const url = window.location.href;
+      sendGAEvent('event', 'page_view', {
+        page_location: url,
+        page_title: document.title,
+        // gtag otherwise keeps the hard-load document.referrer for every soft navigation
+        page_referrer: lastUrl.current,
+      });
+      lastUrl.current = url;
+    });
+    return () => cancelAnimationFrame(frame);
   }, [pathname]);
 
   return null;

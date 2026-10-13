@@ -87,7 +87,7 @@ STELLAR 目前流量以社群為主，建議先用 **Last Click** 建立基準�
 ### 關鍵追蹤事件
 
 ```
-page_view         // 自動追蹤
+page_view         // 硬載入 gtag 原生、站內換頁 SoftNavigationPageView；GA「瀏覽器記錄事件」設定須關閉
 event_detail_view // 活動頁瀏覽（自定義）
 map_interaction   // 地圖操作（自定義）
 venue_click       // 場地點擊（自定義）

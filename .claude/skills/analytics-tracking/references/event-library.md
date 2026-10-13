@@ -8,7 +8,7 @@
 ## 頁面瀏覽
 
 不需要手動規劃，也不要在頁面各自送：硬載入由 gtag 原生送、站內換頁由 `SoftNavigationPageView` 全站送，分析用 `pagePath` 區分頁面（每頁自訂版已於 2026-10-14 移除，避免重複計算）。
-詳見 `page-view-tracking` skill。
+詳見 `ga4-tracking/docs/events.md` 的 `page_view` 段。
 
 ---
 

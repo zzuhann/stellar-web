@@ -84,7 +84,7 @@ Create: Marketing → Reports → Create Report
 **Engagement Events:**
 
 ```
-page_view        (auto-tracked)
+page_view        (hard load: gtag native; soft nav: SoftNavigationPageView; keep GA history-change setting OFF)
 scroll           (75% depth)
 video_play       (product demos)
 file_download    (whitepapers, eBooks)
