@@ -8,20 +8,14 @@ import { Artist } from '@/types';
 
 export type SubmitArtistCtaSource = 'view_map' | 'add_event';
 
-const cardWrapper = css({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '2',
-});
-
-// DOM order stays secondary -> primary; on mobile column-reverse puts primary on top without changing Tab order.
+// Mobile: full-width row under the artist info; desktop: third column. DOM order matches visual left-to-right.
 const ctaRow = css({
   display: 'flex',
-  flexDirection: 'column-reverse',
   gap: '2',
-  '@media (min-width: 480px)': {
-    flexDirection: 'row',
-    gap: '3',
+  width: '100%',
+  '@media (min-width: 768px)': {
+    width: 'auto',
+    flexShrink: 0,
   },
 });
 
@@ -31,17 +25,16 @@ const ctaLink = cva({
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: '44px',
-    paddingX: '4',
+    paddingX: '3',
     borderRadius: 'radius.lg',
     textStyle: 'button',
+    flex: 1,
     textDecoration: 'none',
+    whiteSpace: 'nowrap',
     border: '1px solid',
     borderColor: 'color.primary',
     cursor: 'pointer',
     transition: 'background 0.2s ease, color 0.2s ease',
-    '@media (min-width: 480px)': {
-      flex: 1,
-    },
     '&:focus-visible': {
       outline: '2px solid',
       outlineColor: 'color.primary',
@@ -85,26 +78,29 @@ export default function SubmitArtistResultCard({
   };
 
   return (
-    <div className={cardWrapper}>
-      <ArtistCard artist={artist} hideEventCount />
-      <div className={ctaRow}>
-        <Link
-          href={mapHref}
-          className={ctaLink({ variant: 'secondary' })}
-          aria-label={`查看 ${artist.stageName} 的生日應援`}
-          onClick={handleClick('view_map', mapHref)}
-        >
-          查看應援
-        </Link>
-        <Link
-          href={addEventHref}
-          className={ctaLink({ variant: 'primary' })}
-          aria-label={`為 ${artist.stageName} 新增生日應援`}
-          onClick={handleClick('add_event', addEventHref)}
-        >
-          新增應援
-        </Link>
-      </div>
-    </div>
+    <ArtistCard
+      artist={artist}
+      hideEventCount
+      actions={
+        <div className={ctaRow}>
+          <Link
+            href={mapHref}
+            className={ctaLink({ variant: 'secondary' })}
+            aria-label={`查看 ${artist.stageName} 的生日應援`}
+            onClick={handleClick('view_map', mapHref)}
+          >
+            查看應援
+          </Link>
+          <Link
+            href={addEventHref}
+            className={ctaLink({ variant: 'primary' })}
+            aria-label={`為 ${artist.stageName} 新增生日應援`}
+            onClick={handleClick('add_event', addEventHref)}
+          >
+            新增應援
+          </Link>
+        </div>
+      }
+    />
   );
 }

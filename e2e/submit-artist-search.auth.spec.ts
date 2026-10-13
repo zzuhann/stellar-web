@@ -27,9 +27,7 @@ test.describe('投稿藝人防重複搜尋', () => {
     await mockArtistApis(page);
 
     await page.goto('/submit-artist');
-    await page
-      .getByRole('button', { name: /投稿前，先確認你想新增的藝人、團體是否已經存在/ })
-      .click();
+    await page.getByRole('button', { name: /投稿前，先確認你想新增的藝人、團體是否存在/ }).click();
     await page.getByRole('textbox', { name: '搜尋藝人' }).fill('alpha');
     await page.getByRole('link', { name: '為 ALPHA 新增生日應援' }).click();
 

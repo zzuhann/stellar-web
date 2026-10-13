@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import ImageUpload from '@/components/images/ImageUpload';
 import BirthdayPicker from '@/components/forms/BirthdayPicker';
+import ArtistSearchEntryButton from '@/components/forms/ArtistSearchEntryButton';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { Artist, UpdateArtistRequest } from '@/types';
@@ -534,6 +535,15 @@ export default function ArtistSubmissionForm({
       </div>
 
       <form className={form} aria-label="藝人投稿表單">
+        {mode !== 'edit' && (
+          <div className={formGroup}>
+            <span id="artistSearchEntry-label" className={label}>
+              投稿前，先確認你想新增的藝人、團體是否存在
+            </span>
+            <ArtistSearchEntryButton labelId="artistSearchEntry-label" />
+          </div>
+        )}
+
         {/* 英文藝名 */}
         <div className={formGroup}>
           <label className={label} htmlFor="stageName">

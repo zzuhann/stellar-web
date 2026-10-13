@@ -64,7 +64,7 @@ vi.mock('@/hooks/useScrollLock', () => ({
   useScrollLock: () => {},
 }));
 
-const ENTRY_NAME = /投稿前，先確認你想新增的藝人、團體是否已經存在/;
+const ENTRY_NAME = /投稿前，先確認你想新增的藝人、團體是否存在/;
 
 function renderPage() {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });

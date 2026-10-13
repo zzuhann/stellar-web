@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Artist } from '@/types';
 import { formatBirthdayMonthDay } from '@/utils/birthdayHelpers';
 import { css } from '@/styled-system/css';
@@ -7,6 +8,7 @@ import BirthdayHat from '@/components/BirthdayHat';
 const artistCardContainer = css({
   position: 'relative',
   display: 'flex',
+  flexWrap: 'wrap',
   alignItems: 'center',
   gap: '4',
   padding: '5',
@@ -122,9 +124,11 @@ interface ArtistCardProps {
   isPending?: boolean;
   // Search-modal result cards for the submit-artist entry show who the artist is, not how many events they have.
   hideEventCount?: boolean;
+  // Wraps under the artist info unless it fits as a third column (artistInfo has flex-basis 0).
+  actions?: ReactNode;
 }
 
-const ArtistCard = ({ artist, isPending, hideEventCount }: ArtistCardProps) => {
+const ArtistCard = ({ artist, isPending, hideEventCount, actions }: ArtistCardProps) => {
   const birthdayText = formatBirthdayMonthDay(artist.birthday ?? '');
 
   return (
@@ -161,6 +165,7 @@ const ArtistCard = ({ artist, isPending, hideEventCount }: ArtistCardProps) => {
           </div>
         )}
       </div>
+      {actions}
       {isPending && (
         <div className={loadingOverlay}>
           <div className={spinner} />
