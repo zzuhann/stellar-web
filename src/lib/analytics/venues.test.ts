@@ -178,7 +178,7 @@ describe('trackResolveVenueGeolocation（venue-distance-sort 新增事件）', (
         user_id: 'user-1',
         content_id: '',
         location_result: locationResult,
-        source,
+        ui_source: source,
       });
     }
   );
@@ -191,7 +191,7 @@ describe('trackResolveVenueGeolocation（venue-distance-sort 新增事件）', (
       user_id: '',
       content_id: '',
       location_result: 'granted',
-      source: 'menu_select',
+      ui_source: 'menu_select',
     });
   });
 
@@ -204,7 +204,7 @@ describe('trackResolveVenueGeolocation（venue-distance-sort 新增事件）', (
 
     const payload = vi.mocked(sendGAEvent).mock.calls.at(-1)?.[2] as Record<string, unknown>;
     expect(Object.keys(payload).sort()).toEqual(
-      ['content_id', 'event_page', 'location_result', 'source', 'user_id'].sort()
+      ['content_id', 'event_page', 'location_result', 'ui_source', 'user_id'].sort()
     );
   });
 });

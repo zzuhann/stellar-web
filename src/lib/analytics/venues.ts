@@ -173,7 +173,7 @@ export function trackSortVenues({
 }
 
 // 距離排序定位授權結果（venue-distance-sort 新增）。不得帶座標、距離數值或 accuracy
-// ——隱私硬規則見 tracking.md「隱私硬規則」，payload 只允許 location_result/source 兩個值。
+// ——隱私硬規則見 tracking.md「隱私硬規則」，payload 只允許 location_result/ui_source 兩個值（GA 參數 `source` 會覆蓋流量來源歸因，故送出時一律用 ui_source）。
 export function trackResolveVenueGeolocation({
   userId,
   locationResult,
@@ -184,7 +184,7 @@ export function trackResolveVenueGeolocation({
     user_id: userId ?? '',
     content_id: '',
     location_result: locationResult,
-    source,
+    ui_source: source,
   });
 }
 

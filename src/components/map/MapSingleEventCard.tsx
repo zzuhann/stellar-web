@@ -177,7 +177,7 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
       user_id: user?.uid ?? '',
       content_id: event.id,
       artist_id: artistId,
-      source: 'map_single_card',
+      ui_source: 'map_single_card',
     });
   };
 
