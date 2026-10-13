@@ -118,8 +118,8 @@ export function useBottomSheet({
 
     // Snap to nearest: half or peek
     const midPoint = PEEK_HEIGHT + (halfHeight - PEEK_HEIGHT) * 0.3;
-    // Only count as expand when the drag started from peek, not a nudge on an already-open sheet
-    if (currentHeight > midPoint && startHeight <= PEEK_HEIGHT) onExpandToHalf?.('drag');
+    // Only count as expand when the sheet wasn't already at half, not a nudge on an open sheet
+    if (currentHeight > midPoint && startHeight < halfHeight) onExpandToHalf?.('drag');
     snapTo(currentHeight > midPoint ? halfHeight : PEEK_HEIGHT);
   }, [getHalfHeight, snapTo, onExpandToHalf]);
 

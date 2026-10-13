@@ -439,7 +439,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
               <VenueCard
                 key={venue.id}
                 venue={venue}
-                listPosition={(pageNum - 1) * PAGE_LIMIT + index + 1}
+                listPosition={((pagination?.page ?? pageNum) - 1) * PAGE_LIMIT + index + 1}
                 userId={user?.uid}
                 listSort={sort}
                 userCoords={coords}

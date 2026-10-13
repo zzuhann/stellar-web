@@ -186,9 +186,9 @@
 | user_id    | 用戶 UID      |
 | content_id | eventId       |
 
-未登入點收藏 → 登入成功後自動收藏的路徑也會送 `add_to_favorite`（2026-10-13 補上），`user_id` 取登入後的 UID。
+只在收藏 API 成功後送出（失敗不計）。未登入點收藏 → 登入後自動收藏的路徑也會送（2026-10-13 補上），`user_id` 取 Firebase 目前登入者。
 
-**實作位置：** `src/components/EventDetail/EventBottomBar.tsx`（手機）、`DesktopFavoriteButton.tsx`（桌機）；`FavoriteButton.tsx` 目前未被任何頁面使用
+**實作位置：** `src/hooks/useFavoriteToggle.ts`（mutation `onSuccess`，所有收藏按鈕共用）
 
 ### click_favorite_logged_out
 

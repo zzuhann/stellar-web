@@ -71,7 +71,7 @@ metadata:
 | 用戶行為    | 帳號相關            | `login`, `sign_up`                              |
 | 分享        | 傳播內容            | `share_event`                                   |
 | 表單送出    | 提交活動 / 藝人資料 | `submit_event`                                  |
-| 導航        | 頁面內跳轉          | `click_home`, `click_event_detail`              |
+| 導航        | 頁面內跳轉          | `click_event_detail`, `click_related_event`     |
 
 ---
 
