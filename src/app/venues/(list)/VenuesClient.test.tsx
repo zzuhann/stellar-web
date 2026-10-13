@@ -553,6 +553,8 @@ describe('VenuesClient 分頁下的 list_position 與 result_count', () => {
     });
     renderVenuesClient();
     await screen.findByRole('link', { name: /測試場地/ });
+    // Screen reader count matches the filtered total too, not the current page
+    expect(screen.getByText('找到 57 個場地')).toBeTruthy();
 
     const menu = await openSortMenu();
     fireEvent.click(within(menu).getByRole('menuitemradio', { name: /最新上架/ }));

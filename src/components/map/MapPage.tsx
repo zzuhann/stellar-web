@@ -173,14 +173,7 @@ export default function MapPage({ artistId }: MapPageProps) {
           className={locateButton}
           style={{ transform: `translateY(-${selectedEvent ? 120 : sheetHeight}px)` }}
           aria-label="查看全部活動"
-          onClick={() => {
-            sendGAEvent('event', 'map_reset_view', {
-              event_page: '/map/[artistId]',
-              user_id: user?.uid ?? '',
-              content_id: artistId,
-            });
-            mapRef.current?.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true });
-          }}
+          onClick={() => mapRef.current?.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true })}
         >
           <ArrowsPointingOutIcon width={20} height={20} />
         </button>
