@@ -2,6 +2,18 @@
 
 > 新增、修改、移除事件時請更新此文件
 
+## 判讀陷阱（查數據前必讀）
+
+2026-10-13 健檢整理，詳見 monorepo `specs/_ops/ga4-tracking-audit-2026-10-13.md`。
+
+1. **`page_view` 有兩個來源**：gtag 硬載入時自動送一次，`usePageView` 再送一次自訂版（帶 `event_page`/`content_id`）。算單一頁面瀏覽量一律篩 `event_page != (not set)`，不要直接用 GA 內建的「瀏覽量」。
+2. **`click_event_detail` 混了兩個頁面**：地圖頁（帶 `artist_id`、`ui_source`）與場地詳情頁（`/venues/[id]`，不帶 `artist_id`）。算轉換率先用 `event_page` 拆開。
+3. **`search_artist` 是打開搜尋 modal 就送**，使用者還沒輸入。讀成「開啟搜尋」，不是「搜尋過」。
+4. **`view_venue_card` 是曝光事件**，次數跟著列表長度走。比較場地或排序時用比例（點擊 ÷ 曝光），不要比次數。
+5. **自訂維度不回溯**：維度在後台註冊之前的資料都是 `(not set)`。看有值率前先確認期間是否晚於註冊日；長期間的空值多半是這個原因，不是 bug。
+6. **`source` 維度已廢棄**：舊參數 `source` 會覆蓋 GA 的流量來源歸因，2026-10 改名 `ui_source`。2026-10 以前的工作階段來源裡出現 `carousel`／`map_single_card`／`menu_select` 是被污染的（90 天約 1,000 個 session），不是真的流量來源。
+7. **2026-10-13 起的定義變更**：`add_to_favorite` 只在 API 成功才計（數字會比以前略低）；`map_bottom_sheet_expand` 不再計入半開狀態下的小幅拖拉；`switch_to_*_tab` 重點同 tab 不計；`/venues` 的 `list_position` 改為跨頁絕對位置、`result_count` 改為總筆數。跨這個日期比較時要注意。
+
 ## 已實作的事件
 
 ### page_view
@@ -23,6 +35,8 @@
 - `src/hooks/usePageView.ts`
 - `src/components/PageViewTracker.tsx`
 - `src/components/map/MapPage.tsx`（藝人地圖頁直接呼叫 `usePageView`，2026-06-06 commit `42b238c` 的 map-new→map 改名曾移除，2026-09-28 補回）
+
+另外 gtag 本身在硬載入時也會自動送 `page_view`（不帶 `event_page`），見上方「判讀陷阱」第 1 點。
 
 ---
 
@@ -57,6 +71,20 @@
 
 - `src/components/header/MobileMenu.tsx`
 - `src/components/header/DesktopNav.tsx`
+
+---
+
+### nav_venues
+
+點擊導覽列的「場地」連結。
+
+| 參數       | 值                                      |
+| ---------- | --------------------------------------- |
+| event_page | 觸發當下實際頁面路徑（`usePathname()`） |
+| user_id    | 用戶 UID                                |
+| content_id | `desktop_nav` / `mobile_menu`           |
+
+**實作位置：** `src/components/header/DesktopNav.tsx`、`src/components/header/MobileMenu.tsx`
 
 ---
 
@@ -172,6 +200,18 @@
 
 **實作位置：** `src/components/search/ArtistSearchModal.tsx`（`ArtistCardLink` 的 `onBeforeNavigate`）
 
+### click_event_card / click_artist_card
+
+點擊首頁週曆裡的活動卡片（生咖 tab）或壽星卡片（壽星 tab）。
+
+| 參數       | 值                                         |
+| ---------- | ------------------------------------------ |
+| event_page | `/`                                        |
+| user_id    | 用戶 UID                                   |
+| content_id | eventId（活動卡片）／ artistId（壽星卡片） |
+
+**實作位置：** `src/components/HomePage/components/WeekEventCard.tsx`、`WeekArtistCard.tsx`
+
 ---
 
 ## Event Detail
@@ -248,6 +288,30 @@
 - `src/components/ui/ExternalLink.tsx`
 - `src/components/EventDetail/index.tsx`
 
+### click_reservation / click_reservation_calendar
+
+點擊活動的預約連結，或預約提醒列的「加入行事曆」。事件名由 `ExternalLink` 的 `platform` 組成（`click_${platform}`）。
+
+| 參數       | 值            |
+| ---------- | ------------- |
+| event_page | `/event/[id]` |
+| user_id    | 用戶 UID      |
+| content_id | eventId       |
+
+**實作位置：** `src/components/ui/ExternalLink.tsx`；`src/components/EventDetail/index.tsx`（`reservation`）、`ReservationReminderRow.tsx`（`reservation_calendar`）
+
+### click_related_event
+
+點擊活動詳情頁下方的相關活動卡片。
+
+| 參數       | 值                 |
+| ---------- | ------------------ |
+| event_page | 由呼叫端傳入的頁面 |
+| user_id    | 用戶 UID           |
+| content_id | 由呼叫端傳入的 id  |
+
+**實作位置：** `src/components/EventDetail/RelatedEventCard.tsx`
+
 ---
 
 ## Map
@@ -285,6 +349,34 @@
 - `src/components/map/MapSingleEventCard.tsx`（`ui_source: map_single_card`）
 - `src/components/map/EventCarouselCard.tsx`（`ui_source: carousel`）
 - `src/lib/analytics/venues.ts`（`trackClickEventDetail`）、`src/components/venues/PastEventsStrip.tsx`（場地詳情頁過往活動卡片，2026-09-28 新增）
+
+### map_bottom_sheet_expand
+
+地圖頁底部清單從收合展開到半開。
+
+| 參數           | 值                                        |
+| -------------- | ----------------------------------------- |
+| event_page     | `/map/[artistId]`                         |
+| user_id        | 用戶 UID                                  |
+| content_id     | artistId                                  |
+| trigger_method | `drag` / `tap_handle` / `location_filter` |
+
+`drag` 只在拖曳起點位於 snap 中線以下時計（2026-10-13 修正：半開狀態小幅拖拉不再誤計）。`location_filter` 是點地圖上多活動地點時自動展開，不是使用者拖拉。
+
+**實作位置：** `src/components/map/MapBottomSheet.tsx`、判斷邏輯在 `src/components/map/hooks/useBottomSheet.ts`
+
+### map_location_filter_apply
+
+點地圖上同一地點有多個活動的標記，清單篩成該地點。
+
+| 參數          | 值                 |
+| ------------- | ------------------ |
+| event_page    | `/map/[artistId]`  |
+| user_id       | 用戶 UID           |
+| content_id    | artistId           |
+| location_name | 地點名稱（或城市） |
+
+**實作位置：** `src/components/map/MapPage.tsx`（`handleMultiMarkerClick`）
 
 ---
 
@@ -330,6 +422,60 @@
 
 - `src/lib/analytics/venues.ts`（`trackSortVenues`）
 - `src/app/venues/(list)/VenuesClient.tsx`（`handleSortChange`）
+
+### click_venue_list_cta
+
+首頁隨機場地區塊的「看全部場地」CTA。
+
+| 參數       | 值                |
+| ---------- | ----------------- |
+| event_page | `/`               |
+| placement  | `homepage_random` |
+
+**實作位置：** `src/lib/analytics/venues.ts`（`trackClickVenueListCta`）
+
+### filter_venues
+
+`/venues` 套用地區、容納人數篩選或搜尋，結果載入後送一次。
+
+| 參數            | 值                                          |
+| --------------- | ------------------------------------------- |
+| event_page      | `/venues`                                   |
+| user_id         | 用戶 UID（未登入傳空字串）                  |
+| content_id      | `''`                                        |
+| filter_region   | 地區（`全部` 或縣市）                       |
+| filter_capacity | 容納人數（`all` 或區間）                    |
+| search_query    | 搜尋關鍵字                                  |
+| result_count    | 篩選後總筆數（跨頁 total，2026-10-13 修正） |
+
+**實作位置：** `src/lib/analytics/venues.ts`（`trackFilterVenues`）、`src/app/venues/(list)/VenuesClient.tsx`
+
+### resolve_venue_geolocation
+
+距離排序要求定位權限的結果。隱私硬規則：不帶座標、距離或 accuracy。
+
+| 參數            | 值                                               |
+| --------------- | ------------------------------------------------ |
+| event_page      | `/venues`                                        |
+| user_id         | 用戶 UID（未登入傳空字串）                       |
+| content_id      | `''`                                             |
+| location_result | `granted` / `denied` / `unsupported` / `timeout` |
+| ui_source       | `menu_select` / `share_link`                     |
+
+**實作位置：** `src/lib/analytics/venues.ts`（`trackResolveVenueGeolocation`）
+
+### click_venue_contact
+
+場地詳情頁點聯絡方式（外導 IG／Threads／LINE 私訊）。站上沒有媒合功能，這是主辦的預約意圖，場地功能的主要轉換。
+
+| 參數         | 值                                  |
+| ------------ | ----------------------------------- |
+| event_page   | `/venues/[id]`                      |
+| user_id      | 用戶 UID（未登入傳空字串）          |
+| content_id   | `venue_{venueId}`                   |
+| contact_type | `instagram` / `threads` / `line` 等 |
+
+**實作位置：** `src/lib/analytics/venues.ts`（`trackClickVenueContact`）、`src/components/venues/VenueDetailView.tsx`
 
 ---
 
@@ -395,26 +541,10 @@
 
 ---
 
-### install_pwa
-
-PWA 安裝成功時觸發。
-
-| 參數       | 值           |
-| ---------- | ------------ |
-| event_page | 當前頁面路徑 |
-| user_id    | 用戶 UID     |
-| content_id | -            |
-
-**實作位置：** `src/components/pwa/PWAInstallPrompt.tsx`
-
----
-
 ## User Properties
-
-由 `GATracker` 自動設定：
 
 | 屬性          | 值            | 說明         |
 | ------------- | ------------- | ------------ |
 | `environment` | `pwa` / `web` | 用戶使用環境 |
 
-**實作位置：** `src/components/GATracker.tsx`
+**目前沒有發送端**：原本設定它的 `GATracker.tsx` 已移除，後台維度保留中（2026-10-13 使用者決定留著），28 天內只有 76 位使用者有值。要讀 PWA 使用者比例前，需先補回設定程式。
