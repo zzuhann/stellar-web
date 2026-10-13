@@ -64,6 +64,10 @@ export default function DesktopFavoriteButton({ eventId }: DesktopFavoriteButton
 
   const handleClick = () => {
     if (!user) {
+      sendGAEvent('event', 'click_favorite_logged_out', {
+        event_page: '/event/[id]',
+        content_id: eventId,
+      });
       toggleAuthModal(undefined, () => {
         favoriteToggle.mutate({ eventId, isFavorited: false });
       });

@@ -186,7 +186,20 @@
 | user_id    | 用戶 UID      |
 | content_id | eventId       |
 
-**實作位置：** `src/components/EventDetail/FavoriteButton.tsx`
+**實作位置：** `src/components/EventDetail/EventBottomBar.tsx`（手機）、`DesktopFavoriteButton.tsx`（桌機）；`FavoriteButton.tsx` 目前未被任何頁面使用
+
+### click_favorite_logged_out
+
+未登入使用者點擊收藏按鈕（隨後照舊開登入 modal/sheet）。用來和 `add_to_favorite` 對照，分出「卡在登入牆」與「沒人點」。auth 載入中 `user` 為 null，視同未登入，也會送出。
+
+| 參數       | 值            |
+| ---------- | ------------- |
+| event_page | `/event/[id]` |
+| content_id | eventId       |
+
+不帶 `user_id`（未登入無值）。
+
+**實作位置：** `src/components/EventDetail/EventBottomBar.tsx`、`DesktopFavoriteButton.tsx`
 
 ### click_home
 
@@ -273,12 +286,14 @@
 | user_id    | 用戶 UID                       | 用戶 UID         |
 | content_id | eventId                        | eventId          |
 | artist_id  | artistId                       | -                |
-| source     | `map_single_card` / `carousel` | -                |
+| ui_source  | `map_single_card` / `carousel` | -                |
+
+注意：參數名不可用 `source`，GA4 會把它當流量來源覆蓋 session 歸因（2026-10 起改名為 `ui_source`，與 `resolve_venue_geolocation` 共用同一個自訂維度）。
 
 **實作位置：**
 
-- `src/components/map/MapSingleEventCard.tsx`（`source: map_single_card`）
-- `src/components/map/EventCarouselCard.tsx`（`source: carousel`）
+- `src/components/map/MapSingleEventCard.tsx`（`ui_source: map_single_card`）
+- `src/components/map/EventCarouselCard.tsx`（`ui_source: carousel`）
 - `src/lib/analytics/venues.ts`（`trackClickEventDetail`）、`src/components/venues/PastEventsStrip.tsx`（場地詳情頁過往活動卡片，2026-09-28 新增）
 
 ---

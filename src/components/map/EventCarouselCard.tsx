@@ -153,7 +153,7 @@ const EventCarouselCard = ({
       user_id: user?.uid ?? '',
       content_id: event.id,
       artist_id: artistId,
-      source: 'carousel',
+      ui_source: 'carousel',
     });
   };
 
