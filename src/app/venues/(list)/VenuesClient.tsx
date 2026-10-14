@@ -6,7 +6,6 @@ import { css } from '@/styled-system/css';
 import { venueApi } from '@/lib/api';
 import queryKey from '@/hooks/queryKey';
 import { useAuth } from '@/lib/auth-context';
-import { usePageView } from '@/hooks/usePageView';
 import { useIsInAppBrowser } from '@/hooks/useIsInAppBrowser';
 import { trackFilterVenues, trackSortVenues } from '@/lib/analytics/venues';
 import { showToast } from '@/lib/toast';
@@ -129,8 +128,6 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
   });
 
   const shouldTrackFilterChange = useRef(false);
-
-  usePageView({ eventPage: '/venues' });
 
   // 帶不合法 `sort` 值的 URL（如 ?sort=foo）：不只是用預設值渲染，還要把網址列的亂碼值
   // 清掉（router.replace 語意，不留 history entry），比照「清除篩選」對不合法值的處理方式
@@ -275,6 +272,8 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
 
   const venues = data?.venues ?? [];
   const pagination = data?.pagination;
+  // Total across all pages; venues.length is only the current page (max PAGE_LIMIT)
+  const resultTotal = pagination?.total ?? venues.length;
   const isLoadingList = isLoading || waitingForLocation;
 
   // Restore scroll position on back navigation (popstate fires even when component is cached)
@@ -303,10 +302,10 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
       filterRegion: region,
       filterCapacity: capacity,
       searchQuery: search,
-      resultCount: venues.length,
+      resultCount: resultTotal,
     });
     shouldTrackFilterChange.current = false;
-  }, [capacity, isLoading, region, search, user?.uid, venues.length]);
+  }, [capacity, isLoading, region, search, user?.uid, resultTotal]);
 
   // Region and capacity are fully independent filters (2026-08-03 使用者裁定推翻
   // 原「切換地區重置容納人數」的既有行為) — changing one never touches the other,
@@ -356,7 +355,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
       filterRegion: region,
       filterCapacity: capacity,
       searchQuery: search,
-      resultCount: venues.length,
+      resultCount: resultTotal,
     });
 
     sessionStorage.removeItem(SCROLL_KEY);
@@ -411,7 +410,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
         />
 
         <div aria-live="polite" aria-atomic="true" className="sr-only">
-          {isLoadingList ? '載入中' : `找到 ${venues.length} 個場地`}
+          {isError ? '載入場地列表失敗' : isLoadingList ? '載入中' : `找到 ${resultTotal} 個場地`}
         </div>
 
         <section aria-label="場地列表" className={listSection}>
@@ -437,7 +436,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
               <VenueCard
                 key={venue.id}
                 venue={venue}
-                listPosition={index + 1}
+                listPosition={((pagination?.page ?? pageNum) - 1) * PAGE_LIMIT + index + 1}
                 userId={user?.uid}
                 listSort={sort}
                 userCoords={coords}

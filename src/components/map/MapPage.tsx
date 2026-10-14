@@ -8,7 +8,6 @@ import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { ArrowsPointingOutIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
-import { usePageView } from '@/hooks/usePageView';
 import useMapPageData from '@/components/map/hook/useMapPageData';
 import useMapNewLocation from './hooks/useMapNewLocation';
 import { useMapNewState } from './hooks/useMapNewState';
@@ -68,9 +67,6 @@ export default function MapPage({ artistId }: MapPageProps) {
   const { mapEvents, isMapLoading, artistData, isArtistLoading } = useMapPageData({
     artistId,
   });
-
-  // Restore page_view lost in 42b238c's map-new→map rename; artistId is a required prop so it's always ready here.
-  usePageView({ eventPage: '/map/[artistId]', contentId: artistId });
 
   const { latitude, longitude } = useMapNewLocation();
 
@@ -156,7 +152,6 @@ export default function MapPage({ artistId }: MapPageProps) {
       <div className={pageContainer} id="main-content">
         <div className={mapArea}>
           <MapSection
-            artistId={artistId}
             mapEvents={mapEvents}
             artistData={artistData ?? null}
             latitude={latitude}
@@ -174,14 +169,7 @@ export default function MapPage({ artistId }: MapPageProps) {
           className={locateButton}
           style={{ transform: `translateY(-${selectedEvent ? 120 : sheetHeight}px)` }}
           aria-label="查看全部活動"
-          onClick={() => {
-            sendGAEvent('event', 'map_reset_view', {
-              event_page: '/map/[artistId]',
-              user_id: user?.uid ?? '',
-              content_id: artistId,
-            });
-            mapRef.current?.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true });
-          }}
+          onClick={() => mapRef.current?.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate: true })}
         >
           <ArrowsPointingOutIcon width={20} height={20} />
         </button>

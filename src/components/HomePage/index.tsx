@@ -13,7 +13,6 @@ import { css } from '@/styled-system/css';
 import TrendingEventsSection from '@/components/HomePage/components/TrendingEventsSection';
 import TopArtistsSection from '@/components/HomePage/components/TopArtistsSection';
 import HomeVenuesSection from '@/components/HomePage/components/HomeVenuesSection';
-import { usePageView } from '@/hooks/usePageView';
 import useSearchSectionEntry from './hook/useSearchSectionEntry';
 
 export const pageContainer = css({
@@ -48,8 +47,6 @@ const HEADER_HEIGHT = 70;
 function HomePageContent() {
   const { searchTriggerRef, onSearchClick } = useSearchSectionEntry();
   const weekSectionRef = useRef<HTMLElement>(null);
-
-  usePageView({ eventPage: '/' });
 
   const { currentWeekStart, goToPreviousWeek, goToNextWeek, isCurrentWeek, currentWeekEnd } =
     useWeekNavigation();

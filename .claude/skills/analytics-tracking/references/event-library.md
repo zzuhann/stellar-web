@@ -7,8 +7,8 @@
 
 ## 頁面瀏覽
 
-不需要手動規劃，統一用 `usePageView` hook 或 `PageViewTracker` 元件。
-詳見 `page-view-tracking` skill。
+不需要手動規劃，也不要在頁面各自送：硬載入由 gtag 原生送、站內換頁由 `SoftNavigationPageView` 全站送，分析用 `pagePath` 區分頁面（每頁自訂版已於 2026-10-14 移除，避免重複計算）。
+詳見 `ga4-tracking/docs/events.md` 的 `page_view` 段。
 
 ---
 
@@ -52,12 +52,11 @@
 
 ## 導航類
 
-頁面內的跳轉行為（有助於了解用戶流向）。
+頁面內的跳轉行為（有助於了解用戶流向）。單純「回首頁」這類不會改變任何決定的導航不埋（`click_home` 已於 2026-10-13 移除）。
 
-| 情境             | 建議事件名稱         | content_id  |
-| ---------------- | -------------------- | ----------- |
-| 點擊回首頁 CTA   | `click_home`         | —（空字串） |
-| 點擊活動詳情連結 | `click_event_detail` | eventId     |
+| 情境             | 建議事件名稱         | content_id |
+| ---------------- | -------------------- | ---------- |
+| 點擊活動詳情連結 | `click_event_detail` | eventId    |
 
 ---
 

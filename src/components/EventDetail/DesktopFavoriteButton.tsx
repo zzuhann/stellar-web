@@ -75,12 +75,6 @@ export default function DesktopFavoriteButton({ eventId }: DesktopFavoriteButton
     }
 
     favoriteToggle.mutate({ eventId, isFavorited });
-
-    sendGAEvent('event', isFavorited ? 'remove_from_favorite' : 'add_to_favorite', {
-      event_page: '/event/[id]',
-      user_id: user.uid,
-      content_id: eventId,
-    });
   };
 
   if (isLoading && !!user) {

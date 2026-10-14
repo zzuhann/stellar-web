@@ -73,10 +73,6 @@ vi.mock('@/lib/auth-context', () => ({
   useAuth: () => ({ user: null }),
 }));
 
-vi.mock('@/hooks/usePageView', () => ({
-  usePageView: () => {},
-}));
-
 vi.mock('@/lib/analytics/venues', () => ({
   trackFilterVenues: vi.fn(),
   trackSortVenues: vi.fn(),
@@ -343,6 +339,8 @@ describe('VenuesClient 排序切換 API 失敗（Phase 2.8）', () => {
     fireEvent.click(within(menu).getByRole('menuitemradio', { name: /最新上架/ }));
 
     await screen.findByText('載入場地列表失敗，請重新整理頁面');
+    // Live region announces the failure instead of "找到 0 個場地"
+    expect(screen.getByText('載入場地列表失敗')).toBeTruthy();
 
     const retryButton = screen.getByRole('button', { name: '重試' });
     expect(retryButton.querySelector('svg')).toBeTruthy();
@@ -525,6 +523,41 @@ describe('VenuesClient sort_venues 事件（GA 埋點補做）', () => {
     expect(trackSortVenues).toHaveBeenLastCalledWith(
       expect.objectContaining({ sortFrom: 'newest', sortTo: 'eventCount' })
     );
+  });
+});
+
+// ─── 分頁下的 list_position / result_count（GA 健檢 2026-10-13）─────────────
+
+describe('VenuesClient 分頁下的 list_position 與 result_count', () => {
+  it('第 2 頁第 1 張卡片的 list_position 是 21，不是從 1 重算', async () => {
+    setMockSearchParams([['page', '2']]);
+    vi.mocked(venueApi.getVenues).mockResolvedValue({
+      venues: [VENUE_FIXTURE],
+      pagination: { page: 2, limit: 20, total: 21, totalPages: 2 },
+    });
+    renderVenuesClient();
+
+    await waitFor(() => {
+      expect(trackViewVenueCard).toHaveBeenCalledWith(
+        expect.objectContaining({ venueId: 'venue-1', listPosition: 21 })
+      );
+    });
+  });
+
+  it('sort_venues 的 result_count 是全部頁數的總筆數，不是當頁筆數', async () => {
+    vi.mocked(venueApi.getVenues).mockResolvedValue({
+      venues: [VENUE_FIXTURE],
+      pagination: { page: 1, limit: 20, total: 57, totalPages: 3 },
+    });
+    renderVenuesClient();
+    await screen.findByRole('link', { name: /測試場地/ });
+    // Screen reader count matches the filtered total too, not the current page
+    expect(screen.getByText('找到 57 個場地')).toBeTruthy();
+
+    const menu = await openSortMenu();
+    fireEvent.click(within(menu).getByRole('menuitemradio', { name: /最新上架/ }));
+
+    expect(trackSortVenues).toHaveBeenCalledWith(expect.objectContaining({ resultCount: 57 }));
   });
 });
 

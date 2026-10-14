@@ -1,7 +1,4 @@
-'use client';
-
 import { css } from '@/styled-system/css';
-import { usePageView } from '@/hooks/usePageView';
 import StatCounter from './StatCounter';
 import FadeIn from '@/components/ui/FadeIn';
 
@@ -153,8 +150,6 @@ const featureDesc = css({
 });
 
 export default function AboutPage() {
-  usePageView({ eventPage: '/about' });
-
   return (
     <main id="main-content" className={pageContainer}>
       <div className={inner}>

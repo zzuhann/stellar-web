@@ -63,15 +63,15 @@ metadata:
 
 **事件類型參考**：[references/event-library.md](references/event-library.md)
 
-| 類型        | 說明                | 範例                                            |
-| ----------- | ------------------- | ----------------------------------------------- |
-| 頁面瀏覽    | 使用者進入某頁      | `page_view`（用 usePageView / PageViewTracker） |
-| 內容互動    | 對活動 / 藝人的操作 | `add_to_favorite`, `click_map_marker`           |
-| 搜尋 / 篩選 | 尋找內容            | `search_artist`                                 |
-| 用戶行為    | 帳號相關            | `login`, `sign_up`                              |
-| 分享        | 傳播內容            | `share_event`                                   |
-| 表單送出    | 提交活動 / 藝人資料 | `submit_event`                                  |
-| 導航        | 頁面內跳轉          | `click_home`, `click_event_detail`              |
+| 類型        | 說明                | 範例                                        |
+| ----------- | ------------------- | ------------------------------------------- |
+| 頁面瀏覽    | 使用者進入某頁      | `page_view`（已全站處理，不用各頁埋）       |
+| 內容互動    | 對活動 / 藝人的操作 | `add_to_favorite`, `click_map_marker`       |
+| 搜尋 / 篩選 | 尋找內容            | `search_artist`                             |
+| 用戶行為    | 帳號相關            | `login`, `sign_up`                          |
+| 分享        | 傳播內容            | `share_event`                               |
+| 表單送出    | 提交活動 / 藝人資料 | `submit_event`                              |
+| 導航        | 頁面內跳轉          | `click_event_detail`, `click_related_event` |
 
 ---
 
@@ -126,6 +126,6 @@ Tracking Plan 確認後，實作細節參考 `ga4-tracking` skill。
 
 ## Related Skills
 
-- **ga4-tracking**：具體 code 怎麼寫（sendGAEvent、usePageView）
+- **ga4-tracking**：具體 code 怎麼寫（sendGAEvent）
 - **marketing-demand-acquisition**：UTM 參數架構與流量歸因
 - **page-view-tracking**：頁面瀏覽追蹤實作規格

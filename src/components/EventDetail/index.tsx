@@ -20,7 +20,6 @@ import ShareHandler from './ShareHandler';
 import DesktopFavoriteButton from './DesktopFavoriteButton';
 import { CoffeeEvent } from '@/types';
 import { formatEventDate, generateGoogleCalendarUrl, isHttpUrl } from '@/utils';
-import PageViewTracker from '@/components/PageViewTracker';
 import EventViewTracker from '@/components/EventViewTracker';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import MoreEventsCarousel from './MoreEventsCarousel';
@@ -250,7 +249,6 @@ const EventDetail = ({ event }: EventDetailProps) => {
 
   return (
     <div className={pageContainer} id="main-content">
-      <PageViewTracker eventPage="/event/[id]" contentId={event.id} />
       <EventViewTracker eventId={event.id} />
       <div
         className={mainContainer}
@@ -475,7 +473,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
           {/* 底部按鈕群組 */}
           <div className={buttonGroup}>
             <BackToMapButton event={event} />
-            <BackToHomeButton eventId={event.id} />
+            <BackToHomeButton />
           </div>
         </div>
 

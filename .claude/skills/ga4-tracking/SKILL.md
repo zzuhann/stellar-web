@@ -16,7 +16,7 @@ description: GA4 事件埋點指南
 事件 (Event)
 ├── 事件名稱：add_to_favorite（specific，區分動作）
 ├── 事件參數 (Event Parameters)：event_page, user_id, content_id（通用）
-└── 使用者屬性 (User Properties)：environment（自動帶）
+└── 使用者屬性 (User Properties)：environment（目前無發送端，見下方）
 ```
 
 ---
@@ -49,29 +49,7 @@ sendGAEvent('event', 'event_name', {
 
 ### 頁面瀏覽 (page_view)
 
-使用 `usePageView` hook 或 `PageViewTracker` 元件：
-
-```typescript
-// Client Component 使用 hook
-import { usePageView } from '@/hooks/usePageView';
-
-function MyPage() {
-  usePageView({ eventPage: '/my-page', contentId: 'optional-id' });
-  return <div>...</div>;
-}
-
-// Server Component 使用元件
-import PageViewTracker from '@/components/PageViewTracker';
-
-function ServerPage({ id }: { id: string }) {
-  return (
-    <div>
-      <PageViewTracker eventPage="/page/[id]" contentId={id} />
-      ...
-    </div>
-  );
-}
-```
+**頁面不要各自送 `page_view`**。硬載入由 gtag 原生送，站內換頁由全站唯一的 `src/components/SoftNavigationPageView.tsx` 送（只看 pathname，query string 變更不送）。GA 後台「根據瀏覽器記錄事件變更網頁」必須關閉。分析用 `pagePath` 區分頁面。舊的每頁自訂版 `usePageView`／`PageViewTracker` 已於 2026-10-14 移除：與原生重疊會讓 GA 內建瀏覽量重複計算。
 
 ---
 
@@ -93,7 +71,7 @@ function ServerPage({ id }: { id: string }) {
 
 ## User Properties
 
-由 `GATracker` 自動設定，**不需要手動帶**：
+原本由 `GATracker` 設定，該元件已移除，**目前沒有程式在送**（後台維度保留，見 `docs/events.md`「User Properties」）：
 
 | 屬性          | 值            | 說明           |
 | ------------- | ------------- | -------------- |
@@ -103,10 +81,9 @@ function ServerPage({ id }: { id: string }) {
 
 ## 注意事項
 
-1. **不要帶 `environment`**：已由 GATracker 自動設定
-2. **參數名稱用 snake_case**：`event_page` 而非 `eventPage`
-3. **未登入時 user_id 傳空字串**：`user?.uid ?? ''`
-4. **事件名稱不用設定自訂維度**：GA4 自動收集
+1. **參數名稱用 snake_case**：`event_page` 而非 `eventPage`
+2. **未登入時 user_id 傳空字串**：`user?.uid ?? ''`
+3. **事件名稱不用設定自訂維度**：GA4 自動收集
 
 ---
 
@@ -133,7 +110,3 @@ function ServerPage({ id }: { id: string }) {
 ## 相關檔案
 
 - `docs/events.md` - **已實作事件清單**（新增/修改事件時請更新）
-- `src/components/GATracker.tsx` - User Properties 初始化
-- `src/hooks/usePageView.ts` - 頁面瀏覽追蹤 hook
-- `src/components/PageViewTracker.tsx` - 頁面瀏覽追蹤元件（用於 Server Component）
-- `src/utils/pwa.ts` - PWA 模式判斷

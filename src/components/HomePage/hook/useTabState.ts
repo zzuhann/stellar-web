@@ -18,12 +18,14 @@ const useTabState = () => {
   });
 
   const handleTabChange = (tab: 'birthday' | 'events') => {
-    // GA4 埋點
-    const eventName = tab === 'birthday' ? 'switch_to_artist_tab' : 'switch_to_event_tab';
-    sendGAEvent('event', eventName, {
-      event_page: '/',
-      user_id: user?.uid ?? '',
-    });
+    // GA4 埋點：re-tapping the active tab is not a switch
+    if (tab !== activeTab) {
+      const eventName = tab === 'birthday' ? 'switch_to_artist_tab' : 'switch_to_event_tab';
+      sendGAEvent('event', eventName, {
+        event_page: '/',
+        user_id: user?.uid ?? '',
+      });
+    }
 
     // 如果切換到生咖tab且當前在看過去的週，需要同時更新 tab 和 week
     if (tab === 'events') {

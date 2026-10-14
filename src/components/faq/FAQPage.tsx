@@ -3,7 +3,6 @@
 import { css } from '@/styled-system/css';
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePageView } from '@/hooks/usePageView';
 import { faqs } from './faq-data';
 
 const inlineLink = css({
@@ -181,8 +180,6 @@ function AccordionItem({ id, question, answer, isOpen, onToggle }: AccordionItem
 // ─── Page ──────────────────────────────────────────────────────────────────
 
 export default function FAQPage() {
-  usePageView({ eventPage: '/faq' });
-
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 
   const toggle = (id: string) => {

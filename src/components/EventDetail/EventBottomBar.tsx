@@ -126,12 +126,6 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
     }
 
     favoriteToggle.mutate({ eventId: event.id, isFavorited });
-
-    sendGAEvent('event', isFavorited ? 'remove_from_favorite' : 'add_to_favorite', {
-      event_page: '/event/[id]',
-      user_id: user.uid,
-      content_id: event.id,
-    });
   };
 
   const handleLoginToFavorite = () => {

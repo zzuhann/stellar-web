@@ -3,7 +3,6 @@
 import { css } from '@/styled-system/css';
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePageView } from '@/hooks/usePageView';
 import { useContactMutation } from '@/hooks/useContact';
 
 type FormData = {
@@ -184,8 +183,6 @@ const successSection = css({
 });
 
 export default function ContactPage() {
-  usePageView({ eventPage: '/contact' });
-
   const [formData, setFormData] = useState<FormData>({ name: '', email: '', message: '' });
   const [errors, setErrors] = useState<FormErrors>({});
   const mutation = useContactMutation();

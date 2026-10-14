@@ -442,14 +442,7 @@ const MapBottomSheet = ({
                     type="button"
                     className={locationChipClose}
                     aria-label="清除地點篩選"
-                    onClick={() => {
-                      sendGAEvent('event', 'map_location_filter_clear', {
-                        event_page: '/map/[artistId]',
-                        user_id: user?.uid ?? '',
-                        content_id: artistId,
-                      });
-                      onClearLocationFilter?.();
-                    }}
+                    onClick={() => onClearLocationFilter?.()}
                   >
                     <XMarkIcon width={14} height={14} />
                   </button>

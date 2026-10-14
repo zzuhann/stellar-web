@@ -2,6 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '@/lib/api';
 import { CoffeeEvent } from '@/types';
 import toast from '@/lib/toast';
+import { sendGAEvent } from '@next/third-parties/google';
+import { auth } from '@/lib/firebase';
 
 interface UseFavoriteToggleOptions {
   eventId: string;
@@ -47,6 +49,12 @@ export const useFavoriteToggle = () => {
       toast.error('收藏生日應援失敗，請稍後再試');
     },
     onSuccess: (data) => {
+      // Track only confirmed writes; auth.currentUser also covers the post-login path where the caller's user is stale
+      sendGAEvent('event', data.isFavorited ? 'add_to_favorite' : 'remove_from_favorite', {
+        event_page: '/event/[id]',
+        user_id: auth.currentUser?.uid ?? '',
+        content_id: data.eventId,
+      });
       // 關閉所有 toast，避免快速點擊時出現多個 toast
       toast.dismiss();
       const message = data.isFavorited ? '已加入收藏' : '已取消收藏';

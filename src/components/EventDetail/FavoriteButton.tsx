@@ -6,7 +6,6 @@ import { HeartIcon as HeartOutline } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 import { css } from '@/styled-system/css';
 import useFavoriteStatus from '@/hooks/useFavoriteStatus';
-import { sendGAEvent } from '@next/third-parties/google';
 
 const favoriteButton = css({
   display: 'flex',
@@ -111,12 +110,6 @@ export default function FavoriteButton({ eventId, eventTitle }: FavoriteButtonPr
     favoriteToggle.mutate({
       eventId,
       isFavorited,
-    });
-
-    sendGAEvent('event', isFavorited ? 'remove_from_favorite' : 'add_to_favorite', {
-      event_page: '/event/[id]',
-      user_id: user?.uid ?? '',
-      content_id: eventId,
     });
   };
 

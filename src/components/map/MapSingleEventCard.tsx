@@ -260,20 +260,7 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
           </div>
         </Link>
 
-        <button
-          className={closeButton}
-          type="button"
-          aria-label="關閉"
-          onClick={() => {
-            sendGAEvent('event', 'map_single_card_close', {
-              event_page: '/map/[artistId]',
-              user_id: user?.uid ?? '',
-              content_id: event.id,
-              artist_id: artistId,
-            });
-            onDismiss();
-          }}
-        >
+        <button className={closeButton} type="button" aria-label="關閉" onClick={onDismiss}>
           <XMarkIcon width={16} height={16} />
         </button>
       </div>
