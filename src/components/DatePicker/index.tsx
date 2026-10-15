@@ -129,7 +129,7 @@ export default function DatePicker({
   const [viewMode, setViewMode] = useState<'calendar' | 'year' | 'month'>('calendar');
 
   const handleDateSelect = (date: Date, close: () => void) => {
-    if (isDisabled({ date, min, max })) return;
+    if (disabled || isDisabled({ date, min, max })) return;
 
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -187,6 +187,7 @@ export default function DatePicker({
               className={dateInput({ error, disabled })}
               type="button"
               aria-label="選擇日期"
+              disabled={disabled}
             >
               <div>
                 {value ? (
@@ -203,42 +204,44 @@ export default function DatePicker({
               />
             </Popover.Button>
 
-            <Popover.Panel className={popoverPanel}>
-              {viewMode === 'calendar' && (
-                <CalendarView
-                  currentDate={currentDate}
-                  value={value}
-                  min={min}
-                  max={max}
-                  goToPreviousMonth={goToPreviousMonth}
-                  goToNextMonth={goToNextMonth}
-                  handleYearMonthClick={handleYearMonthClick}
-                  handleDateSelect={handleDateSelect}
-                  handleClose={close}
-                />
-              )}
+            {!disabled && (
+              <Popover.Panel className={popoverPanel}>
+                {viewMode === 'calendar' && (
+                  <CalendarView
+                    currentDate={currentDate}
+                    value={value}
+                    min={min}
+                    max={max}
+                    goToPreviousMonth={goToPreviousMonth}
+                    goToNextMonth={goToNextMonth}
+                    handleYearMonthClick={handleYearMonthClick}
+                    handleDateSelect={handleDateSelect}
+                    handleClose={close}
+                  />
+                )}
 
-              {viewMode === 'year' && (
-                <YearView
-                  goToPreviousYearList={goToPreviousYearList}
-                  goToNextYearList={goToNextYearList}
-                  headerText={`${currentDate.getFullYear() - 6} - ${currentDate.getFullYear() + 5}`}
-                  handleYearMonthClick={handleYearMonthClick}
-                  selectYear={selectYear}
-                  currentDate={currentDate}
-                />
-              )}
+                {viewMode === 'year' && (
+                  <YearView
+                    goToPreviousYearList={goToPreviousYearList}
+                    goToNextYearList={goToNextYearList}
+                    headerText={`${currentDate.getFullYear() - 6} - ${currentDate.getFullYear() + 5}`}
+                    handleYearMonthClick={handleYearMonthClick}
+                    selectYear={selectYear}
+                    currentDate={currentDate}
+                  />
+                )}
 
-              {viewMode === 'month' && (
-                <MonthView
-                  goToPreviousYear={goToPreviousYear}
-                  goToNextYear={goToNextYear}
-                  headerText={currentDate.getFullYear().toString()}
-                  handleYearMonthClick={handleYearMonthClick}
-                  selectMonth={selectMonth}
-                />
-              )}
-            </Popover.Panel>
+                {viewMode === 'month' && (
+                  <MonthView
+                    goToPreviousYear={goToPreviousYear}
+                    goToNextYear={goToNextYear}
+                    headerText={currentDate.getFullYear().toString()}
+                    handleYearMonthClick={handleYearMonthClick}
+                    selectMonth={selectMonth}
+                  />
+                )}
+              </Popover.Panel>
+            )}
           </>
         )}
       </Popover>

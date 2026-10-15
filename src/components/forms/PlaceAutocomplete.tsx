@@ -22,6 +22,7 @@ interface PlaceAutocompleteProps {
   placeholder?: string;
   defaultValue?: string;
   api?: typeof placesApi;
+  disabled?: boolean;
 }
 
 const container = css({
@@ -210,6 +211,7 @@ export default function PlaceAutocomplete({
   onPlaceSelect,
   defaultValue = '',
   api = placesApi,
+  disabled = false,
 }: PlaceAutocompleteProps) {
   const [query, setQuery] = useState(defaultValue);
   const [selectedPlace, setSelectedPlace] = useState<PlacePrediction | null>(null);
@@ -263,11 +265,11 @@ export default function PlaceAutocomplete({
 
   return (
     <div className={container}>
-      <Combobox value={selectedPlace} onChange={handlePlaceSelect}>
+      <Combobox value={selectedPlace} onChange={handlePlaceSelect} disabled={disabled}>
         <div className={comboboxContainer}>
           <Combobox.Input
             aria-label="搜尋地點"
-            className={comboboxInput({ isError, isDisabled: false })}
+            className={comboboxInput({ isError, isDisabled: disabled })}
             displayValue={(prediction: PlacePrediction | null) =>
               prediction
                 ? prediction.structured_formatting?.main_text || prediction.description
@@ -290,7 +292,7 @@ export default function PlaceAutocomplete({
             )}
           </Combobox.Button>
 
-          {(predictions.length > 0 || isLoading) && (
+          {!disabled && (predictions.length > 0 || isLoading) && (
             <Combobox.Options className={comboboxOptions}>
               {isLoading && <div className={loadingOption}>搜尋中...</div>}
               {predictions.map((prediction: PlacePrediction) => (

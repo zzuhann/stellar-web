@@ -242,6 +242,7 @@ const EventInfoSection = ({
           先打店家名稱（例如「留白時間」），找不到時再改用地址。
         </p>
         <PlaceAutocomplete
+          disabled={isPending}
           onPlaceSelect={handlePlaceSelect}
           defaultValue={existingEventLocationName}
         />
