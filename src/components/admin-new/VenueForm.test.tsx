@@ -171,6 +171,7 @@ describe('VenueForm edit mode', () => {
           line: '',
           preferredContact: '',
           contactUrl: '',
+          bookingFormUrl: '',
         }}
         onSubmit={onSubmit}
         isSubmitting={false}
@@ -210,6 +211,7 @@ describe('VenueForm edit mode', () => {
           line: '',
           preferredContact: preferredContact as never,
           contactUrl,
+          bookingFormUrl: '',
         }}
         onSubmit={onSubmit}
         isSubmitting={false}

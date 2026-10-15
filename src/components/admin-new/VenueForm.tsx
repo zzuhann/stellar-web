@@ -518,6 +518,7 @@ export interface VenueFormValues {
   line: string;
   preferredContact: PreferredContact | '';
   contactUrl: string;
+  bookingFormUrl: string;
 }
 
 const EMPTY_VALUES: VenueFormValues = {
@@ -536,6 +537,7 @@ const EMPTY_VALUES: VenueFormValues = {
   line: '',
   preferredContact: 'instagram',
   contactUrl: '',
+  bookingFormUrl: '',
 };
 
 interface FormErrors {
