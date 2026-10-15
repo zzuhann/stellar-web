@@ -70,6 +70,10 @@ const formHeader = css({
 });
 
 const form = css({
+  minWidth: '0',
+  border: '0',
+  padding: '0',
+  margin: '0',
   display: 'flex',
   flexDirection: 'column',
   gap: '6',
@@ -259,6 +263,10 @@ function EventSubmissionForm({
   const createEventMutation = useCreateEventMutation({ onSuccess, entryPoint });
   const updateEventMutation = useUpdateEventMutation({ onSuccess });
   const resubmitEventMutation = useResubmitEventMutation();
+  const isPending =
+    createEventMutation.isPending ||
+    updateEventMutation.isPending ||
+    resubmitEventMutation.isPending;
 
   const handlePlaceSelect = (place: {
     place_id: string;
@@ -618,97 +626,99 @@ function EventSubmissionForm({
 
       {mode === 'create' && currentStep === 1 && <StepIndicator currentStep={currentStep} />}
 
-      <form className={form} aria-label="生日應援投稿表單">
-        {/* 第一步：選擇藝人 */}
-        {(currentStep === 1 || mode === 'edit' || mode === 'copy') && (
-          <ChooseArtistSection
-            mode={mode === 'copy' ? 'edit' : mode}
-            selectedArtists={selectedArtists}
-            openArtistSelectionModal={openArtistSelectionModal}
-            removeArtist={removeArtist}
-            register={register}
-            errors={errors}
-            setFieldRef={setFieldRef}
-          />
-        )}
-
-        {/* 第二步：其他活動資訊 */}
-        {(currentStep === 2 || mode === 'edit' || mode === 'copy') && (
-          <EventInfoSection
-            register={register}
-            errors={errors}
-            mainImageUrl={mainImageUrl}
-            onUploadComplete={(imageUrl) => {
-              setMainImageUrl(imageUrl);
-              setValue('mainImage', imageUrl, {
-                shouldValidate: true,
-                shouldDirty: true,
-              });
-              showToast.success('主視覺圖片上傳成功');
-            }}
-            isPending={createEventMutation.isPending || updateEventMutation.isPending}
-            handleChangeStartDate={handleChangeStartDate}
-            handleChangeEndDate={handleChangeEndDate}
-            handlePlaceSelect={handlePlaceSelect}
-            handleChangeImages={handleChangeImages}
-            detailImageUrls={detailImageUrls}
-            startDate={startDate}
-            endDate={endDate}
-            description={description}
-            existingEventLocationName={existingEvent?.location.name || ''}
-            reservationDate={reservationDate}
-            reservationTime={reservationTime}
-            handleChangeReservationDate={handleChangeReservationDate}
-            handleChangeReservationTime={handleChangeReservationTime}
-            reservationEnabled={reservationEnabled}
-            onToggleReservation={handleToggleReservation}
-            instagram={instagram}
-            threads={threads}
-            handleChangeInstagram={handleChangeInstagram}
-            handleChangeThreads={handleChangeThreads}
-            setFieldRef={setFieldRef}
-          />
-        )}
-
-        {/* 匿名用戶 email 欄位 */}
-        {user?.isAnonymous && (mode === 'create' || mode === 'copy') && currentStep === 2 && (
-          <div className={emailSection}>
-            <p className={emailSectionTitle}>你的信箱（選填）</p>
-            <p className={emailSectionDesc}>
-              如果你想要取得最新的審核狀態，可以填寫你的電子信箱，我們會在審核通過後寄信通知你～！
-            </p>
-            <input
-              className={emailInput}
-              type="email"
-              maxLength={254}
-              name="email"
-              autoComplete="email"
-              placeholder="example@email.com"
-              value={submitterEmail}
-              onChange={(e) => {
-                setSubmitterEmail(e.target.value);
-                if (submitterEmailError) setSubmitterEmailError('');
-              }}
-              onBlur={() => validateSubmitterEmail(submitterEmail)}
+      <form aria-label="生日應援投稿表單" aria-busy={isPending}>
+        <fieldset className={form} disabled={isPending}>
+          {/* 第一步：選擇藝人 */}
+          {(currentStep === 1 || mode === 'edit' || mode === 'copy') && (
+            <ChooseArtistSection
+              mode={mode === 'copy' ? 'edit' : mode}
+              selectedArtists={selectedArtists}
+              openArtistSelectionModal={openArtistSelectionModal}
+              removeArtist={removeArtist}
+              register={register}
+              errors={errors}
+              setFieldRef={setFieldRef}
             />
-            {submitterEmailError && <p className={emailError}>{submitterEmailError}</p>}
-          </div>
-        )}
+          )}
 
-        <ActionButtons
-          mode={mode}
-          currentStep={currentStep}
-          handleNextStep={handleNextStep}
-          handlePrevStep={handlePrevStep}
-          onCancel={onCancel}
-          createEventPending={createEventMutation.isPending}
-          updateEventPending={updateEventMutation.isPending}
-          resubmitEventPending={resubmitEventMutation.isPending}
-          handleSubmit={handleSubmit}
-          onSubmit={onSubmit}
-          onInvalidSubmit={handleInvalidSubmit}
-          existingEventStatus={existingEvent?.status || 'pending'}
-        />
+          {/* 第二步：其他活動資訊 */}
+          {(currentStep === 2 || mode === 'edit' || mode === 'copy') && (
+            <EventInfoSection
+              register={register}
+              errors={errors}
+              mainImageUrl={mainImageUrl}
+              onUploadComplete={(imageUrl) => {
+                setMainImageUrl(imageUrl);
+                setValue('mainImage', imageUrl, {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                });
+                showToast.success('主視覺圖片上傳成功');
+              }}
+              isPending={isPending}
+              handleChangeStartDate={handleChangeStartDate}
+              handleChangeEndDate={handleChangeEndDate}
+              handlePlaceSelect={handlePlaceSelect}
+              handleChangeImages={handleChangeImages}
+              detailImageUrls={detailImageUrls}
+              startDate={startDate}
+              endDate={endDate}
+              description={description}
+              existingEventLocationName={existingEvent?.location.name || ''}
+              reservationDate={reservationDate}
+              reservationTime={reservationTime}
+              handleChangeReservationDate={handleChangeReservationDate}
+              handleChangeReservationTime={handleChangeReservationTime}
+              reservationEnabled={reservationEnabled}
+              onToggleReservation={handleToggleReservation}
+              instagram={instagram}
+              threads={threads}
+              handleChangeInstagram={handleChangeInstagram}
+              handleChangeThreads={handleChangeThreads}
+              setFieldRef={setFieldRef}
+            />
+          )}
+
+          {/* 匿名用戶 email 欄位 */}
+          {user?.isAnonymous && (mode === 'create' || mode === 'copy') && currentStep === 2 && (
+            <div className={emailSection}>
+              <p className={emailSectionTitle}>你的信箱（選填）</p>
+              <p className={emailSectionDesc}>
+                如果你想要取得最新的審核狀態，可以填寫你的電子信箱，我們會在審核通過後寄信通知你～！
+              </p>
+              <input
+                className={emailInput}
+                type="email"
+                maxLength={254}
+                name="email"
+                autoComplete="email"
+                placeholder="example@email.com"
+                value={submitterEmail}
+                onChange={(e) => {
+                  setSubmitterEmail(e.target.value);
+                  if (submitterEmailError) setSubmitterEmailError('');
+                }}
+                onBlur={() => validateSubmitterEmail(submitterEmail)}
+              />
+              {submitterEmailError && <p className={emailError}>{submitterEmailError}</p>}
+            </div>
+          )}
+
+          <ActionButtons
+            mode={mode}
+            currentStep={currentStep}
+            handleNextStep={handleNextStep}
+            handlePrevStep={handlePrevStep}
+            onCancel={onCancel}
+            createEventPending={createEventMutation.isPending}
+            updateEventPending={updateEventMutation.isPending}
+            resubmitEventPending={resubmitEventMutation.isPending}
+            handleSubmit={handleSubmit}
+            onSubmit={onSubmit}
+            onInvalidSubmit={handleInvalidSubmit}
+            existingEventStatus={existingEvent?.status || 'pending'}
+          />
+        </fieldset>
       </form>
 
       {/* 藝人選擇 Modal - 只在 create mode 顯示 */}
