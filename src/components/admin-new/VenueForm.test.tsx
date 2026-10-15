@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import VenueForm from './VenueForm';
+import VenueForm, { type VenueFormValues } from './VenueForm';
 
 vi.mock('next/link', () => ({
   default: ({ children }: { children: React.ReactNode }) => children,
@@ -17,16 +17,57 @@ vi.mock('@/components/forms/PlaceAutocomplete', () => ({ default: () => null }))
 
 afterEach(cleanup);
 
+const URL_ERR = '請輸入完整網址（以 http:// 或 https:// 開頭）';
+const LENGTH_ERR = '網址不能超過 500 個字';
+const CONTACT_TRIGGER = /^(IG 私訊|Threads 私訊|LINE|請選擇)$/;
+
+function renderCreate() {
+  const onSubmit = vi.fn();
+  render(<VenueForm mode="create" onSubmit={onSubmit} isSubmitting={false} submitError={null} />);
+  return onSubmit;
+}
+
+function fillRequired({ instagram = '@stellar', threads = '' } = {}) {
+  fireEvent.change(screen.getByLabelText(/場地名稱/), { target: { value: '測試場地' } });
+  fireEvent.change(screen.getByLabelText(/地址/), { target: { value: '測試地址' } });
+  fireEvent.click(screen.getByRole('button', { name: '請選擇地區' }));
+  fireEvent.click(screen.getByRole('option', { name: '台北' }));
+  fireEvent.click(screen.getByRole('button', { name: '請選擇容納人數範圍' }));
+  fireEvent.click(screen.getByRole('option', { name: '20-40人' }));
+  if (instagram) {
+    fireEvent.change(screen.getByLabelText('Instagram'), { target: { value: instagram } });
+  }
+  if (threads) {
+    fireEvent.change(screen.getByLabelText('Threads'), { target: { value: threads } });
+  }
+  fireEvent.click(screen.getByRole('button', { name: '模擬封面上傳' }));
+}
+
+function selectContact(name: string) {
+  fireEvent.click(screen.getByRole('button', { name: CONTACT_TRIGGER }));
+  fireEvent.click(screen.getByRole('option', { name }));
+}
+
+function submitCreate() {
+  fireEvent.click(screen.getByRole('button', { name: '新增場地' }));
+}
+
+function expectFieldError(label: string, message: string) {
+  const input = screen.getByLabelText(label);
+  const error = screen.getByText(message);
+  expect(input.getAttribute('aria-invalid')).toBe('true');
+  expect(input.getAttribute('aria-describedby')).toBe(error.id);
+}
+
 describe('VenueForm create mode', () => {
   it('缺少容納人數、社群帳號及封面圖片時阻止送出', () => {
-    const onSubmit = vi.fn();
-    render(<VenueForm mode="create" onSubmit={onSubmit} isSubmitting={false} submitError={null} />);
+    const onSubmit = renderCreate();
 
     fireEvent.change(screen.getByLabelText(/場地名稱/), { target: { value: '測試場地' } });
     fireEvent.change(screen.getByLabelText(/地址/), { target: { value: '測試地址' } });
     fireEvent.click(screen.getByRole('button', { name: '請選擇地區' }));
     fireEvent.click(screen.getByRole('option', { name: '台北' }));
-    fireEvent.click(screen.getByRole('button', { name: '新增場地' }));
+    submitCreate();
 
     expect(screen.getByText('請選擇容納人數')).toBeTruthy();
     expect(screen.getByText('請至少填寫 Instagram 或 Threads')).toBeTruthy();
@@ -35,23 +76,15 @@ describe('VenueForm create mode', () => {
   });
 
   it('預設選取 IG 私訊並送出 preferredContact', () => {
-    const onSubmit = vi.fn();
-    render(<VenueForm mode="create" onSubmit={onSubmit} isSubmitting={false} submitError={null} />);
+    const onSubmit = renderCreate();
 
-    expect(screen.getByText('偏好聯繫方式')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /IG 私訊/ })).toBeTruthy();
+    expect(screen.getByText('主辦要怎麼聯絡你？')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'IG 私訊' })).toBeTruthy();
     expect(screen.queryByText('不填寫')).toBeNull();
 
-    fireEvent.change(screen.getByLabelText(/場地名稱/), { target: { value: '測試場地' } });
-    fireEvent.change(screen.getByLabelText(/地址/), { target: { value: '測試地址' } });
-    fireEvent.click(screen.getByRole('button', { name: '請選擇地區' }));
-    fireEvent.click(screen.getByRole('option', { name: '台北' }));
-    fireEvent.click(screen.getByRole('button', { name: '請選擇容納人數範圍' }));
-    fireEvent.click(screen.getByRole('option', { name: '20-40人' }));
+    fillRequired();
     expect(screen.getByRole('button', { name: '20-40人' })).toBeTruthy();
-    fireEvent.change(screen.getByLabelText('Instagram'), { target: { value: '@stellar' } });
-    fireEvent.click(screen.getByRole('button', { name: '模擬封面上傳' }));
-    fireEvent.click(screen.getByRole('button', { name: '新增場地' }));
+    submitCreate();
 
     expect(onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -64,35 +97,108 @@ describe('VenueForm create mode', () => {
   });
 });
 
-describe('VenueForm contactUrl', () => {
-  const ERR = '請輸入完整網址（以 http:// 或 https:// 開頭）';
+describe('VenueForm 聯絡方式（TC-098 新增模式）', () => {
+  it('TC-098 標題為「主辦要怎麼聯絡你？」，選項只有 IG 私訊、Threads 私訊、LINE', () => {
+    renderCreate();
 
-  function fillAndSubmit(contactUrl: string | null) {
-    const onSubmit = vi.fn();
-    render(<VenueForm mode="create" onSubmit={onSubmit} isSubmitting={false} submitError={null} />);
-    fillRequired();
-    if (contactUrl !== null) {
-      selectContact(/LINE/i);
-      fireEvent.change(screen.getByLabelText('預約表單連結'), { target: { value: contactUrl } });
+    expect(screen.getByText('主辦要怎麼聯絡你？')).toBeTruthy();
+    expect(screen.queryByText('偏好聯繫方式')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: CONTACT_TRIGGER }));
+    expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
+      'IG 私訊',
+      'Threads 私訊',
+      'LINE',
+    ]);
+    expect(screen.queryByRole('option', { name: /表單|其他/ })).toBeNull();
+  });
+
+  it('TC-098 只有選 LINE 才出現「LINE 連結」', () => {
+    renderCreate();
+
+    expect(screen.queryByLabelText('LINE 連結')).toBeNull();
+    selectContact('Threads 私訊');
+    expect(screen.queryByLabelText('LINE 連結')).toBeNull();
+    selectContact('LINE');
+    expect(screen.getByLabelText('LINE 連結')).toBeTruthy();
+  });
+
+  it.each([
+    {
+      channel: 'IG 私訊',
+      social: { instagram: '', threads: '@stellar' },
+      field: 'Instagram',
+      value: '@venue',
+      message: '選了 IG 私訊，要填 Instagram',
+    },
+    {
+      channel: 'Threads 私訊',
+      social: { instagram: '@stellar', threads: '' },
+      field: 'Threads',
+      value: '@venue',
+      message: '選了 Threads 私訊，要填 Threads',
+    },
+    {
+      channel: 'LINE',
+      social: { instagram: '@stellar', threads: '' },
+      field: 'LINE 連結',
+      value: 'https://lin.ee/abc',
+      message: '選了 LINE，要填 LINE 連結',
+    },
+  ])(
+    'TC-098 選 $channel 但 $field 空白：該欄下方顯示錯誤、不送出；填上後錯誤消失可送出',
+    ({ channel, social, field, value, message }) => {
+      const onSubmit = renderCreate();
+      fillRequired(social);
+      selectContact(channel);
+      submitCreate();
+
+      expectFieldError(field, message);
+      expect(onSubmit).not.toHaveBeenCalled();
+
+      fireEvent.change(screen.getByLabelText(field), { target: { value } });
+      expect(screen.queryByText(message)).toBeNull();
+      submitCreate();
+      expect(onSubmit).toHaveBeenCalledTimes(1);
     }
-    fireEvent.click(screen.getByRole('button', { name: '新增場地' }));
+  );
+
+  it('TC-098 選 LINE 時 LINE 連結只有空白也算沒填', () => {
+    const onSubmit = renderCreate();
+    fillRequired();
+    selectContact('LINE');
+    fireEvent.change(screen.getByLabelText('LINE 連結'), { target: { value: '   ' } });
+    submitCreate();
+
+    expectFieldError('LINE 連結', '選了 LINE，要填 LINE 連結');
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('TC-098 送出失敗後改選管道，錯誤即時跟著換', () => {
+    const onSubmit = renderCreate();
+    fillRequired({ instagram: '@stellar', threads: '' });
+    selectContact('LINE');
+    submitCreate();
+    expect(screen.getByText('選了 LINE，要填 LINE 連結')).toBeTruthy();
+
+    selectContact('Threads 私訊');
+    expect(screen.queryByText('選了 LINE，要填 LINE 連結')).toBeNull();
+    expectFieldError('Threads', '選了 Threads 私訊，要填 Threads');
+
+    selectContact('IG 私訊');
+    expect(screen.queryByText('選了 Threads 私訊，要填 Threads')).toBeNull();
+    submitCreate();
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('VenueForm LINE 連結（TC-098，存 contactUrl）', () => {
+  function fillAndSubmit(contactUrl: string) {
+    const onSubmit = renderCreate();
+    fillRequired();
+    selectContact('LINE');
+    fireEvent.change(screen.getByLabelText('LINE 連結'), { target: { value: contactUrl } });
+    submitCreate();
     return onSubmit;
-  }
-
-  function fillRequired() {
-    fireEvent.change(screen.getByLabelText(/場地名稱/), { target: { value: '測試場地' } });
-    fireEvent.change(screen.getByLabelText(/地址/), { target: { value: '測試地址' } });
-    fireEvent.click(screen.getByRole('button', { name: '請選擇地區' }));
-    fireEvent.click(screen.getByRole('option', { name: '台北' }));
-    fireEvent.click(screen.getByRole('button', { name: '請選擇容納人數範圍' }));
-    fireEvent.click(screen.getByRole('option', { name: '20-40人' }));
-    fireEvent.change(screen.getByLabelText('Instagram'), { target: { value: '@stellar' } });
-    fireEvent.click(screen.getByRole('button', { name: '模擬封面上傳' }));
-  }
-
-  function selectContact(name: RegExp) {
-    fireEvent.click(screen.getByRole('button', { name: /IG 私訊|Line|表單|其他|Threads/ }));
-    fireEvent.click(screen.getByRole('option', { name }));
   }
 
   it.each([
@@ -104,23 +210,16 @@ describe('VenueForm contactUrl', () => {
     'HTTPS://example.com',
   ])('拒絕非 http(s) 網址 %s 並顯示錯誤', (value) => {
     const onSubmit = fillAndSubmit(value);
-    const input = screen.getByLabelText('預約表單連結');
-    const error = screen.getByText(ERR);
-    expect(input.getAttribute('aria-invalid')).toBe('true');
-    expect(input.getAttribute('aria-describedby')).toBe(error.id);
+    expectFieldError('LINE 連結', URL_ERR);
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
   it('接受 https 與 http 網址，並送出 trim 後的值', () => {
-    expect(fillAndSubmit('  https://line.me/ti/p/xxx  ')).toHaveBeenCalledWith(
-      expect.objectContaining({ contactUrl: 'https://line.me/ti/p/xxx' })
+    expect(fillAndSubmit('  https://lin.ee/abc  ')).toHaveBeenCalledWith(
+      expect.objectContaining({ preferredContact: 'line', contactUrl: 'https://lin.ee/abc' })
     );
     cleanup();
     expect(fillAndSubmit('http://example.com')).toHaveBeenCalled();
-  });
-
-  it('空值仍為選填', () => {
-    expect(fillAndSubmit('')).toHaveBeenCalled();
   });
 
   it('500 字通過、501 字擋下', () => {
@@ -128,117 +227,265 @@ describe('VenueForm contactUrl', () => {
     expect(fillAndSubmit(base + 'a'.repeat(500 - base.length))).toHaveBeenCalled();
     cleanup();
     const onSubmit = fillAndSubmit(base + 'a'.repeat(501 - base.length));
-    expect(screen.getByText('網址不能超過 500 個字')).toBeTruthy();
+    expect(screen.getByText(LENGTH_ERR)).toBeTruthy();
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it('placeholder 不含 LINE ID', () => {
-    fillAndSubmit('');
-    const placeholder = screen.getByLabelText('預約表單連結').getAttribute('placeholder') ?? '';
+  it('placeholder 是 LINE 官方帳號網址，不含 LINE ID', () => {
+    renderCreate();
+    selectContact('LINE');
+    const placeholder = screen.getByLabelText('LINE 連結').getAttribute('placeholder') ?? '';
+    expect(placeholder).toBe('https://lin.ee/...');
     expect(placeholder).not.toMatch(/line id/i);
   });
 
-  it('改選不需要網址的聯繫方式後，隱藏的非法值不驗證也不送出', () => {
+  it('改選 IG 私訊後，隱藏的非法值不驗證也不送出', () => {
     const onSubmit = fillAndSubmit('@abc123');
     expect(onSubmit).not.toHaveBeenCalled();
-    selectContact(/IG 私訊/);
-    expect(screen.queryByLabelText('預約表單連結')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: '新增場地' }));
+    selectContact('IG 私訊');
+    expect(screen.queryByLabelText('LINE 連結')).toBeNull();
+    submitCreate();
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0][0]).not.toHaveProperty('contactUrl');
+  });
+});
+
+describe('VenueForm 預約表單網址（TC-098 新增模式，存 bookingFormUrl）', () => {
+  function fillAndSubmit(bookingFormUrl: string) {
+    const onSubmit = renderCreate();
+    fillRequired();
+    fireEvent.change(screen.getByLabelText('預約表單網址'), {
+      target: { value: bookingFormUrl },
+    });
+    submitCreate();
+    return onSubmit;
+  }
+
+  it('TC-098 不論選哪個管道都顯示，附提示文字', () => {
+    renderCreate();
+    expect(screen.getByLabelText('預約表單網址')).toBeTruthy();
+    expect(screen.getByText('有固定的預約或申請表單再填。')).toBeTruthy();
+    selectContact('Threads 私訊');
+    expect(screen.getByLabelText('預約表單網址')).toBeTruthy();
+    selectContact('LINE');
+    expect(screen.getByLabelText('預約表單網址')).toBeTruthy();
+  });
+
+  it.each(['', '   '])('TC-098 空值（%j）可送出，body 不帶 bookingFormUrl', (value) => {
+    const onSubmit = fillAndSubmit(value);
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0][0]).not.toHaveProperty('bookingFormUrl');
+  });
+
+  it('TC-098 前後空白會 trim 後送出', () => {
+    expect(fillAndSubmit('  https://forms.gle/x  ')).toHaveBeenCalledWith(
+      expect.objectContaining({ bookingFormUrl: 'https://forms.gle/x' })
+    );
+  });
+
+  it.each([
+    { value: 'abc', message: URL_ERR },
+    { value: 'javascript:alert(1)', message: URL_ERR },
+    {
+      value: 'https://forms.gle/' + 'a'.repeat(501 - 'https://forms.gle/'.length),
+      message: LENGTH_ERR,
+    },
+  ])('TC-098 非法值 $value 在欄位下方顯示錯誤、不送出', ({ value, message }) => {
+    const onSubmit = fillAndSubmit(value);
+    expectFieldError('預約表單網址', message);
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('TC-098 剛好 500 字可送出', () => {
+    const base = 'https://forms.gle/';
+    const value = base + 'a'.repeat(500 - base.length);
+    expect(fillAndSubmit(value)).toHaveBeenCalledWith(
+      expect.objectContaining({ bookingFormUrl: value })
+    );
+  });
+
+  it('TC-098 修改欄位後錯誤消失', () => {
+    fillAndSubmit('abc');
+    fireEvent.change(screen.getByLabelText('預約表單網址'), {
+      target: { value: 'https://forms.gle/x' },
+    });
+    expect(screen.queryByText(URL_ERR)).toBeNull();
+  });
+});
+
+const EDIT_BASE: VenueFormValues = {
+  name: '舊場地',
+  address: '舊地址',
+  region: '台北',
+  nearestMrt: '',
+  mrtWalkMinutes: '',
+  capacityRange: '',
+  description: '',
+  coverPhoto: '',
+  otherPhotos: [],
+  hostTags: [],
+  threads: '',
+  instagram: '',
+  line: '',
+  preferredContact: '',
+  contactUrl: '',
+  bookingFormUrl: '',
+};
+
+function renderEdit(overrides: Partial<VenueFormValues> = {}) {
+  const onSubmit = vi.fn();
+  render(
+    <VenueForm
+      mode="edit"
+      initialValues={{ ...EDIT_BASE, ...overrides }}
+      onSubmit={onSubmit}
+      isSubmitting={false}
+      submitError={null}
+      status="active"
+      onStatusChange={vi.fn()}
+      isStatusChanging={false}
+      onDeleteClick={vi.fn()}
+      canDelete={false}
+    />
+  );
+  return onSubmit;
+}
+
+function save() {
+  fireEvent.click(screen.getByRole('button', { name: '儲存變更' }));
+}
+
+function rename() {
+  fireEvent.change(screen.getByLabelText(/場地名稱/), { target: { value: '更新場地' } });
+}
+
+describe('VenueForm edit mode', () => {
+  it('舊資料缺少新增必填欄位時仍可儲存其他修改', () => {
+    const onSubmit = renderEdit();
+    rename();
+    save();
+    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ name: '更新場地' }));
+  });
+
+  it('LINE 連結非法時阻止儲存', () => {
+    const onSubmit = renderEdit({ preferredContact: 'line', contactUrl: 'abc' });
+    save();
+    expect(screen.getByText(URL_ERR)).toBeTruthy();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('切換成不需網址的聯絡方式時，隱藏的非法值不卡住也不送出', () => {
+    const onSubmit = renderEdit({ preferredContact: 'line', contactUrl: 'abc', instagram: '@v' });
+    selectContact('IG 私訊');
+    save();
     expect(onSubmit).toHaveBeenCalledTimes(1);
     expect(onSubmit.mock.calls[0][0].contactUrl).toBeUndefined();
   });
 });
 
-describe('VenueForm edit mode', () => {
-  it('舊資料缺少新增必填欄位時仍可儲存其他修改', () => {
-    const onSubmit = vi.fn();
-    render(
-      <VenueForm
-        mode="edit"
-        initialValues={{
-          name: '舊場地',
-          address: '舊地址',
-          region: '台北',
-          nearestMrt: '',
-          mrtWalkMinutes: '',
-          capacityRange: '',
-          description: '',
-          coverPhoto: '',
-          otherPhotos: [],
-          hostTags: [],
-          threads: '',
-          instagram: '',
-          line: '',
-          preferredContact: '',
-          contactUrl: '',
-          bookingFormUrl: '',
-        }}
-        onSubmit={onSubmit}
-        isSubmitting={false}
-        submitError={null}
-        status="active"
-        onStatusChange={vi.fn()}
-        isStatusChanging={false}
-        onDeleteClick={vi.fn()}
-        canDelete={false}
-      />
+describe('VenueForm 預約表單網址（TC-099 後台編輯）', () => {
+  it('TC-099 預填原值；只改店名時送原值', () => {
+    const onSubmit = renderEdit({ bookingFormUrl: 'https://forms.gle/x' });
+    expect((screen.getByLabelText('預約表單網址') as HTMLInputElement).value).toBe(
+      'https://forms.gle/x'
     );
-
-    fireEvent.change(screen.getByLabelText(/場地名稱/), { target: { value: '更新場地' } });
-    fireEvent.click(screen.getByRole('button', { name: '儲存變更' }));
-
-    expect(onSubmit).toHaveBeenCalledWith(expect.objectContaining({ name: '更新場地' }));
+    rename();
+    save();
+    expect(onSubmit.mock.calls[0][0].bookingFormUrl).toBe('https://forms.gle/x');
   });
 
-  function renderEdit(preferredContact: string, contactUrl: string) {
-    const onSubmit = vi.fn();
-    render(
-      <VenueForm
-        mode="edit"
-        initialValues={{
-          name: '舊場地',
-          address: '舊地址',
-          region: '台北',
-          nearestMrt: '',
-          mrtWalkMinutes: '',
-          capacityRange: '',
-          description: '',
-          coverPhoto: '',
-          otherPhotos: [],
-          hostTags: [],
-          threads: '',
-          instagram: '',
-          line: '',
-          preferredContact: preferredContact as never,
-          contactUrl,
-          bookingFormUrl: '',
-        }}
-        onSubmit={onSubmit}
-        isSubmitting={false}
-        submitError={null}
-        status="active"
-        onStatusChange={vi.fn()}
-        isStatusChanging={false}
-        onDeleteClick={vi.fn()}
-        canDelete={false}
-      />
-    );
-    return onSubmit;
-  }
+  it.each(['', '   '])('TC-099 清空成 %j 後存檔送 null（不是 undefined）', (value) => {
+    const onSubmit = renderEdit({ bookingFormUrl: 'https://forms.gle/x' });
+    fireEvent.change(screen.getByLabelText('預約表單網址'), { target: { value } });
+    save();
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0][0]).toHaveProperty('bookingFormUrl', null);
+  });
 
-  it('contactUrl 非法時阻止儲存', () => {
-    const onSubmit = renderEdit('line', 'abc');
-    fireEvent.click(screen.getByRole('button', { name: '儲存變更' }));
-    expect(screen.getByText('請輸入完整網址（以 http:// 或 https:// 開頭）')).toBeTruthy();
+  it('TC-099 舊場地沒有預約表單網址，只改店名時送 null', () => {
+    const onSubmit = renderEdit({ bookingFormUrl: '' });
+    rename();
+    save();
+    expect(onSubmit.mock.calls[0][0]).toHaveProperty('bookingFormUrl', null);
+  });
+
+  it('TC-099 編輯時改成非法值擋下', () => {
+    const onSubmit = renderEdit({ bookingFormUrl: 'https://forms.gle/x' });
+    fireEvent.change(screen.getByLabelText('預約表單網址'), {
+      target: { value: 'javascript:alert(1)' },
+    });
+    save();
+    expectFieldError('預約表單網址', URL_ERR);
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
+});
+
+describe('VenueForm 舊資料與聯絡管道檢查（TC-100 後台編輯）', () => {
+  it.each([
+    {
+      name: 'a：preferredContact form，只改店名',
+      values: { preferredContact: 'form', contactUrl: 'https://forms.gle/old' } as const,
+      edit: rename,
+    },
+    {
+      name: 'c：preferredContact other，只改說明',
+      values: { preferredContact: 'other', contactUrl: '' } as const,
+      edit: () =>
+        fireEvent.change(screen.getByLabelText('場地描述'), { target: { value: '新說明' } }),
+    },
+  ])(
+    'TC-100 $name：下拉顯示請選擇，存檔不送 preferredContact 與 contactUrl',
+    ({ values, edit }) => {
+      const onSubmit = renderEdit(values);
+      expect(screen.getByRole('button', { name: '請選擇' })).toBeTruthy();
+      expect(screen.queryByLabelText('LINE 連結')).toBeNull();
+
+      edit();
+      save();
+
+      expect(onSubmit).toHaveBeenCalledTimes(1);
+      const payload = onSubmit.mock.calls[0][0];
+      expect(payload.preferredContact).not.toBe('instagram');
+      expect(payload).not.toHaveProperty('preferredContact');
+      expect(payload).not.toHaveProperty('contactUrl');
+    }
+  );
+
+  it('TC-100 b：舊資料 form 改選 IG 私訊後送 instagram', () => {
+    const onSubmit = renderEdit({
+      preferredContact: 'form',
+      contactUrl: 'https://forms.gle/old',
+      instagram: '@venue',
+    });
+    selectContact('IG 私訊');
+    save();
+
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+    expect(onSubmit.mock.calls[0][0]).toHaveProperty('preferredContact', 'instagram');
+    expect(onSubmit.mock.calls[0][0].contactUrl).toBeUndefined();
+  });
+
+  it('TC-100 d：選 IG 但 Instagram 空的舊資料，沒改聯絡欄位就不檢查', () => {
+    const onSubmit = renderEdit({ preferredContact: 'instagram', instagram: '' });
+    rename();
+    save();
+    expect(screen.queryByText('選了 IG 私訊，要填 Instagram')).toBeNull();
+    expect(onSubmit).toHaveBeenCalledTimes(1);
+  });
+
+  it('TC-100 e：改選 Threads 私訊但 Threads 空，Threads 欄下方顯示錯誤、不送出', () => {
+    const onSubmit = renderEdit({ preferredContact: 'instagram', instagram: '', threads: '' });
+    selectContact('Threads 私訊');
+    save();
+    expectFieldError('Threads', '選了 Threads 私訊，要填 Threads');
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
-  it('切換成不需網址的聯繫方式時，隱藏的非法值不卡住也不送出', () => {
-    const onSubmit = renderEdit('line', 'abc');
-    fireEvent.click(screen.getByRole('button', { name: /Line/ }));
-    fireEvent.click(screen.getByRole('option', { name: /IG 私訊/ }));
-    fireEvent.click(screen.getByRole('button', { name: '儲存變更' }));
-    expect(onSubmit).toHaveBeenCalledTimes(1);
-    expect(onSubmit.mock.calls[0][0].contactUrl).toBeUndefined();
+  it('TC-100 f：下拉不動、清空 Instagram，Instagram 欄下方顯示錯誤、不送出', () => {
+    const onSubmit = renderEdit({ preferredContact: 'instagram', instagram: '@venue' });
+    fireEvent.change(screen.getByLabelText('Instagram'), { target: { value: '' } });
+    save();
+    expectFieldError('Instagram', '選了 IG 私訊，要填 Instagram');
+    expect(onSubmit).not.toHaveBeenCalled();
   });
 });
