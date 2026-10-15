@@ -374,6 +374,7 @@ export interface VenueDetail {
   };
   preferredContact?: 'instagram' | 'threads' | 'line' | 'form' | 'other';
   contactUrl?: string;
+  bookingFormUrl?: string | null;
   updatedAt?: FirebaseTimestamp | string;
   events: VenueEventCard[];
 }
@@ -481,6 +482,7 @@ export interface UpdateVenueData {
   };
   preferredContact?: 'instagram' | 'threads' | 'line' | 'form' | 'other';
   contactUrl?: string;
+  bookingFormUrl?: string | null;
 }
 
 export interface CreateVenueData {
@@ -504,6 +506,7 @@ export interface CreateVenueData {
   };
   preferredContact?: 'instagram' | 'threads' | 'line' | 'form' | 'other';
   contactUrl?: string;
+  bookingFormUrl?: string;
 }
 
 export interface VenueFilterParams {
