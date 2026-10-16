@@ -1406,7 +1406,7 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
             mrtWalkMinutes={form.mrtWalkMinutes}
             coverPhoto={form.coverPhoto}
             sourceLinks={tagForm.sourceLinks
-              .map((link) => link.trim())
+              .map((row) => row.value.trim())
               .filter((link) => link && !getHttpUrlError(link))}
             infoUpdatedOn={tagForm.infoUpdatedOn || null}
           />

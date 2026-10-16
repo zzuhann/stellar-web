@@ -18,9 +18,14 @@ export interface TagEntry {
   until: string; // kept when unchecking or switching mode, so re-checking restores it
 }
 
+export interface SourceLinkRow {
+  id: string; // stable across removals so errors and focus stay on the right row
+  value: string;
+}
+
 export interface TagFormState {
   entries: Record<string, TagEntry>;
-  sourceLinks: string[]; // raw rows, may contain blanks
+  sourceLinks: SourceLinkRow[]; // raw rows, may contain blanks
   equipmentNote: string;
   infoUpdatedOn: string; // '' means empty
   calendarUrl: string;
@@ -46,6 +51,12 @@ export const EMPTY_TAG_FIELDS: TagFieldsSource = {
   calendarUrl: null,
 };
 
+let nextLinkRowId = 0;
+export const createLinkRow = (value = ''): SourceLinkRow => ({
+  id: `source-link-${nextLinkRowId++}`,
+  value,
+});
+
 export function toTagFormState(source: TagFieldsSource): TagFormState {
   const entries: Record<string, TagEntry> = {};
   for (const tag of source.tags) {
@@ -57,7 +68,9 @@ export function toTagFormState(source: TagFieldsSource): TagFormState {
   }
   return {
     entries,
-    sourceLinks: source.sourceLinks.length > 0 ? [...source.sourceLinks] : [''],
+    sourceLinks: (source.sourceLinks.length > 0 ? source.sourceLinks : ['']).map((link) =>
+      createLinkRow(link)
+    ),
     equipmentNote: source.equipmentNote,
     infoUpdatedOn: source.infoUpdatedOn ?? '',
     calendarUrl: source.calendarUrl ?? '',
@@ -87,7 +100,8 @@ const sortedTagKeys = (tags: VenueTag[]) => tags.map(tagKey).sort().join('\n');
 export const sameTags = (a: VenueTag[], b: VenueTag[]): boolean =>
   sortedTagKeys(a) === sortedTagKeys(b);
 
-const normalizeLinks = (links: string[]) => links.map((l) => l.trim()).filter(Boolean);
+const normalizeLinks = (rows: SourceLinkRow[]) =>
+  rows.map((row) => row.value.trim()).filter(Boolean);
 
 interface NormalizedTagFields {
   tags: VenueTag[];
@@ -146,7 +160,7 @@ export function buildTagFieldsCreate(
 export const MISSING_UNTIL_ERROR = '請選擇日期，或改成「限期（目前沒有設定結束日）」';
 
 export interface TagFieldErrors {
-  sourceLinks: Record<number, string>;
+  sourceLinks: Record<string, string>; // keyed by SourceLinkRow.id
   until: Record<string, string>;
   calendarUrl?: string;
 }
@@ -156,9 +170,9 @@ export function getTagFieldErrors(
   dictionary: VenueTagDictionary
 ): TagFieldErrors {
   const errors: TagFieldErrors = { sourceLinks: {}, until: {} };
-  state.sourceLinks.forEach((link, i) => {
-    const error = getHttpUrlError(link.trim());
-    if (error) errors.sourceLinks[i] = error;
+  state.sourceLinks.forEach((row) => {
+    const error = getHttpUrlError(row.value.trim());
+    if (error) errors.sourceLinks[row.id] = error;
   });
   for (const def of dictionary.tags) {
     const entry = state.entries[def.slug];

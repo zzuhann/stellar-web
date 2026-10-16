@@ -9,6 +9,7 @@ import { formatTagDate } from '@/utils/venueTags';
 import {
   EQUIPMENT_NOTE_MAX,
   MAX_SOURCE_LINKS,
+  createLinkRow,
   type TagEntry,
   type TagFieldErrors,
   type TagFormState,
@@ -451,10 +452,10 @@ export default function AdminVenueTagSection({
     onChange((prev) => ({ ...prev, entries: { ...prev.entries, [slug]: entry } }));
   }
 
-  function setLink(index: number, value: string) {
+  function setLink(id: string, value: string) {
     onChange((prev) => ({
       ...prev,
-      sourceLinks: prev.sourceLinks.map((link, i) => (i === index ? value : link)),
+      sourceLinks: prev.sourceLinks.map((row) => (row.id === id ? { ...row, value } : row)),
     }));
   }
 
@@ -513,20 +514,21 @@ export default function AdminVenueTagSection({
 
         <div data-field="sourceLinks" className={fieldGroup}>
           <span className={fieldLabel}>店家原始說明連結</span>
-          {state.sourceLinks.map((link, i) => {
-            const error = errors.sourceLinks[i];
-            const errorId = `venue-source-link-${i}-error`;
+          {state.sourceLinks.map((row, i) => {
+            const error = errors.sourceLinks[row.id];
+            const errorId = `venue-${row.id}-error`;
             return (
-              <div key={i} className={fieldGroup}>
+              <div key={row.id} className={fieldGroup} data-link-row={row.id}>
                 <div className={linkRow}>
                   <input
                     type="text"
                     inputMode="url"
                     className={inputStyle}
                     placeholder="https://"
-                    value={link}
+                    id={`venue-${row.id}`}
+                    value={row.value}
                     disabled={disabled}
-                    onChange={(e) => setLink(i, e.target.value)}
+                    onChange={(e) => setLink(row.id, e.target.value)}
                     aria-label={`原始說明連結 ${i + 1}`}
                     aria-invalid={error ? 'true' : undefined}
                     aria-describedby={error ? errorId : undefined}
@@ -539,7 +541,7 @@ export default function AdminVenueTagSection({
                     onClick={() =>
                       onChange((prev) => ({
                         ...prev,
-                        sourceLinks: prev.sourceLinks.filter((_, j) => j !== i),
+                        sourceLinks: prev.sourceLinks.filter((r) => r.id !== row.id),
                       }))
                     }
                   >
@@ -559,7 +561,7 @@ export default function AdminVenueTagSection({
             className={addLinkBtn}
             disabled={disabled || state.sourceLinks.length >= MAX_SOURCE_LINKS}
             onClick={() =>
-              onChange((prev) => ({ ...prev, sourceLinks: [...prev.sourceLinks, ''] }))
+              onChange((prev) => ({ ...prev, sourceLinks: [...prev.sourceLinks, createLinkRow()] }))
             }
           >
             <PlusIcon width={16} height={16} aria-hidden="true" />

@@ -319,6 +319,24 @@ describe('TC-066 原始說明連結上限與格式', () => {
   });
 });
 
+describe('TC-066 刪掉中間列時，錯誤跟著那一列走', () => {
+  it('第 2 列錯、刪掉第 1 列後，錯誤仍在原本那一列（現在是第 1 列）', async () => {
+    await renderEdit({ sourceLinks: ['https://ok.test/1'] });
+    fireEvent.click(screen.getByRole('button', { name: '新增連結' }));
+    fireEvent.change(screen.getByLabelText('原始說明連結 2'), { target: { value: 'abc' } });
+    save();
+    expect(screen.getByText('請輸入完整網址（以 https:// 開頭）')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: '移除原始說明連結 1' }));
+
+    const remaining = screen.getByLabelText('原始說明連結 1') as HTMLInputElement;
+    const error = screen.getByText('請輸入完整網址（以 https:// 開頭）');
+    expect(remaining.value).toBe('abc');
+    expect(remaining.getAttribute('aria-describedby')).toContain(error.id);
+    expect(screen.queryByLabelText('原始說明連結 2')).toBeNull();
+  });
+});
+
 describe('TC-077 後台儲存失敗', () => {
   it('錯誤橫幅出現，勾選與限期保留，按鈕恢復可按', async () => {
     api.updateVenue.mockRejectedValue(new Error('500'));
