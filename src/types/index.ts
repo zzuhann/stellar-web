@@ -338,6 +338,9 @@ export interface UserSubmissionsArtistsResponse {
   pagination: UserSubmissionsPagination;
 }
 
+// Backend computes this in Taipei time after reading cache (venue-tags design-backend §5)
+export type VenueEventTimeStatus = 'ongoing' | 'upcoming' | 'ended';
+
 export interface VenueEventCard {
   id: string;
   title: string;
@@ -346,6 +349,37 @@ export interface VenueEventCard {
   endDate: string;
   coverImage: string;
   slug: string | null;
+  timeStatus?: VenueEventTimeStatus | null;
+}
+
+// ─── Venue tags (venue-tags) ────────────────────────────────────────────────
+
+// Unlimited { slug }; limited without date { slug, limited: true }; limited until { slug, limited: true, until }
+export interface VenueTag {
+  slug: string;
+  limited?: true;
+  until?: string; // Taipei calendar date YYYY-MM-DD; still visible on that day
+}
+
+export type VenueTagGroupKey = 'price' | 'service' | 'transport' | 'space' | 'equipment';
+
+export interface VenueTagGroup {
+  key: VenueTagGroupKey;
+  label: string;
+  order: number;
+}
+
+export interface VenueTagDefinition {
+  slug: string;
+  group: VenueTagGroupKey;
+  label: string;
+  order: number;
+  cardRank?: number;
+}
+
+export interface VenueTagDictionary {
+  groups: VenueTagGroup[];
+  tags: VenueTagDefinition[];
 }
 
 export type CapacityRange = '20以下' | '20-40' | '40-60' | '60以上';
@@ -375,6 +409,11 @@ export interface VenueDetail {
   preferredContact?: 'instagram' | 'threads' | 'line' | 'form' | 'other';
   contactUrl?: string;
   bookingFormUrl?: string | null;
+  // venue-tags fields; optional so pre-deploy responses and old fixtures still type-check
+  tags?: VenueTag[];
+  sourceLinks?: string[];
+  equipmentNote?: string;
+  infoUpdatedOn?: string | null;
   updatedAt?: FirebaseTimestamp | string;
   events: VenueEventCard[];
 }
