@@ -432,7 +432,7 @@ interface AdminVenueTagSectionProps {
   status: TagDictionaryStatus;
   dictionary: VenueTagDictionary | null;
   state: TagFormState;
-  // Load-time entries; decide which non-price rows still need a limit control
+  // Load-time entries; non-free_venue rows keep a limit control only if their saved value has one
   initialEntries: Record<string, TagEntry>;
   errors: TagFieldErrors;
   today: string;

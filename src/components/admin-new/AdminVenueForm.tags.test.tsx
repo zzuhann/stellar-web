@@ -217,6 +217,14 @@ describe('限期控制只在免場地費', () => {
 
     chooseLimit('應援物代發', '不限期');
     expect(screen.getByRole('button', { name: '應援物代發的限期：不限期' })).toBeTruthy();
+    save();
+
+    await waitFor(() => expect(api.updateVenue).toHaveBeenCalledTimes(2));
+    const second = api.updateVenue.mock.calls[1][1] as Record<string, unknown>;
+    expect(screen.getByRole('button', { name: '應援物代發的限期：不限期' })).toBeTruthy();
+    expect(second.tags).toEqual(
+      expect.arrayContaining([{ slug: 'goods_distribution' }, { slug: 'private_booking' }])
+    );
   });
 });
 

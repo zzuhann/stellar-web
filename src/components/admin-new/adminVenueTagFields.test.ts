@@ -3,6 +3,7 @@ import { venueTagDictionaryFixture as dictionary } from '@/test/venueTagDictiona
 import {
   EMPTY_TAG_FIELDS,
   buildAdminVenuePreview,
+  canSetTagLimit,
   resolveTagDictionary,
   sameTags,
   toTagFormState,
@@ -93,5 +94,18 @@ describe('resolveTagDictionary（TC-093 停用與送出的同一個判斷）', (
     const resolved = resolveTagDictionary(query);
     expect(resolved.status).toBe(status);
     expect(resolved.dictionary).toBe(status === 'success' ? dictionary : null);
+  });
+});
+
+describe('canSetTagLimit', () => {
+  const entry = (mode: 'none' | 'limited' | 'until') => ({ checked: true, mode, until: '' });
+  it.each([
+    ['free_venue', undefined, true],
+    ['needs_guarantee', undefined, false],
+    ['goods_distribution', entry('none'), false],
+    ['venue_fee', entry('limited'), true],
+    ['needs_guarantee', entry('until'), true],
+  ] as const)('%s with %o → %s', (slug, initial, expected) => {
+    expect(canSetTagLimit(slug, initial)).toBe(expected);
   });
 });
