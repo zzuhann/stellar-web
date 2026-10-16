@@ -122,8 +122,10 @@ const timeStatusTag = css({
   paddingY: '0.5',
   paddingX: '1.5',
   borderRadius: 'radius.sm',
-  background: 'gray.100',
-  color: 'color.text.primary',
+  // Same brand blue pair as the new detail tags (8.3:1); shadow lifts it off light posters
+  background: 'stellarBlue.50',
+  color: 'stellarBlue.700',
+  boxShadow: 'shadow.sm',
   textStyle: 'caption',
   fontWeight: 'medium',
 });
