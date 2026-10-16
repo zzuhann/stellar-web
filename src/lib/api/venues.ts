@@ -7,6 +7,7 @@ import {
   PlaceReselectAddressChoice,
   VenuePlaceReselectPreview,
   VenuePlaceReselectResult,
+  VenueTagDictionary,
 } from '@/types';
 import api from './client';
 import type { PlaceDetails, PlacePrediction } from '@/types';
@@ -38,6 +39,11 @@ export const venueApi = {
 
   getVenueById: async (id: string): Promise<VenueDetail> => {
     const response = await api.get<VenueDetail>(`/venues/${id}`);
+    return response.data;
+  },
+
+  getTagDictionary: async (): Promise<VenueTagDictionary> => {
+    const response = await api.get<VenueTagDictionary>('/venues/tag-dictionary');
     return response.data;
   },
 
