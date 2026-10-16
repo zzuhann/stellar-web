@@ -54,10 +54,10 @@ export function resolveTagDictionary(query: {
 
 export const MAX_SOURCE_LINKS = 5;
 
-// Limits are a price-group concept; other rows only get the control when their saved
+// Only free_venue is time-limited in practice; other rows get the control only when their saved
 // value already carries one, so admins can see it and reset it instead of losing it silently
-export const canSetTagLimit = (group: string, initialEntry: TagEntry | undefined): boolean =>
-  group === 'price' || (initialEntry?.mode ?? 'none') !== 'none';
+export const canSetTagLimit = (slug: string, initialEntry: TagEntry | undefined): boolean =>
+  slug === 'free_venue' || (initialEntry?.mode ?? 'none') !== 'none';
 export const EQUIPMENT_NOTE_MAX = 1000;
 
 export const EMPTY_TAG_FIELDS: TagFieldsSource = {

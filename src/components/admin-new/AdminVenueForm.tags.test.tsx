@@ -175,22 +175,28 @@ describe('TC-008 後台編輯勾標籤並設限期', () => {
   });
 });
 
-describe('限期控制只在價格組', () => {
-  it('服務組勾一個標籤：沒有限期控制，body 是 {slug}', async () => {
+describe('限期控制只在免場地費', () => {
+  it('其他標籤（含價格組）勾選：沒有限期控制，body 是 {slug}', async () => {
     await renderEdit();
     fireEvent.click(checkbox('可包場'));
     expect(screen.queryByRole('button', { name: /^可包場的限期：/ })).toBeNull();
+    fireEvent.click(checkbox('需保底'));
+    expect(screen.queryByRole('button', { name: /^需保底的限期：/ })).toBeNull();
     fireEvent.click(checkbox('免場地費'));
     expect(screen.getByRole('button', { name: '免場地費的限期：不限期' })).toBeTruthy();
     save();
 
     const body = await savedBody();
     expect(body.tags).toEqual(
-      expect.arrayContaining([{ slug: 'private_booking' }, { slug: 'free_venue' }])
+      expect.arrayContaining([
+        { slug: 'private_booking' },
+        { slug: 'needs_guarantee' },
+        { slug: 'free_venue' },
+      ])
     );
   });
 
-  it('載入時服務組標籤本來就帶 until：照樣顯示控制，原值保留，可改回不限期', async () => {
+  it('載入時其他標籤本來就帶 until：照樣顯示控制，原值保留，可改回不限期', async () => {
     await renderEdit({
       tags: [{ slug: 'goods_distribution', limited: true, until: '2026-12-31' }],
     });

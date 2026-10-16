@@ -517,7 +517,7 @@ export default function AdminVenueTagSection({
                     key={def.slug}
                     def={def}
                     entry={state.entries[def.slug]}
-                    showLimit={canSetTagLimit(def.group, initialEntries[def.slug])}
+                    showLimit={canSetTagLimit(def.slug, initialEntries[def.slug])}
                     hint={hintFor(def.slug)}
                     today={today}
                     untilError={errors.until[def.slug]}
