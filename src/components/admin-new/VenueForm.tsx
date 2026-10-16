@@ -666,6 +666,16 @@ export default function VenueForm(props: VenueFormProps) {
     return CONTACT_FIELDS.some((key) => values[key] !== initial[key]);
   }
 
+  function contactErrorsFor(values: VenueFormValues): ContactErrors {
+    const errs = getContactErrors(values, shouldCheckChannel(values));
+    // Create mode already says "fill IG or Threads"; don't repeat it on the field
+    if (props.mode === 'create' && !values.instagram.trim() && !values.threads.trim()) {
+      delete errs.instagram;
+      delete errs.threads;
+    }
+    return errs;
+  }
+
   function validate(): boolean {
     const next: FormErrors = {};
     if (!form.name.trim()) next.name = '請填寫場地名稱';
@@ -683,7 +693,7 @@ export default function VenueForm(props: VenueFormProps) {
     if (props.mode === 'create' && !form.coverPhoto) {
       next.coverPhoto = '請上傳封面圖片';
     }
-    Object.assign(next, getContactErrors(form, shouldCheckChannel(form)));
+    Object.assign(next, contactErrorsFor(form));
     const bookingFormUrlError = getUrlError(form.bookingFormUrl.trim());
     if (bookingFormUrlError) next.bookingFormUrl = bookingFormUrlError;
     setErrors(next);
@@ -789,9 +799,7 @@ export default function VenueForm(props: VenueFormProps) {
         ...((key === 'instagram' || key === 'threads') && { socialMedia: undefined }),
       };
       // After a failed submit, keep contact errors in sync as the user fixes them
-      return submitAttempted
-        ? { ...cleared, ...getContactErrors(next, shouldCheckChannel(next)) }
-        : cleared;
+      return submitAttempted ? { ...cleared, ...contactErrorsFor(next) } : cleared;
     });
   }
 

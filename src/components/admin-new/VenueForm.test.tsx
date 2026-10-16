@@ -71,6 +71,8 @@ describe('VenueForm create mode', () => {
 
     expect(screen.getByText('請選擇容納人數')).toBeTruthy();
     expect(screen.getByText('請至少填寫 Instagram 或 Threads')).toBeTruthy();
+    // Both socials empty: the "at least one" message covers it, no per-field channel error on top
+    expect(screen.queryByText('選了 IG 私訊，要填 Instagram')).toBeNull();
     expect(screen.getByText('請上傳封面圖片')).toBeTruthy();
     expect(onSubmit).not.toHaveBeenCalled();
   });
