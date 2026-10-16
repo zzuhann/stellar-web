@@ -22,7 +22,6 @@ import {
   buildAdminVenuePreview,
   buildTagFieldsCreate,
   buildTagFieldsPatch,
-  entriesToTags,
   getTagFieldErrors,
   hasTagFieldErrors,
   toTagFormState,
@@ -731,9 +730,7 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
     submitAttempted && dictionary
       ? getTagFieldErrors(tagForm, dictionary, tagBaseline)
       : NO_TAG_ERRORS;
-  const preview = dictionary
-    ? buildAdminVenuePreview(entriesToTags(tagForm.entries, dictionary), dictionary, today)
-    : null;
+  const preview = dictionary ? buildAdminVenuePreview(tagForm, dictionary, today) : null;
 
   const showContactUrl = form.preferredContact === 'line';
 
@@ -1412,10 +1409,8 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
             nearestMrt={form.nearestMrt}
             mrtWalkMinutes={form.mrtWalkMinutes}
             coverPhoto={form.coverPhoto}
-            sourceLinks={tagForm.sourceLinks
-              .map((row) => row.value.trim())
-              .filter((link) => link && !getHttpUrlError(link))}
-            infoUpdatedOn={tagForm.infoUpdatedOn || null}
+            sourceLinks={preview?.sourceLinks ?? []}
+            infoUpdatedOn={preview?.infoUpdatedOn ?? null}
           />
         </aside>
       </div>

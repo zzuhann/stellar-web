@@ -217,20 +217,25 @@ export const hasTagFieldErrors = (errors: TagFieldErrors) =>
 export interface AdminVenuePreview {
   cardTagLabels: string[];
   usageRows: VenueUsageRow[];
+  sourceLinks: string[]; // only links that would pass validation, so the preview never links junk
+  infoUpdatedOn: string | null;
 }
 
 // Same pipeline as the public pages: expiry filter first, then the shared builders
 export function buildAdminVenuePreview(
-  tags: VenueTag[],
+  state: TagFormState,
   dictionary: VenueTagDictionary,
   today: string
 ): AdminVenuePreview {
-  const visible = getVisibleVenueTags(tags, dictionary, today);
+  const fields = normalize(state, dictionary);
+  const visible = getVisibleVenueTags(fields.tags, dictionary, today);
   const labelBySlug = new Map(dictionary.tags.map((d) => [d.slug, d.label]));
   return {
     cardTagLabels: pickCardTags(visible, dictionary).map((tag) =>
       formatCardTagLabel(tag, labelBySlug.get(tag.slug) ?? tag.slug, today)
     ),
     usageRows: buildVenueUsageRows(visible, today),
+    sourceLinks: fields.sourceLinks.filter((link) => !getTagUrlError(link)),
+    infoUpdatedOn: fields.infoUpdatedOn,
   };
 }

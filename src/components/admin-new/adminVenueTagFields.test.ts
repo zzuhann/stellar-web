@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { venueTagDictionaryFixture as dictionary } from '@/test/venueTagDictionary.fixture';
-import { buildAdminVenuePreview, sameTags } from './adminVenueTagFields';
+import {
+  EMPTY_TAG_FIELDS,
+  buildAdminVenuePreview,
+  sameTags,
+  toTagFormState,
+  type TagFieldsSource,
+} from './adminVenueTagFields';
 
 const TODAY = '2026-10-15';
+const formState = (fields: Partial<TagFieldsSource>) =>
+  toTagFormState({ ...EMPTY_TAG_FIELDS, ...fields });
 
 describe('TC-033 後台右欄預覽的過期判斷跟後端一致', () => {
   const tagsWithFreeUntil = (until: string) => [
@@ -14,7 +22,11 @@ describe('TC-033 後台右欄預覽的過期判斷跟後端一致', () => {
   ];
 
   it('until 是台灣今天（10-15）：卡片預覽與條件文字都有免場地費', () => {
-    const preview = buildAdminVenuePreview(tagsWithFreeUntil('2026-10-15'), dictionary, TODAY);
+    const preview = buildAdminVenuePreview(
+      formState({ tags: tagsWithFreeUntil('2026-10-15') }),
+      dictionary,
+      TODAY
+    );
 
     expect(preview.cardTagLabels).toEqual(['應援物代發', '免場地費・限期至 10/15', '可提前佈展']);
     expect(preview.usageRows.find((row) => row.key === 'decorate')?.description).toBe(
@@ -23,7 +35,11 @@ describe('TC-033 後台右欄預覽的過期判斷跟後端一致', () => {
   });
 
   it('until 是昨天（10-14）：免場地費不出現，卡片由下一個標籤遞補', () => {
-    const preview = buildAdminVenuePreview(tagsWithFreeUntil('2026-10-14'), dictionary, TODAY);
+    const preview = buildAdminVenuePreview(
+      formState({ tags: tagsWithFreeUntil('2026-10-14') }),
+      dictionary,
+      TODAY
+    );
 
     expect(preview.cardTagLabels).toEqual(['應援物代發', '可提前佈展', '新手友善']);
     expect(preview.usageRows.find((row) => row.key === 'decorate')?.description).toBe('可提前佈展');
@@ -51,5 +67,17 @@ describe('sameTags（TC-058 的 tags 比較）', () => {
     },
   ])('$name', ({ left, right, expected }) => {
     expect(sameTags(left, right)).toBe(expected);
+  });
+});
+
+describe('預覽的原始說明連結與日期', () => {
+  it('trim、濾掉空白列與不合法網址，保留順序；日期空字串轉 null', () => {
+    const state = formState({ sourceLinks: [' https://a.test/1 ', '', 'abc', 'HTTPS://b.test/2'] });
+    state.infoUpdatedOn = '';
+
+    const preview = buildAdminVenuePreview(state, dictionary, TODAY);
+
+    expect(preview.sourceLinks).toEqual(['https://a.test/1', 'HTTPS://b.test/2']);
+    expect(preview.infoUpdatedOn).toBeNull();
   });
 });
