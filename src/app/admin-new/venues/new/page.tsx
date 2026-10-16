@@ -27,6 +27,8 @@ const container = css({
     paddingX: '6',
     paddingY: '8',
   },
+  // Room for the form plus the 360px preview column
+  lg: { maxWidth: '1120px' },
 });
 
 const backLink = css({

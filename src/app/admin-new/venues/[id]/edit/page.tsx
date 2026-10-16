@@ -33,6 +33,8 @@ const container = css({
     paddingX: '6',
     paddingY: '8',
   },
+  // Room for the form plus the 360px preview column
+  lg: { maxWidth: '1120px' },
 });
 
 const backLink = css({
@@ -198,6 +200,13 @@ export default function VenueEditPage() {
             setDeleteDialogOpen(true);
           }}
           canDelete={canDelete}
+          initialTagFields={{
+            tags: venue.tags ?? [],
+            sourceLinks: venue.sourceLinks ?? [],
+            equipmentNote: venue.equipmentNote ?? '',
+            infoUpdatedOn: venue.infoUpdatedOn ?? null,
+            calendarUrl: venue.calendarUrl ?? null,
+          }}
           place={{
             venueId,
             placeId: venue.placeId,
