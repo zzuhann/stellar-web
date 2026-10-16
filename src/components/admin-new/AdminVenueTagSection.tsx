@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { ChevronDownIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
 import Skeleton from '@/components/ui/Skeleton';
@@ -282,20 +282,32 @@ interface LimitDropdownProps {
 
 function LimitDropdown({ tagLabel, value, onChange }: LimitDropdownProps) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const selected = LIMIT_OPTIONS.find((o) => o.value === value)?.label ?? '不限期';
 
   return (
-    <div className={dropdownContainer}>
+    <div
+      className={dropdownContainer}
+      // Focus leaving the whole widget (trigger or options) closes it, incl. clicks outside
+      onBlur={(e) => {
+        if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false);
+      }}
+      onKeyDown={(e) => {
+        if (e.key !== 'Escape' || !open) return;
+        e.preventDefault();
+        e.stopPropagation();
+        setOpen(false);
+        triggerRef.current?.focus();
+      }}
+    >
       <button
+        ref={triggerRef}
         type="button"
         className={dropdownTrigger}
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={`${tagLabel}的限期：${selected}`}
-        onBlur={(e) => {
-          if (!e.currentTarget.parentElement?.contains(e.relatedTarget)) setOpen(false);
-        }}
       >
         <span>{selected}</span>
         <ChevronDownIcon
@@ -309,7 +321,13 @@ function LimitDropdown({ tagLabel, value, onChange }: LimitDropdownProps) {
         />
       </button>
       {open && (
-        <div className={dropdownMenu} role="listbox" aria-label={`${tagLabel}的限期`}>
+        <div
+          className={dropdownMenu}
+          role="listbox"
+          aria-label={`${tagLabel}的限期`}
+          // Keeps focus in the widget while clicking (Safari does not focus clicked buttons)
+          onMouseDown={(e) => e.preventDefault()}
+        >
           {LIMIT_OPTIONS.map((opt) => (
             <button
               key={opt.value}

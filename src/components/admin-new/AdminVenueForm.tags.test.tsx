@@ -1,4 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { VenueDetail } from '@/types';
@@ -210,6 +211,39 @@ describe('限期控制只在價格組', () => {
 
     chooseLimit('應援物代發', '不限期');
     expect(screen.getByRole('button', { name: '應援物代發的限期：不限期' })).toBeTruthy();
+  });
+});
+
+describe('限期下拉的鍵盤操作', () => {
+  const trigger = () => screen.getByRole('button', { name: /^免場地費的限期：/ });
+
+  it('Tab 進選項再 Tab 出去 → 選單關閉', async () => {
+    const user = userEvent.setup();
+    await renderEdit();
+    fireEvent.click(checkbox('免場地費'));
+    await user.click(trigger());
+    expect(screen.getByRole('listbox')).toBeTruthy();
+
+    await user.tab();
+    expect(document.activeElement).toBe(screen.getByRole('option', { name: '不限期' }));
+    await user.tab();
+    await user.tab();
+    await user.tab();
+
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(trigger().getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('Escape → 選單關閉，焦點回到觸發按鈕', async () => {
+    const user = userEvent.setup();
+    await renderEdit();
+    fireEvent.click(checkbox('免場地費'));
+    await user.click(trigger());
+    await user.tab();
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByRole('listbox')).toBeNull();
+    expect(document.activeElement).toBe(trigger());
   });
 });
 
