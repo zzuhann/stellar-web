@@ -42,10 +42,13 @@ const formLine = css({
   minHeight: '44px',
   textStyle: 'caption',
   color: 'color.text.secondary',
-  whiteSpace: 'nowrap',
+  flexWrap: 'wrap',
 });
 
-const formLineCenter = css({ justifyContent: 'center' });
+const formLineCenter = css({ justifyContent: 'center', textAlign: 'center' });
+
+// The hint may wrap at large text sizes, but the link label stays on one line
+const formLink = css({ whiteSpace: 'nowrap' });
 
 interface VenueContactActionsProps {
   contact: VenueContact;
@@ -88,7 +91,7 @@ export default function VenueContactActions({
             href={contact.bookingFormUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={textLink}
+            className={cx(textLink, formLink)}
             onClick={() => onClickContact?.('form')}
           >
             預約表單

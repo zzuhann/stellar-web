@@ -6,7 +6,7 @@ import VenueContactActions from './VenueContactActions';
 const card = css({
   position: 'sticky',
   // Clears the 70px fixed site header
-  top: 'calc(70px + var(--spacing-6))',
+  top: 'calc(70px + token(spacing.6))',
   zIndex: 1,
   padding: '5',
   borderRadius: 'radius.xl',

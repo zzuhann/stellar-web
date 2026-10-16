@@ -9,7 +9,7 @@ const bar = css({
   zIndex: 40,
   paddingTop: '3',
   paddingX: '4',
-  paddingBottom: 'calc(var(--spacing-3) + env(safe-area-inset-bottom))',
+  paddingBottom: 'calc(token(spacing.3) + env(safe-area-inset-bottom))',
   background: 'color.background.primary',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
