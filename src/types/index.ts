@@ -414,6 +414,8 @@ export interface VenueDetail {
   sourceLinks?: string[];
   equipmentNote?: string;
   infoUpdatedOn?: string | null;
+  // Admin detail only; never returned by public endpoints
+  calendarUrl?: string | null;
   updatedAt?: FirebaseTimestamp | string;
   events: VenueEventCard[];
 }
@@ -522,6 +524,12 @@ export interface UpdateVenueData {
   preferredContact?: 'instagram' | 'threads' | 'line' | 'form' | 'other';
   contactUrl?: string;
   bookingFormUrl?: string | null;
+  // venue-tags fields; PATCH leaves omitted fields untouched, '' / null clear them
+  tags?: VenueTag[];
+  sourceLinks?: string[];
+  equipmentNote?: string;
+  infoUpdatedOn?: string | null;
+  calendarUrl?: string | null;
 }
 
 export interface CreateVenueData {
@@ -546,6 +554,12 @@ export interface CreateVenueData {
   preferredContact?: 'instagram' | 'threads' | 'line' | 'form' | 'other';
   contactUrl?: string;
   bookingFormUrl?: string;
+  // venue-tags fields; admin create only (the submission schema drops them)
+  tags?: VenueTag[];
+  sourceLinks?: string[];
+  equipmentNote?: string;
+  infoUpdatedOn?: string | null;
+  calendarUrl?: string | null;
 }
 
 export interface VenueFilterParams {
