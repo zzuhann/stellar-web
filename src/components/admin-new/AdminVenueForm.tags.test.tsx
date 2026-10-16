@@ -234,6 +234,18 @@ describe('限期下拉的鍵盤操作', () => {
     expect(trigger().getAttribute('aria-expanded')).toBe('false');
   });
 
+  it('展開時箭頭套用 open 樣式，收合時拿掉', async () => {
+    await renderEdit();
+    fireEvent.click(checkbox('免場地費'));
+    const iconClass = () => trigger().querySelector('svg')?.getAttribute('class') ?? '';
+    const closed = iconClass();
+
+    fireEvent.click(trigger());
+    expect(iconClass()).not.toBe(closed);
+    fireEvent.click(trigger());
+    expect(iconClass()).toBe(closed);
+  });
+
   it('Escape → 選單關閉，焦點回到觸發按鈕', async () => {
     const user = userEvent.setup();
     await renderEdit();

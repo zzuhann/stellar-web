@@ -186,6 +186,12 @@ const dropdownOption = cva({
   },
 });
 
+// Static style with a variant: css() inside render would rebuild the class every render
+const chevronIcon = cva({
+  base: { width: '14px', height: '14px', transition: 'transform 0.15s ease', flexShrink: 0 },
+  variants: { open: { true: { transform: 'rotate(180deg)' } } },
+});
+
 const tagInputRow = css({ display: 'flex', gap: '2' });
 
 const tagAddBtn = css({
@@ -456,16 +462,7 @@ function SelectDropdown({
         }}
       >
         <span>{value ? (labels?.[value] ?? value) : placeholder}</span>
-        <ChevronDownIcon
-          className={css({
-            width: '14px',
-            height: '14px',
-            transition: 'transform 0.15s ease',
-            flexShrink: 0,
-            ...(open ? { transform: 'rotate(180deg)' } : {}),
-          })}
-          aria-hidden="true"
-        />
+        <ChevronDownIcon className={chevronIcon({ open })} aria-hidden="true" />
       </button>
       {open && (
         <div className={dropdownMenu} role="listbox">
@@ -515,16 +512,7 @@ function PreferredContactDropdown({ value, onChange }: PreferredContactDropdownP
         }}
       >
         <span>{selectedLabel}</span>
-        <ChevronDownIcon
-          className={css({
-            width: '14px',
-            height: '14px',
-            transition: 'transform 0.15s ease',
-            flexShrink: 0,
-            ...(open ? { transform: 'rotate(180deg)' } : {}),
-          })}
-          aria-hidden="true"
-        />
+        <ChevronDownIcon className={chevronIcon({ open })} aria-hidden="true" />
       </button>
       {open && (
         <div className={dropdownMenu} role="listbox">

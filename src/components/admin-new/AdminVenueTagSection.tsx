@@ -150,6 +150,12 @@ const dropdownOption = cva({
   },
 });
 
+// Static style with a variant: css() inside render would rebuild the class every render
+const chevronIcon = cva({
+  base: { width: '14px', height: '14px', transition: 'transform 0.15s ease', flexShrink: 0 },
+  variants: { open: { true: { transform: 'rotate(180deg)' } } },
+});
+
 const inputStyle = css({
   width: '100%',
   minHeight: '44px',
@@ -310,15 +316,7 @@ function LimitDropdown({ tagLabel, value, onChange }: LimitDropdownProps) {
         aria-label={`${tagLabel}的限期：${selected}`}
       >
         <span>{selected}</span>
-        <ChevronDownIcon
-          className={css({
-            width: '14px',
-            height: '14px',
-            flexShrink: 0,
-            ...(open ? { transform: 'rotate(180deg)' } : {}),
-          })}
-          aria-hidden="true"
-        />
+        <ChevronDownIcon className={chevronIcon({ open })} aria-hidden="true" />
       </button>
       {open && (
         <div
