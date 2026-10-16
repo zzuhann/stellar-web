@@ -176,6 +176,25 @@ const expectBarAfterLastLine = () => {
   ).toBeTruthy();
 };
 
+describe('頁首地區與捷運', () => {
+  const headerLines = () =>
+    Array.from(
+      screen.getByRole('heading', { level: 1 }).parentElement?.querySelectorAll('p') ?? []
+    ).map((p) => p.textContent);
+
+  it('region 只有空白、也沒有捷運 → 地區 tag 和整行都不渲染', () => {
+    renderView(makeVenue({ region: '   ', nearestMrt: null, capacityRange: '20-40' }));
+    expect(headerLines()).toEqual(['容納 20-40人']);
+  });
+
+  it('region 是空字串但有捷運 → 只顯示捷運文字', () => {
+    renderView(
+      makeVenue({ region: '', nearestMrt: '中山站', mrtWalkMinutes: 5, capacityRange: null })
+    );
+    expect(headerLines()).toEqual(['中山站步行 5 分鐘']);
+  });
+});
+
 describe('TC-037 聯絡區的三種狀態', () => {
   const igVenue = {
     preferredContact: 'instagram' as const,
@@ -202,7 +221,9 @@ describe('TC-037 聯絡區的三種狀態', () => {
       const form = within(container).getByRole('link', { name: '預約表單（開新分頁）' });
       expect(form.getAttribute('href')).toBe('https://forms.gle/book');
       expect(form.getAttribute('target')).toBe('_blank');
-      expect(within(container).getByText(/｜規則請以表單內說明為主/)).toBeTruthy();
+      expect(within(container).getByText('規則請以表單內說明為主')).toBeTruthy();
+      // the separator wraps with the link, never onto the hint's line
+      expect(form.parentElement?.textContent).toBe('預約表單（開新分頁）｜');
     }
     expectBarAfterLastLine();
   });

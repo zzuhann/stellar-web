@@ -16,6 +16,12 @@ export interface VenueContact {
   bookingFormUrl: string | null;
 }
 
+const CHANNEL_LABEL: Record<VenueContactChannel, string> = {
+  instagram: 'Instagram',
+  threads: 'Threads',
+  line: 'LINE',
+};
+
 const instagramUrl = (handle: string) => `https://www.instagram.com/${handle}`;
 const threadsUrl = (handle: string) => `https://www.threads.com/@${handle}`;
 
@@ -42,18 +48,9 @@ export const buildVenueContact = (venue: VenueContactSource): VenueContact | nul
   }
   if (!resolved) return null;
 
-  const labelParts =
-    resolved.channel === 'line'
-      ? { before: '前往 ', name: venue.name, after: ' LINE' }
-      : {
-          before: '前往 ',
-          name: venue.name,
-          after: resolved.channel === 'instagram' ? ' Instagram' : ' Threads',
-        };
-
   return {
     ...resolved,
-    labelParts,
+    labelParts: { before: '前往 ', name: venue.name, after: ` ${CHANNEL_LABEL[resolved.channel]}` },
     bookingFormUrl: venue.bookingFormUrl?.trim() || null,
   };
 };

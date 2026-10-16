@@ -49,8 +49,8 @@ const formLine = css({
 
 const formLineCenter = css({ justifyContent: 'center', textAlign: 'center' });
 
-// The hint may wrap at large text sizes, but the link label stays on one line
-const formLink = css({ whiteSpace: 'nowrap' });
+// Link and separator stay together; only the hint after them may wrap
+const formLead = css({ display: 'inline-flex', alignItems: 'center', whiteSpace: 'nowrap' });
 
 interface VenueContactActionsProps {
   contact: VenueContact;
@@ -81,31 +81,32 @@ export default function VenueContactActions({
         <span data-part="name" className={namePart}>
           {labelParts.name}
         </span>
-        {labelParts.after && (
-          <span data-part="channel" className={fixedPart}>
-            {labelParts.after}
-          </span>
-        )}
+        <span data-part="channel" className={fixedPart}>
+          {labelParts.after}
+        </span>
       </a>
       {contact.bookingFormUrl && (
         <p className={cx(formLine, align === 'center' && formLineCenter)}>
-          <a
-            href={contact.bookingFormUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={cx(textLink, formLink)}
-            onClick={() => onClickContact?.('form')}
-          >
-            預約表單
-            <ArrowTopRightOnSquareIcon
-              width={12}
-              height={12}
-              aria-hidden="true"
-              className={externalIcon}
-            />
-            <span className="sr-only">（開新分頁）</span>
-          </a>
-          <span>｜規則請以表單內說明為主</span>
+          <span className={formLead}>
+            <a
+              href={contact.bookingFormUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={textLink}
+              onClick={() => onClickContact?.('form')}
+            >
+              預約表單
+              <ArrowTopRightOnSquareIcon
+                width={12}
+                height={12}
+                aria-hidden="true"
+                className={externalIcon}
+              />
+              <span className="sr-only">（開新分頁）</span>
+            </a>
+            ｜
+          </span>
+          <span>規則請以表單內說明為主</span>
         </p>
       )}
     </>

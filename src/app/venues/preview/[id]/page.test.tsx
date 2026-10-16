@@ -141,20 +141,23 @@ describe('TC-078 預覽頁的 404 與其他錯誤', () => {
 });
 
 describe('TC-085 預覽頁不送自訂 GA 事件、不記瀏覽數', () => {
-  const clickAll = async () => {
+  const PREVIEW_LINKS = [
+    /前往 月光咖啡/,
+    /預約表單/,
+    /店家原始說明/,
+    /聯絡表單/,
+    /STELLAR IG/,
+    /^Threads/,
+  ];
+  const PRODUCTION_LINKS = [/前往 Instagram 主頁/];
+
+  // getAllByRole throws when a target is missing, so the loop can never silently click nothing
+  const clickAll = async (linkNames: RegExp[]) => {
     const user = userEvent.setup();
     const preventNav = (e: Event) => e.preventDefault();
     document.addEventListener('click', preventNav);
-    for (const name of [
-      /前往 月光咖啡/,
-      /前往 Instagram 主頁/,
-      /預約表單/,
-      /店家原始說明/,
-      /聯絡表單/,
-      /STELLAR IG/,
-      /^Threads/,
-    ]) {
-      for (const link of screen.queryAllByRole('link', { name })) await user.click(link);
+    for (const name of linkNames) {
+      for (const link of screen.getAllByRole('link', { name })) await user.click(link);
     }
     for (const poster of within(
       screen.getByRole('region', { name: '平台記錄的生咖、生日應援' })
@@ -167,7 +170,7 @@ describe('TC-085 預覽頁不送自訂 GA 事件、不記瀏覽數', () => {
 
   it('預覽頁：點聯絡、預約表單、原始說明、資料有誤、活動海報（含中鍵）→ sendGAEvent 0 次、沒有 POST /view', async () => {
     await renderPreview();
-    await clickAll();
+    await clickAll(PREVIEW_LINKS);
     expect(sendGAEvent).not.toHaveBeenCalled();
     expect(venueApi.recordView).not.toHaveBeenCalled();
   });
@@ -175,7 +178,7 @@ describe('TC-085 預覽頁不送自訂 GA 事件、不記瀏覽數', () => {
   it('對照組：正式頁同樣操作會送事件、會記瀏覽數', async () => {
     sessionStorage.clear();
     render(<VenueDetailClient venue={venue} relatedVenues={[]} />);
-    await clickAll();
+    await clickAll(PRODUCTION_LINKS);
     const names = vi.mocked(sendGAEvent).mock.calls.map((c) => c[1]);
     expect(names).toContain('click_venue_contact');
     expect(names).toContain('click_event_detail');

@@ -157,6 +157,7 @@ export default function VenueDetailV2({
   const infoUpdatedOn = venue.infoUpdatedOn ?? null;
   const photos = [venue.coverPhoto, ...(venue.otherPhotos ?? [])].filter(Boolean) as string[];
 
+  const region = venue.region?.trim() ?? '';
   const mrtText = formatMrt(venue);
   const capacityText = venue.capacityRange
     ? `容納 ${CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}`
@@ -203,10 +204,12 @@ export default function VenueDetailV2({
                 )}
                 <div className={headerText}>
                   <h1 className={venueName}>{venue.name}</h1>
-                  <p className={cx(headerLine, headerLocation)}>
-                    <span className={tag}>{venue.region}</span>
-                    {mrtText && <span>{mrtText}</span>}
-                  </p>
+                  {(region || mrtText) && (
+                    <p className={cx(headerLine, headerLocation)}>
+                      {region && <span className={tag}>{region}</span>}
+                      {mrtText && <span>{mrtText}</span>}
+                    </p>
+                  )}
                   {capacityText && <p className={headerLine}>{capacityText}</p>}
                 </div>
               </header>

@@ -41,7 +41,7 @@ export default function VenueLocation({ venue }: VenueLocationProps) {
   return (
     <section aria-labelledby={headingId} className={section}>
       <h2 id={headingId} className={sectionTitle}>
-        地址與社群
+        社群與地址
       </h2>
       <div className={rows}>
         {socialLink && (
