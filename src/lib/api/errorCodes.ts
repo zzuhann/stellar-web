@@ -50,8 +50,9 @@ export const FIELD_LABELS: Record<string, string> = {
   coverPhoto: '封面圖片',
   otherPhotos: '其他照片',
   hostTags: '場地標籤',
-  preferredContact: '偏好聯繫方式',
+  preferredContact: '聯絡方式',
   socialMedia: '社群帳號',
-  contactUrl: '預約表單連結',
+  contactUrl: 'LINE 連結',
+  bookingFormUrl: '預約表單網址',
   submitterEmail: '信箱',
 };

@@ -353,15 +353,28 @@ const CAPACITY_OPTIONS: CapacityRange[] = ['20以下', '20-40', '40-60', '60以�
 const CONTACT_URL_MAX_LENGTH = 500;
 const MAX_HOST_TAGS = 5;
 
+// 'form' / 'other' only exist on old venues; they are loaded but no longer selectable
 type PreferredContact = 'instagram' | 'threads' | 'line' | 'form' | 'other';
+type SelectableContact = 'instagram' | 'threads' | 'line';
 
-const PREFERRED_CONTACT_OPTIONS: { value: PreferredContact; label: string }[] = [
+const PREFERRED_CONTACT_OPTIONS: { value: SelectableContact; label: string }[] = [
   { value: 'instagram', label: 'IG 私訊' },
   { value: 'threads', label: 'Threads 私訊' },
-  { value: 'line', label: 'Line' },
-  { value: 'form', label: '表單／連結' },
-  { value: 'other', label: '其他' },
+  { value: 'line', label: 'LINE' },
 ];
+
+// Field that must hold data for each channel; the error shows under that field
+const CHANNEL_REQUIREMENT: Record<
+  SelectableContact,
+  { field: 'instagram' | 'threads' | 'contactUrl'; message: string }
+> = {
+  instagram: { field: 'instagram', message: '選了 IG 私訊，要填 Instagram' },
+  threads: { field: 'threads', message: '選了 Threads 私訊，要填 Threads' },
+  line: { field: 'contactUrl', message: '選了 LINE，要填 LINE 連結' },
+};
+
+const CONTACT_FIELDS = ['preferredContact', 'contactUrl', 'instagram', 'threads'] as const;
+type ContactField = (typeof CONTACT_FIELDS)[number];
 
 const STATUS_LABEL: Record<string, string> = {
   pending: '審核中',
@@ -444,13 +457,12 @@ function SelectDropdown({
 
 interface PreferredContactDropdownProps {
   value: PreferredContact | '';
-  onChange: (v: PreferredContact | '') => void;
+  onChange: (v: SelectableContact) => void;
 }
 
 function PreferredContactDropdown({ value, onChange }: PreferredContactDropdownProps) {
   const [open, setOpen] = useState(false);
-  const selectedLabel =
-    PREFERRED_CONTACT_OPTIONS.find((o) => o.value === value)?.label ?? '尚未設定';
+  const selectedLabel = PREFERRED_CONTACT_OPTIONS.find((o) => o.value === value)?.label ?? '請選擇';
 
   return (
     <div className={dropdownContainer}>
@@ -547,8 +559,37 @@ interface FormErrors {
   preferredContact?: string;
   capacityRange?: string;
   socialMedia?: string;
+  instagram?: string;
+  threads?: string;
   coverPhoto?: string;
   contactUrl?: string;
+  bookingFormUrl?: string;
+}
+
+type ContactErrors = Pick<FormErrors, 'instagram' | 'threads' | 'contactUrl'>;
+
+function isSelectableContact(value: string): value is SelectableContact {
+  return PREFERRED_CONTACT_OPTIONS.some((o) => o.value === value);
+}
+
+function getUrlError(url: string): string | undefined {
+  if (url.length > CONTACT_URL_MAX_LENGTH) return '網址不能超過 500 個字';
+  if (url && !isHttpUrl(url)) return '請輸入完整網址（以 http:// 或 https:// 開頭）';
+  return undefined;
+}
+
+function getContactErrors(values: VenueFormValues, checkChannel: boolean): ContactErrors {
+  const next: ContactErrors = {};
+  // LINE link is hidden for other channels, so it is neither validated nor submitted
+  if (values.preferredContact === 'line') {
+    const urlError = getUrlError(values.contactUrl.trim());
+    if (urlError) next.contactUrl = urlError;
+  }
+  if (checkChannel && isSelectableContact(values.preferredContact)) {
+    const { field, message } = CHANNEL_REQUIREMENT[values.preferredContact];
+    if (!values[field].trim() && !next[field]) next[field] = message;
+  }
+  return next;
 }
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -614,12 +655,16 @@ export default function VenueForm(props: VenueFormProps) {
   }>({ lat: null, lng: null, placeId: '' });
   const [hostTagInput, setHostTagInput] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
-  // Hidden field must neither be validated nor submitted
-  const showContactUrl =
-    form.preferredContact === 'line' ||
-    form.preferredContact === 'form' ||
-    form.preferredContact === 'other';
+  const showContactUrl = form.preferredContact === 'line';
+
+  // Edit mode only checks the channel once a contact field changes, so old data can still save
+  function shouldCheckChannel(values: VenueFormValues): boolean {
+    if (props.mode === 'create') return true;
+    const initial = props.initialValues;
+    return CONTACT_FIELDS.some((key) => values[key] !== initial[key]);
+  }
 
   function validate(): boolean {
     const next: FormErrors = {};
@@ -627,7 +672,7 @@ export default function VenueForm(props: VenueFormProps) {
     if (!form.address.trim()) next.address = '請填寫地址';
     if (!form.region) next.region = '請選擇地區';
     if (props.mode === 'create' && !form.preferredContact) {
-      next.preferredContact = '請選擇偏好聯繫方式';
+      next.preferredContact = '請選擇聯絡方式';
     }
     if (props.mode === 'create' && !form.capacityRange) {
       next.capacityRange = '請選擇容納人數';
@@ -638,18 +683,16 @@ export default function VenueForm(props: VenueFormProps) {
     if (props.mode === 'create' && !form.coverPhoto) {
       next.coverPhoto = '請上傳封面圖片';
     }
-    const contactUrl = showContactUrl ? form.contactUrl.trim() : '';
-    if (contactUrl.length > CONTACT_URL_MAX_LENGTH) {
-      next.contactUrl = '網址不能超過 500 個字';
-    } else if (contactUrl && !isHttpUrl(contactUrl)) {
-      next.contactUrl = '請輸入完整網址（以 http:// 或 https:// 開頭）';
-    }
+    Object.assign(next, getContactErrors(form, shouldCheckChannel(form)));
+    const bookingFormUrlError = getUrlError(form.bookingFormUrl.trim());
+    if (bookingFormUrlError) next.bookingFormUrl = bookingFormUrlError;
     setErrors(next);
     return Object.keys(next).length === 0;
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setSubmitAttempted(true);
     if (!validate()) return;
 
     const socialMedia =
@@ -677,12 +720,13 @@ export default function VenueForm(props: VenueFormProps) {
       if (socialMedia) data.socialMedia = socialMedia;
       if (form.preferredContact) data.preferredContact = form.preferredContact;
       if (showContactUrl && form.contactUrl.trim()) data.contactUrl = form.contactUrl.trim();
+      if (form.bookingFormUrl.trim()) data.bookingFormUrl = form.bookingFormUrl.trim();
       if (coordinates.lat !== null) data.lat = coordinates.lat;
       if (coordinates.lng !== null) data.lng = coordinates.lng;
       if (coordinates.placeId) data.placeId = coordinates.placeId;
       props.onSubmit(data);
     } else {
-      props.onSubmit({
+      const data: UpdateVenueData = {
         name: form.name.trim(),
         address: form.address.trim(),
         region: form.region,
@@ -693,10 +737,16 @@ export default function VenueForm(props: VenueFormProps) {
         coverPhoto: form.coverPhoto || undefined,
         otherPhotos: form.otherPhotos,
         hostTags: form.hostTags,
-        preferredContact: (form.preferredContact as PreferredContact) || undefined,
-        contactUrl: showContactUrl ? form.contactUrl.trim() || undefined : undefined,
         socialMedia,
-      });
+        // Always sent so the field can be cleared; null clears it on the backend
+        bookingFormUrl: form.bookingFormUrl.trim() || null,
+      };
+      // Old form/other stays untouched (incl. its contactUrl) until the admin picks a new channel
+      if (isSelectableContact(form.preferredContact)) {
+        data.preferredContact = form.preferredContact;
+      }
+      if (showContactUrl && form.contactUrl.trim()) data.contactUrl = form.contactUrl.trim();
+      props.onSubmit(data);
     }
   }
 
@@ -724,6 +774,25 @@ export default function VenueForm(props: VenueFormProps) {
     if (errors[key as keyof FormErrors]) {
       setErrors((prev) => ({ ...prev, [key]: undefined }));
     }
+  }
+
+  function setContactField(key: ContactField, value: string) {
+    const next = { ...form, [key]: value };
+    setForm(next);
+    setErrors((prev) => {
+      const cleared: FormErrors = {
+        ...prev,
+        instagram: undefined,
+        threads: undefined,
+        contactUrl: undefined,
+        ...(key === 'preferredContact' && { preferredContact: undefined }),
+        ...((key === 'instagram' || key === 'threads') && { socialMedia: undefined }),
+      };
+      // After a failed submit, keep contact errors in sync as the user fixes them
+      return submitAttempted
+        ? { ...cleared, ...getContactErrors(next, shouldCheckChannel(next)) }
+        : cleared;
+    });
   }
 
   function handleAddHostTag() {
@@ -914,11 +983,15 @@ export default function VenueForm(props: VenueFormProps) {
                 className={inputStyle}
                 placeholder="@username"
                 value={form.threads}
-                onChange={(e) => {
-                  setField('threads', e.target.value);
-                  setErrors((prev) => ({ ...prev, socialMedia: undefined }));
-                }}
+                onChange={(e) => setContactField('threads', e.target.value)}
+                aria-invalid={errors.threads ? 'true' : undefined}
+                aria-describedby={errors.threads ? 'venue-threads-error' : undefined}
               />
+              {errors.threads && (
+                <span id="venue-threads-error" className={fieldError} role="alert">
+                  {errors.threads}
+                </span>
+              )}
             </div>
             <div className={fieldGroup}>
               <label htmlFor="venue-instagram" className={labelSub}>
@@ -930,11 +1003,15 @@ export default function VenueForm(props: VenueFormProps) {
                 className={inputStyle}
                 placeholder="@username"
                 value={form.instagram}
-                onChange={(e) => {
-                  setField('instagram', e.target.value);
-                  setErrors((prev) => ({ ...prev, socialMedia: undefined }));
-                }}
+                onChange={(e) => setContactField('instagram', e.target.value)}
+                aria-invalid={errors.instagram ? 'true' : undefined}
+                aria-describedby={errors.instagram ? 'venue-instagram-error' : undefined}
               />
+              {errors.instagram && (
+                <span id="venue-instagram-error" className={fieldError} role="alert">
+                  {errors.instagram}
+                </span>
+              )}
             </div>
           </div>
           {errors.socialMedia && (
@@ -947,15 +1024,12 @@ export default function VenueForm(props: VenueFormProps) {
         {/* preferredContact */}
         <div className={fieldGroup}>
           <span className={label}>
-            偏好聯繫方式
+            主辦要怎麼聯絡你？
             {props.mode === 'create' && <span className={requiredMark}>*</span>}
           </span>
           <PreferredContactDropdown
             value={form.preferredContact}
-            onChange={(v) => {
-              setForm((prev) => ({ ...prev, preferredContact: v }));
-              setErrors((prev) => ({ ...prev, preferredContact: undefined }));
-            }}
+            onChange={(v) => setContactField('preferredContact', v)}
           />
           {errors.preferredContact && (
             <span className={fieldError} role="alert">
@@ -964,19 +1038,19 @@ export default function VenueForm(props: VenueFormProps) {
           )}
         </div>
 
-        {/* contactUrl — shown for line / form / other */}
+        {/* contactUrl — LINE link, shown only for line */}
         {showContactUrl && (
           <div className={fieldGroup}>
             <label htmlFor="venue-contact-url" className={label}>
-              預約表單連結
+              LINE 連結
             </label>
             <input
               id="venue-contact-url"
               type="text"
               className={inputStyle}
-              placeholder="https://line.me/... 或預約表單網址"
+              placeholder="https://lin.ee/..."
               value={form.contactUrl}
-              onChange={(e) => setField('contactUrl', e.target.value)}
+              onChange={(e) => setContactField('contactUrl', e.target.value)}
               aria-invalid={errors.contactUrl ? 'true' : undefined}
               aria-describedby={errors.contactUrl ? 'venue-contact-url-error' : undefined}
             />
@@ -987,6 +1061,34 @@ export default function VenueForm(props: VenueFormProps) {
             )}
           </div>
         )}
+
+        {/* bookingFormUrl — always shown, optional */}
+        <div className={fieldGroup}>
+          <label htmlFor="venue-booking-form-url" className={label}>
+            預約表單網址
+          </label>
+          <p id="venue-booking-form-url-hint" className={fieldHint}>
+            有固定的預約或申請表單再填。
+          </p>
+          <input
+            id="venue-booking-form-url"
+            type="text"
+            inputMode="url"
+            className={inputStyle}
+            placeholder="https://"
+            value={form.bookingFormUrl}
+            onChange={(e) => setField('bookingFormUrl', e.target.value)}
+            aria-invalid={errors.bookingFormUrl ? 'true' : undefined}
+            aria-describedby={
+              errors.bookingFormUrl ? 'venue-booking-form-url-error' : 'venue-booking-form-url-hint'
+            }
+          />
+          {errors.bookingFormUrl && (
+            <span id="venue-booking-form-url-error" className={fieldError} role="alert">
+              {errors.bookingFormUrl}
+            </span>
+          )}
+        </div>
 
         {/* coverPhoto */}
         <div className={fieldGroup}>
