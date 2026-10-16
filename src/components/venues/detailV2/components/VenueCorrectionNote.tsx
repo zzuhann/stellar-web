@@ -6,9 +6,8 @@ import { textLink } from './styles';
 const note = css({
   margin: 0,
   paddingX: '4',
-  textStyle: 'bodySmall',
+  textStyle: 'caption',
   color: 'color.text.secondary',
-  lg: { textStyle: 'body' },
 });
 
 export default function VenueCorrectionNote() {

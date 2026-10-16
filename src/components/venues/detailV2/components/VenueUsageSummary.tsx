@@ -18,7 +18,7 @@ const title = css({
   textStyle: 'caption',
   fontWeight: 'bold',
   color: 'color.text.secondary',
-  lg: { textStyle: 'bodySmall', fontWeight: 'bold' },
+  lg: { textStyle: 'bodySmall' },
 });
 
 const list = css({
@@ -57,6 +57,7 @@ const rowTitle = css({
   margin: 0,
   textStyle: 'bodyStrong',
   color: 'color.text.primary',
+  // bodyStrong carries the weight; h4 alone would drop it to medium
   lg: { textStyle: 'h4', fontWeight: 'semibold' },
 });
 
@@ -66,15 +67,6 @@ const rowDesc = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
   lg: { textStyle: 'body' },
-});
-
-const rowCondition = css({
-  margin: 0,
-  marginTop: '0.5',
-  textStyle: 'bodySmall',
-  fontWeight: 'semibold',
-  color: 'stellarBlue.700',
-  lg: { textStyle: 'body', fontWeight: 'semibold' },
 });
 
 const notes = css({
@@ -117,9 +109,7 @@ export default function VenueUsageSummary({
             </span>
             <div>
               <p className={rowTitle}>{row.title}</p>
-              {row.description && (
-                <p className={row.isCondition ? rowCondition : rowDesc}>{row.description}</p>
-              )}
+              {row.description && <p className={rowDesc}>{row.description}</p>}
             </div>
           </li>
         ))}

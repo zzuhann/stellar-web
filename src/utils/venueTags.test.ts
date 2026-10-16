@@ -113,7 +113,7 @@ describe('TC-015 條件文字 buildVenueConditionText', () => {
     expect(conditionText(tags)).toBe(expected);
   });
 
-  it('條件全空時，佈置行改寫「佈置條件可詢問店家」且不是條件樣式', () => {
+  it('條件全空時，佈置行改寫「佈置條件可詢問店家」', () => {
     const [row] = usageRows([
       { slug: 'free_venue', limited: true, until: '2026-10-14' },
       ...t('can_decorate'),
@@ -122,13 +122,12 @@ describe('TC-015 條件文字 buildVenueConditionText', () => {
     expect(row).toMatchObject({
       key: 'decorate',
       description: NO_DECORATE_CONDITION_TEXT,
-      isCondition: false,
     });
   });
 
-  it('有條件時佈置行帶條件文字、是條件樣式', () => {
+  it('有條件時佈置行帶條件文字', () => {
     const [row] = usageRows(t('can_decorate', 'needs_guarantee'));
-    expect(row).toMatchObject({ description: '需達保底', isCondition: true });
+    expect(row).toMatchObject({ description: '需達保底' });
   });
 
   it('輸出只由固定字串與日期組成（沒有金額、不吃 equipmentNote）', () => {

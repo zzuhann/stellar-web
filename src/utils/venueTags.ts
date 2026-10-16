@@ -96,8 +96,6 @@ export interface VenueUsageRow {
   key: VenueUsageRowKey;
   title: string;
   description: string | null;
-  // true → render as the emphasised condition line
-  isCondition: boolean;
 }
 
 export const buildVenueUsageRows = (
@@ -114,7 +112,6 @@ export const buildVenueUsageRows = (
       description: bySlug.has('parcel_receiving')
         ? '店家可以代發，也可以代收應援物'
         : '店家可以代發',
-      isCondition: false,
     });
   }
   if (bySlug.has('can_decorate')) {
@@ -123,11 +120,10 @@ export const buildVenueUsageRows = (
       key: 'decorate',
       title: '佈置、辦生咖',
       description: condition ?? NO_DECORATE_CONDITION_TEXT,
-      isCondition: condition !== null,
     });
   }
   if (bySlug.has('private_booking')) {
-    rows.push({ key: 'privateBooking', title: '包場', description: null, isCondition: false });
+    rows.push({ key: 'privateBooking', title: '包場', description: null });
   }
   return rows;
 };

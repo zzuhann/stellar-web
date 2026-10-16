@@ -18,6 +18,7 @@ const title = css({
   margin: 0,
   textStyle: 'bodyStrong',
   color: 'color.text.primary',
+  // bodyStrong carries the weight; h4 alone would drop it to medium
   lg: { textStyle: 'h4', fontWeight: 'semibold' },
 });
 
@@ -27,7 +28,7 @@ const desc = css({
   marginBottom: '4',
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  lg: { textStyle: 'body' },
+  lg: { textStyle: 'caption' },
 });
 
 const descOnly = css({
