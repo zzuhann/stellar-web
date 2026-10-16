@@ -53,7 +53,10 @@ export default function VenueContactCard({ contact, onClickContact }: VenueConta
       </h2>
       {contact ? (
         <>
-          <p className={desc}>STELLAR 不經手預約。先看店家的預約說明，再私訊確認檔期與方案。</p>
+          <p className={desc}>
+            場地資訊由 STELLAR
+            整理，僅供參考；價格與規則可能隨時變動，檔期與方案請直接私訊店家確認。
+          </p>
           <VenueContactActions contact={contact} align="start" onClickContact={onClickContact} />
         </>
       ) : (
