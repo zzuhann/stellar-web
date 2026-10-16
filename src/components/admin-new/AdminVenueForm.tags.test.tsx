@@ -468,6 +468,35 @@ function fillNewVenueRequired() {
   fireEvent.click(screen.getByRole('button', { name: '模擬封面上傳' }));
 }
 
+describe('TC-093 字典還在載入中就送出，也不送標籤區欄位', () => {
+  beforeEach(() => {
+    api.getTagDictionary.mockReturnValue(new Promise(() => {}));
+  });
+
+  it('編輯頁：改店名存檔，body 有 name、不含五欄', async () => {
+    api.getAdminVenueById.mockResolvedValue(
+      makeVenue({ tags: [{ slug: 'free_venue' }], calendarUrl: 'https://cal.test/x' })
+    );
+    renderWithClient(<VenueEditPage />);
+    fireEvent.change(await screen.findByLabelText(/場地名稱/), { target: { value: '新店名' } });
+    expect((screen.getByLabelText('資料更新日期') as HTMLInputElement).disabled).toBe(true);
+    save();
+
+    const body = await savedBody();
+    expect(body.name).toBe('新店名');
+    expectNoTagFields(body);
+  });
+
+  it('新增頁：填完必填送出，body 不含五欄', async () => {
+    renderWithClient(<VenueNewPage />);
+    fillNewVenueRequired();
+    fireEvent.click(screen.getByRole('button', { name: '新增場地' }));
+
+    await waitFor(() => expect(api.createVenue).toHaveBeenCalledTimes(1));
+    expectNoTagFields(api.createVenue.mock.calls[0][0]);
+  });
+});
+
 describe('TC-009 後台新增場地有標籤區、沒有問卷', () => {
   it('有標籤與店家說明資料區，日期預設台灣今天；POST 帶 tags 與 infoUpdatedOn', async () => {
     renderWithClient(<VenueNewPage />);
