@@ -380,7 +380,7 @@ function TagRow({ def, entry, hint, today, untilError, onChange }: TagRowProps) 
             onChange={(mode) => onChange({ ...current, mode })}
           />
           {current.mode === 'until' && (
-            <div className={dateField}>
+            <div className={dateField} data-until-field={def.slug}>
               <input
                 id={untilId}
                 type="date"

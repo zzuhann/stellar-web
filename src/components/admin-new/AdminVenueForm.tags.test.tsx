@@ -370,6 +370,32 @@ describe('TC-058 載入時就不合法、沒動過的網址不擋存檔', () => 
   });
 });
 
+describe('送出擋下時焦點落在出錯的欄位', () => {
+  it('「限期到」沒填日期 → 焦點在那個日期欄，顯示錯誤', async () => {
+    await renderEdit();
+    fireEvent.click(checkbox('可包場'));
+    fireEvent.click(checkbox('免場地費'));
+    chooseLimit('免場地費', '限期到');
+    save();
+
+    const dateInput = screen.getByLabelText('免場地費的結束日期');
+    expect(document.activeElement).toBe(dateInput);
+    expect(screen.getByText('請選擇日期，或改成「限期（目前沒有設定結束日）」').id).toBe(
+      dateInput.getAttribute('aria-describedby')
+    );
+    expect(api.updateVenue).not.toHaveBeenCalled();
+  });
+
+  it('第 2 列連結錯 → 焦點在第 2 列 input', async () => {
+    await renderEdit({ sourceLinks: ['https://ok.test/1'] });
+    fireEvent.click(screen.getByRole('button', { name: '新增連結' }));
+    fireEvent.change(screen.getByLabelText('原始說明連結 2'), { target: { value: 'abc' } });
+    save();
+
+    expect(document.activeElement).toBe(screen.getByLabelText('原始說明連結 2'));
+  });
+});
+
 describe('TC-077 後台儲存失敗', () => {
   it('錯誤橫幅出現，勾選與限期保留，按鈕恢復可按', async () => {
     api.updateVenue.mockRejectedValue(new Error('500'));

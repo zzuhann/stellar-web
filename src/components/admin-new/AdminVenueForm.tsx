@@ -775,6 +775,12 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
     return next;
   }
 
+  // First element in DOM order whose marker attribute names a key with an error
+  function firstMarked(attribute: string, errorsByKey: Record<string, string>) {
+    const nodes = formRef.current?.querySelectorAll<HTMLElement>(`[${attribute}]`) ?? [];
+    return Array.from(nodes).find((node) => (node.getAttribute(attribute) ?? '') in errorsByKey);
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitAttempted(true);
@@ -797,12 +803,17 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
             : field === 'instagram'
               ? !!(nextErrors.instagram || nextErrors.socialMedia)
               : !!nextErrors[field as keyof FormErrors],
-        Object.fromEntries(
-          ERROR_FIELD_ORDER.map((field) => [
-            field,
-            formRef.current?.querySelector<HTMLElement>(`[data-field="${field}"]`),
-          ])
-        )
+        {
+          ...Object.fromEntries(
+            ERROR_FIELD_ORDER.map((field) => [
+              field,
+              formRef.current?.querySelector<HTMLElement>(`[data-field="${field}"]`),
+            ])
+          ),
+          // Land on the exact failing control, not the first checkbox of the tag area
+          tags: firstMarked('data-until-field', nextTagErrors.until),
+          sourceLinks: firstMarked('data-link-row', nextTagErrors.sourceLinks),
+        }
       );
       return;
     }
