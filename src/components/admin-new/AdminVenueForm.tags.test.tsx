@@ -337,6 +337,39 @@ describe('TC-066 刪掉中間列時，錯誤跟著那一列走', () => {
   });
 });
 
+describe('TC-058 載入時就不合法、沒動過的網址不擋存檔', () => {
+  it('calendarUrl 載入值不合法，只改店名 → 能存、body 不含 calendarUrl', async () => {
+    await renderEdit({ calendarUrl: 'not-a-url', sourceLinks: ['ftp://old.test'] });
+    fireEvent.change(screen.getByLabelText(/場地名稱/), { target: { value: '新店名' } });
+    save();
+
+    const body = await savedBody();
+    expect(body.name).toBe('新店名');
+    expect(body).not.toHaveProperty('calendarUrl');
+    expect(body).not.toHaveProperty('sourceLinks');
+  });
+
+  it('改過的網址照樣驗證；大寫 HTTPS:// 跟後端一樣接受', async () => {
+    await renderEdit({ calendarUrl: 'not-a-url' });
+    fireEvent.change(screen.getByLabelText('檔期行事曆連結'), {
+      target: { value: 'HTTPS://cal.test/x' },
+    });
+    fireEvent.change(screen.getByLabelText('原始說明連結 1'), { target: { value: 'abc' } });
+    save();
+    expect(screen.getByText('請輸入完整網址（以 https:// 開頭）')).toBeTruthy();
+    expect(api.updateVenue).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText('原始說明連結 1'), {
+      target: { value: 'HTTPS://source.test/1' },
+    });
+    save();
+
+    const body = await savedBody();
+    expect(body.calendarUrl).toBe('HTTPS://cal.test/x');
+    expect(body.sourceLinks).toEqual(['HTTPS://source.test/1']);
+  });
+});
+
 describe('TC-077 後台儲存失敗', () => {
   it('錯誤橫幅出現，勾選與限期保留，按鈕恢復可按', async () => {
     api.updateVenue.mockRejectedValue(new Error('500'));

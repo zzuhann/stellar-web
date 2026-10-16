@@ -720,12 +720,17 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
   const [tagForm, setTagForm] = useState<TagFormState>(initialTagForm);
   const formRef = useRef<HTMLFormElement>(null);
 
+  // Edit mode validates only changed URL fields; create mode validates everything
+  const tagBaseline = props.mode === 'edit' ? initialTagForm : undefined;
+
   const dictionaryQuery = useVenueTagDictionary();
   // Tag fields are only editable and sent once the dictionary is in hand
   const dictionary = dictionaryQuery.data;
   const tagStatus = dictionary ? 'success' : dictionaryQuery.isError ? 'error' : 'pending';
   const tagErrors =
-    submitAttempted && dictionary ? getTagFieldErrors(tagForm, dictionary) : NO_TAG_ERRORS;
+    submitAttempted && dictionary
+      ? getTagFieldErrors(tagForm, dictionary, tagBaseline)
+      : NO_TAG_ERRORS;
   const preview = dictionary
     ? buildAdminVenuePreview(entriesToTags(tagForm.entries, dictionary), dictionary, today)
     : null;
@@ -777,7 +782,9 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
     e.preventDefault();
     setSubmitAttempted(true);
     const nextErrors = validate();
-    const nextTagErrors = dictionary ? getTagFieldErrors(tagForm, dictionary) : NO_TAG_ERRORS;
+    const nextTagErrors = dictionary
+      ? getTagFieldErrors(tagForm, dictionary, tagBaseline)
+      : NO_TAG_ERRORS;
     if (Object.keys(nextErrors).length > 0 || hasTagFieldErrors(nextTagErrors)) {
       const tagFieldHasError: Record<string, boolean> = {
         tags: Object.keys(nextTagErrors.until).length > 0,

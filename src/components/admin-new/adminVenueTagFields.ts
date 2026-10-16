@@ -1,5 +1,4 @@
 import type { CreateVenueData, UpdateVenueData, VenueTag, VenueTagDictionary } from '@/types';
-import { getHttpUrlError } from '@/utils';
 import {
   buildVenueUsageRows,
   formatCardTagLabel,
@@ -165,22 +164,47 @@ export interface TagFieldErrors {
   calendarUrl?: string;
 }
 
+const URL_MAX_LENGTH = 500;
+
+// Mirrors the backend httpUrlSchema: scheme is case-insensitive (HTTPS:// is accepted there).
+// Kept local so the shared getHttpUrlError and /submit-venue behave exactly as before.
+export function getTagUrlError(url: string): string | undefined {
+  if (url.length > URL_MAX_LENGTH) return `網址不能超過 ${URL_MAX_LENGTH} 個字`;
+  if (!url) return undefined;
+  if (!/^https?:\/\//i.test(url)) return '請輸入完整網址（以 https:// 開頭）';
+  try {
+    new URL(url);
+    return undefined;
+  } catch {
+    return '請輸入完整網址（以 https:// 開頭）';
+  }
+}
+
+// initial (edit mode) skips URL fields that still hold their load-time value, so a bad
+// imported value cannot block saving unrelated fields (same idea as the contact channel check)
 export function getTagFieldErrors(
   state: TagFormState,
-  dictionary: VenueTagDictionary
+  dictionary: VenueTagDictionary,
+  initial?: TagFormState
 ): TagFieldErrors {
   const errors: TagFieldErrors = { sourceLinks: {}, until: {} };
-  state.sourceLinks.forEach((row) => {
-    const error = getHttpUrlError(row.value.trim());
-    if (error) errors.sourceLinks[row.id] = error;
-  });
+  const linksChanged =
+    !initial ||
+    normalizeLinks(initial.sourceLinks).join('\n') !== normalizeLinks(state.sourceLinks).join('\n');
+  if (linksChanged) {
+    state.sourceLinks.forEach((row) => {
+      const error = getTagUrlError(row.value.trim());
+      if (error) errors.sourceLinks[row.id] = error;
+    });
+  }
   for (const def of dictionary.tags) {
     const entry = state.entries[def.slug];
     if (entry?.checked && entry.mode === 'until' && !entry.until) {
       errors.until[def.slug] = MISSING_UNTIL_ERROR;
     }
   }
-  const calendarError = getHttpUrlError(state.calendarUrl.trim());
+  const calendarChanged = !initial || initial.calendarUrl.trim() !== state.calendarUrl.trim();
+  const calendarError = calendarChanged ? getTagUrlError(state.calendarUrl.trim()) : undefined;
   if (calendarError) errors.calendarUrl = calendarError;
   return errors;
 }
