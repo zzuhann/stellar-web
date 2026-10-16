@@ -18,6 +18,7 @@ const text = css({
   lineHeight: 1.7,
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere',
+  lg: { textStyle: 'body' },
 });
 
 // Mobile shows 4 lines; desktop always shows the full text

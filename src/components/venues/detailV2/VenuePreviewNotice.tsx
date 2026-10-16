@@ -15,6 +15,7 @@ const notice = css({
   background: 'color.info.background',
   color: 'color.info.text',
   textStyle: 'bodySmall',
+  lg: { textStyle: 'body' },
 });
 
 const icon = css({

@@ -29,6 +29,7 @@ const term = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
   whiteSpace: 'nowrap',
+  lg: { textStyle: 'bodySmall' },
 });
 
 const tagGroup = css({
@@ -49,6 +50,7 @@ const equipmentTitle = css({
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
   color: 'color.text.primary',
+  lg: { textStyle: 'bodyStrong' },
 });
 
 const equipmentText = css({
@@ -58,6 +60,7 @@ const equipmentText = css({
   color: 'color.text.primary',
   whiteSpace: 'pre-wrap',
   overflowWrap: 'anywhere',
+  lg: { textStyle: 'body' },
 });
 
 const equipmentHint = css({
@@ -65,6 +68,7 @@ const equipmentHint = css({
   marginTop: '2',
   textStyle: 'caption',
   color: 'color.text.secondary',
+  lg: { textStyle: 'bodySmall' },
 });
 
 interface EquipmentNoteProps {
@@ -80,7 +84,7 @@ function EquipmentNote({ note, headingLevel: Heading }: EquipmentNoteProps) {
         店家提供的設備
       </Heading>
       <p className={equipmentText}>{note}</p>
-      <p className={equipmentHint}>部分需租借，以店家說明為準。</p>
+      <p className={equipmentHint}>可能隨時變動，以店家說明為準。</p>
     </section>
   );
 }

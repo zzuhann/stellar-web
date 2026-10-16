@@ -46,9 +46,9 @@ export const buildVenueContact = (venue: VenueContactSource): VenueContact | nul
     resolved.channel === 'line'
       ? { before: '用 LINE 聯絡 ', name: venue.name, after: '' }
       : {
-          before: '私訊 ',
+          before: '前往 ',
           name: venue.name,
-          after: resolved.channel === 'instagram' ? '（Instagram）' : '（Threads）',
+          after: resolved.channel === 'instagram' ? ' Instagram' : ' Threads',
         };
 
   return {

@@ -18,6 +18,7 @@ const title = css({
   textStyle: 'caption',
   fontWeight: 'bold',
   color: 'color.text.secondary',
+  lg: { textStyle: 'bodySmall', fontWeight: 'bold' },
 });
 
 const list = css({
@@ -56,6 +57,7 @@ const rowTitle = css({
   margin: 0,
   textStyle: 'bodyStrong',
   color: 'color.text.primary',
+  lg: { textStyle: 'h4', fontWeight: 'semibold' },
 });
 
 const rowDesc = css({
@@ -63,6 +65,7 @@ const rowDesc = css({
   marginTop: '0.5',
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
+  lg: { textStyle: 'body' },
 });
 
 const rowCondition = css({
@@ -71,6 +74,7 @@ const rowCondition = css({
   textStyle: 'bodySmall',
   fontWeight: 'semibold',
   color: 'stellarBlue.700',
+  lg: { textStyle: 'body', fontWeight: 'semibold' },
 });
 
 const notes = css({
@@ -84,6 +88,7 @@ const note = css({
   margin: 0,
   textStyle: 'caption',
   color: 'color.text.secondary',
+  lg: { textStyle: 'bodySmall' },
 });
 
 interface VenueUsageSummaryProps {
@@ -102,7 +107,7 @@ export default function VenueUsageSummary({
   return (
     <section aria-labelledby={headingId} className={card}>
       <h2 id={headingId} className={title}>
-        店家說明有提到
+        可以在這裡
       </h2>
       <ul className={list}>
         {rows.map((row) => (
@@ -121,7 +126,7 @@ export default function VenueUsageSummary({
       </ul>
       <div className={notes}>
         <p className={note}>沒列出的不代表不行，可以直接問店家。</p>
-        <p className={note}>費用依方案而定，以店家最新說明為準。</p>
+        <p className={note}>費用依方案而定，以店家最新說明、私訊討論為準。</p>
         <VenueSourceMeta sourceLinks={sourceLinks} infoUpdatedOn={infoUpdatedOn} />
       </div>
     </section>

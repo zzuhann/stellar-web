@@ -40,4 +40,5 @@ export const tag = css({
   background: 'gray.100',
   color: 'color.text.primary',
   textStyle: 'caption',
+  lg: { textStyle: 'bodySmall' },
 });

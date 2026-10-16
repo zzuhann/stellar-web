@@ -28,13 +28,13 @@ describe('TC-014 三行用途 buildVenueUsageRows', () => {
       expected: [{ key: 'distribution', title: '發放應援物', description: '店家可以代發' }],
     },
     {
-      name: '代發＋代收 → 補一句可以先寄到店',
+      name: '代發＋代收 → 補一句也可以代收',
       tags: t('goods_distribution', 'parcel_receiving'),
       expected: [
         {
           key: 'distribution',
           title: '發放應援物',
-          description: '店家可以代發，也可以先把應援物寄到店',
+          description: '店家可以代發，也可以代收應援物',
         },
       ],
     },
@@ -113,12 +113,12 @@ describe('TC-015 條件文字 buildVenueConditionText', () => {
     expect(conditionText(tags)).toBe(expected);
   });
 
-  it('條件全空時，佈置行改寫「店家沒寫佈置條件，私訊時可以問」且不是條件樣式', () => {
+  it('條件全空時，佈置行改寫「佈置條件可詢問店家」且不是條件樣式', () => {
     const [row] = usageRows([
       { slug: 'free_venue', limited: true, until: '2026-10-14' },
       ...t('can_decorate'),
     ]);
-    expect(NO_DECORATE_CONDITION_TEXT).toBe('店家沒寫佈置條件，私訊時可以問');
+    expect(NO_DECORATE_CONDITION_TEXT).toBe('佈置條件可詢問店家');
     expect(row).toMatchObject({
       key: 'decorate',
       description: NO_DECORATE_CONDITION_TEXT,
@@ -203,7 +203,7 @@ describe('TC-016 「服務、交通與空間」分列 buildVenueFacilityRows', (
     // Usage rows describe these with UX copy instead of the dictionary label
     const usageCopy: Record<string, string> = {
       goods_distribution: '店家可以代發',
-      parcel_receiving: '也可以先把應援物寄到店',
+      parcel_receiving: '也可以代收應援物',
       free_venue: '免場地費',
       no_min_guarantee: '沒有杯數門檻',
       private_booking: '包場',

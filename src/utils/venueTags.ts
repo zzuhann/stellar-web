@@ -48,7 +48,7 @@ export const getVisibleVenueTags = (
 const indexBySlug = (tags: readonly VisibleVenueTag[]) =>
   new Map(tags.map((tag) => [tag.slug, tag]));
 
-export const NO_DECORATE_CONDITION_TEXT = '店家沒寫佈置條件，私訊時可以問';
+export const NO_DECORATE_CONDITION_TEXT = '佈置條件可詢問店家';
 
 // today only decides whether the date shows its year; expiry is already filtered
 export const buildVenueConditionText = (
@@ -112,7 +112,7 @@ export const buildVenueUsageRows = (
       key: 'distribution',
       title: '發放應援物',
       description: bySlug.has('parcel_receiving')
-        ? '店家可以代發，也可以先把應援物寄到店'
+        ? '店家可以代發，也可以代收應援物'
         : '店家可以代發',
       isCondition: false,
     });

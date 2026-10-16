@@ -27,7 +27,8 @@ const primaryBtn = css({
   },
 });
 
-const fixedPart = css({ flexShrink: 0 });
+// pre keeps the space between parts; flex items otherwise drop edge whitespace
+const fixedPart = css({ flexShrink: 0, whiteSpace: 'pre' });
 
 const namePart = css({
   minWidth: 0,
@@ -43,6 +44,7 @@ const formLine = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
   flexWrap: 'wrap',
+  lg: { textStyle: 'bodySmall' },
 });
 
 const formLineCenter = css({ justifyContent: 'center', textAlign: 'center' });
@@ -103,7 +105,7 @@ export default function VenueContactActions({
             />
             <span className="sr-only">（開新分頁）</span>
           </a>
-          <span>・填完記得私訊店家確認</span>
+          <span>｜規則請以表單內說明為主</span>
         </p>
       )}
     </>

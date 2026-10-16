@@ -23,6 +23,7 @@ const date = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
   fontVariantNumeric: 'tabular-nums',
+  lg: { textStyle: 'bodySmall' },
 });
 
 interface VenueSourceMetaProps {

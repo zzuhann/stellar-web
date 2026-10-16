@@ -44,25 +44,6 @@ export default function VenueLocation({ venue }: VenueLocationProps) {
         地址與社群
       </h2>
       <div className={rows}>
-        <InfoRow
-          icon={<MapPinIcon width={16} height={16} aria-hidden="true" />}
-          label="地址"
-          value={
-            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className={infoLink}>
-              {venue.address}
-              <span className={iconMuted}>
-                <ArrowTopRightOnSquareIcon
-                  width={12}
-                  height={12}
-                  aria-hidden="true"
-                  className={externalIcon}
-                />
-              </span>
-              <span className="sr-only">在 Google Maps 開啟（開新分頁）</span>
-            </a>
-          }
-        />
-        <VenueMapEmbed placeId={venue.placeId} venueName={venue.name} />
         {socialLink && (
           <InfoRow
             icon={socialLink.type === 'threads' ? <ThreadsIcon /> : <InstagramIcon />}
@@ -88,6 +69,25 @@ export default function VenueLocation({ venue }: VenueLocationProps) {
             }
           />
         )}
+        <InfoRow
+          icon={<MapPinIcon width={16} height={16} aria-hidden="true" />}
+          label="地址"
+          value={
+            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className={infoLink}>
+              {venue.address}
+              <span className={iconMuted}>
+                <ArrowTopRightOnSquareIcon
+                  width={12}
+                  height={12}
+                  aria-hidden="true"
+                  className={externalIcon}
+                />
+              </span>
+              <span className="sr-only">在 Google Maps 開啟（開新分頁）</span>
+            </a>
+          }
+        />
+        <VenueMapEmbed placeId={venue.placeId} venueName={venue.name} />
       </div>
     </section>
   );

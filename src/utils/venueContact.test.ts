@@ -26,7 +26,7 @@ describe('TC-096 新版聯絡管道判斷 buildVenueContact', () => {
       expected: {
         channel: 'instagram',
         url: 'https://www.instagram.com/moon_cafe',
-        label: '私訊 月光咖啡（Instagram）',
+        label: '前往 月光咖啡 Instagram',
       },
     },
     {
@@ -35,7 +35,7 @@ describe('TC-096 新版聯絡管道判斷 buildVenueContact', () => {
       expected: {
         channel: 'threads',
         url: 'https://www.threads.com/@moon_cafe',
-        label: '私訊 月光咖啡（Threads）',
+        label: '前往 月光咖啡 Threads',
       },
     },
     {
@@ -49,7 +49,7 @@ describe('TC-096 新版聯絡管道判斷 buildVenueContact', () => {
       expected: {
         channel: 'instagram',
         url: 'https://www.instagram.com/moon_cafe',
-        label: '私訊 月光咖啡（Instagram）',
+        label: '前往 月光咖啡 Instagram',
       },
     },
     {
@@ -62,7 +62,7 @@ describe('TC-096 新版聯絡管道判斷 buildVenueContact', () => {
       expected: {
         channel: 'instagram',
         url: 'https://www.instagram.com/moon_cafe',
-        label: '私訊 月光咖啡（Instagram）',
+        label: '前往 月光咖啡 Instagram',
       },
     },
     {
@@ -75,7 +75,7 @@ describe('TC-096 新版聯絡管道判斷 buildVenueContact', () => {
       expected: {
         channel: 'threads',
         url: 'https://www.threads.com/@moon_t',
-        label: '私訊 月光咖啡（Threads）',
+        label: '前往 月光咖啡 Threads',
       },
     },
     {
@@ -89,7 +89,7 @@ describe('TC-096 新版聯絡管道判斷 buildVenueContact', () => {
       expected: {
         channel: 'threads',
         url: 'https://www.threads.com/@moon_t',
-        label: '私訊 月光咖啡（Threads）',
+        label: '前往 月光咖啡 Threads',
       },
     },
     {
@@ -117,7 +117,7 @@ describe('TC-096 新版聯絡管道判斷 buildVenueContact', () => {
     expect(
       buildVenueContact(venue({ preferredContact: 'threads', socialMedia: { threads: 'm' } }))
         ?.labelParts
-    ).toEqual({ before: '私訊 ', name: '月光咖啡', after: '（Threads）' });
+    ).toEqual({ before: '前往 ', name: '月光咖啡', after: ' Threads' });
     expect(
       buildVenueContact(venue({ preferredContact: 'line', contactUrl: 'https://lin.ee/a' }))
         ?.labelParts

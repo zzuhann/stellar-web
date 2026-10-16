@@ -122,11 +122,11 @@ describe('TC-021 預覽頁版面', () => {
         Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
 
-    expect(screen.getByRole('region', { name: '店家說明有提到' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: '可以在這裡' })).toBeTruthy();
     expect(screen.getByRole('region', { name: '服務、交通與空間' })).toBeTruthy();
     expect(screen.getByRole('region', { name: '平台記錄的生咖、生日應援' })).toBeTruthy();
     expect(screen.getByText('進行中')).toBeTruthy();
-    expect(screen.getByText(/資料有誤或想更新？/)).toBeTruthy();
+    expect(screen.getByText(/資料有誤、想更新相關資訊/)).toBeTruthy();
     expect(screen.queryByText(/老闆許願少女時代生咖/)).toBeNull();
   });
 
@@ -134,7 +134,7 @@ describe('TC-021 預覽頁版面', () => {
     vi.mocked(venueApi.getTagDictionary).mockRejectedValue(new Error('500'));
     await renderPreview();
     expect(screen.getByRole('heading', { level: 1, name: '月光咖啡' })).toBeTruthy();
-    expect(screen.queryByRole('region', { name: '店家說明有提到' })).toBeNull();
+    expect(screen.queryByRole('region', { name: '可以在這裡' })).toBeNull();
     expect(screen.getByText('投影機')).toBeTruthy();
   });
 });
@@ -160,12 +160,13 @@ describe('TC-085 預覽頁不送自訂 GA 事件、不記瀏覽數', () => {
     const preventNav = (e: Event) => e.preventDefault();
     document.addEventListener('click', preventNav);
     for (const name of [
-      /私訊 月光咖啡/,
+      /前往 月光咖啡/,
       /前往 Instagram 主頁/,
       /預約表單/,
       /店家原始說明/,
       /聯絡表單/,
       /STELLAR IG/,
+      /^Threads/,
     ]) {
       for (const link of screen.queryAllByRole('link', { name })) await user.click(link);
     }

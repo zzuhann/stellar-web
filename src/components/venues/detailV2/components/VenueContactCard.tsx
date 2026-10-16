@@ -18,6 +18,7 @@ const title = css({
   margin: 0,
   textStyle: 'bodyStrong',
   color: 'color.text.primary',
+  lg: { textStyle: 'h4', fontWeight: 'semibold' },
 });
 
 const desc = css({
@@ -26,6 +27,7 @@ const desc = css({
   marginBottom: '4',
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
+  lg: { textStyle: 'body' },
 });
 
 const descOnly = css({
@@ -33,6 +35,7 @@ const descOnly = css({
   marginTop: '1',
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
+  lg: { textStyle: 'body' },
 });
 
 interface VenueContactCardProps {

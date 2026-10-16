@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { css } from '@/styled-system/css';
-import { STELLAR_INSTAGRAM_URL } from '@/constants/stellarSocial';
+import { STELLAR_INSTAGRAM_URL, STELLAR_THREADS_URL } from '@/constants/stellarSocial';
 import { textLink } from './styles';
 
 const note = css({
@@ -8,12 +8,13 @@ const note = css({
   paddingX: '4',
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
+  lg: { textStyle: 'body' },
 });
 
 export default function VenueCorrectionNote() {
   return (
     <p className={note}>
-      資料有誤或想更新？填寫
+      資料有誤、想更新相關資訊，可填寫
       <Link href="/contact" className={textLink}>
         聯絡表單
       </Link>
@@ -25,6 +26,11 @@ export default function VenueCorrectionNote() {
         className={textLink}
       >
         STELLAR IG
+        <span className="sr-only">（開新分頁）</span>
+      </a>
+      ／
+      <a href={STELLAR_THREADS_URL} target="_blank" rel="noopener noreferrer" className={textLink}>
+        Threads
         <span className="sr-only">（開新分頁）</span>
       </a>
       。

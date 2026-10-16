@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { sendGAEvent } from '@next/third-parties/google';
 import type { VenueDetail, VenueTag, VenueTagDictionary } from '@/types';
 import { venueTagDictionaryFixture as dictionary } from '@/test/venueTagDictionary.fixture';
-import { STELLAR_INSTAGRAM_URL } from '@/constants/stellarSocial';
+import { STELLAR_INSTAGRAM_URL, STELLAR_THREADS_URL } from '@/constants/stellarSocial';
 import VenueDetailV2 from './VenueDetailV2';
 
 vi.mock('@next/third-parties/google', () => ({ sendGAEvent: vi.fn() }));
@@ -57,8 +57,8 @@ const renderView = (
     />
   );
 
-const usageRegion = () => screen.queryByRole('region', { name: '店家說明有提到' });
-const getUsageRegion = () => screen.getByRole('region', { name: '店家說明有提到' });
+const usageRegion = () => screen.queryByRole('region', { name: '可以在這裡' });
+const getUsageRegion = () => screen.getByRole('region', { name: '可以在這裡' });
 const facilityRegion = () => screen.queryByRole('region', { name: '服務、交通與空間' });
 const getFacilityRegion = () => screen.getByRole('region', { name: '服務、交通與空間' });
 const descriptionRegion = () => screen.getByRole('region', { name: '店家說明' });
@@ -73,7 +73,7 @@ describe('TC-017 原始說明連結與資料更新日期', () => {
     expect(within(region).queryByRole('link', { name: /店家原始說明/ })).toBeNull();
     expect(within(region).queryByText(/資料更新於/)).toBeNull();
     expect(within(region).getByText('沒列出的不代表不行，可以直接問店家。')).toBeTruthy();
-    expect(within(region).getByText('費用依方案而定，以店家最新說明為準。')).toBeTruthy();
+    expect(within(region).getByText('費用依方案而定，以店家最新說明、私訊討論為準。')).toBeTruthy();
   });
 
   it('連結 1 個 → 「店家原始說明」，新分頁＋sr-only；有日期 → 「資料更新於」加 formatter 輸出', () => {
@@ -170,7 +170,7 @@ describe('TC-035 有標籤但三行用途都沒有', () => {
 
 // The bar is sticky in normal flow, so it must come after the last line of the page
 const expectBarAfterLastLine = () => {
-  const lastLine = screen.getByText(/資料有誤或想更新？/);
+  const lastLine = screen.getByText(/資料有誤、想更新相關資訊/);
   expect(
     lastLine.compareDocumentPosition(getContactBar()) & Node.DOCUMENT_POSITION_FOLLOWING
   ).toBeTruthy();
@@ -187,22 +187,22 @@ describe('TC-037 聯絡區的三種狀態', () => {
     for (const container of [getContactBar(), contactCard()]) {
       const links = within(container).getAllByRole('link');
       expect(links).toHaveLength(1);
-      expect(links[0].getAttribute('aria-label')).toBe('私訊 月光咖啡（Instagram）（開新分頁）');
+      expect(links[0].getAttribute('aria-label')).toBe('前往 月光咖啡 Instagram（開新分頁）');
       expect(links[0].getAttribute('href')).toBe('https://www.instagram.com/moon_cafe');
       expect(within(container).queryByText(/預約表單/)).toBeNull();
     }
     expectBarAfterLastLine();
   });
 
-  it('b：有 bookingFormUrl → 按鈕下方「預約表單・填完記得私訊店家確認」，手機和桌機都有', () => {
+  it('b：有 bookingFormUrl → 按鈕下方「預約表單｜規則請以表單內說明為主」，手機和桌機都有', () => {
     renderView(makeVenue({ ...igVenue, bookingFormUrl: 'https://forms.gle/book' }));
     for (const container of [getContactBar(), contactCard()]) {
-      const primary = within(container).getAllByRole('link', { name: /私訊 月光咖啡/ });
+      const primary = within(container).getAllByRole('link', { name: /前往 月光咖啡/ });
       expect(primary).toHaveLength(1);
       const form = within(container).getByRole('link', { name: '預約表單（開新分頁）' });
       expect(form.getAttribute('href')).toBe('https://forms.gle/book');
       expect(form.getAttribute('target')).toBe('_blank');
-      expect(within(container).getByText(/填完記得私訊店家確認/)).toBeTruthy();
+      expect(within(container).getByText(/｜規則請以表單內說明為主/)).toBeTruthy();
     }
     expectBarAfterLastLine();
   });
@@ -230,9 +230,9 @@ describe('TC-037 聯絡區的三種狀態', () => {
     const name = '非常非常非常非常非常非常長的咖啡廳名字';
     renderView(makeVenue({ ...igVenue, name }));
     const link = within(getContactBar()).getByRole('link');
-    expect(link.getAttribute('aria-label')).toBe(`私訊 ${name}（Instagram）（開新分頁）`);
+    expect(link.getAttribute('aria-label')).toBe(`前往 ${name} Instagram（開新分頁）`);
     expect(within(link).getByText(name).getAttribute('data-part')).toBe('name');
-    expect(within(link).getByText('（Instagram）').getAttribute('data-part')).toBe('channel');
+    expect(within(link).getByText('Instagram').getAttribute('data-part')).toBe('channel');
   });
 });
 
@@ -254,7 +254,7 @@ describe('TC-038 「店家提供的設備」原文', () => {
     expect(
       within(box).getByText((_, el) => el?.textContent === note && el.tagName === 'P')
     ).toBeTruthy();
-    expect(within(box).getByText('部分需租借，以店家說明為準。')).toBeTruthy();
+    expect(within(box).getByText('可能隨時變動，以店家說明為準。')).toBeTruthy();
     expect(screen.getAllByText(/\$300/)).toHaveLength(1);
     expect(getUsageRegion().textContent).not.toContain('$300');
     expect(within(getUsageRegion()).getByText('需達保底')).toBeTruthy();
@@ -296,7 +296,7 @@ describe('TC-094 前台字典載入失敗', () => {
     expect(within(desc).getByText('資料更新於 2026/10/15')).toBeTruthy();
     expect(screen.getByText('投影機免費')).toBeTruthy();
 
-    const primary = within(getContactBar()).getByRole('link', { name: /私訊 月光咖啡/ });
+    const primary = within(getContactBar()).getByRole('link', { name: /前往 月光咖啡/ });
     expect(primary.getAttribute('href')).toBe('https://www.instagram.com/moon_cafe');
     expect(
       within(getContactBar()).getByRole('link', { name: '預約表單（開新分頁）' })
@@ -343,13 +343,16 @@ describe('店家說明收合（手機 4 行）', () => {
   });
 });
 
-describe('資料有誤或想更新？', () => {
-  it('「聯絡表單」連到 /contact，「STELLAR IG」外部連結開新分頁', () => {
+describe('資料有誤、想更新相關資訊', () => {
+  it('「聯絡表單」連到 /contact，「STELLAR IG」「Threads」外部連結開新分頁', () => {
     renderView(makeVenue());
     expect(screen.getByRole('link', { name: '聯絡表單' }).getAttribute('href')).toBe('/contact');
     const ig = screen.getByRole('link', { name: 'STELLAR IG（開新分頁）' });
     expect(ig.getAttribute('href')).toBe(STELLAR_INSTAGRAM_URL);
     expect(ig.getAttribute('target')).toBe('_blank');
+    const threads = screen.getByRole('link', { name: 'Threads（開新分頁）' });
+    expect(threads.getAttribute('href')).toBe(STELLAR_THREADS_URL);
+    expect(threads.getAttribute('target')).toBe('_blank');
   });
 });
 
@@ -375,7 +378,14 @@ describe('TC-085 元件層：analyticsEnabled=false 時不送任何自訂事件'
     const user = userEvent.setup();
     const preventNav = (e: Event) => e.preventDefault();
     document.addEventListener('click', preventNav);
-    for (const name of [/私訊 月光咖啡/, /預約表單/, /店家原始說明 2/, /聯絡表單/, /STELLAR IG/]) {
+    for (const name of [
+      /前往 月光咖啡/,
+      /預約表單/,
+      /店家原始說明 2/,
+      /聯絡表單/,
+      /STELLAR IG/,
+      /^Threads/,
+    ]) {
       for (const link of screen.getAllByRole('link', { name })) await user.click(link);
     }
     const [poster] = within(

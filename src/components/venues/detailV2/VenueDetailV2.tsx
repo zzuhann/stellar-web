@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import Image from 'next/image';
-import { css } from '@/styled-system/css';
+import { css, cx } from '@/styled-system/css';
 import type { Venue, VenueDetail, VenueTagDictionary } from '@/types';
 import { useAuth } from '@/lib/auth-context';
 import { trackClickVenueContact } from '@/lib/analytics/venues';
@@ -25,6 +25,7 @@ import VenueLocation from './components/VenueLocation';
 import VenueCorrectionNote from './components/VenueCorrectionNote';
 import VenueContactCard from './components/VenueContactCard';
 import VenueContactBar from './components/VenueContactBar';
+import { tag } from './components/styles';
 
 // Flex column so the sticky contact bar rests at the viewport bottom even on short pages
 const pageOuter = css({
@@ -113,6 +114,15 @@ const headerLine = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
   fontVariantNumeric: 'tabular-nums',
+  lg: { textStyle: 'body' },
+});
+
+const headerLocation = css({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  columnGap: '2',
+  rowGap: '1',
 });
 
 const breadcrumbWrap = css({
@@ -155,16 +165,10 @@ export default function VenueDetailV2({
   const infoUpdatedOn = venue.infoUpdatedOn ?? null;
   const photos = [venue.coverPhoto, ...(venue.otherPhotos ?? [])].filter(Boolean) as string[];
 
-  const headerLines = [
-    [venue.region, formatMrt(venue)].filter(Boolean).join('・'),
-    [
-      venue.capacityRange &&
-        `容納 ${CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}`,
-      venue.eventCount > 0 && `平台記錄 ${venue.eventCount} 場生咖`,
-    ]
-      .filter(Boolean)
-      .join('・'),
-  ].filter(Boolean);
+  const mrtText = formatMrt(venue);
+  const capacityText = venue.capacityRange
+    ? `容納 ${CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}`
+    : null;
 
   const handleClickContact = analyticsEnabled
     ? (contactType: string) =>
@@ -190,6 +194,7 @@ export default function VenueDetailV2({
                       label: venue.region,
                       href: `/venues?region=${encodeURIComponent(venue.region)}`,
                     },
+                    { label: venue.name },
                   ]}
                 />
               </div>
@@ -208,11 +213,11 @@ export default function VenueDetailV2({
                 )}
                 <div className={headerText}>
                   <h1 className={venueName}>{venue.name}</h1>
-                  {headerLines.map((line) => (
-                    <p key={line} className={headerLine}>
-                      {line}
-                    </p>
-                  ))}
+                  <p className={cx(headerLine, headerLocation)}>
+                    <span className={tag}>{venue.region}</span>
+                    {mrtText && <span>{mrtText}</span>}
+                  </p>
+                  {capacityText && <p className={headerLine}>{capacityText}</p>}
                 </div>
               </header>
             </div>
