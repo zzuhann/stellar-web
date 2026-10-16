@@ -80,12 +80,12 @@ export function entriesToTags(
 
 const tagKey = (tag: VenueTag) => `${tag.slug}|${tag.limited ? 1 : 0}|${tag.until ?? ''}`;
 
-// Order-insensitive; limited/until differences count as a change
-function sameTags(a: VenueTag[], b: VenueTag[]): boolean {
-  if (a.length !== b.length) return false;
-  const keys = new Set(a.map(tagKey));
-  return b.every((tag) => keys.has(tagKey(tag)));
-}
+// Order-insensitive; limited/until differences count as a change. Sorted keys, not a Set,
+// so [a, b] and [a, a] stay different
+const sortedTagKeys = (tags: VenueTag[]) => tags.map(tagKey).sort().join('\n');
+
+export const sameTags = (a: VenueTag[], b: VenueTag[]): boolean =>
+  sortedTagKeys(a) === sortedTagKeys(b);
 
 const normalizeLinks = (links: string[]) => links.map((l) => l.trim()).filter(Boolean);
 
