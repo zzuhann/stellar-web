@@ -1,6 +1,14 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { venueTagDictionaryFixture } from '@/test/venueTagDictionary.fixture';
 import AdminVenueForm, { type AdminVenueFormValues } from './AdminVenueForm';
+
+// The admin form loads the tag dictionary itself
+vi.mock('@/lib/api', () => ({
+  venueApi: { getTagDictionary: () => Promise.resolve(venueTagDictionaryFixture) },
+  placesApi: {},
+}));
 
 // jsdom has no scrollIntoView; failed submits scroll to the first error
 const scrollIntoView = vi.fn();
@@ -58,18 +66,20 @@ const EDIT_BASE: AdminVenueFormValues = {
 function renderEdit(overrides: Partial<AdminVenueFormValues> = {}) {
   const onSubmit = vi.fn();
   render(
-    <AdminVenueForm
-      mode="edit"
-      initialValues={{ ...EDIT_BASE, ...overrides }}
-      onSubmit={onSubmit}
-      isSubmitting={false}
-      submitError={null}
-      status="active"
-      onStatusChange={vi.fn()}
-      isStatusChanging={false}
-      onDeleteClick={vi.fn()}
-      canDelete={false}
-    />
+    <QueryClientProvider client={new QueryClient()}>
+      <AdminVenueForm
+        mode="edit"
+        initialValues={{ ...EDIT_BASE, ...overrides }}
+        onSubmit={onSubmit}
+        isSubmitting={false}
+        submitError={null}
+        status="active"
+        onStatusChange={vi.fn()}
+        isStatusChanging={false}
+        onDeleteClick={vi.fn()}
+        canDelete={false}
+      />
+    </QueryClientProvider>
   );
   return onSubmit;
 }

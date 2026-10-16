@@ -3,7 +3,7 @@
 import { lazy, Suspense, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { css, cva } from '@/styled-system/css';
+import { css, cva, cx } from '@/styled-system/css';
 import ImageUpload from '@/components/images/ImageUpload';
 import MultiImageUpload from '@/components/images/MultiImageUpload';
 import PlaceAutocomplete from '@/components/forms/PlaceAutocomplete';
@@ -12,13 +12,50 @@ import type { UploadResponse } from '@/lib/r2-upload';
 import type { placesApi } from '@/lib/api';
 import { scrollToFirstErrorField } from '@/utils/formHelpers';
 import { REGIONS } from '@/constants';
-import { getHttpUrlError } from '@/utils';
+import { dateToTaipeiDateString, getHttpUrlError } from '@/utils';
 import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
+import AdminVenueTagSection from './AdminVenueTagSection';
+import AdminVenuePreview from './AdminVenuePreview';
+import { useVenueTagDictionary } from './hooks/useVenueTagDictionary';
+import {
+  EMPTY_TAG_FIELDS,
+  buildAdminVenuePreview,
+  buildTagFieldsCreate,
+  buildTagFieldsPatch,
+  entriesToTags,
+  getTagFieldErrors,
+  hasTagFieldErrors,
+  toTagFormState,
+  type TagFieldErrors,
+  type TagFieldsSource,
+  type TagFormState,
+} from './adminVenueTagFields';
 
 // Edit-only block; lazy so create mode (incl. public /submit-venue) never loads it
 const VenueReselectPlace = lazy(() => import('./VenueReselectPlace'));
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
+
+// Preview column only exists from lg up; below that the form is a single column
+const layout = css({
+  lg: { display: 'flex', alignItems: 'flex-start', gap: '8' },
+});
+
+const mainCol = css({ lg: { flex: '1 1 0', minWidth: 0 } });
+
+const previewCol = css({
+  display: 'none',
+  lg: {
+    display: 'block',
+    width: '360px',
+    flexShrink: 0,
+    position: 'sticky',
+    // Clears the 70px fixed site header
+    top: 'calc(70px + token(spacing.6))',
+  },
+});
+
+const saveFailedDetail = css({ display: 'block', marginTop: '1', textStyle: 'caption' });
 
 const formSection = css({ display: 'flex', flexDirection: 'column', gap: '5' });
 
@@ -580,7 +617,14 @@ const ERROR_FIELD_ORDER = [
   'contactUrl',
   'bookingFormUrl',
   'coverPhoto',
+  'tags',
+  'sourceLinks',
+  'calendarUrl',
 ];
+
+const NO_TAG_ERRORS: TagFieldErrors = { sourceLinks: {}, until: {} };
+
+const SAVE_FAILED_MESSAGE = '儲存失敗，勾選都還在。請再按一次；一直失敗請看 Sentry。';
 
 function isSelectableContact(value: string): value is SelectableContact {
   return PREFERRED_CONTACT_OPTIONS.some((o) => o.value === value);
@@ -627,6 +671,8 @@ interface AdminVenueFormEditProps extends AdminVenueFormBaseProps {
   isStatusChanging: boolean;
   onDeleteClick: () => void;
   canDelete: boolean;
+  // Saved venue-tags fields from the admin detail; PATCH only sends the ones that change
+  initialTagFields?: TagFieldsSource;
   // Saved place data; omit to hide the "reselect place" block
   place?: {
     venueId: string;
@@ -664,7 +710,25 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
   const [hostTagInput, setHostTagInput] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [today] = useState(() => dateToTaipeiDateString(new Date()));
+  // Frozen load-time snapshot that the PATCH diff compares against
+  const [initialTagForm] = useState<TagFormState>(() =>
+    props.mode === 'edit'
+      ? toTagFormState(props.initialTagFields ?? EMPTY_TAG_FIELDS)
+      : { ...toTagFormState(EMPTY_TAG_FIELDS), infoUpdatedOn: today }
+  );
+  const [tagForm, setTagForm] = useState<TagFormState>(initialTagForm);
   const formRef = useRef<HTMLFormElement>(null);
+
+  const dictionaryQuery = useVenueTagDictionary();
+  // Tag fields are only editable and sent once the dictionary is in hand
+  const dictionary = dictionaryQuery.data;
+  const tagStatus = dictionary ? 'success' : dictionaryQuery.isError ? 'error' : 'pending';
+  const tagErrors =
+    submitAttempted && dictionary ? getTagFieldErrors(tagForm, dictionary) : NO_TAG_ERRORS;
+  const preview = dictionary
+    ? buildAdminVenuePreview(entriesToTags(tagForm.entries, dictionary), dictionary, today)
+    : null;
 
   const showContactUrl = form.preferredContact === 'line';
 
@@ -713,14 +777,22 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
     e.preventDefault();
     setSubmitAttempted(true);
     const nextErrors = validate();
-    if (Object.keys(nextErrors).length > 0) {
+    const nextTagErrors = dictionary ? getTagFieldErrors(tagForm, dictionary) : NO_TAG_ERRORS;
+    if (Object.keys(nextErrors).length > 0 || hasTagFieldErrors(nextTagErrors)) {
+      const tagFieldHasError: Record<string, boolean> = {
+        tags: Object.keys(nextTagErrors.until).length > 0,
+        sourceLinks: Object.keys(nextTagErrors.sourceLinks).length > 0,
+        calendarUrl: !!nextTagErrors.calendarUrl,
+      };
       scrollToFirstErrorField(
         ERROR_FIELD_ORDER,
         // "At least one social account" sits under the IG/Threads row; land on IG (the default channel)
         (field) =>
-          field === 'instagram'
-            ? !!(nextErrors.instagram || nextErrors.socialMedia)
-            : !!nextErrors[field as keyof FormErrors],
+          field in tagFieldHasError
+            ? tagFieldHasError[field]
+            : field === 'instagram'
+              ? !!(nextErrors.instagram || nextErrors.socialMedia)
+              : !!nextErrors[field as keyof FormErrors],
         Object.fromEntries(
           ERROR_FIELD_ORDER.map((field) => [
             field,
@@ -760,6 +832,7 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
       if (coordinates.lat !== null) data.lat = coordinates.lat;
       if (coordinates.lng !== null) data.lng = coordinates.lng;
       if (coordinates.placeId) data.placeId = coordinates.placeId;
+      if (dictionary) Object.assign(data, buildTagFieldsCreate(tagForm, dictionary));
       props.onSubmit(data);
     } else {
       const data: UpdateVenueData = {
@@ -782,6 +855,7 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
         data.preferredContact = form.preferredContact;
       }
       if (showContactUrl && form.contactUrl.trim()) data.contactUrl = form.contactUrl.trim();
+      if (dictionary) Object.assign(data, buildTagFieldsPatch(initialTagForm, tagForm, dictionary));
       props.onSubmit(data);
     }
   }
@@ -851,460 +925,492 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} noValidate>
-      <div className={formSection}>
-        {/* place autocomplete (create only) */}
-        {props.mode === 'create' && (
-          <>
-            <div className={fieldGroup}>
-              <span className={label}>搜尋地點</span>
-              <span className={labelSub}>自動填入地址與名稱</span>
-              <PlaceAutocomplete
-                onPlaceSelect={handlePlaceSelect}
-                placeholder="輸入地點名稱或地址..."
-                api={placeApi}
-              />
-              {coordinates.lat !== null && <p className={fieldHint}>✓ 已取得座標</p>}
+      <div className={layout}>
+        <div className={cx(formSection, mainCol)}>
+          {submitError && (
+            <div className={formErrorBanner} role="alert">
+              {SAVE_FAILED_MESSAGE}
+              <span className={saveFailedDetail}>{submitError}</span>
             </div>
-            <div className={divider} />
-          </>
-        )}
-
-        {/* place reselect (edit only) */}
-        {props.mode === 'edit' && props.place && (
-          <>
-            <Suspense fallback={null}>
-              <VenueReselectPlace
-                venueId={props.place.venueId}
-                venueName={props.initialValues.name}
-                place={props.place}
-                formAddress={form.address}
-                onAddressSync={(address) => setForm((prev) => ({ ...prev, address }))}
-                placeApi={placeApi}
-              />
-            </Suspense>
-            <div className={divider} />
-          </>
-        )}
-
-        {/* name */}
-        <div data-field="name" className={fieldGroup}>
-          <label htmlFor="venue-name" className={label}>
-            場地名稱 <span className={requiredMark}>*</span>
-          </label>
-          <input
-            id="venue-name"
-            type="text"
-            className={inputStyle}
-            placeholder="例：星光咖啡"
-            value={form.name}
-            onChange={(e) => setField('name', e.target.value)}
-            aria-invalid={errors.name ? 'true' : undefined}
-            aria-describedby={errors.name ? 'venue-name-error' : undefined}
-          />
-          {errors.name && (
-            <span id="venue-name-error" className={fieldError} role="alert">
-              {errors.name}
-            </span>
           )}
-        </div>
 
-        {/* address */}
-        <div data-field="address" className={fieldGroup}>
-          <label htmlFor="venue-address" className={label}>
-            地址 <span className={requiredMark}>*</span>
-          </label>
-          <input
-            id="venue-address"
-            type="text"
-            className={inputStyle}
-            placeholder="例：台北市中山區中山北路一段"
-            value={form.address}
-            onChange={(e) => setField('address', e.target.value)}
-            aria-invalid={errors.address ? 'true' : undefined}
-            aria-describedby={errors.address ? 'venue-address-error' : undefined}
-          />
-          {errors.address && (
-            <span id="venue-address-error" className={fieldError} role="alert">
-              {errors.address}
-            </span>
+          {/* place autocomplete (create only) */}
+          {props.mode === 'create' && (
+            <>
+              <div className={fieldGroup}>
+                <span className={label}>搜尋地點</span>
+                <span className={labelSub}>自動填入地址與名稱</span>
+                <PlaceAutocomplete
+                  onPlaceSelect={handlePlaceSelect}
+                  placeholder="輸入地點名稱或地址..."
+                  api={placeApi}
+                />
+                {coordinates.lat !== null && <p className={fieldHint}>✓ 已取得座標</p>}
+              </div>
+              <div className={divider} />
+            </>
           )}
-        </div>
 
-        {/* region */}
-        <div data-field="region" className={fieldGroup}>
-          <span className={label}>
-            地區 <span className={requiredMark}>*</span>
-          </span>
-          <SelectDropdown
-            value={form.region}
-            onChange={(v) => setField('region', v)}
-            options={REGION_OPTIONS}
-            placeholder="請選擇地區"
-            invalid={!!errors.region}
-          />
-          {errors.region && (
-            <span className={fieldError} role="alert">
-              {errors.region}
-            </span>
+          {/* place reselect (edit only) */}
+          {props.mode === 'edit' && props.place && (
+            <>
+              <Suspense fallback={null}>
+                <VenueReselectPlace
+                  venueId={props.place.venueId}
+                  venueName={props.initialValues.name}
+                  place={props.place}
+                  formAddress={form.address}
+                  onAddressSync={(address) => setForm((prev) => ({ ...prev, address }))}
+                  placeApi={placeApi}
+                />
+              </Suspense>
+              <div className={divider} />
+            </>
           )}
-        </div>
 
-        {/* nearestMrt */}
-        <div className={fieldGroup}>
-          <label htmlFor="venue-mrt" className={label}>
-            最近捷運站
-          </label>
-          <input
-            id="venue-mrt"
-            type="text"
-            className={inputStyle}
-            placeholder="例：中山站"
-            value={form.nearestMrt}
-            onChange={(e) => setField('nearestMrt', e.target.value)}
-          />
-        </div>
-
-        {/* mrtWalkMinutes */}
-        <div className={fieldGroup}>
-          <label htmlFor="venue-mrt-walk" className={label}>
-            步行分鐘數
-          </label>
-          <input
-            id="venue-mrt-walk"
-            type="number"
-            min={0}
-            max={60}
-            className={numberInputStyle}
-            placeholder="例：5"
-            value={form.mrtWalkMinutes}
-            onChange={(e) => setField('mrtWalkMinutes', e.target.value)}
-          />
-        </div>
-
-        {/* capacityRange */}
-        <div data-field="capacityRange" className={fieldGroup}>
-          <span className={label}>
-            容納人數
-            {props.mode === 'create' && <span className={requiredMark}>*</span>}
-          </span>
-          <SelectDropdown
-            value={form.capacityRange}
-            onChange={(v) => setField('capacityRange', v)}
-            options={CAPACITY_OPTIONS}
-            placeholder="請選擇容納人數範圍"
-            labels={CAPACITY_RANGE_LABEL}
-            invalid={!!errors.capacityRange}
-          />
-          {errors.capacityRange && (
-            <span className={fieldError} role="alert">
-              {errors.capacityRange}
-            </span>
-          )}
-        </div>
-
-        {/* socialMedia */}
-        <div className={fieldGroup}>
-          <span className={label}>
-            社群帳號：填寫主要經營的即可
-            {props.mode === 'create' && <span className={requiredMark}>*</span>}
-          </span>
-          <div className={fieldRow}>
-            <div data-field="threads" className={fieldGroup}>
-              <label htmlFor="venue-threads" className={labelSub}>
-                Threads
-              </label>
-              <input
-                id="venue-threads"
-                type="text"
-                className={inputStyle}
-                placeholder="@username"
-                value={form.threads}
-                onChange={(e) => setContactField('threads', e.target.value)}
-                aria-invalid={errors.threads || errors.socialMedia ? 'true' : undefined}
-                aria-describedby={
-                  errors.threads
-                    ? 'venue-threads-error'
-                    : errors.socialMedia
-                      ? 'venue-social-media-error'
-                      : undefined
-                }
-              />
-              {errors.threads && (
-                <span id="venue-threads-error" className={fieldError} role="alert">
-                  {errors.threads}
-                </span>
-              )}
-            </div>
-            <div data-field="instagram" className={fieldGroup}>
-              <label htmlFor="venue-instagram" className={labelSub}>
-                Instagram
-              </label>
-              <input
-                id="venue-instagram"
-                type="text"
-                className={inputStyle}
-                placeholder="@username"
-                value={form.instagram}
-                onChange={(e) => setContactField('instagram', e.target.value)}
-                aria-invalid={errors.instagram || errors.socialMedia ? 'true' : undefined}
-                aria-describedby={
-                  errors.instagram
-                    ? 'venue-instagram-error'
-                    : errors.socialMedia
-                      ? 'venue-social-media-error'
-                      : undefined
-                }
-              />
-              {errors.instagram && (
-                <span id="venue-instagram-error" className={fieldError} role="alert">
-                  {errors.instagram}
-                </span>
-              )}
-            </div>
-          </div>
-          {errors.socialMedia && (
-            <span id="venue-social-media-error" className={fieldError} role="alert">
-              {errors.socialMedia}
-            </span>
-          )}
-        </div>
-
-        {/* preferredContact */}
-        <div data-field="preferredContact" className={fieldGroup}>
-          <span className={label}>
-            希望主辦怎麼聯絡你們？
-            {props.mode === 'create' && <span className={requiredMark}>*</span>}
-          </span>
-          <PreferredContactDropdown
-            value={form.preferredContact}
-            onChange={(v) => setContactField('preferredContact', v)}
-          />
-          {errors.preferredContact && (
-            <span className={fieldError} role="alert">
-              {errors.preferredContact}
-            </span>
-          )}
-        </div>
-
-        {/* contactUrl — LINE link, shown only for line */}
-        {showContactUrl && (
-          <div data-field="contactUrl" className={fieldGroup}>
-            <label htmlFor="venue-contact-url" className={label}>
-              LINE 連結
+          {/* name */}
+          <div data-field="name" className={fieldGroup}>
+            <label htmlFor="venue-name" className={label}>
+              場地名稱 <span className={requiredMark}>*</span>
             </label>
             <input
-              id="venue-contact-url"
+              id="venue-name"
               type="text"
               className={inputStyle}
-              inputMode="url"
-              placeholder="LINE 網址"
-              value={form.contactUrl}
-              onChange={(e) => setContactField('contactUrl', e.target.value)}
-              aria-invalid={errors.contactUrl ? 'true' : undefined}
-              aria-describedby={errors.contactUrl ? 'venue-contact-url-error' : undefined}
+              placeholder="例：星光咖啡"
+              value={form.name}
+              onChange={(e) => setField('name', e.target.value)}
+              aria-invalid={errors.name ? 'true' : undefined}
+              aria-describedby={errors.name ? 'venue-name-error' : undefined}
             />
-            {errors.contactUrl && (
-              <span id="venue-contact-url-error" className={fieldError} role="alert">
-                {errors.contactUrl}
+            {errors.name && (
+              <span id="venue-name-error" className={fieldError} role="alert">
+                {errors.name}
               </span>
             )}
           </div>
-        )}
 
-        {/* bookingFormUrl — always shown, optional */}
-        <div data-field="bookingFormUrl" className={fieldGroup}>
-          <label htmlFor="venue-booking-form-url" className={label}>
-            預約表單網址
-          </label>
-          <p id="venue-booking-form-url-hint" className={fieldHint}>
-            例如給主辦預約場地用的 Google 表單、預約系統連結，如果沒有可以跳過。
-          </p>
-          <input
-            id="venue-booking-form-url"
-            type="text"
-            inputMode="url"
-            className={inputStyle}
-            placeholder="https://"
-            value={form.bookingFormUrl}
-            onChange={(e) => setField('bookingFormUrl', e.target.value)}
-            aria-invalid={errors.bookingFormUrl ? 'true' : undefined}
-            aria-describedby={
-              errors.bookingFormUrl ? 'venue-booking-form-url-error' : 'venue-booking-form-url-hint'
-            }
-          />
-          {errors.bookingFormUrl && (
-            <span id="venue-booking-form-url-error" className={fieldError} role="alert">
-              {errors.bookingFormUrl}
-            </span>
-          )}
-        </div>
-
-        {/* coverPhoto */}
-        <div data-field="coverPhoto" className={fieldGroup}>
-          <span className={label}>
-            封面圖片
-            {props.mode === 'create' && <span className={requiredMark}>*</span>}
-          </span>
-          <ImageUpload
-            currentImageUrl={form.coverPhoto || undefined}
-            onUploadComplete={(url) => {
-              setForm((prev) => ({ ...prev, coverPhoto: url }));
-              setErrors((prev) => ({ ...prev, coverPhoto: undefined }));
-            }}
-            onImageRemove={() => setForm((prev) => ({ ...prev, coverPhoto: '' }))}
-            authToken={authToken}
-            uploadImage={uploadImage}
-            onUploadError={(error, file) => onImageUploadError?.(error, file, 'cover')}
-            placeholder="點擊上傳封面圖片"
-            compressionParams={{ maxWidth: 1200, maxHeight: 800, quality: 0.85 }}
-          />
-          {errors.coverPhoto && (
-            <span className={fieldError} role="alert">
-              {errors.coverPhoto}
-            </span>
-          )}
-        </div>
-
-        {/* otherPhotos */}
-        <div className={fieldGroup}>
-          <span className={label}>其他照片</span>
-          <MultiImageUpload
-            currentImages={form.otherPhotos}
-            onImagesChange={(urls) => setForm((prev) => ({ ...prev, otherPhotos: urls }))}
-            authToken={authToken}
-            uploadImage={uploadImage}
-            onUploadError={(error, file) => onImageUploadError?.(error, file, 'other')}
-            maxImages={9}
-            placeholder="新增照片"
-            compressionParams={{ maxWidth: 1200, maxHeight: 900, quality: 0.85 }}
-          />
-        </div>
-
-        {/* hostTags */}
-        <div className={fieldGroup}>
-          <span className={label}>場地標籤</span>
-          <p className={fieldHint}>
-            主辦初步篩選用，建議 1–3 個，最多 {MAX_HOST_TAGS} 個（例：免場地費、新手友善）
-          </p>
-          <div className={tagInputRow}>
+          {/* address */}
+          <div data-field="address" className={fieldGroup}>
+            <label htmlFor="venue-address" className={label}>
+              地址 <span className={requiredMark}>*</span>
+            </label>
             <input
+              id="venue-address"
               type="text"
               className={inputStyle}
-              value={hostTagInput}
-              onChange={(e) => setHostTagInput(e.target.value)}
-              onKeyDown={handleHostTagKeyDown}
-              placeholder="輸入標籤後按 Enter 或點新增"
-              disabled={form.hostTags.length >= MAX_HOST_TAGS}
+              placeholder="例：台北市中山區中山北路一段"
+              value={form.address}
+              onChange={(e) => setField('address', e.target.value)}
+              aria-invalid={errors.address ? 'true' : undefined}
+              aria-describedby={errors.address ? 'venue-address-error' : undefined}
             />
-            <button
-              type="button"
-              className={tagAddBtn}
-              onClick={handleAddHostTag}
-              disabled={form.hostTags.length >= MAX_HOST_TAGS}
-            >
-              新增
-            </button>
+            {errors.address && (
+              <span id="venue-address-error" className={fieldError} role="alert">
+                {errors.address}
+              </span>
+            )}
           </div>
-          {form.hostTags.length > 0 && (
-            <div className={tagList}>
-              {form.hostTags.map((t) => (
-                <span key={t} className={tagPill}>
-                  {t}
+
+          {/* region */}
+          <div data-field="region" className={fieldGroup}>
+            <span className={label}>
+              地區 <span className={requiredMark}>*</span>
+            </span>
+            <SelectDropdown
+              value={form.region}
+              onChange={(v) => setField('region', v)}
+              options={REGION_OPTIONS}
+              placeholder="請選擇地區"
+              invalid={!!errors.region}
+            />
+            {errors.region && (
+              <span className={fieldError} role="alert">
+                {errors.region}
+              </span>
+            )}
+          </div>
+
+          {/* nearestMrt */}
+          <div className={fieldGroup}>
+            <label htmlFor="venue-mrt" className={label}>
+              最近捷運站
+            </label>
+            <input
+              id="venue-mrt"
+              type="text"
+              className={inputStyle}
+              placeholder="例：中山站"
+              value={form.nearestMrt}
+              onChange={(e) => setField('nearestMrt', e.target.value)}
+            />
+          </div>
+
+          {/* mrtWalkMinutes */}
+          <div className={fieldGroup}>
+            <label htmlFor="venue-mrt-walk" className={label}>
+              步行分鐘數
+            </label>
+            <input
+              id="venue-mrt-walk"
+              type="number"
+              min={0}
+              max={60}
+              className={numberInputStyle}
+              placeholder="例：5"
+              value={form.mrtWalkMinutes}
+              onChange={(e) => setField('mrtWalkMinutes', e.target.value)}
+            />
+          </div>
+
+          {/* capacityRange */}
+          <div data-field="capacityRange" className={fieldGroup}>
+            <span className={label}>
+              容納人數
+              {props.mode === 'create' && <span className={requiredMark}>*</span>}
+            </span>
+            <SelectDropdown
+              value={form.capacityRange}
+              onChange={(v) => setField('capacityRange', v)}
+              options={CAPACITY_OPTIONS}
+              placeholder="請選擇容納人數範圍"
+              labels={CAPACITY_RANGE_LABEL}
+              invalid={!!errors.capacityRange}
+            />
+            {errors.capacityRange && (
+              <span className={fieldError} role="alert">
+                {errors.capacityRange}
+              </span>
+            )}
+          </div>
+
+          {/* socialMedia */}
+          <div className={fieldGroup}>
+            <span className={label}>
+              社群帳號：填寫主要經營的即可
+              {props.mode === 'create' && <span className={requiredMark}>*</span>}
+            </span>
+            <div className={fieldRow}>
+              <div data-field="threads" className={fieldGroup}>
+                <label htmlFor="venue-threads" className={labelSub}>
+                  Threads
+                </label>
+                <input
+                  id="venue-threads"
+                  type="text"
+                  className={inputStyle}
+                  placeholder="@username"
+                  value={form.threads}
+                  onChange={(e) => setContactField('threads', e.target.value)}
+                  aria-invalid={errors.threads || errors.socialMedia ? 'true' : undefined}
+                  aria-describedby={
+                    errors.threads
+                      ? 'venue-threads-error'
+                      : errors.socialMedia
+                        ? 'venue-social-media-error'
+                        : undefined
+                  }
+                />
+                {errors.threads && (
+                  <span id="venue-threads-error" className={fieldError} role="alert">
+                    {errors.threads}
+                  </span>
+                )}
+              </div>
+              <div data-field="instagram" className={fieldGroup}>
+                <label htmlFor="venue-instagram" className={labelSub}>
+                  Instagram
+                </label>
+                <input
+                  id="venue-instagram"
+                  type="text"
+                  className={inputStyle}
+                  placeholder="@username"
+                  value={form.instagram}
+                  onChange={(e) => setContactField('instagram', e.target.value)}
+                  aria-invalid={errors.instagram || errors.socialMedia ? 'true' : undefined}
+                  aria-describedby={
+                    errors.instagram
+                      ? 'venue-instagram-error'
+                      : errors.socialMedia
+                        ? 'venue-social-media-error'
+                        : undefined
+                  }
+                />
+                {errors.instagram && (
+                  <span id="venue-instagram-error" className={fieldError} role="alert">
+                    {errors.instagram}
+                  </span>
+                )}
+              </div>
+            </div>
+            {errors.socialMedia && (
+              <span id="venue-social-media-error" className={fieldError} role="alert">
+                {errors.socialMedia}
+              </span>
+            )}
+          </div>
+
+          {/* preferredContact */}
+          <div data-field="preferredContact" className={fieldGroup}>
+            <span className={label}>
+              希望主辦怎麼聯絡你們？
+              {props.mode === 'create' && <span className={requiredMark}>*</span>}
+            </span>
+            <PreferredContactDropdown
+              value={form.preferredContact}
+              onChange={(v) => setContactField('preferredContact', v)}
+            />
+            {errors.preferredContact && (
+              <span className={fieldError} role="alert">
+                {errors.preferredContact}
+              </span>
+            )}
+          </div>
+
+          {/* contactUrl — LINE link, shown only for line */}
+          {showContactUrl && (
+            <div data-field="contactUrl" className={fieldGroup}>
+              <label htmlFor="venue-contact-url" className={label}>
+                LINE 連結
+              </label>
+              <input
+                id="venue-contact-url"
+                type="text"
+                className={inputStyle}
+                inputMode="url"
+                placeholder="LINE 網址"
+                value={form.contactUrl}
+                onChange={(e) => setContactField('contactUrl', e.target.value)}
+                aria-invalid={errors.contactUrl ? 'true' : undefined}
+                aria-describedby={errors.contactUrl ? 'venue-contact-url-error' : undefined}
+              />
+              {errors.contactUrl && (
+                <span id="venue-contact-url-error" className={fieldError} role="alert">
+                  {errors.contactUrl}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* bookingFormUrl — always shown, optional */}
+          <div data-field="bookingFormUrl" className={fieldGroup}>
+            <label htmlFor="venue-booking-form-url" className={label}>
+              預約表單網址
+            </label>
+            <p id="venue-booking-form-url-hint" className={fieldHint}>
+              例如給主辦預約場地用的 Google 表單、預約系統連結，如果沒有可以跳過。
+            </p>
+            <input
+              id="venue-booking-form-url"
+              type="text"
+              inputMode="url"
+              className={inputStyle}
+              placeholder="https://"
+              value={form.bookingFormUrl}
+              onChange={(e) => setField('bookingFormUrl', e.target.value)}
+              aria-invalid={errors.bookingFormUrl ? 'true' : undefined}
+              aria-describedby={
+                errors.bookingFormUrl
+                  ? 'venue-booking-form-url-error'
+                  : 'venue-booking-form-url-hint'
+              }
+            />
+            {errors.bookingFormUrl && (
+              <span id="venue-booking-form-url-error" className={fieldError} role="alert">
+                {errors.bookingFormUrl}
+              </span>
+            )}
+          </div>
+
+          {/* coverPhoto */}
+          <div data-field="coverPhoto" className={fieldGroup}>
+            <span className={label}>
+              封面圖片
+              {props.mode === 'create' && <span className={requiredMark}>*</span>}
+            </span>
+            <ImageUpload
+              currentImageUrl={form.coverPhoto || undefined}
+              onUploadComplete={(url) => {
+                setForm((prev) => ({ ...prev, coverPhoto: url }));
+                setErrors((prev) => ({ ...prev, coverPhoto: undefined }));
+              }}
+              onImageRemove={() => setForm((prev) => ({ ...prev, coverPhoto: '' }))}
+              authToken={authToken}
+              uploadImage={uploadImage}
+              onUploadError={(error, file) => onImageUploadError?.(error, file, 'cover')}
+              placeholder="點擊上傳封面圖片"
+              compressionParams={{ maxWidth: 1200, maxHeight: 800, quality: 0.85 }}
+            />
+            {errors.coverPhoto && (
+              <span className={fieldError} role="alert">
+                {errors.coverPhoto}
+              </span>
+            )}
+          </div>
+
+          {/* otherPhotos */}
+          <div className={fieldGroup}>
+            <span className={label}>其他照片</span>
+            <MultiImageUpload
+              currentImages={form.otherPhotos}
+              onImagesChange={(urls) => setForm((prev) => ({ ...prev, otherPhotos: urls }))}
+              authToken={authToken}
+              uploadImage={uploadImage}
+              onUploadError={(error, file) => onImageUploadError?.(error, file, 'other')}
+              maxImages={9}
+              placeholder="新增照片"
+              compressionParams={{ maxWidth: 1200, maxHeight: 900, quality: 0.85 }}
+            />
+          </div>
+
+          {/* hostTags */}
+          <div className={fieldGroup}>
+            <span className={label}>場地標籤</span>
+            <p className={fieldHint}>
+              主辦初步篩選用，建議 1–3 個，最多 {MAX_HOST_TAGS} 個（例：免場地費、新手友善）
+            </p>
+            <div className={tagInputRow}>
+              <input
+                type="text"
+                className={inputStyle}
+                value={hostTagInput}
+                onChange={(e) => setHostTagInput(e.target.value)}
+                onKeyDown={handleHostTagKeyDown}
+                placeholder="輸入標籤後按 Enter 或點新增"
+                disabled={form.hostTags.length >= MAX_HOST_TAGS}
+              />
+              <button
+                type="button"
+                className={tagAddBtn}
+                onClick={handleAddHostTag}
+                disabled={form.hostTags.length >= MAX_HOST_TAGS}
+              >
+                新增
+              </button>
+            </div>
+            {form.hostTags.length > 0 && (
+              <div className={tagList}>
+                {form.hostTags.map((t) => (
+                  <span key={t} className={tagPill}>
+                    {t}
+                    <button
+                      type="button"
+                      className={tagRemoveBtn}
+                      aria-label={`移除標籤 ${t}`}
+                      onClick={() => handleRemoveHostTag(t)}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <AdminVenueTagSection
+            status={tagStatus}
+            dictionary={dictionary}
+            state={tagForm}
+            errors={tagErrors}
+            today={today}
+            nearestMrt={form.nearestMrt}
+            mrtWalkMinutes={form.mrtWalkMinutes}
+            onChange={setTagForm}
+          />
+
+          {/* description */}
+          <div className={fieldGroup}>
+            <label htmlFor="venue-description" className={label}>
+              場地描述
+            </label>
+            <textarea
+              id="venue-description"
+              className={textareaStyle}
+              placeholder="場地說明、特色、注意事項、給 STELLAR 使用者的秘密優惠(非強制)…"
+              value={form.description}
+              onChange={(e) => setField('description', e.target.value)}
+            />
+          </div>
+
+          {/* status toggle (edit only) */}
+          {props.mode === 'edit' && (
+            <div className={fieldGroup}>
+              <span className={label}>上下架狀態</span>
+              <div className={statusToggleRow}>
+                <span
+                  className={statusBadge({
+                    status: props.status as 'pending' | 'active' | 'inactive' | 'rejected',
+                  })}
+                >
+                  {STATUS_LABEL[props.status] ?? props.status}
+                </span>
+                {props.status === 'active' && (
                   <button
                     type="button"
-                    className={tagRemoveBtn}
-                    aria-label={`移除標籤 ${t}`}
-                    onClick={() => handleRemoveHostTag(t)}
+                    className={statusToggleBtn({ variant: 'offline' })}
+                    onClick={() => props.onStatusChange('inactive')}
+                    disabled={props.isStatusChanging}
                   >
-                    ×
+                    下架
                   </button>
-                </span>
-              ))}
+                )}
+                {props.status === 'inactive' && (
+                  <button
+                    type="button"
+                    className={statusToggleBtn({ variant: 'online' })}
+                    onClick={() => props.onStatusChange('active')}
+                    disabled={props.isStatusChanging}
+                  >
+                    上架
+                  </button>
+                )}
+              </div>
             </div>
+          )}
+
+          <div className={submitRow}>
+            <Link href={cancelHref} className={cancelBtn}>
+              取消
+            </Link>
+            <button type="submit" className={submitBtn} disabled={isSubmitting}>
+              {isSubmitting && <div className={spinner} aria-hidden="true" />}
+              {submitLabel ?? (props.mode === 'create' ? '新增場地' : '儲存變更')}
+            </button>
+          </div>
+
+          {/* Danger zone (edit only) */}
+          {props.mode === 'edit' && props.canDelete && (
+            <>
+              <div className={divider} />
+              <div className={dangerZone}>
+                <span className={dangerTitle}>危險操作</span>
+                <p className={dangerDescription}>
+                  場地已下架且無關聯活動，可永久刪除。此操作無法復原。
+                </p>
+                <button type="button" className={deleteBtn} onClick={props.onDeleteClick}>
+                  永久刪除場地
+                </button>
+              </div>
+            </>
           )}
         </div>
 
-        {/* description */}
-        <div className={fieldGroup}>
-          <label htmlFor="venue-description" className={label}>
-            場地描述
-          </label>
-          <textarea
-            id="venue-description"
-            className={textareaStyle}
-            placeholder="場地說明、特色、注意事項、給 STELLAR 使用者的秘密優惠(非強制)…"
-            value={form.description}
-            onChange={(e) => setField('description', e.target.value)}
+        <aside className={previewCol} aria-label="前台會這樣顯示">
+          <AdminVenuePreview
+            status={tagStatus}
+            preview={preview}
+            name={form.name}
+            region={form.region}
+            nearestMrt={form.nearestMrt}
+            mrtWalkMinutes={form.mrtWalkMinutes}
+            coverPhoto={form.coverPhoto}
+            sourceLinks={tagForm.sourceLinks
+              .map((link) => link.trim())
+              .filter((link) => link && !getHttpUrlError(link))}
+            infoUpdatedOn={tagForm.infoUpdatedOn || null}
           />
-        </div>
-
-        {/* status toggle (edit only) */}
-        {props.mode === 'edit' && (
-          <div className={fieldGroup}>
-            <span className={label}>上下架狀態</span>
-            <div className={statusToggleRow}>
-              <span
-                className={statusBadge({
-                  status: props.status as 'pending' | 'active' | 'inactive' | 'rejected',
-                })}
-              >
-                {STATUS_LABEL[props.status] ?? props.status}
-              </span>
-              {props.status === 'active' && (
-                <button
-                  type="button"
-                  className={statusToggleBtn({ variant: 'offline' })}
-                  onClick={() => props.onStatusChange('inactive')}
-                  disabled={props.isStatusChanging}
-                >
-                  下架
-                </button>
-              )}
-              {props.status === 'inactive' && (
-                <button
-                  type="button"
-                  className={statusToggleBtn({ variant: 'online' })}
-                  onClick={() => props.onStatusChange('active')}
-                  disabled={props.isStatusChanging}
-                >
-                  上架
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
-        {submitError && (
-          <div className={formErrorBanner} role="alert">
-            {submitError}
-          </div>
-        )}
-
-        <div className={submitRow}>
-          <Link href={cancelHref} className={cancelBtn}>
-            取消
-          </Link>
-          <button type="submit" className={submitBtn} disabled={isSubmitting}>
-            {isSubmitting && <div className={spinner} aria-hidden="true" />}
-            {submitLabel ?? (props.mode === 'create' ? '新增場地' : '儲存變更')}
-          </button>
-        </div>
-
-        {/* Danger zone (edit only) */}
-        {props.mode === 'edit' && props.canDelete && (
-          <>
-            <div className={divider} />
-            <div className={dangerZone}>
-              <span className={dangerTitle}>危險操作</span>
-              <p className={dangerDescription}>
-                場地已下架且無關聯活動，可永久刪除。此操作無法復原。
-              </p>
-              <button type="button" className={deleteBtn} onClick={props.onDeleteClick}>
-                永久刪除場地
-              </button>
-            </div>
-          </>
-        )}
+        </aside>
       </div>
     </form>
   );

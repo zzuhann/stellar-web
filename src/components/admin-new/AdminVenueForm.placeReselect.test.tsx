@@ -4,7 +4,11 @@ import AdminVenueForm, { type AdminVenueFormValues } from './AdminVenueForm';
 import { CURRENT_PLACE, renderWithClient } from './venuePlaceReselect.fixtures';
 
 vi.mock('@/lib/api', () => ({
-  venueApi: { previewPlaceReselect: vi.fn(), applyPlaceReselect: vi.fn() },
+  venueApi: {
+    previewPlaceReselect: vi.fn(),
+    applyPlaceReselect: vi.fn(),
+    getTagDictionary: () => new Promise(() => {}),
+  },
   placesApi: {},
 }));
 vi.mock('@/lib/revalidate', () => ({ revalidatePublicPages: vi.fn() }));
