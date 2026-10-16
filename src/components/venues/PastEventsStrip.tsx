@@ -115,6 +115,24 @@ const coverPlaceholder = css({
   textStyle: 'h1',
 });
 
+const timeStatusTag = css({
+  position: 'absolute',
+  top: '2',
+  left: '2',
+  paddingY: '0.5',
+  paddingX: '1.5',
+  borderRadius: 'radius.sm',
+  background: 'gray.100',
+  color: 'color.text.primary',
+  textStyle: 'caption',
+  fontWeight: 'medium',
+});
+
+const TIME_STATUS_LABEL: Partial<Record<NonNullable<VenueEventCard['timeStatus']>, string>> = {
+  ongoing: '進行中',
+  upcoming: '即將到來',
+};
+
 const cardBody = css({
   paddingTop: '2.5',
   paddingX: '3',
@@ -178,9 +196,17 @@ const CARD_WIDTH = 180 + 10;
 
 interface PastEventsStripProps {
   events: VenueEventCard[];
+  // Opt-in for the new detail layout; production page keeps the old card
+  showTimeStatus?: boolean;
+  // Preview page passes false so store owners' clicks never reach GA
+  trackClicks?: boolean;
 }
 
-export default function PastEventsStrip({ events }: PastEventsStripProps) {
+export default function PastEventsStrip({
+  events,
+  showTimeStatus = false,
+  trackClicks = true,
+}: PastEventsStripProps) {
   const { user } = useAuth();
   const trackRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState(1);
@@ -221,10 +247,13 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
               href={`/event/${event.slug ?? event.id}`}
               role="listitem"
               className={card}
-              onClick={() => trackClickEventDetail({ userId: user?.uid, eventId: event.id })}
+              onClick={() => {
+                if (trackClicks) trackClickEventDetail({ userId: user?.uid, eventId: event.id });
+              }}
               onAuxClick={(e) => {
                 // middle click opens a new tab, bypassing onClick, so track it separately
-                if (e.button === 1) trackClickEventDetail({ userId: user?.uid, eventId: event.id });
+                if (trackClicks && e.button === 1)
+                  trackClickEventDetail({ userId: user?.uid, eventId: event.id });
               }}
             >
               <div className={coverWrap}>
@@ -239,6 +268,9 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
                   />
                 ) : (
                   <div className={coverPlaceholder}>🎂</div>
+                )}
+                {showTimeStatus && event.timeStatus && TIME_STATUS_LABEL[event.timeStatus] && (
+                  <span className={timeStatusTag}>{TIME_STATUS_LABEL[event.timeStatus]}</span>
                 )}
               </div>
               <div className={cardBody}>
