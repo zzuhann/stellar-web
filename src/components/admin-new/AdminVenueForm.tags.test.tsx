@@ -458,6 +458,19 @@ describe('TC-077 後台儲存失敗', () => {
   });
 });
 
+describe('上下架失敗跟存檔失敗分開', () => {
+  it('status mutation 失敗 → 上下架控制旁出現新文案，不出現儲存失敗橫幅', async () => {
+    api.updateVenue.mockRejectedValue(new Error('500'));
+    await renderEdit({ status: 'active' });
+    fireEvent.click(screen.getByRole('button', { name: '下架' }));
+
+    const alert = await screen.findByText('上下架失敗，請再試一次。');
+    expect(alert.getAttribute('role')).toBe('alert');
+    expect(api.updateVenue).toHaveBeenCalledWith('v1', { status: 'inactive' });
+    expect(screen.queryByText(SAVE_FAILED)).toBeNull();
+  });
+});
+
 describe('TC-093 後台字典載入失敗時，不送標籤區欄位', () => {
   it('a：編輯頁整區停用；改店名存檔，body 有 name、不含五欄', async () => {
     await renderEditWithFailedDictionary();

@@ -85,6 +85,8 @@ const refetchErrorBanner = css({
   color: 'red.700',
 });
 
+const STATUS_CHANGE_FAILED = '上下架失敗，請再試一次。';
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function VenueEditPage() {
@@ -93,6 +95,7 @@ export default function VenueEditPage() {
   const { token } = useAuthToken();
 
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -102,7 +105,7 @@ export default function VenueEditPage() {
   const updateMutation = useUpdateVenueMutation(venueId, { onError: (msg) => setSubmitError(msg) });
   const deleteMutation = useDeleteVenueMutation(venueId, { onError: (msg) => setDeleteError(msg) });
   const { mutation: statusMutation, statusOverride } = useVenueStatusMutation(venueId, {
-    onError: (msg) => setSubmitError(msg),
+    onError: () => setStatusError(STATUS_CHANGE_FAILED),
   });
 
   // ─── Loading / Error states ────────────────────────────────────────────────
@@ -193,7 +196,11 @@ export default function VenueEditPage() {
           submitError={submitError}
           authToken={token || undefined}
           status={currentStatus}
-          onStatusChange={(status) => statusMutation.mutate(status)}
+          onStatusChange={(status) => {
+            setStatusError(null);
+            statusMutation.mutate(status);
+          }}
+          statusError={statusError}
           isStatusChanging={statusMutation.isPending}
           onDeleteClick={() => {
             setDeleteError(null);

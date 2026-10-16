@@ -668,6 +668,8 @@ interface AdminVenueFormEditProps extends AdminVenueFormBaseProps {
   status: string;
   onStatusChange: (status: 'active' | 'inactive') => void;
   isStatusChanging: boolean;
+  // Kept apart from submitError so a failed status toggle never reads as a failed save
+  statusError?: string | null;
   onDeleteClick: () => void;
   canDelete: boolean;
   // Saved venue-tags fields from the admin detail; PATCH only sends the ones that change
@@ -1382,6 +1384,11 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
                   </button>
                 )}
               </div>
+              {props.statusError && (
+                <span className={fieldError} role="alert">
+                  {props.statusError}
+                </span>
+              )}
             </div>
           )}
 
