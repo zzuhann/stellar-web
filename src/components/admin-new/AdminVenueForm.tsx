@@ -1327,6 +1327,7 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
             status={tagStatus}
             dictionary={dictionary}
             state={tagForm}
+            initialEntries={initialTagForm.entries}
             errors={tagErrors}
             today={today}
             nearestMrt={form.nearestMrt}

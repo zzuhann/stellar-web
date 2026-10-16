@@ -173,6 +173,45 @@ describe('TC-008 後台編輯勾標籤並設限期', () => {
   });
 });
 
+describe('限期控制只在價格組', () => {
+  it('服務組勾一個標籤：沒有限期控制，body 是 {slug}', async () => {
+    await renderEdit();
+    fireEvent.click(checkbox('可包場'));
+    expect(screen.queryByRole('button', { name: /^可包場的限期：/ })).toBeNull();
+    fireEvent.click(checkbox('免場地費'));
+    expect(screen.getByRole('button', { name: '免場地費的限期：不限期' })).toBeTruthy();
+    save();
+
+    const body = await savedBody();
+    expect(body.tags).toEqual(
+      expect.arrayContaining([{ slug: 'private_booking' }, { slug: 'free_venue' }])
+    );
+  });
+
+  it('載入時服務組標籤本來就帶 until：照樣顯示控制，原值保留，可改回不限期', async () => {
+    await renderEdit({
+      tags: [{ slug: 'goods_distribution', limited: true, until: '2026-12-31' }],
+    });
+    expect(screen.getByRole('button', { name: '應援物代發的限期：限期到' })).toBeTruthy();
+    expect((screen.getByLabelText('應援物代發的結束日期') as HTMLInputElement).value).toBe(
+      '2026-12-31'
+    );
+    fireEvent.click(checkbox('可包場'));
+    save();
+
+    const first = await savedBody();
+    expect(first.tags).toEqual(
+      expect.arrayContaining([
+        { slug: 'goods_distribution', limited: true, until: '2026-12-31' },
+        { slug: 'private_booking' },
+      ])
+    );
+
+    chooseLimit('應援物代發', '不限期');
+    expect(screen.getByRole('button', { name: '應援物代發的限期：不限期' })).toBeTruthy();
+  });
+});
+
 describe('TC-058 只送有變的欄位；刻意清空要送出', () => {
   const loaded = {
     tags: [{ slug: 'free_venue' }],

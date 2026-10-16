@@ -9,6 +9,7 @@ import { formatTagDate } from '@/utils/venueTags';
 import {
   EQUIPMENT_NOTE_MAX,
   MAX_SOURCE_LINKS,
+  canSetTagLimit,
   createLinkRow,
   type TagEntry,
   type TagFieldErrors,
@@ -339,10 +340,11 @@ interface TagRowProps {
   hint: string | null;
   today: string;
   untilError?: string;
+  showLimit: boolean;
   onChange: (entry: TagEntry) => void;
 }
 
-function TagRow({ def, entry, hint, today, untilError, onChange }: TagRowProps) {
+function TagRow({ def, entry, hint, today, untilError, showLimit, onChange }: TagRowProps) {
   const checked = entry?.checked ?? false;
   const current: TagEntry = entry ?? { checked: false, mode: 'none', until: '' };
   const id = `venue-tag-${def.slug}`;
@@ -372,7 +374,7 @@ function TagRow({ def, entry, hint, today, untilError, onChange }: TagRowProps) 
         </span>
       )}
       {pastUntil && <span className={expiredBadge}>已過期 {formatTagDate(current.until)}</span>}
-      {checked && (
+      {checked && showLimit && (
         <div className={limitControls}>
           <LimitDropdown
             tagLabel={def.label}
@@ -415,6 +417,8 @@ interface AdminVenueTagSectionProps {
   status: TagDictionaryStatus;
   dictionary: VenueTagDictionary | undefined;
   state: TagFormState;
+  // Load-time entries; decide which non-price rows still need a limit control
+  initialEntries: Record<string, TagEntry>;
   errors: TagFieldErrors;
   today: string;
   nearestMrt: string;
@@ -432,6 +436,7 @@ export default function AdminVenueTagSection({
   status,
   dictionary,
   state,
+  initialEntries,
   errors,
   today,
   nearestMrt,
@@ -497,6 +502,7 @@ export default function AdminVenueTagSection({
                     key={def.slug}
                     def={def}
                     entry={state.entries[def.slug]}
+                    showLimit={canSetTagLimit(def.group, initialEntries[def.slug])}
                     hint={hintFor(def.slug)}
                     today={today}
                     untilError={errors.until[def.slug]}
