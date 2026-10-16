@@ -8,7 +8,7 @@ import { css } from '@/styled-system/css';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import Skeleton from '@/components/ui/Skeleton';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import VenueForm, { type VenueFormValues } from '@/components/admin-new/VenueForm';
+import AdminVenueForm, { type AdminVenueFormValues } from '@/components/admin-new/AdminVenueForm';
 import { useAdminVenueDetail } from '@/components/admin-new/hooks/useAdminVenueDetail';
 import { useUpdateVenueMutation } from '@/components/admin-new/hooks/useUpdateVenueMutation';
 import { useDeleteVenueMutation } from '@/components/admin-new/hooks/useDeleteVenueMutation';
@@ -148,7 +148,7 @@ export default function VenueEditPage() {
   const currentStatus = statusOverride ?? venue.status;
   const canDelete = currentStatus === 'inactive' && venue.eventCount === 0;
 
-  const initialValues: VenueFormValues = {
+  const initialValues: AdminVenueFormValues = {
     name: venue.name,
     address: venue.address,
     region: venue.region,
@@ -162,7 +162,7 @@ export default function VenueEditPage() {
     threads: venue.socialMedia?.threads ?? '',
     instagram: venue.socialMedia?.instagram ?? '',
     line: venue.socialMedia?.line ?? '',
-    preferredContact: (venue.preferredContact as VenueFormValues['preferredContact']) ?? '',
+    preferredContact: (venue.preferredContact as AdminVenueFormValues['preferredContact']) ?? '',
     contactUrl: venue.contactUrl ?? '',
     bookingFormUrl: venue.bookingFormUrl ?? '',
   };
@@ -180,7 +180,7 @@ export default function VenueEditPage() {
             重新整理資料失敗，目前顯示的可能不是最新內容。
           </div>
         )}
-        <VenueForm
+        <AdminVenueForm
           mode="edit"
           initialValues={initialValues}
           onSubmit={(data) => {

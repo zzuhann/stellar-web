@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ChevronLeftIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { useAuthToken } from '@/hooks/useAuthToken';
-import VenueForm from '@/components/admin-new/VenueForm';
+import AdminVenueForm from '@/components/admin-new/AdminVenueForm';
 import { useCreateVenueMutation } from '@/components/admin-new/hooks/useCreateVenueMutation';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
@@ -64,7 +64,7 @@ export default function VenueNewPage() {
           返回場地列表
         </Link>
         <h1 className={pageTitle}>新增場地</h1>
-        <VenueForm
+        <AdminVenueForm
           mode="create"
           onSubmit={(data) => {
             setSubmitError(null);
