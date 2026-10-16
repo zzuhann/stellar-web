@@ -1,6 +1,5 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import Image from 'next/image';
 import { css, cx } from '@/styled-system/css';
 import type { Venue, VenueDetail, VenueTagDictionary } from '@/types';
@@ -44,11 +43,6 @@ const shell = css({
   paddingTop: '3',
   paddingBottom: '10',
   lg: { maxWidth: '1200px', paddingX: '6', paddingTop: '6' },
-});
-
-const noticeWrap = css({
-  marginBottom: '2',
-  lg: { marginBottom: '4' },
 });
 
 const columns = css({
@@ -144,7 +138,6 @@ interface VenueDetailV2Props {
   today: string;
   // false on the preview page: store owners' own clicks must not count as conversions
   analyticsEnabled: boolean;
-  topNotice?: ReactNode;
 }
 
 export default function VenueDetailV2({
@@ -153,7 +146,6 @@ export default function VenueDetailV2({
   dictionary,
   today,
   analyticsEnabled,
-  topNotice,
 }: VenueDetailV2Props) {
   const { user } = useAuth();
 
@@ -181,8 +173,6 @@ export default function VenueDetailV2({
   return (
     <div className={pageOuter}>
       <div className={shell}>
-        {topNotice && <div className={noticeWrap}>{topNotice}</div>}
-
         <div className={columns}>
           <div className={mainCol}>
             <div>

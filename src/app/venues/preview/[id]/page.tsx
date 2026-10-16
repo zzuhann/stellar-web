@@ -5,7 +5,6 @@ import { venueApi } from '@/lib/api';
 import type { Venue } from '@/types';
 import { dateToTaipeiDateString } from '@/utils';
 import VenueDetailV2 from '@/components/venues/detailV2/VenueDetailV2';
-import VenuePreviewNotice from '@/components/venues/detailV2/VenuePreviewNotice';
 
 // Store owners must see re-imported tags on refresh, so no ISR and no static params
 export const dynamic = 'force-dynamic';
@@ -56,7 +55,6 @@ export default async function VenuePreviewPage({ params }: PageProps) {
       dictionary={dictionary}
       today={dateToTaipeiDateString(new Date())}
       analyticsEnabled={false}
-      topNotice={<VenuePreviewNotice />}
     />
   );
 }

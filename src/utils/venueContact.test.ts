@@ -41,7 +41,7 @@ describe('TC-096 新版聯絡管道判斷 buildVenueContact', () => {
     {
       name: 'line ＋ contactUrl',
       input: venue({ preferredContact: 'line', contactUrl: 'https://lin.ee/abc' }),
-      expected: { channel: 'line', url: 'https://lin.ee/abc', label: '用 LINE 聯絡 月光咖啡' },
+      expected: { channel: 'line', url: 'https://lin.ee/abc', label: '前往 月光咖啡 LINE' },
     },
     {
       name: 'IG 帳號帶 @ 與前後空白 → 用清理後的帳號',
@@ -121,7 +121,7 @@ describe('TC-096 新版聯絡管道判斷 buildVenueContact', () => {
     expect(
       buildVenueContact(venue({ preferredContact: 'line', contactUrl: 'https://lin.ee/a' }))
         ?.labelParts
-    ).toEqual({ before: '用 LINE 聯絡 ', name: '月光咖啡', after: '' });
+    ).toEqual({ before: '前往 ', name: '月光咖啡', after: ' LINE' });
   });
 
   it.each<[string, VenueDetail['bookingFormUrl'] | '  ', string | null]>([

@@ -64,19 +64,19 @@ const getFacilityRegion = () => screen.getByRole('region', { name: '服務、交
 const descriptionRegion = () => screen.getByRole('region', { name: '店家說明' });
 const contactBar = () => screen.queryByRole('complementary', { name: '聯絡店家' });
 const getContactBar = () => screen.getByRole('complementary', { name: '聯絡店家' });
-const contactCard = () => screen.getByRole('region', { name: '想在這裡辦？' });
+const contactCard = () => screen.getByRole('region', { name: '聯絡場地' });
 
 describe('TC-017 原始說明連結與資料更新日期', () => {
   it('連結 0 個 → 不顯示；日期 null → 不顯示；兩句固定文字照樣出現', () => {
     renderView(makeVenue({ sourceLinks: [], infoUpdatedOn: null }));
     const region = getUsageRegion();
     expect(within(region).queryByRole('link', { name: /店家原始說明/ })).toBeNull();
-    expect(within(region).queryByText(/資料更新於/)).toBeNull();
-    expect(within(region).getByText('沒列出的不代表不行，可以直接問店家。')).toBeTruthy();
+    expect(within(region).queryByText(/STELLAR 整理於/)).toBeNull();
+    expect(within(region).getByText('沒列出的項目，也可以詢問店家討論。')).toBeTruthy();
     expect(within(region).getByText('費用依方案而定，以店家最新說明、私訊討論為準。')).toBeTruthy();
   });
 
-  it('連結 1 個 → 「店家原始說明」，新分頁＋sr-only；有日期 → 「資料更新於」加 formatter 輸出', () => {
+  it('連結 1 個 → 「店家原始說明」，新分頁＋sr-only；有日期 → 「STELLAR 整理於」加 formatter 輸出', () => {
     renderView(
       makeVenue({ sourceLinks: ['https://example.com/rule.pdf'], infoUpdatedOn: '2026-10-15' })
     );
@@ -84,7 +84,7 @@ describe('TC-017 原始說明連結與資料更新日期', () => {
     const link = within(region).getByRole('link', { name: '店家原始說明（開新分頁）' });
     expect(link.getAttribute('href')).toBe('https://example.com/rule.pdf');
     expect(link.getAttribute('target')).toBe('_blank');
-    expect(within(region).getByText('資料更新於 2026/10/15')).toBeTruthy();
+    expect(within(region).getByText('STELLAR 整理於 2026/10/15')).toBeTruthy();
   });
 
   it('連結 3 個 → 「店家原始說明 1」到「3」，都開新分頁', () => {
@@ -125,7 +125,7 @@ describe('TC-034 完全沒有標籤', () => {
     expect(facilityRegion()).toBeNull();
     const desc = descriptionRegion();
     expect(within(desc).getByRole('link', { name: '店家原始說明（開新分頁）' })).toBeTruthy();
-    expect(within(desc).getByText('資料更新於 2026/10/15')).toBeTruthy();
+    expect(within(desc).getByText('STELLAR 整理於 2026/10/15')).toBeTruthy();
     expect(within(desc).getByText('店家說明內文')).toBeTruthy();
 
     expect(screen.getByRole('heading', { level: 1, name: '月光咖啡' })).toBeTruthy();
@@ -141,7 +141,7 @@ describe('TC-034 完全沒有標籤', () => {
     expect(usageRegion()).toBeNull();
     expect(facilityRegion()).toBeNull();
     expect(screen.queryByRole('link', { name: /店家原始說明/ })).toBeNull();
-    expect(screen.queryByText(/資料更新於/)).toBeNull();
+    expect(screen.queryByText(/STELLAR 整理於/)).toBeNull();
   });
 });
 
@@ -164,7 +164,7 @@ describe('TC-035 有標籤但三行用途都沒有', () => {
     expect(within(region).getByText('近捷運')).toBeTruthy();
     expect(within(region).getByText('咖啡廳')).toBeTruthy();
     // links and date fall back under the description heading, same as no tags
-    expect(within(descriptionRegion()).getByText('資料更新於 2026/10/15')).toBeTruthy();
+    expect(within(descriptionRegion()).getByText('STELLAR 整理於 2026/10/15')).toBeTruthy();
   });
 });
 
@@ -293,7 +293,7 @@ describe('TC-094 前台字典載入失敗', () => {
 
     const desc = descriptionRegion();
     expect(within(desc).getByRole('link', { name: '店家原始說明（開新分頁）' })).toBeTruthy();
-    expect(within(desc).getByText('資料更新於 2026/10/15')).toBeTruthy();
+    expect(within(desc).getByText('STELLAR 整理於 2026/10/15')).toBeTruthy();
     expect(screen.getByText('投影機免費')).toBeTruthy();
 
     const primary = within(getContactBar()).getByRole('link', { name: /前往 月光咖啡/ });

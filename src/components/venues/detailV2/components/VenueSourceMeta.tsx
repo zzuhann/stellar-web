@@ -58,7 +58,7 @@ export default function VenueSourceMeta({ sourceLinks, infoUpdatedOn }: VenueSou
           ))}
         </div>
       )}
-      {infoUpdatedOn && <span className={date}>資料更新於 {formatTagDate(infoUpdatedOn)}</span>}
+      {infoUpdatedOn && <span className={date}>STELLAR 整理於 {formatTagDate(infoUpdatedOn)}</span>}
     </div>
   );
 }

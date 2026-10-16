@@ -125,7 +125,7 @@ export default function VenueUsageSummary({
         ))}
       </ul>
       <div className={notes}>
-        <p className={note}>沒列出的不代表不行，可以直接問店家。</p>
+        <p className={note}>沒列出的項目，也可以詢問店家討論。</p>
         <p className={note}>費用依方案而定，以店家最新說明、私訊討論為準。</p>
         <VenueSourceMeta sourceLinks={sourceLinks} infoUpdatedOn={infoUpdatedOn} />
       </div>

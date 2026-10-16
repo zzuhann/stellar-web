@@ -49,7 +49,7 @@ export default function VenueContactCard({ contact, onClickContact }: VenueConta
   return (
     <section aria-labelledby={headingId} className={card}>
       <h2 id={headingId} className={title}>
-        想在這裡辦？
+        聯絡場地
       </h2>
       {contact ? (
         <>

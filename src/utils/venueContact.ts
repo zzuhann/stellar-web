@@ -44,7 +44,7 @@ export const buildVenueContact = (venue: VenueContactSource): VenueContact | nul
 
   const labelParts =
     resolved.channel === 'line'
-      ? { before: '用 LINE 聯絡 ', name: venue.name, after: '' }
+      ? { before: '前往 ', name: venue.name, after: ' LINE' }
       : {
           before: '前往 ',
           name: venue.name,

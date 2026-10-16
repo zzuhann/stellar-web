@@ -6,7 +6,6 @@ import { notFound } from 'next/navigation';
 import { venueApi } from '@/lib/api';
 import type { VenueDetail } from '@/types';
 import { venueTagDictionaryFixture } from '@/test/venueTagDictionary.fixture';
-import { STELLAR_INSTAGRAM_URL } from '@/constants/stellarSocial';
 import VenueDetailClient from '@/app/venues/[id]/VenueDetailClient';
 import * as previewModule from './page';
 
@@ -107,21 +106,8 @@ describe('TC-020 預覽頁 metadata', () => {
 });
 
 describe('TC-021 預覽頁版面', () => {
-  it('頁首上方有資訊框與「STELLAR IG」外部連結；新版版面元素齊全；不顯示 hostTags', async () => {
+  it('新版版面元素齊全；不顯示 hostTags', async () => {
     await renderPreview();
-    const notice = screen.getByRole('note');
-    expect(notice.textContent).toContain(
-      '這是新版場地頁的預覽，還沒有公開。標籤或條件跟你們的規定不一樣的話，私訊'
-    );
-    const ig = within(notice).getByRole('link', { name: 'STELLAR IG（開新分頁）' });
-    expect(ig.getAttribute('href')).toBe(STELLAR_INSTAGRAM_URL);
-    expect(ig.getAttribute('target')).toBe('_blank');
-    // notice comes before the page heading
-    expect(
-      notice.compareDocumentPosition(screen.getByRole('heading', { level: 1 })) &
-        Node.DOCUMENT_POSITION_FOLLOWING
-    ).toBeTruthy();
-
     expect(screen.getByRole('region', { name: '可以在這裡' })).toBeTruthy();
     expect(screen.getByRole('region', { name: '服務、交通與空間' })).toBeTruthy();
     expect(screen.getByRole('region', { name: '平台記錄的生咖、生日應援' })).toBeTruthy();
