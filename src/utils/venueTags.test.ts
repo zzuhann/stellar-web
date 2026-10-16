@@ -10,6 +10,7 @@ import {
   formatConditionUntil,
   formatTagDate,
   getVisibleVenueTags,
+  pickCardTags,
 } from './venueTags';
 
 const TODAY = '2026-10-15';
@@ -19,6 +20,46 @@ const visible = (tags: VenueTag[]) => getVisibleVenueTags(tags, dictionary, TODA
 const usageRows = (tags: VenueTag[]) => buildVenueUsageRows(visible(tags), TODAY);
 const conditionText = (tags: VenueTag[]) => buildVenueConditionText(visible(tags), TODAY);
 const facilityRows = (tags: VenueTag[]) => buildVenueFacilityRows(visible(tags), dictionary);
+
+const ALL_CARD_RANKED = t(
+  'free_venue',
+  'no_min_guarantee',
+  'goods_distribution',
+  'early_setup',
+  'beginner_friendly',
+  'parcel_receiving',
+  'custom_menu',
+  'private_booking',
+  'exhibition_space',
+  'multi_space'
+);
+
+describe('TC-013 卡片挑 3 個標籤 pickCardTags', () => {
+  it.each([
+    {
+      name: '全部 10 個有 cardRank 的標籤 → 代發、免場地費、可提前佈展',
+      tags: ALL_CARD_RANKED,
+      expected: ['goods_distribution', 'free_venue', 'early_setup'],
+    },
+    {
+      name: '只有不上卡片的標籤 → []',
+      tags: t('needs_guarantee', 'venue_fee', 'deposit', 'can_decorate', 'takeaway_shop'),
+      expected: [],
+    },
+    {
+      name: '只有外帶為主與展覽空間 → 展覽空間',
+      tags: t('takeaway_shop', 'exhibition_space'),
+      expected: ['exhibition_space'],
+    },
+    {
+      name: '輸入順序打亂 → 結果仍照 cardRank',
+      tags: [...ALL_CARD_RANKED].reverse(),
+      expected: ['goods_distribution', 'free_venue', 'early_setup'],
+    },
+  ])('$name', ({ tags, expected }) => {
+    expect(pickCardTags(visible(tags), dictionary).map((tag) => tag.slug)).toEqual(expected);
+  });
+});
 
 describe('TC-014 三行用途 buildVenueUsageRows', () => {
   it.each([

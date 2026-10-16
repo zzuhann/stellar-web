@@ -8,7 +8,7 @@ import { css } from '@/styled-system/css';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import Skeleton from '@/components/ui/Skeleton';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import VenueForm, { type VenueFormValues } from '@/components/admin-new/VenueForm';
+import AdminVenueForm, { type AdminVenueFormValues } from '@/components/admin-new/AdminVenueForm';
 import { useAdminVenueDetail } from '@/components/admin-new/hooks/useAdminVenueDetail';
 import { useUpdateVenueMutation } from '@/components/admin-new/hooks/useUpdateVenueMutation';
 import { useDeleteVenueMutation } from '@/components/admin-new/hooks/useDeleteVenueMutation';
@@ -33,6 +33,8 @@ const container = css({
     paddingX: '6',
     paddingY: '8',
   },
+  // Room for the form plus the 360px preview column
+  lg: { maxWidth: '1120px' },
 });
 
 const backLink = css({
@@ -83,6 +85,8 @@ const refetchErrorBanner = css({
   color: 'red.700',
 });
 
+const STATUS_CHANGE_FAILED = '上下架失敗，請再試一次。';
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function VenueEditPage() {
@@ -91,6 +95,7 @@ export default function VenueEditPage() {
   const { token } = useAuthToken();
 
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -100,7 +105,7 @@ export default function VenueEditPage() {
   const updateMutation = useUpdateVenueMutation(venueId, { onError: (msg) => setSubmitError(msg) });
   const deleteMutation = useDeleteVenueMutation(venueId, { onError: (msg) => setDeleteError(msg) });
   const { mutation: statusMutation, statusOverride } = useVenueStatusMutation(venueId, {
-    onError: (msg) => setSubmitError(msg),
+    onError: () => setStatusError(STATUS_CHANGE_FAILED),
   });
 
   // ─── Loading / Error states ────────────────────────────────────────────────
@@ -148,7 +153,7 @@ export default function VenueEditPage() {
   const currentStatus = statusOverride ?? venue.status;
   const canDelete = currentStatus === 'inactive' && venue.eventCount === 0;
 
-  const initialValues: VenueFormValues = {
+  const initialValues: AdminVenueFormValues = {
     name: venue.name,
     address: venue.address,
     region: venue.region,
@@ -162,7 +167,7 @@ export default function VenueEditPage() {
     threads: venue.socialMedia?.threads ?? '',
     instagram: venue.socialMedia?.instagram ?? '',
     line: venue.socialMedia?.line ?? '',
-    preferredContact: (venue.preferredContact as VenueFormValues['preferredContact']) ?? '',
+    preferredContact: (venue.preferredContact as AdminVenueFormValues['preferredContact']) ?? '',
     contactUrl: venue.contactUrl ?? '',
     bookingFormUrl: venue.bookingFormUrl ?? '',
   };
@@ -180,7 +185,7 @@ export default function VenueEditPage() {
             重新整理資料失敗，目前顯示的可能不是最新內容。
           </div>
         )}
-        <VenueForm
+        <AdminVenueForm
           mode="edit"
           initialValues={initialValues}
           onSubmit={(data) => {
@@ -191,13 +196,24 @@ export default function VenueEditPage() {
           submitError={submitError}
           authToken={token || undefined}
           status={currentStatus}
-          onStatusChange={(status) => statusMutation.mutate(status)}
+          onStatusChange={(status) => {
+            setStatusError(null);
+            statusMutation.mutate(status);
+          }}
+          statusError={statusError}
           isStatusChanging={statusMutation.isPending}
           onDeleteClick={() => {
             setDeleteError(null);
             setDeleteDialogOpen(true);
           }}
           canDelete={canDelete}
+          initialTagFields={{
+            tags: venue.tags ?? [],
+            sourceLinks: venue.sourceLinks ?? [],
+            equipmentNote: venue.equipmentNote ?? '',
+            infoUpdatedOn: venue.infoUpdatedOn ?? null,
+            calendarUrl: venue.calendarUrl ?? null,
+          }}
           place={{
             venueId,
             placeId: venue.placeId,

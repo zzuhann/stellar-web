@@ -1,0 +1,259 @@
+import type { CreateVenueData, UpdateVenueData, VenueTag, VenueTagDictionary } from '@/types';
+import {
+  buildVenueUsageRows,
+  formatCardTagLabel,
+  getVisibleVenueTags,
+  pickCardTags,
+  type VenueUsageRow,
+} from '@/utils/venueTags';
+
+// Pure helpers behind the admin tag section (venue-tags §E, design-backend §7.4)
+
+export type TagLimitMode = 'none' | 'limited' | 'until';
+
+export interface TagEntry {
+  checked: boolean;
+  mode: TagLimitMode;
+  until: string; // kept when unchecking or switching mode, so re-checking restores it
+}
+
+export interface SourceLinkRow {
+  id: string; // stable across removals so errors and focus stay on the right row
+  value: string;
+}
+
+export interface TagFormState {
+  entries: Record<string, TagEntry>;
+  sourceLinks: SourceLinkRow[]; // raw rows, may contain blanks
+  equipmentNote: string;
+  infoUpdatedOn: string; // '' means empty
+  calendarUrl: string;
+}
+
+// Saved values as the admin detail returns them
+export interface TagFieldsSource {
+  tags: VenueTag[];
+  sourceLinks: string[];
+  equipmentNote: string;
+  infoUpdatedOn: string | null;
+  calendarUrl: string | null;
+}
+
+export type TagDictionaryStatus = 'pending' | 'error' | 'success';
+
+// Single gate for both the UI (disabled) and the payload (five fields sent or not).
+// Any error wins, even with stale cached data, so a failed dictionary never sends tag fields
+export function resolveTagDictionary(query: {
+  data: VenueTagDictionary | undefined;
+  isError: boolean;
+}): { status: TagDictionaryStatus; dictionary: VenueTagDictionary | null } {
+  if (query.isError) return { status: 'error', dictionary: null };
+  if (!query.data) return { status: 'pending', dictionary: null };
+  return { status: 'success', dictionary: query.data };
+}
+
+export const MAX_SOURCE_LINKS = 5;
+
+// Only free_venue is time-limited in practice; other rows get the control only when their saved
+// value already carries one, so admins can see it and reset it instead of losing it silently
+export const canSetTagLimit = (slug: string, initialEntry: TagEntry | undefined): boolean =>
+  slug === 'free_venue' || (initialEntry?.mode ?? 'none') !== 'none';
+export const EQUIPMENT_NOTE_MAX = 1000;
+
+export const EMPTY_TAG_FIELDS: TagFieldsSource = {
+  tags: [],
+  sourceLinks: [],
+  equipmentNote: '',
+  infoUpdatedOn: null,
+  calendarUrl: null,
+};
+
+let nextLinkRowId = 0;
+export const createLinkRow = (value = ''): SourceLinkRow => ({
+  id: `source-link-${nextLinkRowId++}`,
+  value,
+});
+
+export function toTagFormState(source: TagFieldsSource): TagFormState {
+  const entries: Record<string, TagEntry> = {};
+  for (const tag of source.tags) {
+    entries[tag.slug] = {
+      checked: true,
+      mode: tag.until ? 'until' : tag.limited ? 'limited' : 'none',
+      until: tag.until ?? '',
+    };
+  }
+  return {
+    entries,
+    sourceLinks: (source.sourceLinks.length > 0 ? source.sourceLinks : ['']).map((link) =>
+      createLinkRow(link)
+    ),
+    equipmentNote: source.equipmentNote,
+    infoUpdatedOn: source.infoUpdatedOn ?? '',
+    calendarUrl: source.calendarUrl ?? '',
+  };
+}
+
+// Unknown slugs (e.g. later deactivated) are dropped: the backend rejects them with 400
+export function entriesToTags(
+  entries: Record<string, TagEntry>,
+  dictionary: VenueTagDictionary
+): VenueTag[] {
+  return dictionary.tags.flatMap((def): VenueTag[] => {
+    const entry = entries[def.slug];
+    if (!entry?.checked) return [];
+    if (entry.mode === 'until') return [{ slug: def.slug, limited: true, until: entry.until }];
+    if (entry.mode === 'limited') return [{ slug: def.slug, limited: true }];
+    return [{ slug: def.slug }];
+  });
+}
+
+const tagKey = (tag: VenueTag) => `${tag.slug}|${tag.limited ? 1 : 0}|${tag.until ?? ''}`;
+
+// Order-insensitive; limited/until differences count as a change. Sorted keys, not a Set,
+// so [a, b] and [a, a] stay different
+const sortedTagKeys = (tags: VenueTag[]) => tags.map(tagKey).sort().join('\n');
+
+export const sameTags = (a: VenueTag[], b: VenueTag[]): boolean =>
+  sortedTagKeys(a) === sortedTagKeys(b);
+
+const normalizeLinks = (rows: SourceLinkRow[]) =>
+  rows.map((row) => row.value.trim()).filter(Boolean);
+
+interface NormalizedTagFields {
+  tags: VenueTag[];
+  sourceLinks: string[];
+  equipmentNote: string;
+  infoUpdatedOn: string | null;
+  calendarUrl: string | null;
+}
+
+function normalize(state: TagFormState, dictionary: VenueTagDictionary): NormalizedTagFields {
+  return {
+    tags: entriesToTags(state.entries, dictionary),
+    sourceLinks: normalizeLinks(state.sourceLinks),
+    equipmentNote: state.equipmentNote.trim(),
+    infoUpdatedOn: state.infoUpdatedOn || null,
+    calendarUrl: state.calendarUrl.trim() || null,
+  };
+}
+
+// PATCH: only fields that differ from load time; deliberate clears ([] / '' / null) are sent
+export function buildTagFieldsPatch(
+  initial: TagFormState,
+  current: TagFormState,
+  dictionary: VenueTagDictionary
+): Partial<UpdateVenueData> {
+  const before = normalize(initial, dictionary);
+  const after = normalize(current, dictionary);
+  const patch: Partial<UpdateVenueData> = {};
+
+  if (!sameTags(before.tags, after.tags)) patch.tags = after.tags;
+  if (before.sourceLinks.join('\n') !== after.sourceLinks.join('\n')) {
+    patch.sourceLinks = after.sourceLinks;
+  }
+  if (before.equipmentNote !== after.equipmentNote) patch.equipmentNote = after.equipmentNote;
+  if (before.infoUpdatedOn !== after.infoUpdatedOn) patch.infoUpdatedOn = after.infoUpdatedOn;
+  if (before.calendarUrl !== after.calendarUrl) patch.calendarUrl = after.calendarUrl;
+  return patch;
+}
+
+// POST: tags and infoUpdatedOn always; the rest only when filled
+export function buildTagFieldsCreate(
+  current: TagFormState,
+  dictionary: VenueTagDictionary
+): Partial<CreateVenueData> {
+  const fields = normalize(current, dictionary);
+  const data: Partial<CreateVenueData> = {
+    tags: fields.tags,
+    infoUpdatedOn: fields.infoUpdatedOn,
+  };
+  if (fields.sourceLinks.length > 0) data.sourceLinks = fields.sourceLinks;
+  if (fields.equipmentNote) data.equipmentNote = fields.equipmentNote;
+  if (fields.calendarUrl) data.calendarUrl = fields.calendarUrl;
+  return data;
+}
+
+export const MISSING_UNTIL_ERROR = '請選擇日期，或改成「限期（目前沒有設定結束日）」';
+
+export interface TagFieldErrors {
+  sourceLinks: Record<string, string>; // keyed by SourceLinkRow.id
+  until: Record<string, string>;
+  calendarUrl?: string;
+}
+
+const URL_MAX_LENGTH = 500;
+
+// Mirrors the backend httpUrlSchema: scheme is case-insensitive (HTTPS:// is accepted there).
+// Kept local so the shared getHttpUrlError and /submit-venue behave exactly as before.
+export function getTagUrlError(url: string): string | undefined {
+  if (url.length > URL_MAX_LENGTH) return `網址不能超過 ${URL_MAX_LENGTH} 個字`;
+  if (!url) return undefined;
+  if (!/^https?:\/\//i.test(url)) return '請輸入完整網址（以 https:// 開頭）';
+  try {
+    new URL(url);
+    return undefined;
+  } catch {
+    return '請輸入完整網址（以 https:// 開頭）';
+  }
+}
+
+// initial (edit mode) skips URL fields that still hold their load-time value, so a bad
+// imported value cannot block saving unrelated fields (same idea as the contact channel check)
+export function getTagFieldErrors(
+  state: TagFormState,
+  dictionary: VenueTagDictionary,
+  initial?: TagFormState
+): TagFieldErrors {
+  const errors: TagFieldErrors = { sourceLinks: {}, until: {} };
+  const linksChanged =
+    !initial ||
+    normalizeLinks(initial.sourceLinks).join('\n') !== normalizeLinks(state.sourceLinks).join('\n');
+  if (linksChanged) {
+    state.sourceLinks.forEach((row) => {
+      const error = getTagUrlError(row.value.trim());
+      if (error) errors.sourceLinks[row.id] = error;
+    });
+  }
+  for (const def of dictionary.tags) {
+    const entry = state.entries[def.slug];
+    if (entry?.checked && entry.mode === 'until' && !entry.until) {
+      errors.until[def.slug] = MISSING_UNTIL_ERROR;
+    }
+  }
+  const calendarChanged = !initial || initial.calendarUrl.trim() !== state.calendarUrl.trim();
+  const calendarError = calendarChanged ? getTagUrlError(state.calendarUrl.trim()) : undefined;
+  if (calendarError) errors.calendarUrl = calendarError;
+  return errors;
+}
+
+export const hasTagFieldErrors = (errors: TagFieldErrors) =>
+  Object.keys(errors.sourceLinks).length > 0 ||
+  Object.keys(errors.until).length > 0 ||
+  Boolean(errors.calendarUrl);
+
+export interface AdminVenuePreview {
+  cardTagLabels: string[];
+  usageRows: VenueUsageRow[];
+  sourceLinks: string[]; // only links that would pass validation, so the preview never links junk
+  infoUpdatedOn: string | null;
+}
+
+// Same pipeline as the public pages: expiry filter first, then the shared builders
+export function buildAdminVenuePreview(
+  state: TagFormState,
+  dictionary: VenueTagDictionary,
+  today: string
+): AdminVenuePreview {
+  const fields = normalize(state, dictionary);
+  const visible = getVisibleVenueTags(fields.tags, dictionary, today);
+  const labelBySlug = new Map(dictionary.tags.map((d) => [d.slug, d.label]));
+  return {
+    cardTagLabels: pickCardTags(visible, dictionary).map((tag) =>
+      formatCardTagLabel(tag, labelBySlug.get(tag.slug) ?? tag.slug, today)
+    ),
+    usageRows: buildVenueUsageRows(visible, today),
+    sourceLinks: fields.sourceLinks.filter((link) => !getTagUrlError(link)),
+    infoUpdatedOn: fields.infoUpdatedOn,
+  };
+}
