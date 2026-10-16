@@ -37,8 +37,9 @@ export const tag = css({
   paddingY: '0.5',
   paddingX: '2',
   borderRadius: 'radius.sm',
-  background: 'gray.100',
-  color: 'color.text.primary',
+  // Brand blue pair, same as the usage check dot; #2A4052 on #CDE6F4 is 8.3:1
+  background: 'stellarBlue.50',
+  color: 'stellarBlue.700',
   textStyle: 'caption',
   lg: { textStyle: 'bodySmall' },
 });
