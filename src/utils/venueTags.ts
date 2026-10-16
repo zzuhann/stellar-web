@@ -45,6 +45,20 @@ export const getVisibleVenueTags = (
   ) as VisibleVenueTag[];
 };
 
+// Card shows at most 3 tags by cardRank; tags without cardRank never reach the card
+export const pickCardTags = (
+  tags: readonly VisibleVenueTag[],
+  dictionary: VenueTagDictionary
+): VisibleVenueTag[] => {
+  const rankBySlug = new Map<string, number>();
+  for (const d of dictionary.tags) if (d.cardRank !== undefined) rankBySlug.set(d.slug, d.cardRank);
+  const rank = (tag: VisibleVenueTag) => rankBySlug.get(tag.slug) ?? Infinity;
+  return tags
+    .filter((tag) => rankBySlug.has(tag.slug))
+    .sort((a, b) => rank(a) - rank(b))
+    .slice(0, 3);
+};
+
 const indexBySlug = (tags: readonly VisibleVenueTag[]) =>
   new Map(tags.map((tag) => [tag.slug, tag]));
 
