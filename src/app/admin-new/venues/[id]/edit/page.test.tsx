@@ -23,6 +23,7 @@ vi.mock('@/lib/api', () => ({
     getAdminVenueById: vi.fn(),
     previewPlaceReselect: vi.fn(),
     applyPlaceReselect: vi.fn(),
+    updateVenue: vi.fn(),
   },
   placesApi: {
     getDetails: async () => ({ name: '新店家咖啡', geometry: { location: { lat: 25, lng: 121 } } }),
@@ -112,4 +113,46 @@ describe('VenueEditPage 載入失敗處理', () => {
     expect((screen.getByLabelText(/場地名稱/) as HTMLInputElement).value).toBe('未儲存的新名稱');
     expect(screen.getByRole('status').textContent).toContain('已更新地點。新連上 3 場活動。');
   });
+});
+
+describe('VenueEditPage 預約表單網址（TC-099）', () => {
+  async function renderPage(bookingFormUrl: string | null | undefined) {
+    vi.mocked(venueApi.getAdminVenueById).mockResolvedValue({
+      ...venue,
+      bookingFormUrl,
+    } as never);
+    vi.mocked(venueApi.updateVenue).mockResolvedValue({} as never);
+    renderWithClient(<VenueEditPage />);
+    return (await screen.findByLabelText('預約表單網址')) as HTMLInputElement;
+  }
+
+  async function saveWithNewName() {
+    fireEvent.change(screen.getByLabelText(/場地名稱/), { target: { value: '更新名稱' } });
+    fireEvent.click(screen.getByRole('button', { name: '儲存變更' }));
+    await waitFor(() => expect(venueApi.updateVenue).toHaveBeenCalledTimes(1));
+    return vi.mocked(venueApi.updateVenue).mock.calls[0][1];
+  }
+
+  afterEach(() => vi.mocked(venueApi.updateVenue).mockReset());
+
+  it('TC-099 a：預填 admin 詳情的值，只改店名時送原值', async () => {
+    const input = await renderPage('https://forms.gle/x');
+    expect(input.value).toBe('https://forms.gle/x');
+    expect(await saveWithNewName()).toHaveProperty('bookingFormUrl', 'https://forms.gle/x');
+  });
+
+  it('TC-099 b：清空後存檔送 null', async () => {
+    const input = await renderPage('https://forms.gle/x');
+    fireEvent.change(input, { target: { value: '' } });
+    expect(await saveWithNewName()).toHaveProperty('bookingFormUrl', null);
+  });
+
+  it.each([null, undefined])(
+    'TC-099 c：舊場地 bookingFormUrl 為 %s，只改店名時送 null',
+    async (value) => {
+      const input = await renderPage(value);
+      expect(input.value).toBe('');
+      expect(await saveWithNewName()).toHaveProperty('bookingFormUrl', null);
+    }
+  );
 });

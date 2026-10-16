@@ -303,6 +303,7 @@ describe('F8 寫入成功後回饋', () => {
           line: '',
           preferredContact: '',
           contactUrl: '',
+          bookingFormUrl: '',
         }}
         onSubmit={vi.fn()}
         isSubmitting={false}

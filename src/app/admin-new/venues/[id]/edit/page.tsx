@@ -164,6 +164,7 @@ export default function VenueEditPage() {
     line: venue.socialMedia?.line ?? '',
     preferredContact: (venue.preferredContact as VenueFormValues['preferredContact']) ?? '',
     contactUrl: venue.contactUrl ?? '',
+    bookingFormUrl: venue.bookingFormUrl ?? '',
   };
 
   return (

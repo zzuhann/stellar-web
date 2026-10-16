@@ -37,7 +37,25 @@ describe('handleApiError', () => {
       handleApiError(
         apiError({ error: '請輸入有效的網址', code: 'VALIDATION_ERROR', field: 'contactUrl' })
       )
-    ).toBe('預約表單連結：請輸入有效的網址');
+    ).toBe('LINE 連結：請輸入有效的網址');
+  });
+
+  it('TC-098 labels the booking form and contact fields with the new names', () => {
+    expect(
+      handleApiError(
+        apiError({ error: 'Invalid url', code: 'VALIDATION_ERROR', field: 'bookingFormUrl' })
+      )
+    ).toBe('預約表單網址格式不正確，請確認後再試');
+    expect(
+      handleApiError(
+        apiError({ error: '請輸入有效的網址', code: 'VALIDATION_ERROR', field: 'bookingFormUrl' })
+      )
+    ).toBe('預約表單網址：請輸入有效的網址');
+    expect(
+      handleApiError(
+        apiError({ error: 'Invalid enum', code: 'VALIDATION_ERROR', field: 'preferredContact' })
+      )
+    ).toBe('偏好聯絡方式格式不正確，請確認後再試');
   });
 
   it('shows only the Chinese backend reason when the field has no label', () => {
@@ -68,7 +86,7 @@ describe('handleApiError', () => {
       handleApiError(
         apiError({ error: 'Invalid url', code: 'VALIDATION_ERROR', field: 'contactUrl' })
       )
-    ).toBe('預約表單連結格式不正確，請確認後再試');
+    ).toBe('LINE 連結格式不正確，請確認後再試');
     expect(handleApiError(apiError({ error: 'Invalid', code: 'VALIDATION_ERROR' }))).toBe(
       '輸入資料格式有誤，請確認後再試'
     );
@@ -76,7 +94,7 @@ describe('handleApiError', () => {
 
   it('falls back to the generic message when VALIDATION_ERROR has no error text', () => {
     expect(handleApiError(apiError({ code: 'VALIDATION_ERROR', field: 'contactUrl' }))).toBe(
-      '預約表單連結格式不正確，請確認後再試'
+      'LINE 連結格式不正確，請確認後再試'
     );
     expect(handleApiError(apiError({ code: 'VALIDATION_ERROR' }))).toBe(
       '輸入資料格式有誤，請確認後再試'

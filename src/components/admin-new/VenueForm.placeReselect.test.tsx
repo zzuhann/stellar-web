@@ -41,6 +41,7 @@ const editValues: VenueFormValues = {
   line: '',
   preferredContact: '',
   contactUrl: '',
+  bookingFormUrl: '',
 };
 
 describe('R1 後台新增場地（create）', () => {

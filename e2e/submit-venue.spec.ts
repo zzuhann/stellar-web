@@ -115,7 +115,7 @@ test.describe('公開場地投稿', () => {
 
     await expect(page.getByText('請填寫場地名稱')).toBeVisible();
     await expect(page.getByText('請選擇容納人數', { exact: true })).toBeVisible();
-    await expect(page.getByText('請至少填寫 Instagram 或 Threads')).toBeVisible();
+    await expect(page.getByText('請填寫至少一個社群帳號')).toBeVisible();
     await expect(page.getByText('請上傳封面圖片')).toBeVisible();
     expect(submissionCount).toBe(0);
   });

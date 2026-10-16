@@ -25,6 +25,13 @@ export const isHttpUrl = (url: string): boolean => {
   }
 };
 
+// 表單網址欄位共用的錯誤訊息；空字串視為沒填（是否必填由呼叫端判斷）
+export const getHttpUrlError = (url: string, maxLength = 500): string | undefined => {
+  if (url.length > maxLength) return `網址不能超過 ${maxLength} 個字`;
+  if (url && !isHttpUrl(url)) return '請輸入完整網址（以 https:// 開頭）';
+  return undefined;
+};
+
 // 嚴格驗證日曆日期是否真的存在：new Date(2026, 1, 30) 這種無效日期會被靜默正規化成
 // 3/2，Date.parse/isNaN 驗不出來，所以改成重建日期後比對三個欄位是否跟輸入一致
 export const isValidCalendarDateString = (dateStr: string): boolean => {
