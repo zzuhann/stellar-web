@@ -175,6 +175,29 @@ describe('VenueForm 聯絡方式（TC-098 新增模式）', () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it('TC-098 送出失敗後開始打 LINE 連結：錯誤清掉，打字途中不冒格式錯誤', () => {
+    renderCreate();
+    fillRequired();
+    selectContact('LINE');
+    submitCreate();
+    expect(screen.getByText('選了 LINE，要填 LINE 連結')).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText('LINE 連結'), { target: { value: 'h' } });
+    expect(screen.queryByText('選了 LINE，要填 LINE 連結')).toBeNull();
+    expect(screen.queryByText('請輸入完整網址（以 http:// 或 https:// 開頭）')).toBeNull();
+  });
+
+  it('TC-100 舊資料 form 的下拉是 placeholder 樣式（data-empty）', () => {
+    renderEdit({ preferredContact: 'form' as never });
+    expect(screen.getByRole('button', { name: '請選擇' }).getAttribute('data-empty')).toBe('true');
+  });
+
+  it('LINE 連結用網址鍵盤', () => {
+    renderCreate();
+    selectContact('LINE');
+    expect(screen.getByLabelText('LINE 連結').getAttribute('inputmode')).toBe('url');
+  });
+
   it('TC-098 送出失敗後改選管道，錯誤即時跟著換', () => {
     const onSubmit = renderCreate();
     fillRequired({ instagram: '@stellar', threads: '' });

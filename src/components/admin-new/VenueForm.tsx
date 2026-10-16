@@ -11,7 +11,7 @@ import type { CreateVenueData, UpdateVenueData, CapacityRange } from '@/types';
 import type { UploadResponse } from '@/lib/r2-upload';
 import type { placesApi } from '@/lib/api';
 import { REGIONS } from '@/constants';
-import { isHttpUrl } from '@/utils';
+import { getHttpUrlError } from '@/utils';
 import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
 
 // Edit-only block; lazy so create mode (incl. public /submit-venue) never loads it
@@ -350,7 +350,6 @@ const statusBadge = cva({
 
 const REGION_OPTIONS = [...REGIONS, '其他'];
 const CAPACITY_OPTIONS: CapacityRange[] = ['20以下', '20-40', '40-60', '60以上'];
-const CONTACT_URL_MAX_LENGTH = 500;
 const MAX_HOST_TAGS = 5;
 
 // 'form' / 'other' only exist on old venues; they are loaded but no longer selectable
@@ -469,7 +468,7 @@ function PreferredContactDropdown({ value, onChange }: PreferredContactDropdownP
       <button
         type="button"
         className={dropdownTrigger}
-        data-empty={!value ? 'true' : undefined}
+        data-empty={!isSelectableContact(value) ? 'true' : undefined}
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -572,17 +571,11 @@ function isSelectableContact(value: string): value is SelectableContact {
   return PREFERRED_CONTACT_OPTIONS.some((o) => o.value === value);
 }
 
-function getUrlError(url: string): string | undefined {
-  if (url.length > CONTACT_URL_MAX_LENGTH) return '網址不能超過 500 個字';
-  if (url && !isHttpUrl(url)) return '請輸入完整網址（以 http:// 或 https:// 開頭）';
-  return undefined;
-}
-
 function getContactErrors(values: VenueFormValues, checkChannel: boolean): ContactErrors {
   const next: ContactErrors = {};
   // LINE link is hidden for other channels, so it is neither validated nor submitted
   if (values.preferredContact === 'line') {
-    const urlError = getUrlError(values.contactUrl.trim());
+    const urlError = getHttpUrlError(values.contactUrl.trim());
     if (urlError) next.contactUrl = urlError;
   }
   if (checkChannel && isSelectableContact(values.preferredContact)) {
@@ -694,7 +687,7 @@ export default function VenueForm(props: VenueFormProps) {
       next.coverPhoto = '請上傳封面圖片';
     }
     Object.assign(next, contactErrorsFor(form));
-    const bookingFormUrlError = getUrlError(form.bookingFormUrl.trim());
+    const bookingFormUrlError = getHttpUrlError(form.bookingFormUrl.trim());
     if (bookingFormUrlError) next.bookingFormUrl = bookingFormUrlError;
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -798,8 +791,10 @@ export default function VenueForm(props: VenueFormProps) {
         ...(key === 'preferredContact' && { preferredContact: undefined }),
         ...((key === 'instagram' || key === 'threads') && { socialMedia: undefined }),
       };
-      // After a failed submit, keep contact errors in sync as the user fixes them
-      return submitAttempted ? { ...cleared, ...contactErrorsFor(next) } : cleared;
+      // Switching channel after a failed submit moves the requirement error; typing just clears it
+      return submitAttempted && key === 'preferredContact'
+        ? { ...cleared, ...contactErrorsFor(next) }
+        : cleared;
     });
   }
 
@@ -1056,6 +1051,7 @@ export default function VenueForm(props: VenueFormProps) {
               id="venue-contact-url"
               type="text"
               className={inputStyle}
+              inputMode="url"
               placeholder="https://lin.ee/..."
               value={form.contactUrl}
               onChange={(e) => setContactField('contactUrl', e.target.value)}

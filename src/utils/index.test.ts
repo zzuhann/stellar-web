@@ -12,6 +12,7 @@ import {
   formatReservationDateTime,
   isPastTimestamp,
   isHttpUrl,
+  getHttpUrlError,
   isValidCalendarDateString,
   parseTaipeiDateString,
   taipeiDateStringToLocalDate,
@@ -488,6 +489,15 @@ describe('getTaipeiToday', () => {
     vi.setSystemTime(new Date(Date.UTC(2026, 5, 15, 10, 0, 0)));
     const todayDateString = `${getTaipeiToday().getFullYear()}-${String(getTaipeiToday().getMonth() + 1).padStart(2, '0')}-${String(getTaipeiToday().getDate()).padStart(2, '0')}`;
     expect(todayDateString).toBe(dateToTaipeiDateString(new Date()));
+  });
+});
+
+describe('getHttpUrlError', () => {
+  it('empty is fine; non-http and over 500 chars return the form messages', () => {
+    expect(getHttpUrlError('')).toBeUndefined();
+    expect(getHttpUrlError('https://lin.ee/x')).toBeUndefined();
+    expect(getHttpUrlError('abc')).toBe('請輸入完整網址（以 http:// 或 https:// 開頭）');
+    expect(getHttpUrlError(`https://a.com/${'a'.repeat(500)}`)).toBe('網址不能超過 500 個字');
   });
 });
 
