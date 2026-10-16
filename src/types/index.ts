@@ -352,9 +352,9 @@ export interface VenueEventCard {
   timeStatus?: VenueEventTimeStatus | null;
 }
 
-// ─── 場地標籤（venue-tags）──────────────────────────────────────────────────
+// ─── Venue tags (venue-tags) ────────────────────────────────────────────────
 
-// 不限期 { slug }；限期沒日期 { slug, limited: true }；限期到某天 { slug, limited: true, until }
+// Unlimited { slug }; limited without date { slug, limited: true }; limited until { slug, limited: true, until }
 export interface VenueTag {
   slug: string;
   limited?: true;

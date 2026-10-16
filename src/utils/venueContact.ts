@@ -9,10 +9,9 @@ export type VenueContactSource = Pick<
 export type VenueContactChannel = 'instagram' | 'threads' | 'line';
 
 export interface VenueContact {
+  // Also the contact_type sent on click: the channel actually used, not preferredContact
   channel: VenueContactChannel;
-  contactType: VenueContactChannel;
   url: string;
-  label: string;
   labelParts: { before: string; name: string; after: string };
   bookingFormUrl: string | null;
 }
@@ -54,8 +53,6 @@ export const buildVenueContact = (venue: VenueContactSource): VenueContact | nul
 
   return {
     ...resolved,
-    contactType: resolved.channel,
-    label: `${labelParts.before}${labelParts.name}${labelParts.after}`,
     labelParts,
     bookingFormUrl: venue.bookingFormUrl?.trim() || null,
   };

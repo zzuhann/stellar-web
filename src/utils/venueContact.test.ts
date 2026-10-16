@@ -108,9 +108,9 @@ describe('TC-096 新版聯絡管道判斷 buildVenueContact', () => {
       expect(result).toBeNull();
       return;
     }
-    expect(result).toMatchObject(expected);
-    // contactType sent on click is the channel actually used
-    expect(result?.contactType).toBe(expected.channel);
+    expect(result).toMatchObject({ channel: expected.channel, url: expected.url });
+    const parts = result?.labelParts;
+    expect(`${parts?.before}${parts?.name}${parts?.after}`).toBe(expected.label);
   });
 
   it('按鈕文字拆成前綴、店名、後綴，讓長店名截斷時管道名仍露出', () => {

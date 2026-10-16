@@ -14,6 +14,11 @@ import {
 
 const TODAY = '2026-10-15';
 const t = (...slugs: string[]): VenueTag[] => slugs.map((slug) => ({ slug }));
+// Builders expect pre-filtered tags, so every input goes through the same filter the page uses
+const visible = (tags: VenueTag[]) => getVisibleVenueTags(tags, dictionary, TODAY);
+const usageRows = (tags: VenueTag[]) => buildVenueUsageRows(visible(tags), TODAY);
+const conditionText = (tags: VenueTag[]) => buildVenueConditionText(visible(tags), TODAY);
+const facilityRows = (tags: VenueTag[]) => buildVenueFacilityRows(visible(tags), dictionary);
 
 describe('TC-014 三行用途 buildVenueUsageRows', () => {
   it.each([
@@ -45,16 +50,13 @@ describe('TC-014 三行用途 buildVenueUsageRows', () => {
       expected: [{ key: 'privateBooking', title: '包場', description: null }],
     },
   ])('$name', ({ tags, expected }) => {
-    const rows = buildVenueUsageRows(tags, TODAY);
+    const rows = usageRows(tags);
     expect(rows).toHaveLength(expected.length);
     expected.forEach((row, i) => expect(rows[i]).toMatchObject(row));
   });
 
   it('三行都有時順序固定為發放 → 佈置 → 包場（不受輸入順序影響）', () => {
-    const rows = buildVenueUsageRows(
-      t('private_booking', 'can_decorate', 'goods_distribution'),
-      TODAY
-    );
+    const rows = usageRows(t('private_booking', 'can_decorate', 'goods_distribution'));
     expect(rows.map((r) => r.key)).toEqual(['distribution', 'decorate', 'privateBooking']);
   });
 });
@@ -108,14 +110,14 @@ describe('TC-015 條件文字 buildVenueConditionText', () => {
       expected: null,
     },
   ])('$name', ({ tags, expected }) => {
-    expect(buildVenueConditionText(tags, TODAY)).toBe(expected);
+    expect(conditionText(tags)).toBe(expected);
   });
 
   it('條件全空時，佈置行改寫「店家沒寫佈置條件，私訊時可以問」且不是條件樣式', () => {
-    const [row] = buildVenueUsageRows(
-      [{ slug: 'free_venue', limited: true, until: '2026-10-14' }, ...t('can_decorate')],
-      TODAY
-    );
+    const [row] = usageRows([
+      { slug: 'free_venue', limited: true, until: '2026-10-14' },
+      ...t('can_decorate'),
+    ]);
     expect(NO_DECORATE_CONDITION_TEXT).toBe('店家沒寫佈置條件，私訊時可以問');
     expect(row).toMatchObject({
       key: 'decorate',
@@ -125,7 +127,7 @@ describe('TC-015 條件文字 buildVenueConditionText', () => {
   });
 
   it('有條件時佈置行帶條件文字、是條件樣式', () => {
-    const [row] = buildVenueUsageRows(t('can_decorate', 'needs_guarantee'), TODAY);
+    const [row] = usageRows(t('can_decorate', 'needs_guarantee'));
     expect(row).toMatchObject({ description: '需達保底', isCondition: true });
   });
 
@@ -134,7 +136,7 @@ describe('TC-015 條件文字 buildVenueConditionText', () => {
       { slug: 'free_venue', limited: true as const, until: '2026-12-31' },
       ...dictionary.tags.filter((d) => d.slug !== 'free_venue').map((d) => ({ slug: d.slug })),
     ];
-    const text = buildVenueConditionText(all, TODAY) ?? '';
+    const text = conditionText(all) ?? '';
     expect(text).not.toMatch(/\$|元|NT/);
     expect(text).toBe(
       '依方案免場地費（至 12/31）或需場地費・需達保底・需押金（活動後退還）・沒有杯數門檻・可提前佈展・有佈置設備'
@@ -146,7 +148,7 @@ describe('TC-016 「服務、交通與空間」分列 buildVenueFacilityRows', (
   const allSlugs = dictionary.tags.map((d) => d.slug);
 
   it('四列依序為服務、交通、空間類型、設備，標籤照字典順序', () => {
-    const rows = buildVenueFacilityRows(t(...allSlugs.slice().reverse()), dictionary);
+    const rows = facilityRows(t(...allSlugs.slice().reverse()));
     expect(rows.map((r) => r.label)).toEqual(['服務', '交通', '空間類型', '設備']);
     expect(rows[0].tags.map((x) => x.label)).toEqual(['可提前佈展', '新手友善', '客製餐點']);
     expect(rows[1].tags.map((x) => x.label)).toEqual(['近捷運', '近火車站']);
@@ -161,7 +163,7 @@ describe('TC-016 「服務、交通與空間」分列 buildVenueFacilityRows', (
   });
 
   it('有代收但沒有代發時，代收放服務列', () => {
-    const rows = buildVenueFacilityRows(t('parcel_receiving', 'beginner_friendly'), dictionary);
+    const rows = facilityRows(t('parcel_receiving', 'beginner_friendly'));
     expect(rows).toEqual([
       {
         key: 'service',
@@ -175,32 +177,29 @@ describe('TC-016 「服務、交通與空間」分列 buildVenueFacilityRows', (
   });
 
   it('代發和代收都有時，代收不在服務列；用途行的代發、包場、可佈置與價格類不在這一區', () => {
-    const rows = buildVenueFacilityRows(
-      t('goods_distribution', 'parcel_receiving', 'private_booking', 'can_decorate', 'free_venue'),
-      dictionary
+    const rows = facilityRows(
+      t('goods_distribution', 'parcel_receiving', 'private_booking', 'can_decorate', 'free_venue')
     );
     expect(rows).toEqual([]);
   });
 
   it('外帶為主在空間類型列；沒有標籤的列不顯示', () => {
-    const rows = buildVenueFacilityRows(t('takeaway_shop'), dictionary);
+    const rows = facilityRows(t('takeaway_shop'));
     expect(rows).toEqual([
       { key: 'space', label: '空間類型', tags: [{ slug: 'takeaway_shop', label: '外帶為主' }] },
     ]);
   });
 
   it('字典沒有的 slug 不顯示', () => {
-    expect(buildVenueFacilityRows(t('unknown_tag'), dictionary)).toEqual([]);
+    expect(facilityRows(t('unknown_tag'))).toEqual([]);
   });
 
   it('卡片上能出現的 10 個標籤，在用途行或這一區至少出現一次', () => {
     const tags = t(...allSlugs);
-    const usageText = buildVenueUsageRows(tags, TODAY)
+    const usageText = usageRows(tags)
       .map((r) => `${r.title} ${r.description ?? ''}`)
       .join(' ');
-    const facilitySlugs = buildVenueFacilityRows(tags, dictionary).flatMap((r) =>
-      r.tags.map((x) => x.slug)
-    );
+    const facilitySlugs = facilityRows(tags).flatMap((r) => r.tags.map((x) => x.slug));
     // Usage rows describe these with UX copy instead of the dictionary label
     const usageCopy: Record<string, string> = {
       goods_distribution: '店家可以代發',
@@ -275,9 +274,9 @@ describe.each(['America/Los_Angeles', 'UTC'])('TC-032 日期 formatter（TZ=%s�
   });
 
   it('條件文字日期：「2026/12/31 前」與合併句的「（至 12/31）」', () => {
-    expect(
-      buildVenueConditionText([{ slug: 'free_venue', limited: true, until: '2026-12-31' }], TODAY)
-    ).toBe('2026/12/31 前免場地費');
+    expect(conditionText([{ slug: 'free_venue', limited: true, until: '2026-12-31' }])).toBe(
+      '2026/12/31 前免場地費'
+    );
     expect(formatConditionUntil('2026-12-31', TODAY)).toBe('12/31');
     expect(formatConditionUntil('2027-01-31', TODAY)).toBe('2027/1/31');
   });

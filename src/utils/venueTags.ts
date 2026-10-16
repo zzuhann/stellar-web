@@ -38,13 +38,13 @@ export const getVisibleVenueTags = (
   return tags.filter((tag) => known.has(tag.slug) && isVenueTagActiveOn(tag, today));
 };
 
-const indexBySlug = (tags: VenueTag[], today: string) =>
-  new Map(tags.filter((tag) => isVenueTagActiveOn(tag, today)).map((tag) => [tag.slug, tag]));
+// Builders below expect tags already passed through getVisibleVenueTags
+const indexBySlug = (tags: VenueTag[]) => new Map(tags.map((tag) => [tag.slug, tag]));
 
 export const NO_DECORATE_CONDITION_TEXT = '店家沒寫佈置條件，私訊時可以問';
 
 export const buildVenueConditionText = (tags: VenueTag[], today: string): string | null => {
-  const bySlug = indexBySlug(tags, today);
+  const bySlug = indexBySlug(tags);
   const free = bySlug.get('free_venue');
   const parts: string[] = [];
 
@@ -90,7 +90,7 @@ export interface VenueUsageRow {
 }
 
 export const buildVenueUsageRows = (tags: VenueTag[], today: string): VenueUsageRow[] => {
-  const bySlug = indexBySlug(tags, today);
+  const bySlug = indexBySlug(tags);
   const rows: VenueUsageRow[] = [];
 
   if (bySlug.has('goods_distribution')) {
