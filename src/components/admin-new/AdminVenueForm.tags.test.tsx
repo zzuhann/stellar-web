@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { VenueDetail } from '@/types';
@@ -95,7 +95,8 @@ function renderWithClient(ui: React.ReactElement) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  return render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+  render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>);
+  return client;
 }
 
 async function renderEdit(overrides: Partial<VenueDetail> = {}) {
@@ -519,6 +520,33 @@ function fillNewVenueRequired() {
   fireEvent.change(screen.getByLabelText('Instagram'), { target: { value: '@venue' } });
   fireEvent.click(screen.getByRole('button', { name: '模擬封面上傳' }));
 }
+
+describe('TC-093 字典先成功、之後重新抓取失敗（仍有快取 data）', () => {
+  it('標籤區停用並顯示錯誤；改店名存檔，body 不含五欄', async () => {
+    api.getAdminVenueById.mockResolvedValue(
+      makeVenue({ tags: [{ slug: 'free_venue' }], calendarUrl: 'https://cal.test/x' })
+    );
+    const client = renderWithClient(<VenueEditPage />);
+    await screen.findByRole('checkbox', { name: '免場地費' });
+
+    api.getTagDictionary.mockRejectedValue(new Error('500'));
+    await act(async () => {
+      await client.refetchQueries({ queryKey: ['venue-tag-dictionary'] });
+    });
+    expect(client.getQueryData(['venue-tag-dictionary'])).toBeTruthy();
+
+    expect(await screen.findByText(DICTIONARY_FAILED)).toBeTruthy();
+    expect(screen.queryByRole('checkbox', { name: '免場地費' })).toBeNull();
+    expect((screen.getByLabelText('檔期行事曆連結') as HTMLInputElement).disabled).toBe(true);
+
+    fireEvent.change(screen.getByLabelText(/場地名稱/), { target: { value: '新店名' } });
+    save();
+
+    const body = await savedBody();
+    expect(body.name).toBe('新店名');
+    expectNoTagFields(body);
+  });
+});
 
 describe('TC-093 字典還在載入中就送出，也不送標籤區欄位', () => {
   beforeEach(() => {

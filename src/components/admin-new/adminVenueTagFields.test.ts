@@ -3,6 +3,7 @@ import { venueTagDictionaryFixture as dictionary } from '@/test/venueTagDictiona
 import {
   EMPTY_TAG_FIELDS,
   buildAdminVenuePreview,
+  resolveTagDictionary,
   sameTags,
   toTagFormState,
   type TagFieldsSource,
@@ -79,5 +80,18 @@ describe('預覽的原始說明連結與日期', () => {
 
     expect(preview.sourceLinks).toEqual(['https://a.test/1', 'HTTPS://b.test/2']);
     expect(preview.infoUpdatedOn).toBeNull();
+  });
+});
+
+describe('resolveTagDictionary（TC-093 停用與送出的同一個判斷）', () => {
+  it.each([
+    { name: '載入中', query: { data: undefined, isError: false }, status: 'pending' },
+    { name: '失敗、沒有快取', query: { data: undefined, isError: true }, status: 'error' },
+    { name: '失敗、仍有快取 data', query: { data: dictionary, isError: true }, status: 'error' },
+    { name: '成功', query: { data: dictionary, isError: false }, status: 'success' },
+  ])('$name → $status', ({ query, status }) => {
+    const resolved = resolveTagDictionary(query);
+    expect(resolved.status).toBe(status);
+    expect(resolved.dictionary).toBe(status === 'success' ? dictionary : null);
   });
 });

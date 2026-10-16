@@ -24,6 +24,7 @@ import {
   buildTagFieldsPatch,
   getTagFieldErrors,
   hasTagFieldErrors,
+  resolveTagDictionary,
   toTagFormState,
   type TagFieldErrors,
   type TagFieldsSource,
@@ -725,9 +726,8 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
   const tagBaseline = props.mode === 'edit' ? initialTagForm : undefined;
 
   const dictionaryQuery = useVenueTagDictionary();
-  // Tag fields are only editable and sent once the dictionary is in hand
-  const dictionary = dictionaryQuery.data;
-  const tagStatus = dictionary ? 'success' : dictionaryQuery.isError ? 'error' : 'pending';
+  // Tag fields are only editable and sent while this resolves to a usable dictionary
+  const { status: tagStatus, dictionary } = resolveTagDictionary(dictionaryQuery);
   const tagErrors =
     submitAttempted && dictionary
       ? getTagFieldErrors(tagForm, dictionary, tagBaseline)

@@ -5,8 +5,7 @@ import { CheckIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import Skeleton from '@/components/ui/Skeleton';
 import VenueSourceMeta from '@/components/venues/detailV2/components/VenueSourceMeta';
-import type { AdminVenuePreview as PreviewData } from './adminVenueTagFields';
-import type { TagDictionaryStatus } from './AdminVenueTagSection';
+import type { AdminVenuePreview as PreviewData, TagDictionaryStatus } from './adminVenueTagFields';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 

@@ -14,6 +14,7 @@ import {
   type TagEntry,
   type TagFieldErrors,
   type TagFormState,
+  type TagDictionaryStatus,
   type TagLimitMode,
 } from './adminVenueTagFields';
 
@@ -271,8 +272,6 @@ const PAST_UNTIL_WARNING = '這個日期已經過了，存了之後前台不會�
 const NEAR_TRAIN_HINT = '步行 10 分鐘內，含高鐵';
 const CAN_DECORATE_HINT = '不上卡片，決定詳情頁「佈置、辦生咖」那一行';
 
-export type TagDictionaryStatus = 'pending' | 'error' | 'success';
-
 // ─── LimitDropdown ────────────────────────────────────────────────────────────
 
 interface LimitDropdownProps {
@@ -415,7 +414,7 @@ function TagRow({ def, entry, hint, today, untilError, showLimit, onChange }: Ta
 
 interface AdminVenueTagSectionProps {
   status: TagDictionaryStatus;
-  dictionary: VenueTagDictionary | undefined;
+  dictionary: VenueTagDictionary | null;
   state: TagFormState;
   // Load-time entries; decide which non-price rows still need a limit control
   initialEntries: Record<string, TagEntry>;

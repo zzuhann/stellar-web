@@ -39,6 +39,19 @@ export interface TagFieldsSource {
   calendarUrl: string | null;
 }
 
+export type TagDictionaryStatus = 'pending' | 'error' | 'success';
+
+// Single gate for both the UI (disabled) and the payload (five fields sent or not).
+// Any error wins, even with stale cached data, so a failed dictionary never sends tag fields
+export function resolveTagDictionary(query: {
+  data: VenueTagDictionary | undefined;
+  isError: boolean;
+}): { status: TagDictionaryStatus; dictionary: VenueTagDictionary | null } {
+  if (query.isError) return { status: 'error', dictionary: null };
+  if (!query.data) return { status: 'pending', dictionary: null };
+  return { status: 'success', dictionary: query.data };
+}
+
 export const MAX_SOURCE_LINKS = 5;
 
 // Limits are a price-group concept; other rows only get the control when their saved
