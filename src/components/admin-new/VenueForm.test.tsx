@@ -2,6 +2,10 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import VenueForm, { type VenueFormValues } from './VenueForm';
 
+// jsdom has no scrollIntoView; failed submits scroll to the first error
+const scrollIntoView = vi.fn();
+Element.prototype.scrollIntoView = scrollIntoView;
+
 vi.mock('next/link', () => ({
   default: ({ children }: { children: React.ReactNode }) => children,
 }));
@@ -70,17 +74,40 @@ describe('VenueForm create mode', () => {
     submitCreate();
 
     expect(screen.getByText('請選擇容納人數')).toBeTruthy();
-    expect(screen.getByText('請至少填寫 Instagram 或 Threads')).toBeTruthy();
+    expect(screen.getByText('請填寫至少一個社群帳號')).toBeTruthy();
     // Both socials empty: the "at least one" message covers it, no per-field channel error on top
     expect(screen.queryByText('請填寫 Instagram 帳號')).toBeNull();
     expect(screen.getByText('請上傳封面圖片')).toBeTruthy();
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it('送出失敗時捲動並聚焦到第一個錯誤欄位', () => {
+    renderCreate();
+
+    fireEvent.change(screen.getByLabelText(/場地名稱/), { target: { value: '測試場地' } });
+    submitCreate();
+
+    const address = screen.getByLabelText(/地址/);
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(scrollIntoView.mock.contexts[0]).toBe(address.closest('div'));
+    expect(document.activeElement).toBe(address);
+  });
+
+  it('社群帳號都沒填時聚焦到 Instagram', () => {
+    renderCreate();
+    fillRequired({ instagram: '' });
+    submitCreate();
+
+    const instagram = screen.getByLabelText('Instagram');
+    expect(document.activeElement).toBe(instagram);
+    expect(instagram.getAttribute('aria-invalid')).toBe('true');
+    expect(instagram.getAttribute('aria-describedby')).toBe('venue-social-media-error');
+  });
+
   it('預設選取 IG 私訊並送出 preferredContact', () => {
     const onSubmit = renderCreate();
 
-    expect(screen.getByText('主辦要怎麼聯絡你？')).toBeTruthy();
+    expect(screen.getByText('希望主辦怎麼聯絡你們？')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'IG 私訊' })).toBeTruthy();
     expect(screen.queryByText('不填寫')).toBeNull();
 
@@ -100,10 +127,10 @@ describe('VenueForm create mode', () => {
 });
 
 describe('VenueForm 聯絡方式（TC-098 新增模式）', () => {
-  it('TC-098 標題為「主辦要怎麼聯絡你？」，選項只有 IG 私訊、Threads 私訊、LINE', () => {
+  it('TC-098 標題為「希望主辦怎麼聯絡你們？」，選項只有 IG 私訊、Threads 私訊、LINE', () => {
     renderCreate();
 
-    expect(screen.getByText('主辦要怎麼聯絡你？')).toBeTruthy();
+    expect(screen.getByText('希望主辦怎麼聯絡你們？')).toBeTruthy();
     expect(screen.queryByText('偏好聯繫方式')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: CONTACT_TRIGGER }));
     expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([

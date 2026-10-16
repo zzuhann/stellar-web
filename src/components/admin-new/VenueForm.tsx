@@ -1,6 +1,6 @@
 'use client';
 
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
@@ -10,6 +10,7 @@ import PlaceAutocomplete from '@/components/forms/PlaceAutocomplete';
 import type { CreateVenueData, UpdateVenueData, CapacityRange } from '@/types';
 import type { UploadResponse } from '@/lib/r2-upload';
 import type { placesApi } from '@/lib/api';
+import { scrollToFirstErrorField } from '@/utils/formHelpers';
 import { REGIONS } from '@/constants';
 import { getHttpUrlError } from '@/utils';
 import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
@@ -567,6 +568,20 @@ interface FormErrors {
 
 type ContactErrors = Pick<FormErrors, 'instagram' | 'threads' | 'contactUrl'>;
 
+// Top-to-bottom order on screen; socialMedia is folded into instagram (same row)
+const ERROR_FIELD_ORDER = [
+  'name',
+  'address',
+  'region',
+  'capacityRange',
+  'threads',
+  'instagram',
+  'preferredContact',
+  'contactUrl',
+  'bookingFormUrl',
+  'coverPhoto',
+];
+
 function isSelectableContact(value: string): value is SelectableContact {
   return PREFERRED_CONTACT_OPTIONS.some((o) => o.value === value);
 }
@@ -649,6 +664,7 @@ export default function VenueForm(props: VenueFormProps) {
   const [hostTagInput, setHostTagInput] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const showContactUrl = form.preferredContact === 'line';
 
@@ -669,19 +685,19 @@ export default function VenueForm(props: VenueFormProps) {
     return errs;
   }
 
-  function validate(): boolean {
+  function validate(): FormErrors {
     const next: FormErrors = {};
     if (!form.name.trim()) next.name = '請填寫場地名稱';
     if (!form.address.trim()) next.address = '請填寫地址';
     if (!form.region) next.region = '請選擇地區';
     if (props.mode === 'create' && !form.preferredContact) {
-      next.preferredContact = '請選擇偏好聯絡方式';
+      next.preferredContact = '請選擇偏好的聯絡方式';
     }
     if (props.mode === 'create' && !form.capacityRange) {
       next.capacityRange = '請選擇容納人數';
     }
     if (props.mode === 'create' && !form.instagram.trim() && !form.threads.trim()) {
-      next.socialMedia = '請至少填寫 Instagram 或 Threads';
+      next.socialMedia = '請填寫至少一個社群帳號';
     }
     if (props.mode === 'create' && !form.coverPhoto) {
       next.coverPhoto = '請上傳封面圖片';
@@ -690,13 +706,30 @@ export default function VenueForm(props: VenueFormProps) {
     const bookingFormUrlError = getHttpUrlError(form.bookingFormUrl.trim());
     if (bookingFormUrlError) next.bookingFormUrl = bookingFormUrlError;
     setErrors(next);
-    return Object.keys(next).length === 0;
+    return next;
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSubmitAttempted(true);
-    if (!validate()) return;
+    const nextErrors = validate();
+    if (Object.keys(nextErrors).length > 0) {
+      scrollToFirstErrorField(
+        ERROR_FIELD_ORDER,
+        // "At least one social account" sits under the IG/Threads row; land on IG (the default channel)
+        (field) =>
+          field === 'instagram'
+            ? !!(nextErrors.instagram || nextErrors.socialMedia)
+            : !!nextErrors[field as keyof FormErrors],
+        Object.fromEntries(
+          ERROR_FIELD_ORDER.map((field) => [
+            field,
+            formRef.current?.querySelector<HTMLElement>(`[data-field="${field}"]`),
+          ])
+        )
+      );
+      return;
+    }
 
     const socialMedia =
       form.threads || form.instagram || form.line
@@ -817,7 +850,7 @@ export default function VenueForm(props: VenueFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate>
+    <form ref={formRef} onSubmit={handleSubmit} noValidate>
       <div className={formSection}>
         {/* place autocomplete (create only) */}
         {props.mode === 'create' && (
@@ -854,7 +887,7 @@ export default function VenueForm(props: VenueFormProps) {
         )}
 
         {/* name */}
-        <div className={fieldGroup}>
+        <div data-field="name" className={fieldGroup}>
           <label htmlFor="venue-name" className={label}>
             場地名稱 <span className={requiredMark}>*</span>
           </label>
@@ -876,7 +909,7 @@ export default function VenueForm(props: VenueFormProps) {
         </div>
 
         {/* address */}
-        <div className={fieldGroup}>
+        <div data-field="address" className={fieldGroup}>
           <label htmlFor="venue-address" className={label}>
             地址 <span className={requiredMark}>*</span>
           </label>
@@ -898,7 +931,7 @@ export default function VenueForm(props: VenueFormProps) {
         </div>
 
         {/* region */}
-        <div className={fieldGroup}>
+        <div data-field="region" className={fieldGroup}>
           <span className={label}>
             地區 <span className={requiredMark}>*</span>
           </span>
@@ -949,7 +982,7 @@ export default function VenueForm(props: VenueFormProps) {
         </div>
 
         {/* capacityRange */}
-        <div className={fieldGroup}>
+        <div data-field="capacityRange" className={fieldGroup}>
           <span className={label}>
             容納人數
             {props.mode === 'create' && <span className={requiredMark}>*</span>}
@@ -976,7 +1009,7 @@ export default function VenueForm(props: VenueFormProps) {
             {props.mode === 'create' && <span className={requiredMark}>*</span>}
           </span>
           <div className={fieldRow}>
-            <div className={fieldGroup}>
+            <div data-field="threads" className={fieldGroup}>
               <label htmlFor="venue-threads" className={labelSub}>
                 Threads
               </label>
@@ -987,8 +1020,14 @@ export default function VenueForm(props: VenueFormProps) {
                 placeholder="@username"
                 value={form.threads}
                 onChange={(e) => setContactField('threads', e.target.value)}
-                aria-invalid={errors.threads ? 'true' : undefined}
-                aria-describedby={errors.threads ? 'venue-threads-error' : undefined}
+                aria-invalid={errors.threads || errors.socialMedia ? 'true' : undefined}
+                aria-describedby={
+                  errors.threads
+                    ? 'venue-threads-error'
+                    : errors.socialMedia
+                      ? 'venue-social-media-error'
+                      : undefined
+                }
               />
               {errors.threads && (
                 <span id="venue-threads-error" className={fieldError} role="alert">
@@ -996,7 +1035,7 @@ export default function VenueForm(props: VenueFormProps) {
                 </span>
               )}
             </div>
-            <div className={fieldGroup}>
+            <div data-field="instagram" className={fieldGroup}>
               <label htmlFor="venue-instagram" className={labelSub}>
                 Instagram
               </label>
@@ -1007,8 +1046,14 @@ export default function VenueForm(props: VenueFormProps) {
                 placeholder="@username"
                 value={form.instagram}
                 onChange={(e) => setContactField('instagram', e.target.value)}
-                aria-invalid={errors.instagram ? 'true' : undefined}
-                aria-describedby={errors.instagram ? 'venue-instagram-error' : undefined}
+                aria-invalid={errors.instagram || errors.socialMedia ? 'true' : undefined}
+                aria-describedby={
+                  errors.instagram
+                    ? 'venue-instagram-error'
+                    : errors.socialMedia
+                      ? 'venue-social-media-error'
+                      : undefined
+                }
               />
               {errors.instagram && (
                 <span id="venue-instagram-error" className={fieldError} role="alert">
@@ -1018,16 +1063,16 @@ export default function VenueForm(props: VenueFormProps) {
             </div>
           </div>
           {errors.socialMedia && (
-            <span className={fieldError} role="alert">
+            <span id="venue-social-media-error" className={fieldError} role="alert">
               {errors.socialMedia}
             </span>
           )}
         </div>
 
         {/* preferredContact */}
-        <div className={fieldGroup}>
+        <div data-field="preferredContact" className={fieldGroup}>
           <span className={label}>
-            主辦要怎麼聯絡你？
+            希望主辦怎麼聯絡你們？
             {props.mode === 'create' && <span className={requiredMark}>*</span>}
           </span>
           <PreferredContactDropdown
@@ -1043,7 +1088,7 @@ export default function VenueForm(props: VenueFormProps) {
 
         {/* contactUrl — LINE link, shown only for line */}
         {showContactUrl && (
-          <div className={fieldGroup}>
+          <div data-field="contactUrl" className={fieldGroup}>
             <label htmlFor="venue-contact-url" className={label}>
               LINE 連結
             </label>
@@ -1067,7 +1112,7 @@ export default function VenueForm(props: VenueFormProps) {
         )}
 
         {/* bookingFormUrl — always shown, optional */}
-        <div className={fieldGroup}>
+        <div data-field="bookingFormUrl" className={fieldGroup}>
           <label htmlFor="venue-booking-form-url" className={label}>
             預約表單網址
           </label>
@@ -1095,7 +1140,7 @@ export default function VenueForm(props: VenueFormProps) {
         </div>
 
         {/* coverPhoto */}
-        <div className={fieldGroup}>
+        <div data-field="coverPhoto" className={fieldGroup}>
           <span className={label}>
             封面圖片
             {props.mode === 'create' && <span className={requiredMark}>*</span>}

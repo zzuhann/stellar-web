@@ -34,7 +34,7 @@ describe('SubmitVenueClient 聯絡方式（TC-098）', () => {
   it('TC-098 店家投稿頁用同一套聯絡欄位，送出時帶 trim 後的 bookingFormUrl', () => {
     render(<SubmitVenueClient />);
 
-    expect(screen.getByText('主辦要怎麼聯絡你？')).toBeTruthy();
+    expect(screen.getByText('希望主辦怎麼聯絡你們？')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'IG 私訊' }));
     expect(screen.getAllByRole('option').map((o) => o.textContent)).toEqual([
       'IG 私訊',
