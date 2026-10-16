@@ -2,17 +2,14 @@ import { css } from '@/styled-system/css';
 import type { VenueContact } from '@/utils/venueContact';
 import VenueContactActions from './VenueContactActions';
 
-// Literal heights for Panda's static extraction: 1px border + 12px + 48px button + 12px = 73px; +44px form line
-
+// Sticky as the page's last block: it keeps its own flow space, so the last line is never covered
 const bar = css({
-  position: 'fixed',
-  left: 0,
-  right: 0,
+  position: 'sticky',
   bottom: 0,
   zIndex: 40,
-  paddingTop: '12px',
+  paddingTop: '3',
   paddingX: '4',
-  paddingBottom: 'calc(12px + env(safe-area-inset-bottom))',
+  paddingBottom: 'calc(var(--spacing-3) + env(safe-area-inset-bottom))',
   background: 'color.background.primary',
   borderTop: '1px solid',
   borderTopColor: 'color.border.light',
@@ -24,29 +21,9 @@ const inner = css({
   marginX: 'auto',
 });
 
-// Same height as the bar so the last line of the page never sits underneath it
-const spacer = css({
-  height: 'calc(73px + env(safe-area-inset-bottom))',
-  '&[data-booking-form="true"]': {
-    height: 'calc(117px + env(safe-area-inset-bottom))',
-  },
-  lg: { display: 'none' },
-});
-
 interface VenueContactBarProps {
   contact: VenueContact;
   onClickContact?: (contactType: string) => void;
-}
-
-export function VenueContactBarSpacer({ contact }: { contact: VenueContact }) {
-  return (
-    <div
-      aria-hidden="true"
-      data-testid="contact-bar-spacer"
-      data-booking-form={contact.bookingFormUrl ? 'true' : 'false'}
-      className={spacer}
-    />
-  );
 }
 
 export default function VenueContactBar({ contact, onClickContact }: VenueContactBarProps) {

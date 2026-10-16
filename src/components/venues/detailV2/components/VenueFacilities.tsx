@@ -98,7 +98,7 @@ export default function VenueFacilities({ rows, equipmentNote }: VenueFacilities
   if (rows.length === 0) {
     return note ? (
       <div className={section}>
-        <EquipmentNote note={equipmentNote} headingLevel="h2" />
+        <EquipmentNote note={note} headingLevel="h2" />
       </div>
     ) : null;
   }
@@ -123,7 +123,7 @@ export default function VenueFacilities({ rows, equipmentNote }: VenueFacilities
             </div>
           ))}
         </dl>
-        {note && <EquipmentNote note={equipmentNote} headingLevel="h3" />}
+        {note && <EquipmentNote note={note} headingLevel="h3" />}
       </div>
     </section>
   );

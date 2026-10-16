@@ -24,15 +24,20 @@ import VenueDescription from './components/VenueDescription';
 import VenueLocation from './components/VenueLocation';
 import VenueCorrectionNote from './components/VenueCorrectionNote';
 import VenueContactCard from './components/VenueContactCard';
-import VenueContactBar, { VenueContactBarSpacer } from './components/VenueContactBar';
+import VenueContactBar from './components/VenueContactBar';
 
+// Flex column so the sticky contact bar rests at the viewport bottom even on short pages
 const pageOuter = css({
+  display: 'flex',
+  flexDirection: 'column',
   minHeight: '100dvh',
   background: 'color.background.primary',
   paddingTop: '70px',
 });
 
 const shell = css({
+  flexGrow: 1,
+  width: '100%',
   maxWidth: '640px',
   marginX: 'auto',
   paddingTop: '3',
@@ -256,8 +261,6 @@ export default function VenueDetailV2({
             <VenueLocation venue={venue} />
           </div>
         </div>
-
-        {contact && <VenueContactBarSpacer contact={contact} />}
       </div>
 
       {contact && <VenueContactBar contact={contact} onClickContact={handleClickContact} />}

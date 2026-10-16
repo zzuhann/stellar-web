@@ -168,6 +168,14 @@ describe('TC-035 有標籤但三行用途都沒有', () => {
   });
 });
 
+// The bar is sticky in normal flow, so it must come after the last line of the page
+const expectBarAfterLastLine = () => {
+  const lastLine = screen.getByText(/資料有誤或想更新？/);
+  expect(
+    lastLine.compareDocumentPosition(getContactBar()) & Node.DOCUMENT_POSITION_FOLLOWING
+  ).toBeTruthy();
+};
+
 describe('TC-037 聯絡區的三種狀態', () => {
   const igVenue = {
     preferredContact: 'instagram' as const,
@@ -183,9 +191,7 @@ describe('TC-037 聯絡區的三種狀態', () => {
       expect(links[0].getAttribute('href')).toBe('https://www.instagram.com/moon_cafe');
       expect(within(container).queryByText(/預約表單/)).toBeNull();
     }
-    expect(screen.getByTestId('contact-bar-spacer').getAttribute('data-booking-form')).toBe(
-      'false'
-    );
+    expectBarAfterLastLine();
   });
 
   it('b：有 bookingFormUrl → 按鈕下方「預約表單・填完記得私訊店家確認」，手機和桌機都有', () => {
@@ -198,7 +204,7 @@ describe('TC-037 聯絡區的三種狀態', () => {
       expect(form.getAttribute('target')).toBe('_blank');
       expect(within(container).getByText(/填完記得私訊店家確認/)).toBeTruthy();
     }
-    expect(screen.getByTestId('contact-bar-spacer').getAttribute('data-booking-form')).toBe('true');
+    expectBarAfterLastLine();
   });
 
   it.each([null, 'https://forms.gle/book'])(
@@ -213,7 +219,6 @@ describe('TC-037 聯絡區的三種狀態', () => {
         })
       );
       expect(contactBar()).toBeNull();
-      expect(screen.queryByTestId('contact-bar-spacer')).toBeNull();
       const card = contactCard();
       expect(within(card).getByText('這家還沒提供聯絡方式，可以先看店家原始說明。')).toBeTruthy();
       expect(within(card).queryAllByRole('link')).toHaveLength(0);
@@ -253,6 +258,21 @@ describe('TC-038 「店家提供的設備」原文', () => {
     expect(screen.getAllByText(/\$300/)).toHaveLength(1);
     expect(getUsageRegion().textContent).not.toContain('$300');
     expect(within(getUsageRegion()).getByText('需達保底')).toBeTruthy();
+  });
+  it('原文前後的空行要去掉，中間的換行保留', () => {
+    renderView(makeVenue({ tags: t('cafe'), equipmentNote: '\n\n投影機\n' }));
+    const box = screen.getByRole('region', { name: '店家提供的設備' });
+    expect(within(box).getByText('投影機').textContent).toBe('投影機');
+  });
+
+  it('沒有標籤列、只有設備原文時也去掉前後空行', () => {
+    renderView(makeVenue({ tags: [], equipmentNote: '\n\n扭蛋機\n燈板\n' }));
+    const box = screen.getByRole('region', { name: '店家提供的設備' });
+    expect(
+      within(box).getByText(
+        (_, el) => el?.tagName === 'P' && el.textContent?.startsWith('扭蛋機') === true
+      ).textContent
+    ).toBe('扭蛋機\n燈板');
   });
 });
 

@@ -9,8 +9,7 @@ const primaryBtn = css({
   justifyContent: 'center',
   width: '100%',
   minWidth: 0,
-  // Fixed height: VenueContactBar's spacer assumes 48px
-  height: '48px',
+  minHeight: '48px',
   paddingX: '4',
   borderRadius: 'radius.md',
   background: 'color.primary',
@@ -40,8 +39,7 @@ const formLine = css({
   margin: 0,
   display: 'flex',
   alignItems: 'center',
-  // Fixed height: VenueContactBar's spacer assumes 44px
-  height: '44px',
+  minHeight: '44px',
   textStyle: 'caption',
   color: 'color.text.secondary',
   whiteSpace: 'nowrap',
@@ -69,8 +67,8 @@ export default function VenueContactActions({
         target="_blank"
         rel="noopener noreferrer"
         className={primaryBtn}
-        aria-label={`${contact.label}（開新分頁）`}
-        onClick={() => onClickContact?.(contact.contactType)}
+        aria-label={`${labelParts.before}${labelParts.name}${labelParts.after}（開新分頁）`}
+        onClick={() => onClickContact?.(contact.channel)}
       >
         <span data-part="prefix" className={fixedPart}>
           {labelParts.before}
