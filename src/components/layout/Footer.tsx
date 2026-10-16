@@ -1,6 +1,7 @@
 import { InstagramIcon, ThreadsIcon } from '@/components/ui/SocialMediaIcons';
 import { css } from '@/styled-system/css';
 import Link from 'next/link';
+import { STELLAR_INSTAGRAM_URL } from '@/constants/stellarSocial';
 
 const footerContainer = css({
   background: 'color.background.secondary',
@@ -109,7 +110,7 @@ const Footer = () => {
           <div className={footerCol}>
             <p className={colTitle}>社群</p>
             <a
-              href="https://www.instagram.com/_stellar.tw/"
+              href={STELLAR_INSTAGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
               className={footerLink}
