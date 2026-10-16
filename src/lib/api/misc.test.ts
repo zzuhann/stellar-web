@@ -55,7 +55,7 @@ describe('handleApiError', () => {
       handleApiError(
         apiError({ error: 'Invalid enum', code: 'VALIDATION_ERROR', field: 'preferredContact' })
       )
-    ).toBe('聯絡方式格式不正確，請確認後再試');
+    ).toBe('偏好聯絡方式格式不正確，請確認後再試');
   });
 
   it('shows only the Chinese backend reason when the field has no label', () => {

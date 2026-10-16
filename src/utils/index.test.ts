@@ -496,7 +496,7 @@ describe('getHttpUrlError', () => {
   it('empty is fine; non-http and over 500 chars return the form messages', () => {
     expect(getHttpUrlError('')).toBeUndefined();
     expect(getHttpUrlError('https://lin.ee/x')).toBeUndefined();
-    expect(getHttpUrlError('abc')).toBe('請輸入完整網址（以 http:// 或 https:// 開頭）');
+    expect(getHttpUrlError('abc')).toBe('請輸入完整網址（以 https:// 開頭）');
     expect(getHttpUrlError(`https://a.com/${'a'.repeat(500)}`)).toBe('網址不能超過 500 個字');
   });
 });

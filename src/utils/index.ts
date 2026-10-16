@@ -28,7 +28,7 @@ export const isHttpUrl = (url: string): boolean => {
 // 表單網址欄位共用的錯誤訊息；空字串視為沒填（是否必填由呼叫端判斷）
 export const getHttpUrlError = (url: string, maxLength = 500): string | undefined => {
   if (url.length > maxLength) return `網址不能超過 ${maxLength} 個字`;
-  if (url && !isHttpUrl(url)) return '請輸入完整網址（以 http:// 或 https:// 開頭）';
+  if (url && !isHttpUrl(url)) return '請輸入完整網址（以 https:// 開頭）';
   return undefined;
 };
 

@@ -17,7 +17,7 @@ vi.mock('@/components/forms/PlaceAutocomplete', () => ({ default: () => null }))
 
 afterEach(cleanup);
 
-const URL_ERR = '請輸入完整網址（以 http:// 或 https:// 開頭）';
+const URL_ERR = '請輸入完整網址（以 https:// 開頭）';
 const LENGTH_ERR = '網址不能超過 500 個字';
 const CONTACT_TRIGGER = /^(IG 私訊|Threads 私訊|LINE|請選擇)$/;
 
@@ -72,7 +72,7 @@ describe('VenueForm create mode', () => {
     expect(screen.getByText('請選擇容納人數')).toBeTruthy();
     expect(screen.getByText('請至少填寫 Instagram 或 Threads')).toBeTruthy();
     // Both socials empty: the "at least one" message covers it, no per-field channel error on top
-    expect(screen.queryByText('選了 IG 私訊，要填 Instagram')).toBeNull();
+    expect(screen.queryByText('請填寫 Instagram 帳號')).toBeNull();
     expect(screen.getByText('請上傳封面圖片')).toBeTruthy();
     expect(onSubmit).not.toHaveBeenCalled();
   });
@@ -130,21 +130,21 @@ describe('VenueForm 聯絡方式（TC-098 新增模式）', () => {
       social: { instagram: '', threads: '@stellar' },
       field: 'Instagram',
       value: '@venue',
-      message: '選了 IG 私訊，要填 Instagram',
+      message: '請填寫 Instagram 帳號',
     },
     {
       channel: 'Threads 私訊',
       social: { instagram: '@stellar', threads: '' },
       field: 'Threads',
       value: '@venue',
-      message: '選了 Threads 私訊，要填 Threads',
+      message: '請填寫 Threads 帳號',
     },
     {
       channel: 'LINE',
       social: { instagram: '@stellar', threads: '' },
       field: 'LINE 連結',
       value: 'https://lin.ee/abc',
-      message: '選了 LINE，要填 LINE 連結',
+      message: '請填寫 LINE 連結',
     },
   ])(
     'TC-098 選 $channel 但 $field 空白：該欄下方顯示錯誤、不送出；填上後錯誤消失可送出',
@@ -171,7 +171,7 @@ describe('VenueForm 聯絡方式（TC-098 新增模式）', () => {
     fireEvent.change(screen.getByLabelText('LINE 連結'), { target: { value: '   ' } });
     submitCreate();
 
-    expectFieldError('LINE 連結', '選了 LINE，要填 LINE 連結');
+    expectFieldError('LINE 連結', '請填寫 LINE 連結');
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
@@ -180,11 +180,11 @@ describe('VenueForm 聯絡方式（TC-098 新增模式）', () => {
     fillRequired();
     selectContact('LINE');
     submitCreate();
-    expect(screen.getByText('選了 LINE，要填 LINE 連結')).toBeTruthy();
+    expect(screen.getByText('請填寫 LINE 連結')).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText('LINE 連結'), { target: { value: 'h' } });
-    expect(screen.queryByText('選了 LINE，要填 LINE 連結')).toBeNull();
-    expect(screen.queryByText('請輸入完整網址（以 http:// 或 https:// 開頭）')).toBeNull();
+    expect(screen.queryByText('請填寫 LINE 連結')).toBeNull();
+    expect(screen.queryByText('請輸入完整網址（以 https:// 開頭）')).toBeNull();
   });
 
   it('TC-100 舊資料 form 的下拉是 placeholder 樣式（data-empty）', () => {
@@ -203,14 +203,14 @@ describe('VenueForm 聯絡方式（TC-098 新增模式）', () => {
     fillRequired({ instagram: '@stellar', threads: '' });
     selectContact('LINE');
     submitCreate();
-    expect(screen.getByText('選了 LINE，要填 LINE 連結')).toBeTruthy();
+    expect(screen.getByText('請填寫 LINE 連結')).toBeTruthy();
 
     selectContact('Threads 私訊');
-    expect(screen.queryByText('選了 LINE，要填 LINE 連結')).toBeNull();
-    expectFieldError('Threads', '選了 Threads 私訊，要填 Threads');
+    expect(screen.queryByText('請填寫 LINE 連結')).toBeNull();
+    expectFieldError('Threads', '請填寫 Threads 帳號');
 
     selectContact('IG 私訊');
-    expect(screen.queryByText('選了 Threads 私訊，要填 Threads')).toBeNull();
+    expect(screen.queryByText('請填寫 Threads 帳號')).toBeNull();
     submitCreate();
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
@@ -260,7 +260,7 @@ describe('VenueForm LINE 連結（TC-098，存 contactUrl）', () => {
     renderCreate();
     selectContact('LINE');
     const placeholder = screen.getByLabelText('LINE 連結').getAttribute('placeholder') ?? '';
-    expect(placeholder).toBe('https://lin.ee/...');
+    expect(placeholder).toBe('LINE 網址');
     expect(placeholder).not.toMatch(/line id/i);
   });
 
@@ -494,7 +494,7 @@ describe('VenueForm 舊資料與聯絡管道檢查（TC-100 後台編輯）', ()
     const onSubmit = renderEdit({ preferredContact: 'instagram', instagram: '' });
     rename();
     save();
-    expect(screen.queryByText('選了 IG 私訊，要填 Instagram')).toBeNull();
+    expect(screen.queryByText('請填寫 Instagram 帳號')).toBeNull();
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
@@ -502,7 +502,7 @@ describe('VenueForm 舊資料與聯絡管道檢查（TC-100 後台編輯）', ()
     const onSubmit = renderEdit({ preferredContact: 'instagram', instagram: '', threads: '' });
     selectContact('Threads 私訊');
     save();
-    expectFieldError('Threads', '選了 Threads 私訊，要填 Threads');
+    expectFieldError('Threads', '請填寫 Threads 帳號');
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
@@ -510,7 +510,7 @@ describe('VenueForm 舊資料與聯絡管道檢查（TC-100 後台編輯）', ()
     const onSubmit = renderEdit({ preferredContact: 'instagram', instagram: '@venue' });
     fireEvent.change(screen.getByLabelText('Instagram'), { target: { value: '' } });
     save();
-    expectFieldError('Instagram', '選了 IG 私訊，要填 Instagram');
+    expectFieldError('Instagram', '請填寫 Instagram 帳號');
     expect(onSubmit).not.toHaveBeenCalled();
   });
 });

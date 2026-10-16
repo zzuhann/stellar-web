@@ -367,9 +367,9 @@ const CHANNEL_REQUIREMENT: Record<
   SelectableContact,
   { field: 'instagram' | 'threads' | 'contactUrl'; message: string }
 > = {
-  instagram: { field: 'instagram', message: '選了 IG 私訊，要填 Instagram' },
-  threads: { field: 'threads', message: '選了 Threads 私訊，要填 Threads' },
-  line: { field: 'contactUrl', message: '選了 LINE，要填 LINE 連結' },
+  instagram: { field: 'instagram', message: '請填寫 Instagram 帳號' },
+  threads: { field: 'threads', message: '請填寫 Threads 帳號' },
+  line: { field: 'contactUrl', message: '請填寫 LINE 連結' },
 };
 
 const CONTACT_FIELDS = ['preferredContact', 'contactUrl', 'instagram', 'threads'] as const;
@@ -675,7 +675,7 @@ export default function VenueForm(props: VenueFormProps) {
     if (!form.address.trim()) next.address = '請填寫地址';
     if (!form.region) next.region = '請選擇地區';
     if (props.mode === 'create' && !form.preferredContact) {
-      next.preferredContact = '請選擇聯絡方式';
+      next.preferredContact = '請選擇偏好聯絡方式';
     }
     if (props.mode === 'create' && !form.capacityRange) {
       next.capacityRange = '請選擇容納人數';
@@ -1052,7 +1052,7 @@ export default function VenueForm(props: VenueFormProps) {
               type="text"
               className={inputStyle}
               inputMode="url"
-              placeholder="https://lin.ee/..."
+              placeholder="LINE 網址"
               value={form.contactUrl}
               onChange={(e) => setContactField('contactUrl', e.target.value)}
               aria-invalid={errors.contactUrl ? 'true' : undefined}
