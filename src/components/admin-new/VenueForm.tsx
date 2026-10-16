@@ -1072,7 +1072,7 @@ export default function VenueForm(props: VenueFormProps) {
             預約表單網址
           </label>
           <p id="venue-booking-form-url-hint" className={fieldHint}>
-            有固定的預約或申請表單再填。
+            例如給主辦預約場地用的 Google 表單、預約系統連結，如果沒有可以跳過。
           </p>
           <input
             id="venue-booking-form-url"

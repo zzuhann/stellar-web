@@ -289,7 +289,9 @@ describe('VenueForm 預約表單網址（TC-098 新增模式，存 bookingFormUr
   it('TC-098 不論選哪個管道都顯示，附提示文字', () => {
     renderCreate();
     expect(screen.getByLabelText('預約表單網址')).toBeTruthy();
-    expect(screen.getByText('有固定的預約或申請表單再填。')).toBeTruthy();
+    expect(
+      screen.getByText('例如給主辦預約場地用的 Google 表單、預約系統連結，如果沒有可以跳過。')
+    ).toBeTruthy();
     selectContact('Threads 私訊');
     expect(screen.getByLabelText('預約表單網址')).toBeTruthy();
     selectContact('LINE');
