@@ -28,22 +28,33 @@ export const formatCardTagLabel = (tag: VenueTag, label: string, today: string):
 export const isVenueTagActiveOn = (tag: VenueTag, today: string): boolean =>
   !tag.until || tag.until >= today;
 
+declare const visibleVenueTagBrand: unique symbol;
+
+// Only getVisibleVenueTags produces this, so builders cannot be fed raw venue.tags
+export type VisibleVenueTag = VenueTag & { readonly [visibleVenueTagBrand]: true };
+
 export const getVisibleVenueTags = (
   tags: VenueTag[] | undefined,
   dictionary: VenueTagDictionary | null,
   today: string
-): VenueTag[] => {
+): VisibleVenueTag[] => {
   if (!dictionary || !tags) return [];
   const known = new Set(dictionary.tags.map((d) => d.slug));
-  return tags.filter((tag) => known.has(tag.slug) && isVenueTagActiveOn(tag, today));
+  return tags.filter(
+    (tag) => known.has(tag.slug) && isVenueTagActiveOn(tag, today)
+  ) as VisibleVenueTag[];
 };
 
-// Builders below expect tags already passed through getVisibleVenueTags
-const indexBySlug = (tags: VenueTag[]) => new Map(tags.map((tag) => [tag.slug, tag]));
+const indexBySlug = (tags: readonly VisibleVenueTag[]) =>
+  new Map(tags.map((tag) => [tag.slug, tag]));
 
 export const NO_DECORATE_CONDITION_TEXT = '店家沒寫佈置條件，私訊時可以問';
 
-export const buildVenueConditionText = (tags: VenueTag[], today: string): string | null => {
+// today only decides whether the date shows its year; expiry is already filtered
+export const buildVenueConditionText = (
+  tags: readonly VisibleVenueTag[],
+  today: string
+): string | null => {
   const bySlug = indexBySlug(tags);
   const free = bySlug.get('free_venue');
   const parts: string[] = [];
@@ -89,7 +100,10 @@ export interface VenueUsageRow {
   isCondition: boolean;
 }
 
-export const buildVenueUsageRows = (tags: VenueTag[], today: string): VenueUsageRow[] => {
+export const buildVenueUsageRows = (
+  tags: readonly VisibleVenueTag[],
+  today: string
+): VenueUsageRow[] => {
   const bySlug = indexBySlug(tags);
   const rows: VenueUsageRow[] = [];
 
@@ -129,7 +143,7 @@ const FACILITY_GROUPS: VenueTagGroupKey[] = ['service', 'transport', 'space', 'e
 const USAGE_ONLY_SLUGS = new Set(['goods_distribution', 'private_booking', 'can_decorate']);
 
 export const buildVenueFacilityRows = (
-  tags: VenueTag[],
+  tags: readonly VisibleVenueTag[],
   dictionary: VenueTagDictionary
 ): VenueFacilityRow[] => {
   const owned = new Set(tags.map((tag) => tag.slug));

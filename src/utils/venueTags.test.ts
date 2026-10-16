@@ -217,6 +217,19 @@ describe('TC-016 「服務、交通與空間」分列 buildVenueFacilityRows', (
   });
 });
 
+describe('builder 只吃 getVisibleVenueTags 的結果（型別保證）', () => {
+  it('直接傳原始 VenueTag[] 會編譯失敗', () => {
+    const raw: VenueTag[] = t('goods_distribution');
+    // @ts-expect-error raw tags must go through getVisibleVenueTags first
+    buildVenueUsageRows(raw, TODAY);
+    // @ts-expect-error raw tags must go through getVisibleVenueTags first
+    buildVenueConditionText(raw, TODAY);
+    // @ts-expect-error raw tags must go through getVisibleVenueTags first
+    buildVenueFacilityRows(raw, dictionary);
+    expect(buildVenueUsageRows(visible(raw), TODAY)).toHaveLength(1);
+  });
+});
+
 describe('getVisibleVenueTags（字典三種情況、過期）', () => {
   it('字典載入失敗（null）→ 當成沒有標籤', () => {
     expect(getVisibleVenueTags(t('goods_distribution'), null, TODAY)).toEqual([]);
