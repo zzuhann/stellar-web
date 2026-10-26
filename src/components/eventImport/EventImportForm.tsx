@@ -100,8 +100,10 @@ export default function EventImportForm() {
   const [locationAddress, setLocationAddress] = useState('');
   const [locationCity, setLocationCity] = useState('');
   const [locationPlaceId, setLocationPlaceId] = useState<string | undefined>(undefined);
-  // Remount key for PlaceAutocomplete / SocialAccountRows, which only read values on mount
-  const [autoFillVersion, setAutoFillVersion] = useState(0);
+  // Remount keys for PlaceAutocomplete / SocialAccountRows, which only read values on mount;
+  // kept separate so a parse that fills one doesn't reset the other mid-edit
+  const [placeRemountKey, setPlaceRemountKey] = useState(0);
+  const [socialRemountKey, setSocialRemountKey] = useState(0);
   const [mainImageUrl, setMainImageUrl] = useState('');
   const [uploadedDetailImages, setUploadedDetailImages] = useState<string[]>([]);
 
@@ -160,9 +162,10 @@ export default function EventImportForm() {
         setLocationCity(updates.location.city);
         setLocationPlaceId(updates.location.placeId);
         setLocationCoordinates(updates.location.coordinates);
+        setPlaceRemountKey((v) => v + 1);
       }
-      if (updates.location || updates.instagram !== undefined || updates.threads !== undefined) {
-        setAutoFillVersion((v) => v + 1);
+      if (updates.instagram !== undefined || updates.threads !== undefined) {
+        setSocialRemountKey((v) => v + 1);
       }
 
       showToast.success(buildParsedFieldsToastMessage(filledFieldLabels));
@@ -355,7 +358,8 @@ export default function EventImportForm() {
             handleChangeImages={setUploadedDetailImages}
             detailImageUrls={uploadedDetailImages}
             maxDetailImages={Math.max(0, MAX_DETAIL_IMAGES - detailImageQueue.successUrls.length)}
-            autoFillVersion={autoFillVersion}
+            placeRemountKey={placeRemountKey}
+            socialRemountKey={socialRemountKey}
             setFieldRef={setFieldRef}
             mainImageExtra={
               <CoverImageUrlField

@@ -104,8 +104,9 @@ type EventInfoSectionProps = {
   mainImageExtra?: ReactNode;
   detailImageExtra?: ReactNode;
   maxDetailImages?: number;
-  // Bump to remount mount-only inputs (place, social) after values are set externally
-  autoFillVersion?: number;
+  // Bump to remount mount-only inputs after their values are set externally
+  placeRemountKey?: number;
+  socialRemountKey?: number;
 };
 
 const EventInfoSection = ({
@@ -124,7 +125,8 @@ const EventInfoSection = ({
   mainImageExtra,
   detailImageExtra,
   maxDetailImages = 10,
-  autoFillVersion = 0,
+  placeRemountKey = 0,
+  socialRemountKey = 0,
 }: EventInfoSectionProps) => {
   const { token } = useAuthToken();
 
@@ -281,7 +283,7 @@ const EventInfoSection = ({
           先打店家名稱（例如「留白時間」），找不到時再改用地址。
         </p>
         <PlaceAutocomplete
-          key={autoFillVersion}
+          key={placeRemountKey}
           disabled={isPending}
           onPlaceSelect={handlePlaceSelect}
           defaultValue={addressName}
@@ -320,7 +322,7 @@ const EventInfoSection = ({
             </p>
           )}
           <SocialAccountRows
-            key={`instagram-${autoFillVersion}`}
+            key={`instagram-${socialRemountKey}`}
             fieldId="instagram"
             fieldLabel="Instagram"
             placeholderExample="boynextdoor_official"
@@ -330,7 +332,7 @@ const EventInfoSection = ({
             describedBy="social-media-hint"
           />
           <SocialAccountRows
-            key={`threads-${autoFillVersion}`}
+            key={`threads-${socialRemountKey}`}
             fieldId="threads"
             fieldLabel="Threads"
             placeholderExample="_stellar.tw"
