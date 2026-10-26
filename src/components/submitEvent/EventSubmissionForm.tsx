@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useForm, useWatch, FieldErrors } from 'react-hook-form';
+import { useForm, FieldErrors } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { css } from '@/styled-system/css';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
@@ -18,7 +18,7 @@ import {
   taipeiDateTimeToTimestamp,
 } from '@/utils';
 import { scrollToFirstErrorField } from '@/utils/formHelpers';
-import { buildReservationPayload, shouldEnableReservationByDefault } from './reservationPayload';
+import { buildReservationPayload } from './reservationPayload';
 import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
 import EventInfoSection from './EventInfoSection';
@@ -201,9 +201,6 @@ function EventSubmissionForm({
     }
     return [];
   });
-  const [reservationEnabled, setReservationEnabled] = useState(() =>
-    shouldEnableReservationByDefault(existingEvent?.reservation)
-  );
   const [mainImageUrl, setMainImageUrl] = useState<string>(existingEvent?.mainImage || '');
   const [detailImageUrls, setDetailImageUrls] = useState<string[]>(() => {
     if (existingEvent?.detailImage) {
@@ -251,14 +248,6 @@ function EventSubmissionForm({
         }
       : undefined,
   });
-
-  const startDate = useWatch({ control, name: 'startDate' }) ?? '';
-  const endDate = useWatch({ control, name: 'endDate' }) ?? '';
-  const description = useWatch({ control, name: 'description' }) ?? '';
-  const instagram = useWatch({ control, name: 'instagram' }) ?? '';
-  const threads = useWatch({ control, name: 'threads' }) ?? '';
-  const reservationDate = useWatch({ control, name: 'reservationDate' }) ?? '';
-  const reservationTime = useWatch({ control, name: 'reservationTime' }) ?? '';
 
   const createEventMutation = useCreateEventMutation({ onSuccess, entryPoint });
   const updateEventMutation = useUpdateEventMutation({ onSuccess });
@@ -344,51 +333,6 @@ function EventSubmissionForm({
   const handlePrevStep = () => {
     if (currentStep === 2) {
       setCurrentStep(1);
-    }
-  };
-
-  const handleChangeStartDate = (date: string) => {
-    setValue('startDate', date, { shouldValidate: true, shouldDirty: true });
-    // 如果結束日期早於新的開始日期，自動設為開始日期
-    if (endDate && new Date(endDate) < new Date(date)) {
-      setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
-    }
-
-    // 如果還沒有結束日期，自動設為開始日期
-    if (!endDate) {
-      setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
-    }
-  };
-
-  const handleChangeEndDate = (date: string) => {
-    setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
-  };
-
-  const handleChangeInstagram = (value: string) => {
-    setValue('instagram', value, { shouldValidate: true, shouldDirty: true });
-  };
-
-  const handleChangeThreads = (value: string) => {
-    setValue('threads', value, { shouldValidate: true, shouldDirty: true });
-  };
-
-  // 預約開始時間不做即時驗證，避免只選日期未選時間時就先跳出錯誤，送出時才驗證
-  const handleChangeReservationDate = (date: string) => {
-    setValue('reservationDate', date, { shouldDirty: true });
-  };
-
-  const handleChangeReservationTime = (time: string) => {
-    setValue('reservationTime', time, { shouldDirty: true });
-  };
-
-  // 關閉開關時清空已填寫的預約資料，不是只隱藏——避免送出時殘留使用者看不到的舊值
-  const handleToggleReservation = () => {
-    const next = !reservationEnabled;
-    setReservationEnabled(next);
-    if (!next) {
-      setValue('reservationUrl', '', { shouldDirty: true });
-      handleChangeReservationDate('');
-      handleChangeReservationTime('');
     }
   };
 
@@ -645,6 +589,8 @@ function EventSubmissionForm({
           {(currentStep === 2 || mode === 'edit' || mode === 'copy') && (
             <EventInfoSection
               register={register}
+              control={control}
+              setValue={setValue}
               errors={errors}
               mainImageUrl={mainImageUrl}
               onUploadComplete={(imageUrl) => {
@@ -656,25 +602,10 @@ function EventSubmissionForm({
                 showToast.success('主視覺圖片上傳成功');
               }}
               isPending={isPending}
-              handleChangeStartDate={handleChangeStartDate}
-              handleChangeEndDate={handleChangeEndDate}
               handlePlaceSelect={handlePlaceSelect}
               handleChangeImages={handleChangeImages}
               detailImageUrls={detailImageUrls}
-              startDate={startDate}
-              endDate={endDate}
-              description={description}
               existingEventLocationName={existingEvent?.location.name || ''}
-              reservationDate={reservationDate}
-              reservationTime={reservationTime}
-              handleChangeReservationDate={handleChangeReservationDate}
-              handleChangeReservationTime={handleChangeReservationTime}
-              reservationEnabled={reservationEnabled}
-              onToggleReservation={handleToggleReservation}
-              instagram={instagram}
-              threads={threads}
-              handleChangeInstagram={handleChangeInstagram}
-              handleChangeThreads={handleChangeThreads}
               setFieldRef={setFieldRef}
             />
           )}

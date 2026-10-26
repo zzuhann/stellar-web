@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import EventInfoSection from './EventInfoSection';
 import { eventSubmissionSchema, EventSubmissionFormData } from '@/lib/validations';
@@ -55,20 +54,17 @@ const defaultValues: EventSubmissionFormData = {
   reservationTime: '',
 };
 
-// 重現 EventSubmissionForm 裡「開關 + 清空預約欄位」的邏輯，讓測試能驅動真正的
-// EventInfoSection 與真正的 zod schema，而不用掛載整個 EventSubmissionForm。
+// 驅動真正的 EventInfoSection 與真正的 zod schema，而不用掛載整個 EventSubmissionForm。
+// 預約開關的初始狀態由表單既有的預約值決定（edit 模式有值即開啟）。
 function Harness({
-  initialEnabled,
   initialValues,
   onSubmit,
   isPending = false,
 }: {
-  initialEnabled: boolean;
   initialValues?: Partial<EventSubmissionFormData>;
   onSubmit: (data: EventSubmissionFormData) => void;
   isPending?: boolean;
 }) {
-  const [reservationEnabled, setReservationEnabled] = useState(initialEnabled);
   const {
     register,
     handleSubmit,
@@ -80,60 +76,20 @@ function Harness({
     defaultValues: { ...defaultValues, ...initialValues },
   });
 
-  const startDate = useWatch({ control, name: 'startDate' }) ?? '';
-  const endDate = useWatch({ control, name: 'endDate' }) ?? '';
-  const description = useWatch({ control, name: 'description' }) ?? '';
-  const instagram = useWatch({ control, name: 'instagram' }) ?? '';
-  const threads = useWatch({ control, name: 'threads' }) ?? '';
-  const reservationDate = useWatch({ control, name: 'reservationDate' }) ?? '';
-  const reservationTime = useWatch({ control, name: 'reservationTime' }) ?? '';
-
-  const handleChangeInstagram = (value: string) =>
-    setValue('instagram', value, { shouldValidate: true, shouldDirty: true });
-  const handleChangeThreads = (value: string) =>
-    setValue('threads', value, { shouldValidate: true, shouldDirty: true });
-  const handleChangeReservationDate = (date: string) =>
-    setValue('reservationDate', date, { shouldDirty: true });
-  const handleChangeReservationTime = (time: string) =>
-    setValue('reservationTime', time, { shouldDirty: true });
-
-  const handleToggleReservation = () => {
-    const next = !reservationEnabled;
-    setReservationEnabled(next);
-    if (!next) {
-      setValue('reservationUrl', '', { shouldDirty: true });
-      handleChangeReservationDate('');
-      handleChangeReservationTime('');
-    }
-  };
-
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <EventInfoSection
         register={register}
+        control={control}
+        setValue={setValue}
         errors={errors}
         mainImageUrl=""
         onUploadComplete={() => {}}
         isPending={isPending}
-        handleChangeStartDate={() => {}}
-        handleChangeEndDate={() => {}}
         handlePlaceSelect={() => {}}
         handleChangeImages={() => {}}
         detailImageUrls={[]}
-        startDate={startDate}
-        endDate={endDate}
-        description={description}
         existingEventLocationName=""
-        reservationDate={reservationDate}
-        reservationTime={reservationTime}
-        handleChangeReservationDate={handleChangeReservationDate}
-        handleChangeReservationTime={handleChangeReservationTime}
-        reservationEnabled={reservationEnabled}
-        onToggleReservation={handleToggleReservation}
-        instagram={instagram}
-        threads={threads}
-        handleChangeInstagram={handleChangeInstagram}
-        handleChangeThreads={handleChangeThreads}
         setFieldRef={() => () => {}}
       />
       <button type="submit">送出</button>
@@ -143,7 +99,7 @@ function Harness({
 
 describe('EventInfoSection 預約開關', () => {
   it('開關關閉時（create 模式預設），不渲染預約網址/日期/時間欄位', () => {
-    render(<Harness initialEnabled={false} onSubmit={vi.fn()} />);
+    render(<Harness onSubmit={vi.fn()} />);
 
     expect(screen.queryByLabelText('預約網址')).toBeNull();
     expect(screen.queryByLabelText('選擇日期')).toBeNull();
@@ -153,7 +109,6 @@ describe('EventInfoSection 預約開關', () => {
   it('開關開啟時（edit 模式已有資料），渲染並顯示原本填寫的資料', () => {
     render(
       <Harness
-        initialEnabled={true}
         initialValues={{
           reservationUrl: 'https://forms.gle/xxxx',
           reservationDate: '2026-08-20',
@@ -171,7 +126,7 @@ describe('EventInfoSection 預約開關', () => {
   });
 
   it('打開開關後可以填寫，關閉後欄位消失且資料被清空', () => {
-    render(<Harness initialEnabled={false} onSubmit={vi.fn()} />);
+    render(<Harness onSubmit={vi.fn()} />);
 
     fireEvent.click(screen.getByRole('switch', { name: '需要事先預約或報名' }));
 
@@ -200,7 +155,7 @@ describe('EventInfoSection 預約開關', () => {
 
   it('開關關閉狀態下送出，通過 zod 驗證（預約相關 refine 不會報錯）', async () => {
     const onSubmit = vi.fn();
-    render(<Harness initialEnabled={false} onSubmit={onSubmit} />);
+    render(<Harness onSubmit={onSubmit} />);
 
     fireEvent.click(screen.getByText('送出'));
 
@@ -214,8 +169,9 @@ describe('EventInfoSection 預約開關', () => {
 
   it('填寫後關閉開關再送出，仍通過驗證（清空邏輯要清得夠乾淨）', async () => {
     const onSubmit = vi.fn();
-    render(<Harness initialEnabled={true} onSubmit={onSubmit} />);
+    render(<Harness onSubmit={onSubmit} />);
 
+    fireEvent.click(screen.getByRole('switch', { name: '需要事先預約或報名' }));
     fireEvent.change(screen.getByLabelText('預約網址'), {
       target: { value: 'not-a-valid-url' },
     });
@@ -229,7 +185,7 @@ describe('EventInfoSection 預約開關', () => {
   });
 
   it('送出中（isPending）時開關被鎖定，點擊不會觸發切換', () => {
-    render(<Harness initialEnabled={false} isPending={true} onSubmit={vi.fn()} />);
+    render(<Harness isPending={true} onSubmit={vi.fn()} />);
 
     const toggle = screen.getByRole('switch', { name: '需要事先預約或報名' });
     expect((toggle as HTMLButtonElement).disabled).toBe(true);
@@ -245,7 +201,6 @@ describe('EventInfoSection 主辦社群多列輸入', () => {
   it('編輯模式帶入逗號分隔字串時，正確 split 顯示成多列並各自帶入正確值', () => {
     render(
       <Harness
-        initialEnabled={false}
         initialValues={{ instagram: 'stellar_tw,stellar_jp', threads: 'stellar_thread' }}
         onSubmit={vi.fn()}
       />
@@ -264,11 +219,7 @@ describe('EventInfoSection 主辦社群多列輸入', () => {
   it('新增一列並填寫後送出，instagram 欄位是 join 回去的逗號+空格字串', async () => {
     const onSubmit = vi.fn();
     render(
-      <Harness
-        initialEnabled={false}
-        initialValues={{ instagram: 'stellar_tw', threads: '' }}
-        onSubmit={onSubmit}
-      />
+      <Harness initialValues={{ instagram: 'stellar_tw', threads: '' }} onSubmit={onSubmit} />
     );
 
     fireEvent.click(screen.getByRole('button', { name: '新增共同主辦 - Instagram' }));
@@ -286,7 +237,6 @@ describe('EventInfoSection 主辦社群多列輸入', () => {
     const onSubmit = vi.fn();
     render(
       <Harness
-        initialEnabled={false}
         initialValues={{ instagram: 'stellar_tw,stellar_jp', threads: '' }}
         onSubmit={onSubmit}
       />
