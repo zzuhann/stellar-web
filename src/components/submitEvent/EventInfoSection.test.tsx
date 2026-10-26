@@ -89,7 +89,6 @@ function Harness({
         handlePlaceSelect={() => {}}
         handleChangeImages={() => {}}
         detailImageUrls={[]}
-        existingEventLocationName=""
         setFieldRef={() => () => {}}
       />
       <button type="submit">送出</button>

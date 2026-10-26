@@ -24,7 +24,7 @@ import MultiImageUpload from '../images/MultiImageUpload';
 import Switch from '../ui/Switch';
 import SocialAccountRows from './SocialAccountRows';
 import { Control, FieldErrors, UseFormRegister, UseFormSetValue, useWatch } from 'react-hook-form';
-import { useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { EventSubmissionFormData } from '@/lib/validations';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import { dateToTaipeiDateString } from '@/utils';
@@ -98,8 +98,14 @@ type EventInfoSectionProps = {
   }) => void;
   handleChangeImages: (images: string[]) => void;
   detailImageUrls: string[];
-  existingEventLocationName: string;
   setFieldRef: (name: string) => (el: HTMLElement | null) => void;
+  // Optional hooks for the admin event import page
+  onMainImageRemove?: () => void;
+  mainImageExtra?: ReactNode;
+  detailImageExtra?: ReactNode;
+  maxDetailImages?: number;
+  // Bump to remount mount-only inputs (place, social) after values are set externally
+  autoFillVersion?: number;
 };
 
 const EventInfoSection = ({
@@ -113,13 +119,18 @@ const EventInfoSection = ({
   handlePlaceSelect,
   handleChangeImages,
   detailImageUrls,
-  existingEventLocationName,
   setFieldRef,
+  onMainImageRemove,
+  mainImageExtra,
+  detailImageExtra,
+  maxDetailImages = 10,
+  autoFillVersion = 0,
 }: EventInfoSectionProps) => {
   const { token } = useAuthToken();
 
   const startDate = useWatch({ control, name: 'startDate' }) ?? '';
   const endDate = useWatch({ control, name: 'endDate' }) ?? '';
+  const addressName = useWatch({ control, name: 'addressName' }) ?? '';
   const description = useWatch({ control, name: 'description' }) ?? '';
   const instagram = useWatch({ control, name: 'instagram' }) ?? '';
   const threads = useWatch({ control, name: 'threads' }) ?? '';
@@ -270,9 +281,10 @@ const EventInfoSection = ({
           先打店家名稱（例如「留白時間」），找不到時再改用地址。
         </p>
         <PlaceAutocomplete
+          key={autoFillVersion}
           disabled={isPending}
           onPlaceSelect={handlePlaceSelect}
-          defaultValue={existingEventLocationName}
+          defaultValue={addressName}
         />
         <input type="hidden" {...register('addressName')} aria-hidden="true" />
         {errors.addressName && (
@@ -308,6 +320,7 @@ const EventInfoSection = ({
             </p>
           )}
           <SocialAccountRows
+            key={`instagram-${autoFillVersion}`}
             fieldId="instagram"
             fieldLabel="Instagram"
             placeholderExample="boynextdoor_official"
@@ -317,6 +330,7 @@ const EventInfoSection = ({
             describedBy="social-media-hint"
           />
           <SocialAccountRows
+            key={`threads-${autoFillVersion}`}
             fieldId="threads"
             fieldLabel="Threads"
             placeholderExample="_stellar.tw"
@@ -451,8 +465,10 @@ const EventInfoSection = ({
           主要宣傳圖片(推薦上傳比例 3:4)
         </p>
         <ImageUpload
+          key={mainImageUrl}
           currentImageUrl={mainImageUrl}
           onUploadComplete={onUploadComplete}
+          onImageRemove={onMainImageRemove}
           compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
           placeholder="點擊上傳主視覺圖片"
           maxSizeMB={5}
@@ -460,6 +476,7 @@ const EventInfoSection = ({
           authToken={token || undefined}
           enableCrop={false}
         />
+        {mainImageExtra}
         <input type="hidden" {...register('mainImage')} aria-hidden="true" />
         {errors.mainImage && (
           <p id="mainImage-error" className={errorText} role="alert">
@@ -481,10 +498,11 @@ const EventInfoSection = ({
         <p id="detailImage-hint" className={helperText}>
           除了主視覺圖片以外的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳 10 張
         </p>
+        {detailImageExtra}
         <MultiImageUpload
           currentImages={detailImageUrls}
           onImagesChange={handleChangeImages}
-          maxImages={10}
+          maxImages={maxDetailImages}
           placeholder="點擊新增圖片"
           maxSizeMB={5}
           disabled={isPending}

@@ -19,6 +19,7 @@ import {
 } from '@/utils';
 import { scrollToFirstErrorField } from '@/utils/formHelpers';
 import { buildReservationPayload } from './reservationPayload';
+import { EVENT_FORM_FIELD_ORDER } from './fieldOrder';
 import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
 import EventInfoSection from './EventInfoSection';
@@ -448,22 +449,9 @@ function EventSubmissionForm({
   const setFieldRef = (name: string) => (el: HTMLElement | null) => {
     fieldRefs.current[name] = el;
   };
-  const FIELD_ORDER = [
-    'artistIds',
-    'title',
-    'startDate',
-    'endDate',
-    'addressName',
-    'instagram',
-    'reservationUrl',
-    'reservationTime',
-    'mainImage',
-    'detailImage',
-    'description',
-  ];
   const handleInvalidSubmit = (errors: FieldErrors<EventSubmissionFormData>) => {
     scrollToFirstErrorField(
-      FIELD_ORDER,
+      EVENT_FORM_FIELD_ORDER,
       (name) => !!errors[name as keyof EventSubmissionFormData],
       fieldRefs.current
     );
@@ -605,7 +593,6 @@ function EventSubmissionForm({
               handlePlaceSelect={handlePlaceSelect}
               handleChangeImages={handleChangeImages}
               detailImageUrls={detailImageUrls}
-              existingEventLocationName={existingEvent?.location.name || ''}
               setFieldRef={setFieldRef}
             />
           )}
