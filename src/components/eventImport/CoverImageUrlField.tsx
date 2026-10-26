@@ -68,7 +68,6 @@ export default function CoverImageUrlField({
         </button>
       </div>
 
-      {status === 'success' && <p className={inlineHint}>已從網址帶入，可直接修改</p>}
       {status === 'skipped' && (
         <p className={inlineHint}>
           封面圖已有值，這次貼上的網址不會套用；如需更換，請先移除目前的封面圖
