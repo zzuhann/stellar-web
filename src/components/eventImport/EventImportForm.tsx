@@ -86,7 +86,7 @@ export default function EventImportForm() {
     control,
   } = useForm<EventSubmissionFormData>({
     resolver: zodResolver(eventSubmissionSchema),
-    // 比照 EventSubmissionForm：改由 handleInvalidSubmit + fieldRefs 統一處理捲動/聚焦
+    // Scroll/focus is handled by handleInvalidSubmit + fieldRefs (same as EventSubmissionForm)
     shouldFocusError: false,
   });
 
@@ -100,7 +100,7 @@ export default function EventImportForm() {
   const [locationAddress, setLocationAddress] = useState('');
   const [locationCity, setLocationCity] = useState('');
   const [locationPlaceId, setLocationPlaceId] = useState<string | undefined>(undefined);
-  // PlaceAutocomplete / SocialAccountRows 只在 mount 時讀值，解析帶入後要靠這個 key 重新掛載
+  // Remount key for PlaceAutocomplete / SocialAccountRows, which only read values on mount
   const [autoFillVersion, setAutoFillVersion] = useState(0);
   const [mainImageUrl, setMainImageUrl] = useState('');
   const [uploadedDetailImages, setUploadedDetailImages] = useState<string[]>([]);
@@ -319,6 +319,9 @@ export default function EventImportForm() {
       <form
         aria-label="活動貼文匯入表單"
         aria-busy={isPending}
+        // Skip native validation (e.g. title's `required`) so zod errors and scroll-to-error run
+        noValidate
+        // Wrapped so react-hooks/refs doesn't flag handleInvalidSubmit reading fieldRefs during render
         onSubmit={(e) => handleSubmit(onSubmit, handleInvalidSubmit)(e)}
       >
         <fieldset className={formLayout} disabled={isPending}>

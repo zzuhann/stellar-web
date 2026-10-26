@@ -144,7 +144,7 @@ const EventInfoSection = ({
 
   const handleChangeStartDate = (date: string) => {
     setValue('startDate', date, { shouldValidate: true, shouldDirty: true });
-    // 結束日期為空或早於新的開始日期時，自動設為開始日期
+    // Default/clamp endDate to the new startDate when empty or earlier
     if (!endDate || new Date(endDate) < new Date(date)) {
       setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
     }
