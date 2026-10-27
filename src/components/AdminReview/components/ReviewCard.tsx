@@ -142,9 +142,11 @@ export default function ReviewCard({
 }: ReviewCardProps) {
   const artist = isArtist(item);
   const name = artist ? item.stageNameZh || item.stageName : item.title;
-  const subtitle = artist ? item.stageName : item.artists.map(({ name }) => name).join('、');
+  // Avoid repeating stageName when it's already the title
+  const subtitle = artist
+    ? item.stageNameZh && item.stageName
+    : item.artists.map(({ name }) => name).join('、');
   const image = artist ? item.profileImage : item.mainImage;
-  const birthdayText = artist ? formatBirthdayFull(item.birthday ?? '') : '';
 
   return (
     <article className={card}>
@@ -173,8 +175,13 @@ export default function ReviewCard({
       </div>
       <div className={cardBody}>
         <h3 className={cardName}>{name}</h3>
-        <p className={cardSubtitle}>{subtitle}</p>
-        {birthdayText && <p className={cardBirthday}>生日 {birthdayText}</p>}
+        {subtitle && <p className={cardSubtitle}>{subtitle}</p>}
+        {artist && (
+          <>
+            <p className={cardSubtitle}>本名 {item.realName || '未填'}</p>
+            <p className={cardBirthday}>生日 {formatBirthdayFull(item.birthday ?? '') || '未填'}</p>
+          </>
+        )}
         <p className={cardMeta}>投稿於 {formatCreatedAt(item.createdAt)}</p>
       </div>
       <div className={actionsRow}>

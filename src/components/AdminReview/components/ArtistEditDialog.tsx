@@ -74,6 +74,16 @@ const formGrid = css({
 
 const spanTwo = css({ sm: { gridColumn: 'span 2' } });
 
+const imagePreview = css({
+  display: 'block',
+  width: '160px',
+  aspectRatio: '1 / 1',
+  marginBottom: '3',
+  objectFit: 'cover',
+  borderRadius: 'radius.xl',
+  background: 'gray.100',
+});
+
 const fieldLabel = css({
   display: 'block',
   fontSize: 'sm',
@@ -239,7 +249,18 @@ export default function ArtistEditDialog({ artist, busy, onClose, onSave }: Arti
             {field('realName', '本名')}
             {field('birthday', '生日', 'date')}
             <div className={spanTwo}>{field('groupNames', '團名（多個請用頓號分隔）')}</div>
-            <div className={spanTwo}>{field('profileImage', '照片網址', 'url')}</div>
+            <div className={spanTwo}>
+              {form.profileImage.trim() && (
+                // next/image rejects hosts outside remotePatterns; admins may paste any URL
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={form.profileImage.trim()}
+                  alt={`${form.stageNameZh || form.stageName} 照片預覽`}
+                  className={imagePreview}
+                />
+              )}
+              {field('profileImage', '照片網址', 'url')}
+            </div>
           </div>
           <footer className={dialogFooter}>
             <button type="button" onClick={close} disabled={busy} className={cancelButton}>
