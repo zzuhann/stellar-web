@@ -290,7 +290,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
         onClick={(mouseEvent) => mouseEvent.stopPropagation()}
       >
         <header className={modalHeader}>
-          <p className={modalTitle}>預覽</p>
+          <h2 className={modalTitle}>預覽</h2>
           <button type="button" onClick={onClose} aria-label="關閉預覽" className={closeButton}>
             <XMarkIcon />
           </button>
