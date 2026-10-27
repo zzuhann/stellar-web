@@ -179,9 +179,7 @@ export default function ReviewCard({
         {artist && (
           <>
             <p className={cardSubtitle}>本名 {item.realName || '未填'}</p>
-            <p className={cardBirthday}>
-              生日 {item.birthday ? formatBirthdayFull(item.birthday) : '未填'}
-            </p>
+            <p className={cardBirthday}>生日 {formatBirthdayFull(item.birthday ?? '') || '未填'}</p>
           </>
         )}
         <p className={cardMeta}>投稿於 {formatCreatedAt(item.createdAt)}</p>
