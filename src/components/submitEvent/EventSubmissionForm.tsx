@@ -589,6 +589,10 @@ function EventSubmissionForm({
                 });
                 showToast.success('主視覺圖片上傳成功');
               }}
+              onMainImageRemove={() => {
+                setMainImageUrl('');
+                setValue('mainImage', '', { shouldValidate: true, shouldDirty: true });
+              }}
               isPending={isPending}
               handlePlaceSelect={handlePlaceSelect}
               handleChangeImages={handleChangeImages}
