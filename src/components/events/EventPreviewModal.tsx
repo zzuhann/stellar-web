@@ -15,6 +15,7 @@ import SwiperBanner from '@/components/SwiperBanner';
 import ModalOverlay from '@/components/ui/ModalOverlay';
 import { InstagramIcon, ThreadsIcon } from '@/components/ui/SocialMediaIcons';
 import { useScrollLock } from '@/hooks/useScrollLock';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import type { CoffeeEvent } from '@/types';
 import {
   formatEventDate,
@@ -249,6 +250,7 @@ const reservationCalendarContent = css({
 // The public EventDetail page is separate on purpose (server component, ISR, GA click tracking).
 export default function EventPreviewModal({ event, isOpen, onClose }: EventPreviewModalProps) {
   useScrollLock(isOpen);
+  const focusTrapRef = useFocusTrap<HTMLElement>(isOpen);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -280,6 +282,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
   return (
     <ModalOverlay isOpen={isOpen} zIndex={1000} padding="16px" onClick={onClose}>
       <section
+        ref={focusTrapRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="event-preview-title"
@@ -287,9 +290,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
         onClick={(mouseEvent) => mouseEvent.stopPropagation()}
       >
         <header className={modalHeader}>
-          <h2 id="event-preview-title" className={modalTitle}>
-            預覽
-          </h2>
+          <p className={modalTitle}>預覽</p>
           <button type="button" onClick={onClose} aria-label="關閉預覽" className={closeButton}>
             <XMarkIcon />
           </button>
@@ -298,10 +299,12 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
         {bannerItems.length > 0 && <SwiperBanner items={bannerItems} />}
 
         <div className={contentSection}>
-          <h2 className={eventTitle}>{event.title}</h2>
+          <h2 id="event-preview-title" className={eventTitle}>
+            {event.title}
+          </h2>
 
           <div className={artistSection}>
-            {event.artists.map((artist, index) => (
+            {event.artists?.map((artist, index) => (
               <div key={artist.id || index} style={{ display: 'flex', alignItems: 'center' }}>
                 {index > 0 && <span className={artistSeparator}>/</span>}
                 <Link href={`/map/${artist.slug ?? artist.id}`} className={artistLink}>
@@ -325,7 +328,10 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
           <div className={eventDetailsSection}>
             {event.socialMedia.instagram && (
               <div className={detailItem}>
-                <InstagramIcon size={20} color="var(--color-text-secondary)" />
+                <div className={detailIcon}>
+                  <InstagramIcon size={20} color="var(--color-text-secondary)" aria-hidden="true" />
+                  <span className="sr-only">Instagram</span>
+                </div>
                 <div className={detailContent}>
                   <div className={detailValue}>
                     {parseSocialMediaHandles(event.socialMedia.instagram).map(
@@ -350,7 +356,10 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
 
             {event.socialMedia.threads && (
               <div className={detailItem}>
-                <ThreadsIcon size={20} color="var(--color-text-secondary)" />
+                <div className={detailIcon}>
+                  <ThreadsIcon size={20} color="var(--color-text-secondary)" aria-hidden="true" />
+                  <span className="sr-only">Threads</span>
+                </div>
                 <div className={detailContent}>
                   <div className={detailValue}>
                     {parseSocialMediaHandles(event.socialMedia.threads).map(

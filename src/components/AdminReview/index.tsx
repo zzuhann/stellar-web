@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { css, cva } from '@/styled-system/css';
@@ -11,9 +12,11 @@ import ReviewCard from './components/ReviewCard';
 import ReviewDialog from './components/ReviewDialog';
 import BatchGroupNameDialog from './components/BatchGroupNameDialog';
 import ArtistEditDialog from './components/ArtistEditDialog';
-import EventPreviewModal from '@/components/events/EventPreviewModal';
 import { reviewButton } from './components/reviewButtonStyles';
 import useAdminReview from './hook/useAdminReview';
+
+// Lazy-load: pulls in swiper, only needed once a preview is opened
+const EventPreviewModal = dynamic(() => import('@/components/events/EventPreviewModal'));
 
 type DialogState =
   | { kind: 'reject'; item: Artist | CoffeeEvent | 'batch' }
