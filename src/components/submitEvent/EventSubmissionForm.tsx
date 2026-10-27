@@ -252,7 +252,7 @@ function EventSubmissionForm({
 
   const createEventMutation = useCreateEventMutation({ onSuccess, entryPoint });
   const updateEventMutation = useUpdateEventMutation({ onSuccess });
-  const resubmitEventMutation = useResubmitEventMutation();
+  const resubmitEventMutation = useResubmitEventMutation({ onSuccess });
   const isPending =
     createEventMutation.isPending ||
     updateEventMutation.isPending ||

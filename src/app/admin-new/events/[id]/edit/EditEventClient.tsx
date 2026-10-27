@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { css } from '@/styled-system/css';
 import { adminApi } from '@/lib/api';
@@ -32,6 +32,7 @@ const notFoundBox = css({
 
 export default function EditEventClient({ id }: { id: string }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-event-edit', id],
@@ -40,7 +41,13 @@ export default function EditEventClient({ id }: { id: string }) {
     refetchOnWindowFocus: false,
   });
 
-  const backToList = () => router.push('/admin-new/events');
+  const backToList = () => {
+    // Admin list/edit caches are 10 min stale and not covered by the shared mutations' invalidation.
+    // Also runs again after a rejected event's resubmit finishes, so the list shows its new status.
+    queryClient.invalidateQueries({ queryKey: ['admin-events'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-event-edit', id] });
+    router.push('/admin-new/events');
+  };
 
   return (
     <div className={pageWrapper}>
