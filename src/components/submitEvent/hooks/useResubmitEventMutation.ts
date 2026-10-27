@@ -1,9 +1,15 @@
 import { eventsApi, handleApiError } from '@/lib/api';
 import showToast from '@/lib/toast';
+import { CoffeeEvent } from '@/types';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
-const useResubmitEventMutation = () => {
+type UseResubmitEventMutationProps = {
+  // When given, the caller owns the redirect (e.g. admin edit returns to its list)
+  onSuccess?: (event: CoffeeEvent) => void;
+};
+
+const useResubmitEventMutation = ({ onSuccess }: UseResubmitEventMutationProps = {}) => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
@@ -17,7 +23,8 @@ const useResubmitEventMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['event', updatedEvent.id] });
       showToast.success('已重新送出審核！');
 
-      router.push(`/my-submissions?tab=event`);
+      if (onSuccess) onSuccess(updatedEvent);
+      else router.push(`/my-submissions?tab=event`);
     },
     onError: (error) => {
       showToast.error(handleApiError(error, '重新送出審核時發生錯誤'));
