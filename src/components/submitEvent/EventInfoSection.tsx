@@ -23,7 +23,8 @@ import PlaceAutocomplete from '../forms/PlaceAutocomplete';
 import MultiImageUpload from '../images/MultiImageUpload';
 import Switch from '../ui/Switch';
 import SocialAccountRows from './SocialAccountRows';
-import { FieldErrors, UseFormRegister } from 'react-hook-form';
+import { Control, FieldErrors, UseFormRegister, UseFormSetValue, useWatch } from 'react-hook-form';
+import { ReactNode, useState } from 'react';
 import { EventSubmissionFormData } from '@/lib/validations';
 import { useAuthToken } from '@/hooks/useAuthToken';
 import { dateToTaipeiDateString } from '@/utils';
@@ -82,12 +83,12 @@ const gridContainer = css({
 
 type EventInfoSectionProps = {
   register: UseFormRegister<EventSubmissionFormData>;
+  control: Control<EventSubmissionFormData>;
+  setValue: UseFormSetValue<EventSubmissionFormData>;
   errors: FieldErrors<EventSubmissionFormData>;
   mainImageUrl: string;
   onUploadComplete: (imageUrl: string) => void;
   isPending: boolean;
-  handleChangeStartDate: (date: string) => void;
-  handleChangeEndDate: (date: string) => void;
   handlePlaceSelect: (place: {
     place_id: string;
     address: string;
@@ -97,51 +98,91 @@ type EventInfoSectionProps = {
   }) => void;
   handleChangeImages: (images: string[]) => void;
   detailImageUrls: string[];
-  startDate: string;
-  endDate: string;
-  description: string;
-  existingEventLocationName: string;
-  reservationDate: string;
-  reservationTime: string;
-  handleChangeReservationDate: (date: string) => void;
-  handleChangeReservationTime: (time: string) => void;
-  reservationEnabled: boolean;
-  onToggleReservation: () => void;
-  instagram: string;
-  threads: string;
-  handleChangeInstagram: (value: string) => void;
-  handleChangeThreads: (value: string) => void;
   setFieldRef: (name: string) => (el: HTMLElement | null) => void;
+  // Optional hooks for the admin event import page
+  onMainImageRemove?: () => void;
+  mainImageExtra?: ReactNode;
+  detailImageExtra?: ReactNode;
+  maxDetailImages?: number;
+  // Bump to remount mount-only inputs after their values are set externally
+  placeRemountKey?: number;
+  socialRemountKey?: number;
 };
 
 const EventInfoSection = ({
   register,
+  control,
+  setValue,
   errors,
   mainImageUrl,
   onUploadComplete,
   isPending,
-  handleChangeStartDate,
-  handleChangeEndDate,
   handlePlaceSelect,
   handleChangeImages,
   detailImageUrls,
-  startDate,
-  endDate,
-  description,
-  existingEventLocationName,
-  reservationDate,
-  reservationTime,
-  handleChangeReservationDate,
-  handleChangeReservationTime,
-  reservationEnabled,
-  onToggleReservation,
-  instagram,
-  threads,
-  handleChangeInstagram,
-  handleChangeThreads,
   setFieldRef,
+  onMainImageRemove,
+  mainImageExtra,
+  detailImageExtra,
+  maxDetailImages = 10,
+  placeRemountKey = 0,
+  socialRemountKey = 0,
 }: EventInfoSectionProps) => {
   const { token } = useAuthToken();
+
+  const startDate = useWatch({ control, name: 'startDate' }) ?? '';
+  const endDate = useWatch({ control, name: 'endDate' }) ?? '';
+  const addressName = useWatch({ control, name: 'addressName' }) ?? '';
+  const description = useWatch({ control, name: 'description' }) ?? '';
+  const instagram = useWatch({ control, name: 'instagram' }) ?? '';
+  const threads = useWatch({ control, name: 'threads' }) ?? '';
+  const reservationDate = useWatch({ control, name: 'reservationDate' }) ?? '';
+  const reservationTime = useWatch({ control, name: 'reservationTime' }) ?? '';
+  const reservationUrl = useWatch({ control, name: 'reservationUrl' }) ?? '';
+  // Init from current form values: covers edit mode and remount after going back a step
+  const [reservationEnabled, setReservationEnabled] = useState(
+    () => !!(reservationUrl || reservationDate || reservationTime)
+  );
+
+  const handleChangeStartDate = (date: string) => {
+    setValue('startDate', date, { shouldValidate: true, shouldDirty: true });
+    // Default/clamp endDate to the new startDate when empty or earlier
+    if (!endDate || new Date(endDate) < new Date(date)) {
+      setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
+    }
+  };
+
+  const handleChangeEndDate = (date: string) => {
+    setValue('endDate', date, { shouldValidate: true, shouldDirty: true });
+  };
+
+  const handleChangeInstagram = (value: string) => {
+    setValue('instagram', value, { shouldValidate: true, shouldDirty: true });
+  };
+
+  const handleChangeThreads = (value: string) => {
+    setValue('threads', value, { shouldValidate: true, shouldDirty: true });
+  };
+
+  // 預約開始時間不做即時驗證，避免只選日期未選時間時就先跳出錯誤，送出時才驗證
+  const handleChangeReservationDate = (date: string) => {
+    setValue('reservationDate', date, { shouldDirty: true });
+  };
+
+  const handleChangeReservationTime = (time: string) => {
+    setValue('reservationTime', time, { shouldDirty: true });
+  };
+
+  // 關閉開關時清空已填寫的預約資料，不是只隱藏——避免送出時殘留使用者看不到的舊值
+  const onToggleReservation = () => {
+    const next = !reservationEnabled;
+    setReservationEnabled(next);
+    if (!next) {
+      setValue('reservationUrl', '', { shouldDirty: true });
+      handleChangeReservationDate('');
+      handleChangeReservationTime('');
+    }
+  };
 
   return (
     <>
@@ -242,9 +283,10 @@ const EventInfoSection = ({
           先打店家名稱（例如「留白時間」），找不到時再改用地址。
         </p>
         <PlaceAutocomplete
+          key={placeRemountKey}
           disabled={isPending}
           onPlaceSelect={handlePlaceSelect}
-          defaultValue={existingEventLocationName}
+          defaultValue={addressName}
         />
         <input type="hidden" {...register('addressName')} aria-hidden="true" />
         {errors.addressName && (
@@ -280,6 +322,7 @@ const EventInfoSection = ({
             </p>
           )}
           <SocialAccountRows
+            key={`instagram-${socialRemountKey}`}
             fieldId="instagram"
             fieldLabel="Instagram"
             placeholderExample="boynextdoor_official"
@@ -289,6 +332,7 @@ const EventInfoSection = ({
             describedBy="social-media-hint"
           />
           <SocialAccountRows
+            key={`threads-${socialRemountKey}`}
             fieldId="threads"
             fieldLabel="Threads"
             placeholderExample="_stellar.tw"
@@ -423,8 +467,10 @@ const EventInfoSection = ({
           主要宣傳圖片(推薦上傳比例 3:4)
         </p>
         <ImageUpload
+          key={mainImageUrl}
           currentImageUrl={mainImageUrl}
           onUploadComplete={onUploadComplete}
+          onImageRemove={onMainImageRemove}
           compressionParams={{ maxWidth: 1200, maxHeight: 1200, quality: 0.9 }}
           placeholder="點擊上傳主視覺圖片"
           maxSizeMB={5}
@@ -432,6 +478,7 @@ const EventInfoSection = ({
           authToken={token || undefined}
           enableCrop={false}
         />
+        {mainImageExtra}
         <input type="hidden" {...register('mainImage')} aria-hidden="true" />
         {errors.mainImage && (
           <p id="mainImage-error" className={errorText} role="alert">
@@ -453,10 +500,11 @@ const EventInfoSection = ({
         <p id="detailImage-hint" className={helperText}>
           除了主視覺圖片以外的詳細說明圖片，可包含活動流程、注意事項等詳細資訊，最多可上傳 10 張
         </p>
+        {detailImageExtra}
         <MultiImageUpload
           currentImages={detailImageUrls}
           onImagesChange={handleChangeImages}
-          maxImages={10}
+          maxImages={maxDetailImages}
           placeholder="點擊新增圖片"
           maxSizeMB={5}
           disabled={isPending}
