@@ -524,7 +524,8 @@ function EventSubmissionForm({
             // 如果原本狀態是 rejected，call 重新審核 API
             if (existingEvent.status === 'rejected') {
               resubmitEventMutation.mutate(existingEvent.id);
-            } else {
+            } else if (!onSuccess) {
+              // Callers passing onSuccess (e.g. admin edit) own the redirect
               router.push(`/my-submissions?tab=event`);
             }
           },
