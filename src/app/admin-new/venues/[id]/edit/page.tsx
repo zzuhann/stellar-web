@@ -13,6 +13,12 @@ import { useAdminVenueDetail } from '@/components/admin-new/hooks/useAdminVenueD
 import { useUpdateVenueMutation } from '@/components/admin-new/hooks/useUpdateVenueMutation';
 import { useDeleteVenueMutation } from '@/components/admin-new/hooks/useDeleteVenueMutation';
 import { useVenueStatusMutation } from '@/components/admin-new/hooks/useVenueStatusMutation';
+import {
+  buildInitialTagFields,
+  submittedOnTaipei,
+} from '@/components/admin-new/adminVenueSubmission';
+import { transitRowsFromVenue } from '@/utils/transitStops';
+import { formatTagDate } from '@/utils/venueTags';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
@@ -54,6 +60,14 @@ const pageTitle = css({
   color: 'color.text.primary',
   margin: 0,
   marginBottom: '6',
+});
+
+const submittedOn = css({
+  margin: 0,
+  marginTop: '-4',
+  marginBottom: '6',
+  textStyle: 'bodySmall',
+  color: 'color.text.secondary',
 });
 
 const fieldGroup = css({
@@ -157,8 +171,7 @@ export default function VenueEditPage() {
     name: venue.name,
     address: venue.address,
     region: venue.region,
-    nearestMrt: venue.nearestMrt ?? '',
-    mrtWalkMinutes: venue.mrtWalkMinutes != null ? String(venue.mrtWalkMinutes) : '',
+    transitStops: transitRowsFromVenue(venue),
     capacityRange: venue.capacityRange ?? '',
     description: venue.description ?? '',
     coverPhoto: venue.coverPhoto ?? '',
@@ -180,6 +193,11 @@ export default function VenueEditPage() {
           返回場地列表
         </Link>
         <h1 className={pageTitle}>編輯場地</h1>
+        {venue.submission && (
+          <p className={submittedOn}>
+            店家投稿於 {formatTagDate(submittedOnTaipei(venue.submission.submittedAt))}
+          </p>
+        )}
         {isError && (
           <div className={refetchErrorBanner} role="alert">
             重新整理資料失敗，目前顯示的可能不是最新內容。
@@ -207,13 +225,8 @@ export default function VenueEditPage() {
             setDeleteDialogOpen(true);
           }}
           canDelete={canDelete}
-          initialTagFields={{
-            tags: venue.tags ?? [],
-            sourceLinks: venue.sourceLinks ?? [],
-            equipmentNote: venue.equipmentNote ?? '',
-            infoUpdatedOn: venue.infoUpdatedOn ?? null,
-            calendarUrl: venue.calendarUrl ?? null,
-          }}
+          initialTagFields={buildInitialTagFields(venue)}
+          submission={venue.submission}
           place={{
             venueId,
             placeId: venue.placeId,

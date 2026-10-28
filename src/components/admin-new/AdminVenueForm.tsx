@@ -7,13 +7,27 @@ import { css, cva, cx } from '@/styled-system/css';
 import ImageUpload from '@/components/images/ImageUpload';
 import MultiImageUpload from '@/components/images/MultiImageUpload';
 import PlaceAutocomplete from '@/components/forms/PlaceAutocomplete';
-import type { CreateVenueData, UpdateVenueData, CapacityRange } from '@/types';
+import type {
+  CreateVenueData,
+  UpdateVenueData,
+  CapacityRange,
+  VenueSubmissionRecord,
+} from '@/types';
 import type { UploadResponse } from '@/lib/r2-upload';
 import type { placesApi } from '@/lib/api';
 import { scrollToFirstErrorField } from '@/utils/formHelpers';
 import { REGIONS } from '@/constants';
 import { dateToTaipeiDateString, getHttpUrlError } from '@/utils';
 import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
+import TransitStopsField from '@/components/forms/TransitStopsField';
+import {
+  createTransitRow,
+  getTransitRowErrors,
+  isBlankTransitRow,
+  toTransitStops,
+  type TransitRowErrors,
+  type TransitRowValue,
+} from '@/utils/transitStops';
 import AdminVenueTagSection from './AdminVenueTagSection';
 import AdminVenuePreview from './AdminVenuePreview';
 import { useVenueTagDictionary } from './hooks/useVenueTagDictionary';
@@ -21,6 +35,7 @@ import {
   EMPTY_TAG_FIELDS,
   buildAdminVenuePreview,
   buildTagFieldsCreate,
+  buildTagFieldsFull,
   buildTagFieldsPatch,
   getTagFieldErrors,
   hasTagFieldErrors,
@@ -30,6 +45,7 @@ import {
   type TagFieldsSource,
   type TagFormState,
 } from './adminVenueTagFields';
+import { buildSuggestionSummary, isSubmissionPending } from './adminVenueSubmission';
 
 // Edit-only block; lazy so create mode (incl. public /submit-venue) never loads it
 const VenueReselectPlace = lazy(() => import('./VenueReselectPlace'));
@@ -54,6 +70,20 @@ const previewCol = css({
     top: 'calc(70px + token(spacing.6))',
   },
 });
+
+const infoBox = css({
+  margin: 0,
+  paddingX: '4',
+  paddingY: '3',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.info.border',
+  background: 'color.info.background',
+  color: 'color.info.text',
+  textStyle: 'bodySmall',
+});
+
+const summaryLine = css({ margin: 0, textStyle: 'bodySmall', color: 'color.text.secondary' });
 
 const saveFailedDetail = css({ display: 'block', marginTop: '1', textStyle: 'caption' });
 
@@ -92,20 +122,6 @@ const inputStyle = css({
   '&:focus-visible': { outline: 'none', borderColor: 'color.primary' },
   '&[aria-invalid="true"]': { borderColor: 'red.400' },
   '&:disabled': { background: 'gray.50', color: 'color.text.secondary', cursor: 'not-allowed' },
-});
-
-const numberInputStyle = css({
-  width: '100%',
-  paddingY: '2.5',
-  paddingX: '3',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  borderRadius: 'radius.md',
-  background: 'white',
-  color: 'color.text.primary',
-  textStyle: 'bodySmall',
-  '&::placeholder': { color: 'color.text.disabled' },
-  '&:focus-visible': { outline: 'none', borderColor: 'color.primary' },
 });
 
 const textareaStyle = css({
@@ -190,58 +206,6 @@ const dropdownOption = cva({
 const chevronIcon = cva({
   base: { width: '14px', height: '14px', transition: 'transform 0.15s ease', flexShrink: 0 },
   variants: { open: { true: { transform: 'rotate(180deg)' } } },
-});
-
-const tagInputRow = css({ display: 'flex', gap: '2' });
-
-const tagAddBtn = css({
-  paddingY: '2.5',
-  paddingX: '3',
-  borderRadius: 'radius.md',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  background: 'white',
-  color: 'color.text.primary',
-  textStyle: 'bodySmall',
-  fontWeight: 'medium',
-  cursor: 'pointer',
-  flexShrink: 0,
-  transition: 'border-color 0.2s ease, background 0.2s ease',
-  '&:hover:not(:disabled)': { borderColor: 'color.primary', background: 'stellarBlue.50' },
-  '&:disabled': { opacity: 0.5, cursor: 'not-allowed' },
-});
-
-const tagList = css({ display: 'flex', flexWrap: 'wrap', gap: '1.5', marginTop: '1' });
-
-const tagPill = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: '1',
-  paddingY: '1',
-  paddingX: '2.5',
-  borderRadius: '999px',
-  background: 'color.background.secondary',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  textStyle: 'caption',
-  color: 'color.text.primary',
-  fontWeight: 'medium',
-});
-
-const tagRemoveBtn = css({
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '14px',
-  height: '14px',
-  borderRadius: '999px',
-  border: 'none',
-  background: 'none',
-  color: 'color.text.secondary',
-  cursor: 'pointer',
-  padding: '0',
-  flexShrink: 0,
-  '&:hover': { color: 'red.500' },
 });
 
 const submitRow = css({ display: 'flex', gap: '3', marginTop: '2' });
@@ -394,7 +358,6 @@ const statusBadge = cva({
 
 const REGION_OPTIONS = [...REGIONS, '其他'];
 const CAPACITY_OPTIONS: CapacityRange[] = ['20以下', '20-40', '40-60', '60以上'];
-const MAX_HOST_TAGS = 5;
 
 // 'form' / 'other' only exist on old venues; they are loaded but no longer selectable
 type PreferredContact = 'instagram' | 'threads' | 'line' | 'form' | 'other';
@@ -543,8 +506,7 @@ export interface AdminVenueFormValues {
   name: string;
   address: string;
   region: string;
-  nearestMrt: string;
-  mrtWalkMinutes: string;
+  transitStops: TransitRowValue[];
   capacityRange: string;
   description: string;
   coverPhoto: string;
@@ -558,12 +520,11 @@ export interface AdminVenueFormValues {
   bookingFormUrl: string;
 }
 
-const EMPTY_VALUES: AdminVenueFormValues = {
+const emptyValues = (): AdminVenueFormValues => ({
   name: '',
   address: '',
   region: '',
-  nearestMrt: '',
-  mrtWalkMinutes: '',
+  transitStops: [createTransitRow()],
   capacityRange: '',
   description: '',
   coverPhoto: '',
@@ -575,7 +536,7 @@ const EMPTY_VALUES: AdminVenueFormValues = {
   preferredContact: 'instagram',
   contactUrl: '',
   bookingFormUrl: '',
-};
+});
 
 interface FormErrors {
   name?: string;
@@ -598,6 +559,7 @@ const ERROR_FIELD_ORDER = [
   'name',
   'address',
   'region',
+  'transitStops',
   'capacityRange',
   'threads',
   'instagram',
@@ -613,6 +575,38 @@ const ERROR_FIELD_ORDER = [
 const NO_TAG_ERRORS: TagFieldErrors = { sourceLinks: {}, until: {} };
 
 const SAVE_FAILED_MESSAGE = '儲存失敗，勾選都還在。請再按一次；一直失敗請看 Sentry。';
+
+const SUGGESTION_INFO =
+  '下面預先勾好的是店家投稿時的建議，還沒有顯示在前台。確認或修改後按「確認標籤並儲存」，卡片和詳情頁才會更新。';
+
+// Blank rows mean nothing; compare type/station/minutes only (ids differ per load)
+const transitKey = (rows: TransitRowValue[]) =>
+  JSON.stringify(
+    rows
+      .filter((row) => !isBlankTransitRow(row))
+      .map((row) => [row.type, row.station.trim(), row.walkMinutes])
+  );
+
+// 近捷運 hint: first MRT row, else first light-rail row (§E 交通組)
+function mrtHintFrom(rows: TransitRowValue[]): string | null {
+  const row =
+    rows.find((r) => r.type === 'mrt' && r.station.trim()) ??
+    rows.find((r) => r.type === 'light_rail' && r.station.trim());
+  if (!row) return null;
+  const station = row.station.trim();
+  return row.walkMinutes ? `${station}，步行 ${row.walkMinutes} 分鐘` : station;
+}
+
+// The preview card still shows one legacy station (cards switch over in PR 6)
+function previewStation(rows: TransitRowValue[]): { station: string; minutes: string } {
+  const typed = (['mrt', 'light_rail', 'train', 'hsr', 'bus'] as const)
+    .map((type) => rows.find((r) => r.type === type && r.station.trim()))
+    .find(Boolean);
+  const row = typed ?? rows.find((r) => r.station.trim());
+  return { station: row?.station ?? '', minutes: row?.walkMinutes ?? '' };
+}
+
+type SubmitIntent = 'save' | 'confirm' | 'othersOnly';
 
 function isSelectableContact(value: string): value is SelectableContact {
   return PREFERRED_CONTACT_OPTIONS.some((o) => o.value === value);
@@ -663,6 +657,8 @@ interface AdminVenueFormEditProps extends AdminVenueFormBaseProps {
   canDelete: boolean;
   // Saved venue-tags fields from the admin detail; PATCH only sends the ones that change
   initialTagFields?: TagFieldsSource;
+  // Store questionnaire; pending (confirmedAt null) switches to the two-button confirm flow
+  submission?: VenueSubmissionRecord;
   // Saved place data; omit to hide the "reselect place" block
   place?: {
     venueId: string;
@@ -690,14 +686,15 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
   } = props;
 
   const [form, setForm] = useState<AdminVenueFormValues>(() =>
-    props.mode === 'edit' ? props.initialValues : EMPTY_VALUES
+    props.mode === 'edit' ? props.initialValues : emptyValues()
   );
+  const [initialTransit] = useState(() => transitKey(form.transitStops));
+  const [transitErrors, setTransitErrors] = useState<Record<string, TransitRowErrors>>({});
   const [coordinates, setCoordinates] = useState<{
     lat: number | null;
     lng: number | null;
     placeId: string;
   }>({ lat: null, lng: null, placeId: '' });
-  const [hostTagInput, setHostTagInput] = useState('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [today] = useState(() => dateToTaipeiDateString(new Date()));
@@ -721,6 +718,17 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
       ? getTagFieldErrors(tagForm, dictionary, tagBaseline)
       : NO_TAG_ERRORS;
   const preview = dictionary ? buildAdminVenuePreview(tagForm, dictionary, today) : null;
+
+  const submission = props.mode === 'edit' ? props.submission : undefined;
+  const pendingSuggestions = isSubmissionPending(submission) ? submission : undefined;
+  const suggestionSummary =
+    pendingSuggestions && dictionary
+      ? buildSuggestionSummary(tagForm.entries, pendingSuggestions.suggestedTags, dictionary)
+      : null;
+  // Edit mode only validates and sends transit once it differs from load time (§10.2)
+  const transitChanged =
+    props.mode === 'create' || transitKey(form.transitStops) !== initialTransit;
+  const stationPreview = previewStation(form.transitStops);
 
   const showContactUrl = form.preferredContact === 'line';
 
@@ -765,6 +773,12 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
     return next;
   }
 
+  function validateTransit(): Record<string, TransitRowErrors> {
+    const next = transitChanged ? getTransitRowErrors(form.transitStops) : {};
+    setTransitErrors(next);
+    return next;
+  }
+
   // First element in DOM order whose marker attribute names a key with an error
   function firstMarked(attribute: string, errorsByKey: Record<string, string>) {
     const nodes = formRef.current?.querySelectorAll<HTMLElement>(`[${attribute}]`) ?? [];
@@ -773,16 +787,27 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // Enter while suggestions are pending must not confirm them
+    submitWith(pendingSuggestions ? 'othersOnly' : 'save');
+  }
+
+  function submitWith(intent: SubmitIntent) {
+    if (intent === 'confirm' && !dictionary) return;
     setSubmitAttempted(true);
     const nextErrors = validate();
-    const nextTagErrors = dictionary
-      ? getTagFieldErrors(tagForm, dictionary, tagBaseline)
-      : NO_TAG_ERRORS;
-    if (Object.keys(nextErrors).length > 0 || hasTagFieldErrors(nextTagErrors)) {
+    const nextTransitErrors = validateTransit();
+    // "先不確認" sends no tag fields, so they are not validated; confirm checks all of them
+    const nextTagErrors =
+      dictionary && intent !== 'othersOnly'
+        ? getTagFieldErrors(tagForm, dictionary, intent === 'confirm' ? undefined : tagBaseline)
+        : NO_TAG_ERRORS;
+    const transitHasError = Object.keys(nextTransitErrors).length > 0;
+    if (Object.keys(nextErrors).length > 0 || hasTagFieldErrors(nextTagErrors) || transitHasError) {
       const tagFieldHasError: Record<string, boolean> = {
         tags: Object.keys(nextTagErrors.until).length > 0,
         sourceLinks: Object.keys(nextTagErrors.sourceLinks).length > 0,
         calendarUrl: !!nextTagErrors.calendarUrl,
+        transitStops: transitHasError,
       };
       scrollToFirstErrorField(
         ERROR_FIELD_ORDER,
@@ -822,14 +847,13 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
         name: form.name.trim(),
         address: form.address.trim(),
         region: form.region,
-        nearestMrt: form.nearestMrt.trim() || undefined,
-        mrtWalkMinutes: form.mrtWalkMinutes ? Number(form.mrtWalkMinutes) : undefined,
+        // nearestMrt / mrtWalkMinutes are written back by the backend (design-backend §10.3)
+        transitStops: toTransitStops(form.transitStops),
         capacityRange: (form.capacityRange as CapacityRange) || undefined,
         description: form.description.trim() || undefined,
       };
       if (form.coverPhoto) data.coverPhoto = form.coverPhoto;
       if (form.otherPhotos.length > 0) data.otherPhotos = form.otherPhotos;
-      if (form.hostTags.length > 0) data.hostTags = form.hostTags;
       if (socialMedia) data.socialMedia = socialMedia;
       if (form.preferredContact) data.preferredContact = form.preferredContact;
       if (showContactUrl && form.contactUrl.trim()) data.contactUrl = form.contactUrl.trim();
@@ -844,13 +868,11 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
         name: form.name.trim(),
         address: form.address.trim(),
         region: form.region,
-        nearestMrt: form.nearestMrt.trim() || undefined,
-        mrtWalkMinutes: form.mrtWalkMinutes ? Number(form.mrtWalkMinutes) : null,
         capacityRange: (form.capacityRange as CapacityRange) || null,
         description: form.description.trim() || undefined,
         coverPhoto: form.coverPhoto || undefined,
         otherPhotos: form.otherPhotos,
-        hostTags: form.hostTags,
+        // hostTags are read-only now and never sent (TC-062)
         socialMedia,
         // Always sent so the field can be cleared; null clears it on the backend
         bookingFormUrl: form.bookingFormUrl.trim() || null,
@@ -860,7 +882,12 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
         data.preferredContact = form.preferredContact;
       }
       if (showContactUrl && form.contactUrl.trim()) data.contactUrl = form.contactUrl.trim();
-      if (dictionary) Object.assign(data, buildTagFieldsPatch(initialTagForm, tagForm, dictionary));
+      if (transitChanged) data.transitStops = toTransitStops(form.transitStops);
+      if (dictionary && intent === 'confirm') {
+        Object.assign(data, buildTagFieldsFull(tagForm, dictionary), { confirmSuggestions: true });
+      } else if (dictionary && intent === 'save') {
+        Object.assign(data, buildTagFieldsPatch(initialTagForm, tagForm, dictionary));
+      }
       props.onSubmit(data);
     }
   }
@@ -910,24 +937,6 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
     });
   }
 
-  function handleAddHostTag() {
-    const tag = hostTagInput.trim();
-    setHostTagInput('');
-    if (!tag || form.hostTags.includes(tag) || form.hostTags.length >= MAX_HOST_TAGS) return;
-    setForm((prev) => ({ ...prev, hostTags: [...prev.hostTags, tag] }));
-  }
-
-  function handleRemoveHostTag(tag: string) {
-    setForm((prev) => ({ ...prev, hostTags: prev.hostTags.filter((t) => t !== tag) }));
-  }
-
-  function handleHostTagKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-      e.preventDefault();
-      handleAddHostTag();
-    }
-  }
-
   return (
     <form ref={formRef} onSubmit={handleSubmit} noValidate>
       <div className={layout}>
@@ -938,6 +947,8 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
               <span className={saveFailedDetail}>{submitError}</span>
             </div>
           )}
+
+          {pendingSuggestions && <p className={infoBox}>{SUGGESTION_INFO}</p>}
 
           {/* place autocomplete (create only) */}
           {props.mode === 'create' && (
@@ -1036,35 +1047,22 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
             )}
           </div>
 
-          {/* nearestMrt */}
-          <div className={fieldGroup}>
-            <label htmlFor="venue-mrt" className={label}>
-              最近捷運站
-            </label>
-            <input
-              id="venue-mrt"
-              type="text"
-              className={inputStyle}
-              placeholder="例：中山站"
-              value={form.nearestMrt}
-              onChange={(e) => setField('nearestMrt', e.target.value)}
-            />
-          </div>
-
-          {/* mrtWalkMinutes */}
-          <div className={fieldGroup}>
-            <label htmlFor="venue-mrt-walk" className={label}>
-              步行分鐘數
-            </label>
-            <input
-              id="venue-mrt-walk"
-              type="number"
-              min={0}
-              max={60}
-              className={numberInputStyle}
-              placeholder="例：5"
-              value={form.mrtWalkMinutes}
-              onChange={(e) => setField('mrtWalkMinutes', e.target.value)}
+          <div data-field="transitStops">
+            <TransitStopsField
+              idPrefix="venue-transit"
+              legend="交通方式"
+              rows={form.transitStops}
+              errors={transitErrors}
+              onChange={(rows, edited) => {
+                setForm((prev) => ({ ...prev, transitStops: rows }));
+                const { rowId, part } = edited;
+                if (part === 'other') return;
+                setTransitErrors((prev) =>
+                  prev[rowId]?.[part]
+                    ? { ...prev, [rowId]: { ...prev[rowId], [part]: undefined } }
+                    : prev
+                );
+              }}
             />
           </div>
 
@@ -1269,50 +1267,6 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
             />
           </div>
 
-          {/* hostTags */}
-          <div className={fieldGroup}>
-            <span className={label}>場地標籤</span>
-            <p className={fieldHint}>
-              主辦初步篩選用，建議 1–3 個，最多 {MAX_HOST_TAGS} 個（例：免場地費、新手友善）
-            </p>
-            <div className={tagInputRow}>
-              <input
-                type="text"
-                className={inputStyle}
-                value={hostTagInput}
-                onChange={(e) => setHostTagInput(e.target.value)}
-                onKeyDown={handleHostTagKeyDown}
-                placeholder="輸入標籤後按 Enter 或點新增"
-                disabled={form.hostTags.length >= MAX_HOST_TAGS}
-              />
-              <button
-                type="button"
-                className={tagAddBtn}
-                onClick={handleAddHostTag}
-                disabled={form.hostTags.length >= MAX_HOST_TAGS}
-              >
-                新增
-              </button>
-            </div>
-            {form.hostTags.length > 0 && (
-              <div className={tagList}>
-                {form.hostTags.map((t) => (
-                  <span key={t} className={tagPill}>
-                    {t}
-                    <button
-                      type="button"
-                      className={tagRemoveBtn}
-                      aria-label={`移除標籤 ${t}`}
-                      onClick={() => handleRemoveHostTag(t)}
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
           <AdminVenueTagSection
             status={tagStatus}
             dictionary={dictionary}
@@ -1320,8 +1274,10 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
             initialEntries={initialTagForm.entries}
             errors={tagErrors}
             today={today}
-            nearestMrt={form.nearestMrt}
-            mrtWalkMinutes={form.mrtWalkMinutes}
+            mrtHint={mrtHintFrom(form.transitStops)}
+            suggestedTags={pendingSuggestions?.suggestedTags ?? null}
+            submission={submission}
+            hostTags={form.hostTags}
             onChange={setTagForm}
           />
 
@@ -1380,14 +1336,38 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
             </div>
           )}
 
+          {suggestionSummary && <p className={summaryLine}>{suggestionSummary}</p>}
           <div className={submitRow}>
             <Link href={cancelHref} className={cancelBtn}>
               取消
             </Link>
-            <button type="submit" className={submitBtn} disabled={isSubmitting}>
-              {isSubmitting && <div className={spinner} aria-hidden="true" />}
-              {submitLabel ?? (props.mode === 'create' ? '新增場地' : '儲存變更')}
-            </button>
+            {pendingSuggestions ? (
+              <>
+                <button
+                  type="button"
+                  className={cancelBtn}
+                  disabled={isSubmitting}
+                  onClick={() => submitWith('othersOnly')}
+                >
+                  先不確認，只存其他欄位
+                </button>
+                {/* Without a dictionary, confirming would overwrite tags with blanks */}
+                <button
+                  type="button"
+                  className={submitBtn}
+                  disabled={isSubmitting || !dictionary}
+                  onClick={() => submitWith('confirm')}
+                >
+                  {isSubmitting && <div className={spinner} aria-hidden="true" />}
+                  確認標籤並儲存
+                </button>
+              </>
+            ) : (
+              <button type="submit" className={submitBtn} disabled={isSubmitting}>
+                {isSubmitting && <div className={spinner} aria-hidden="true" />}
+                {submitLabel ?? (props.mode === 'create' ? '新增場地' : '儲存變更')}
+              </button>
+            )}
           </div>
 
           {/* Danger zone (edit only) */}
@@ -1413,8 +1393,8 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
             preview={preview}
             name={form.name}
             region={form.region}
-            nearestMrt={form.nearestMrt}
-            mrtWalkMinutes={form.mrtWalkMinutes}
+            nearestMrt={stationPreview.station}
+            mrtWalkMinutes={stationPreview.minutes}
             coverPhoto={form.coverPhoto}
             sourceLinks={preview?.sourceLinks ?? []}
             infoUpdatedOn={preview?.infoUpdatedOn ?? null}
