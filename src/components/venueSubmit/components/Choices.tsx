@@ -41,7 +41,10 @@ const radioCardWrap = css({
     background: 'alpha.primary.10',
   },
   '& > label': { border: 'none', background: 'transparent' },
-  '& > label[data-checked="true"]': { padding: 'token(spacing.3) calc(token(spacing.4) - 1px)' },
+  // Keep content still when the wrapper border thickens to 2px
+  '&[data-checked="true"] > label': {
+    padding: 'calc(token(spacing.3) - 1px) calc(token(spacing.4) - 1px)',
+  },
 });
 
 interface CheckCardProps {
@@ -95,8 +98,9 @@ interface RadioCardProps {
 
 export function RadioCard({ id, name, label, checked, onSelect, children }: RadioCardProps) {
   return (
+    // The wrapper carries the checked state so the expanded area shares one tint
     <div className={radioCardWrap} data-checked={checked}>
-      <label htmlFor={id} className={choiceCard()} data-checked={checked}>
+      <label htmlFor={id} className={choiceCard()}>
         <input
           id={id}
           type="radio"

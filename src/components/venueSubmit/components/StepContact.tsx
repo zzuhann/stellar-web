@@ -75,6 +75,8 @@ interface TextFieldProps {
   hintText?: string;
   placeholder?: string;
   inputMode?: 'url' | 'text';
+  // A group-level error that also applies to this input (LINE: "at least one social account")
+  groupErrorKey?: string;
   onChange: (value: string) => void;
 }
 
@@ -88,9 +90,11 @@ function TextField({
   hintText,
   placeholder,
   inputMode = 'text',
+  groupErrorKey,
   onChange,
 }: TextFieldProps) {
   const message = errors[errorKey];
+  const groupMessage = groupErrorKey ? errors[groupErrorKey] : undefined;
   const hintId = `${id}-hint`;
   return (
     <div className={field} data-error-field={errorKey}>
@@ -110,8 +114,12 @@ function TextField({
         className={input}
         placeholder={placeholder}
         value={value}
-        aria-invalid={message ? 'true' : undefined}
-        aria-describedby={describedBy(hintText && hintId, message && errorId(errorKey))}
+        aria-invalid={message || groupMessage ? 'true' : undefined}
+        aria-describedby={describedBy(
+          hintText && hintId,
+          message && errorId(errorKey),
+          groupMessage && groupErrorKey && errorId(groupErrorKey)
+        )}
         onChange={(e) => onChange(e.target.value)}
       />
       <FieldError id={errorId(errorKey)} message={message} />
@@ -140,10 +148,12 @@ export default function StepContact({
       update((prev) => ({ ...prev, [key]: value }), clear);
   const socialClear = ['instagram', 'threads', 'socialMedia'];
 
+  const groupErrorKey = contact === 'line' ? 'socialMedia' : undefined;
   const instagramField = (optional: boolean) => (
     <TextField
       id="venue-submit-instagram"
       errorKey="instagram"
+      groupErrorKey={groupErrorKey}
       label="Instagram 帳號"
       optional={optional}
       value={form.instagram}
@@ -156,6 +166,7 @@ export default function StepContact({
     <TextField
       id="venue-submit-threads"
       errorKey="threads"
+      groupErrorKey={groupErrorKey}
       label="Threads 帳號"
       optional={optional}
       value={form.threads}

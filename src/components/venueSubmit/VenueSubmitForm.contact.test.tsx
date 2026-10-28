@@ -191,6 +191,8 @@ describe('TC-113 店家表單的聯絡方式與預約表單網址', () => {
     fireEvent.change(line, { target: { value: 'abc' } });
     submit();
     expect(screen.getByText('請填寫至少一個社群帳號')).toBeTruthy();
+    expectFieldError(screen.getByLabelText('Instagram 帳號'), '請填寫至少一個社群帳號');
+    expectFieldError(screen.getByLabelText('Threads 帳號'), '請填寫至少一個社群帳號');
     expectFieldError(line, '請輸入完整網址（以 https:// 開頭）');
 
     fireEvent.change(line, { target: { value: 'http://lin.ee/x' } });
