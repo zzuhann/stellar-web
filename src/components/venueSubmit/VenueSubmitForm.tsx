@@ -197,6 +197,10 @@ function readInitialState() {
   const urlStep = parseStepParam(window.location.search);
   const step = resolveInitialStep(urlStep, draft);
   const stateDepth = readStateDepth(window.history.state);
+  // Only entries the form wrote carry ?step; a fresh push into the form starts at depth 0
+  const draftDepth = new URLSearchParams(window.location.search).has('step')
+    ? (draft?.depth ?? null)
+    : null;
   // No usable draft but deep in the steps: we will retreat to the entry (depth 0)
   const returnToStart = !draft && urlStep > 1;
   return {
@@ -204,7 +208,8 @@ function readInitialState() {
     urlStep,
     step,
     returnToStart,
-    depth: returnToStart ? 0 : (stateDepth ?? draft?.depth ?? 0),
+    draftDepth,
+    depth: returnToStart ? 0 : (stateDepth ?? draftDepth ?? 0),
   };
 }
 
@@ -386,7 +391,7 @@ export default function VenueSubmitForm({
       pendingLandingRef.current = returnToEntry(history, stepUrl(location, 1), () => {});
       return;
     }
-    restoreDepth(history, init.draft?.depth ?? null);
+    restoreDepth(history, init.draftDepth);
     if (init.step !== init.urlStep || !new URLSearchParams(location.search).has('step')) {
       replaceUrl(history, stepUrl(location, init.step));
     }

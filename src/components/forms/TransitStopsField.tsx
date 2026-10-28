@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, type ReactNode } from 'react';
+import { flushSync } from 'react-dom';
 import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import type { TransitType } from '@/types';
@@ -141,8 +142,11 @@ export default function TransitStopsField({
 
   function remove(rowId: string) {
     const remaining = rows.filter((row) => row.id !== rowId);
-    // Always keep one row on screen; an all-blank row means "no transit"
-    onChange(remaining.length > 0 ? remaining : [createTransitRow()], { rowId, part: 'other' });
+    // Always keep one row on screen; an all-blank row means "no transit".
+    // Commit first: at the row limit the add button only renders after this removal
+    flushSync(() =>
+      onChange(remaining.length > 0 ? remaining : [createTransitRow()], { rowId, part: 'other' })
+    );
     addRef.current?.focus();
   }
 

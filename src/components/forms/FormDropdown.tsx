@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
 
@@ -97,12 +97,24 @@ export default function FormDropdown<T extends string>({
   onChange,
 }: FormDropdownProps<T>) {
   const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const selected = options.find((o) => o.value === value)?.label;
   const shown = selected ?? placeholder;
 
+  // Safari never focuses clicked buttons, so blur misses outside clicks (pointerdown covers iOS taps)
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: PointerEvent) => {
+      if (!containerRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('pointerdown', handler);
+    return () => document.removeEventListener('pointerdown', handler);
+  }, [open]);
+
   return (
     <div
+      ref={containerRef}
       className={container}
       // Focus leaving the widget (incl. clicking outside) closes it
       onBlur={(e) => {

@@ -29,6 +29,15 @@ function previewOf(file: File): string | null {
   }
 }
 
+function revokePreview(url: string | null | undefined) {
+  if (!url) return;
+  try {
+    URL.revokeObjectURL(url);
+  } catch {
+    // jsdom / in-app browsers without object URLs
+  }
+}
+
 interface Options {
   uploadPhoto: UploadPhoto;
   setForm: Dispatch<SetStateAction<VenueSubmitFormValues>>;
@@ -47,6 +56,12 @@ export function usePhotoUploads({ uploadPhoto, setForm, onCoverUploaded, onUploa
 
   const start = (id: string) => setInFlight((prev) => [...prev, id]);
   const finish = (id: string) => setInFlight((prev) => prev.filter((x) => x !== id));
+  // Every cover preview change frees the blob it replaces
+  const swapCoverPreview = (next: string | null) =>
+    setCoverPreview((prev) => {
+      if (prev !== next) revokePreview(prev);
+      return next;
+    });
 
   async function selectCover(file: File) {
     const invalid = validateFile(file);
@@ -60,18 +75,18 @@ export function usePhotoUploads({ uploadPhoto, setForm, onCoverUploaded, onUploa
     const isLatest = () => seq === coverSeq.current;
     setCoverError(null);
     setFailedCover(null);
-    setCoverPreview(previewOf(file));
+    swapCoverPreview(previewOf(file));
     start(id);
     try {
       const url = await uploadPhoto(file, 'cover');
       if (!isLatest()) return;
       setForm((prev) => ({ ...prev, coverPhoto: url }));
-      setCoverPreview(null);
+      swapCoverPreview(null);
       onCoverUploaded();
     } catch (error) {
       onUploadError?.(error instanceof Error ? error : new Error(UPLOAD_FAILED), file, 'cover');
       if (!isLatest()) return;
-      setCoverPreview(null);
+      swapCoverPreview(null);
       setCoverError(UPLOAD_FAILED);
       setFailedCover(file);
     } finally {
@@ -82,7 +97,7 @@ export function usePhotoUploads({ uploadPhoto, setForm, onCoverUploaded, onUploa
   function removeCover() {
     // Invalidates any cover still uploading
     coverSeq.current += 1;
-    setCoverPreview(null);
+    swapCoverPreview(null);
     setCoverError(null);
     setFailedCover(null);
     setForm((prev) => ({ ...prev, coverPhoto: '' }));
@@ -126,6 +141,7 @@ export function usePhotoUploads({ uploadPhoto, setForm, onCoverUploaded, onUploa
           finish(id);
           setPreviews((prev) => {
             const nextPreviews = { ...prev };
+            revokePreview(nextPreviews[id]);
             delete nextPreviews[id];
             return nextPreviews;
           });

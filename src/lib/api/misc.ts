@@ -3,6 +3,16 @@ import { PlacePrediction, PlaceDetails } from '@/types';
 import api from './client';
 import { ERROR_CODE_MESSAGES, FIELD_LABELS } from './errorCodes';
 
+// Backend sends zod paths ("transitStops.0.station"); fall back to the nearest labelled parent
+function labelForPath(path: string): string | undefined {
+  const parts = path.split('.');
+  for (let n = parts.length; n > 0; n--) {
+    const label = FIELD_LABELS[parts.slice(0, n).join('.')];
+    if (label) return label;
+  }
+  return undefined;
+}
+
 // 統一錯誤處理函數
 export function handleApiError(error: unknown, fallbackMessage = '發生未知錯誤'): string {
   if (!axios.isAxiosError(error)) return fallbackMessage;
@@ -12,7 +22,7 @@ export function handleApiError(error: unknown, fallbackMessage = '發生未知�
     | undefined;
 
   if (data?.code === 'VALIDATION_ERROR') {
-    const fieldLabel = data.field ? FIELD_LABELS[data.field] : undefined;
+    const fieldLabel = data.field ? labelForPath(data.field) : undefined;
     // Backend reasons in Chinese are user-readable; English ones are not
     if (data.error && /[\u4e00-\u9fff]/.test(data.error)) {
       return fieldLabel ? `${fieldLabel}：${data.error}` : data.error;

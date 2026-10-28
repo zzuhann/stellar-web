@@ -23,7 +23,7 @@ import TransitStopsField from '@/components/forms/TransitStopsField';
 import {
   createTransitRow,
   getTransitRowErrors,
-  isBlankTransitRow,
+  pickPrimaryTransit,
   toTransitStops,
   type TransitRowErrors,
   type TransitRowValue,
@@ -580,12 +580,7 @@ const SUGGESTION_INFO =
   '下面預先勾好的是店家投稿時的建議，還沒有顯示在前台。確認或修改後按「確認標籤並儲存」，卡片和詳情頁才會更新。';
 
 // Blank rows mean nothing; compare type/station/minutes only (ids differ per load)
-const transitKey = (rows: TransitRowValue[]) =>
-  JSON.stringify(
-    rows
-      .filter((row) => !isBlankTransitRow(row))
-      .map((row) => [row.type, row.station.trim(), row.walkMinutes])
-  );
+const transitKey = (rows: TransitRowValue[]) => JSON.stringify(toTransitStops(rows));
 
 // 近捷運 hint: first MRT row, else first light-rail row (§E 交通組)
 function mrtHintFrom(rows: TransitRowValue[]): string | null {
@@ -599,11 +594,8 @@ function mrtHintFrom(rows: TransitRowValue[]): string | null {
 
 // The preview card still shows one legacy station (cards switch over in PR 6)
 function previewStation(rows: TransitRowValue[]): { station: string; minutes: string } {
-  const typed = (['mrt', 'light_rail', 'train', 'hsr', 'bus'] as const)
-    .map((type) => rows.find((r) => r.type === type && r.station.trim()))
-    .find(Boolean);
-  const row = typed ?? rows.find((r) => r.station.trim());
-  return { station: row?.station ?? '', minutes: row?.walkMinutes ?? '' };
+  const stop = pickPrimaryTransit(toTransitStops(rows).filter((s) => s.type && s.station));
+  return { station: stop?.station ?? '', minutes: stop?.walkMinutes?.toString() ?? '' };
 }
 
 type SubmitIntent = 'save' | 'confirm' | 'othersOnly';

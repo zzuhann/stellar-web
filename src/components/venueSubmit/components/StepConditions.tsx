@@ -163,7 +163,8 @@ export default function StepConditions({ form, errors, today, update }: StepCond
                       errors.freeVenueUntil && errorId('freeVenueUntil')
                     )}
                     onKeyDown={(e) => {
-                      if (e.key === 'Tab') return;
+                      // Picker only, but Backspace/Delete may still clear the optional date
+                      if (['Tab', 'Backspace', 'Delete'].includes(e.key)) return;
                       e.preventDefault();
                       if (e.key === 'Enter' || e.key === ' ') openPicker(e.currentTarget);
                     }}

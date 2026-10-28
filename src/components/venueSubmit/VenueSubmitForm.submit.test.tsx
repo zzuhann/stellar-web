@@ -604,6 +604,21 @@ describe('TC-130 按「×」離開', () => {
     expect(screen.queryByRole('alertdialog')).toBeNull();
     await waitFor(() => expect(routerReplace).toHaveBeenCalledWith('/'));
   });
+
+  it('從站內連結重新進表單（網址沒有 step）不沿用暫存的 depth，離開時不會多退', async () => {
+    storeDraft(filledForm(), { maxStep: 3, depth: 2 });
+    window.history.pushState(null, '', '/submit-venue');
+    const go = vi.spyOn(window.history, 'go');
+    renderPage();
+    await waitForStep(1);
+    expect(window.history.state[DEPTH_KEY]).toBe(0);
+    fireEvent.click(screen.getByRole('button', { name: '離開投稿' }));
+    fireEvent.click(
+      within(await screen.findByRole('alertdialog')).getByRole('button', { name: '離開' })
+    );
+    await waitFor(() => expect(routerReplace).toHaveBeenCalledWith('/'));
+    expect(go).not.toHaveBeenCalled();
+  });
 });
 
 describe('TC-131 beforeunload', () => {
