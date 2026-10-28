@@ -95,6 +95,8 @@ const actionButton = css({
   '& svg': { width: '16px', height: '16px' },
 });
 
+const pushRight = css({ marginLeft: 'auto' });
+
 const textAction = css({
   minHeight: '32px',
   paddingX: '2.5',
@@ -277,7 +279,7 @@ export default function VenuePhotoGrid({
               </button>
             </div>
             <div className={bottomActions}>
-              {index > 0 ? (
+              {index > 0 && (
                 <button
                   type="button"
                   className={actionButton}
@@ -286,13 +288,11 @@ export default function VenuePhotoGrid({
                 >
                   <ChevronLeftIcon aria-hidden="true" />
                 </button>
-              ) : (
-                <span />
               )}
               {index < others.length - 1 && (
                 <button
                   type="button"
-                  className={actionButton}
+                  className={`${actionButton} ${pushRight}`}
                   aria-label={`其他照片 ${n} 往後移`}
                   onClick={() => onMoveOther(slot.id, 1)}
                 >

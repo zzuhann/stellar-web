@@ -26,12 +26,12 @@ const fieldsetStyle = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '2',
-  '& > legend': { marginBottom: '3' },
 });
 
 const legendStyle = css({
   padding: 0,
-  marginBottom: '1',
+  // A legend is not a flex item, so the fieldset gap never reaches it
+  marginBottom: '3',
   textStyle: 'bodyStrong',
   color: 'color.text.primary',
 });
