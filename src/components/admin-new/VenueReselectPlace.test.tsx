@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { venueApi } from '@/lib/api';
-import VenueForm from './VenueForm';
+import AdminVenueForm from './AdminVenueForm';
 import VenueReselectPlace from './VenueReselectPlace';
 import {
   CURRENT_PLACE,
@@ -14,7 +14,11 @@ import {
 } from './venuePlaceReselect.fixtures';
 
 vi.mock('@/lib/api', () => ({
-  venueApi: { previewPlaceReselect: vi.fn(), applyPlaceReselect: vi.fn() },
+  venueApi: {
+    previewPlaceReselect: vi.fn(),
+    applyPlaceReselect: vi.fn(),
+    getTagDictionary: () => new Promise(() => {}),
+  },
   placesApi: {
     getDetails: async () => ({ name: '新店家咖啡', geometry: { location: { lat: 25, lng: 121 } } }),
   },
@@ -285,7 +289,7 @@ describe('F4 預覽錯誤各狀態', () => {
 describe('F8 寫入成功後回饋', () => {
   function renderEditForm() {
     return renderWithClient(
-      <VenueForm
+      <AdminVenueForm
         mode="edit"
         initialValues={{
           name: '測試咖啡',

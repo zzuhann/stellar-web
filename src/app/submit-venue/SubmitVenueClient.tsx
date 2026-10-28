@@ -1,13 +1,14 @@
 'use client';
 
-import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState, useSyncExternalStore } from 'react';
 import * as Sentry from '@sentry/nextjs';
 import { css } from '@/styled-system/css';
-import VenueForm from '@/components/admin-new/VenueForm';
+import VenueSubmitForm from '@/components/venueSubmit/VenueSubmitForm';
+import type { UploadPhoto } from '@/components/venueSubmit/hooks/usePhotoUploads';
 import { useSubmitVenueMutation } from '@/components/admin-new/hooks/useSubmitVenueMutation';
 import { venueSubmissionApi } from '@/lib/api';
-import { uploadImageToAPI } from '@/lib/r2-upload';
+import { compressImage, uploadImageToAPI } from '@/lib/r2-upload';
+import { CDN_DOMAIN } from '@/constants';
 
 const pageWrapper = css({
   minHeight: '100dvh',
@@ -18,24 +19,8 @@ const pageWrapper = css({
   md: { paddingTop: '24', paddingX: '6' },
 });
 
-const container = css({ width: '100%', maxWidth: '640px', marginX: 'auto' });
-const title = css({ textStyle: 'h3', color: 'color.text.primary', marginBottom: '2' });
-const description = css({
-  textStyle: 'bodySmall',
-  color: 'color.text.secondary',
-  marginBottom: '6',
-});
-const legalNotice = css({
-  textStyle: 'caption',
-  color: 'color.text.secondary',
-  marginBottom: '6',
-  lineHeight: '1.6',
-  '& a': {
-    color: 'color.primary',
-    textDecoration: 'underline',
-    textUnderlineOffset: '2px',
-  },
-});
+const placeholder = css({ minHeight: '100dvh', background: 'color.background.primary' });
+
 const successCard = css({
   maxWidth: '560px',
   marginX: 'auto',
@@ -57,13 +42,41 @@ const publicPlaceApi = {
 const SUBMISSION_NOTICE =
   '資料送出後會由 STELLAR 審核，通常會在 1–3 個工作天內完成。審核通過後，平台上就可以看見你們的場地資訊囉～！ 投稿後如需修改，請聯絡 STELLAR 平台（IG 或是 Threads 皆可）。';
 
+const COMPRESSION = {
+  cover: { maxWidth: 1200, maxHeight: 800, quality: 0.85 },
+  other: { maxWidth: 1200, maxHeight: 900, quality: 0.85 },
+} as const;
+
+const uploadPhoto: UploadPhoto = async (file, kind) => {
+  const { maxWidth, maxHeight, quality } = COMPRESSION[kind];
+  const compressed = await compressImage(file, maxWidth, maxHeight, quality);
+  const result = await uploadImageToAPI(compressed, undefined, '/venue-submissions/images');
+  if (!result.success || !result.filename) throw new Error(result.error || '上傳失敗');
+  return CDN_DOMAIN + result.filename;
+};
+
+const subscribeNoop = () => () => {};
+
 export default function SubmitVenueClient() {
+  // sessionStorage and history only exist in the browser; render the form after hydration
+  const isClient = useSyncExternalStore(
+    subscribeNoop,
+    () => true,
+    () => false
+  );
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const mutation = useSubmitVenueMutation({
-    onSuccess: () => setSubmitted(true),
-    onError: setSubmitError,
-  });
+  const mutation = useSubmitVenueMutation({ onError: setSubmitError });
+
+  // Forward from the success card into an old step URL starts a fresh form
+  useEffect(() => {
+    if (!submitted) return;
+    const onPopState = () => {
+      if (new URLSearchParams(window.location.search).has('step')) setSubmitted(false);
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, [submitted]);
 
   if (submitted) {
     return (
@@ -78,36 +91,28 @@ export default function SubmitVenueClient() {
     );
   }
 
+  if (!isClient) return <main className={placeholder} />;
+
   return (
-    <main className={pageWrapper}>
-      <div className={container}>
-        <h1 className={title}>投稿場地</h1>
-        <p className={description}>{SUBMISSION_NOTICE}</p>
-        <p className={legalNotice}>
-          送出即表示你確認有權提供上述資料與圖片，並同意我們依
-          <Link href="/terms">服務條款</Link>及<Link href="/privacy">隱私權政策</Link>
-          處理及公開顯示。
-        </p>
-        <VenueForm
-          mode="create"
-          onSubmit={(data) => {
-            setSubmitError(null);
-            mutation.mutate(data);
-          }}
-          isSubmitting={mutation.isPending}
-          submitError={submitError}
-          cancelHref="/"
-          submitLabel="送出場地投稿"
-          placeApi={publicPlaceApi}
-          uploadImage={(file) => uploadImageToAPI(file, undefined, '/venue-submissions/images')}
-          onImageUploadError={(error, file, category) => {
-            Sentry.captureException(error, {
-              tags: { context: 'venue_submission_image_upload' },
-              extra: { category, contentType: file.type, size: file.size },
-            });
-          }}
-        />
-      </div>
-    </main>
+    <VenueSubmitForm
+      submit={async (payload) => {
+        setSubmitError(null);
+        await mutation.mutateAsync(payload);
+      }}
+      isSubmitting={mutation.isPending}
+      submitError={submitError}
+      onSubmitted={() => {
+        setSubmitError(null);
+        setSubmitted(true);
+      }}
+      placeApi={publicPlaceApi}
+      uploadPhoto={uploadPhoto}
+      onUploadError={(error, file, kind) => {
+        Sentry.captureException(error, {
+          tags: { context: 'venue_submission_image_upload' },
+          extra: { category: kind, contentType: file.type, size: file.size },
+        });
+      }}
+    />
   );
 }

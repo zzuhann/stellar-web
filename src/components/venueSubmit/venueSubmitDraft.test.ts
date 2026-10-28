@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createEmptyForm } from './venueSubmitForm';
+import { createEmptyForm } from './venueSubmitModel';
 import {
   DRAFT_VERSION,
   parseDraft,

@@ -4,6 +4,7 @@ import {
   VenueDetail,
   UpdateVenueData,
   CreateVenueData,
+  CreateVenueSubmissionData,
   PlaceReselectAddressChoice,
   VenuePlaceReselectPreview,
   VenuePlaceReselectResult,
@@ -13,7 +14,7 @@ import api from './client';
 import type { PlaceDetails, PlacePrediction } from '@/types';
 
 export const venueSubmissionApi = {
-  create: async (data: CreateVenueData): Promise<void> => {
+  create: async (data: CreateVenueSubmissionData): Promise<void> => {
     await api.post('/venue-submissions', data);
   },
 

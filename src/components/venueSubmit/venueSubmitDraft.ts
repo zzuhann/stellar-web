@@ -5,7 +5,7 @@ import {
   createPhotoSlot,
   type SubmitStep,
   type VenueSubmitFormValues,
-} from './venueSubmitForm';
+} from './venueSubmitModel';
 
 // Per-tab draft in sessionStorage (venue-tags design-frontend §D「分頁內暫存」)
 

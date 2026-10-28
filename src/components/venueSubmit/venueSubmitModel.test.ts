@@ -9,7 +9,7 @@ import {
   validateAllSteps,
   validateStep,
   type VenueSubmitFormValues,
-} from './venueSubmitForm';
+} from './venueSubmitModel';
 
 const TODAY = '2026-10-28';
 
