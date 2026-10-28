@@ -145,7 +145,7 @@ export default function StepConditions({ form, errors, today, update }: StepCond
             >
               <PlainCheck
                 id="venue-submit-fee-limited"
-                label="這是限時優惠，免場地費到"
+                label="期間限定：免場地費到"
                 checked={fees.freeVenueLimited}
                 onChange={(on) => setFees({ freeVenueLimited: on }, ['freeVenueUntil'])}
               />
@@ -176,7 +176,7 @@ export default function StepConditions({ form, errors, today, update }: StepCond
                   />
                   <FieldError id={errorId('freeVenueUntil')} message={errors.freeVenueUntil} />
                   <p id="venue-submit-fee-until-hint" className={hint}>
-                    不確定到哪天可以先不填。
+                    若目前沒有明確結束時間，可以留白
                   </p>
                 </div>
               )}

@@ -191,7 +191,7 @@ test.describe('TC-086 公開場地投稿（3 步）', () => {
     const submissions = mockSubmissions(page);
     await enterForm(page);
     await page.getByRole('button', { name: '下一步' }).click();
-    await expect(page.getByText('請從搜尋結果選擇你的店')).toBeVisible();
+    await expect(page.getByText('請從搜尋結果選擇你的店家')).toBeVisible();
     await expect(page.getByText('請選擇地區')).toBeVisible();
     await expect(page.getByText('請選擇容納人數', { exact: true })).toBeVisible();
     await expect(page.getByText('請填寫場地名稱')).toHaveCount(0);

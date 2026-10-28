@@ -176,6 +176,7 @@ export default function StepPlace({
           label="場地大約可以容納多少人？"
           value={form.capacityRange}
           options={CAPACITY_OPTIONS}
+          placement="top"
           invalid={!!errors.capacityRange}
           describedBy={errors.capacityRange ? errorId('capacityRange') : undefined}
           onChange={(capacityRange) =>

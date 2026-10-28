@@ -34,19 +34,27 @@ const trigger = css({
 
 const triggerText = css({ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' });
 
-const menu = css({
-  position: 'absolute',
-  top: 'calc(100% + 4px)',
-  left: 0,
-  minWidth: '100%',
-  maxHeight: '240px',
-  overflowY: 'auto',
-  background: 'color.background.primary',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  borderRadius: 'radius.md',
-  boxShadow: 'shadow.md',
-  zIndex: 20,
+const menu = cva({
+  base: {
+    position: 'absolute',
+    left: 0,
+    minWidth: '100%',
+    maxHeight: '240px',
+    overflowY: 'auto',
+    background: 'color.background.primary',
+    border: '1px solid',
+    borderColor: 'color.border.light',
+    borderRadius: 'radius.md',
+    boxShadow: 'shadow.md',
+    zIndex: 20,
+  },
+  variants: {
+    placement: {
+      bottom: { top: 'calc(100% + 4px)' },
+      top: { bottom: 'calc(100% + 4px)' },
+    },
+  },
+  defaultVariants: { placement: 'bottom' },
 });
 
 const option = cva({
@@ -83,6 +91,8 @@ interface FormDropdownProps<T extends string> {
   placeholder?: string;
   invalid?: boolean;
   describedBy?: string;
+  // 'top' for fields near the bottom of the screen, where a sticky bar would cover the menu
+  placement?: 'bottom' | 'top';
   onChange: (value: T) => void;
 }
 
@@ -94,6 +104,7 @@ export default function FormDropdown<T extends string>({
   placeholder = '請選擇',
   invalid,
   describedBy,
+  placement = 'bottom',
   onChange,
 }: FormDropdownProps<T>) {
   const [open, setOpen] = useState(false);
@@ -146,7 +157,7 @@ export default function FormDropdown<T extends string>({
       </button>
       {open && (
         <div
-          className={menu}
+          className={menu({ placement })}
           role="listbox"
           aria-label={label}
           // Keeps focus inside while clicking (Safari does not focus clicked buttons)

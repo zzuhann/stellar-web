@@ -26,6 +26,7 @@ const fieldsetStyle = css({
   display: 'flex',
   flexDirection: 'column',
   gap: '2',
+  '& > legend': { marginBottom: '3' },
 });
 
 const legendStyle = css({

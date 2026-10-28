@@ -187,7 +187,7 @@ describe('TC-113 店家表單的聯絡方式與預約表單網址', () => {
     await uploadCover();
     fireEvent.click(screen.getByRole('radio', { name: 'LINE' }));
     const line = screen.getByLabelText('LINE 連結');
-    expect(line.getAttribute('placeholder')).toBe('LINE 網址');
+    expect(line.getAttribute('placeholder')).toBe('LINE 連結');
     fireEvent.change(line, { target: { value: 'abc' } });
     submit();
     expect(screen.getByText('請填寫至少一個社群帳號')).toBeTruthy();

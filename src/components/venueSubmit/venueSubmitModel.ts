@@ -188,7 +188,7 @@ const hasFreeVenueLimit = (fees: FeeAnswers) => fees.venueFee === 'free' && fees
 
 function validateStep1(form: VenueSubmitFormValues): FormErrors {
   const errors: FormErrors = {};
-  if (!form.place) errors.place = '請從搜尋結果選擇你的店';
+  if (!form.place) errors.place = '請從搜尋結果選擇你的店家';
   // The name field only exists once a place is picked
   else if (!form.name.trim()) errors.name = '請填寫場地名稱';
   if (!form.region) errors.region = '請選擇地區';

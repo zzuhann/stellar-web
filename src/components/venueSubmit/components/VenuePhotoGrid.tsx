@@ -13,11 +13,11 @@ import type { PhotoSlot } from '../venueSubmitModel';
 import { MAX_OTHER_PHOTOS } from '../venueSubmitModel';
 import { srOnly } from '../styles';
 
-// 3-column grid: cover 2×2 with a「封面」badge, other photos 1×1, add tile last (venue-tags §D step 3)
+// Equal 1:1 tiles: cover first with a「封面」badge, other photos, add tile last (venue-tags §D step 3)
 
 const grid = css({
   display: 'grid',
-  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+  gridTemplateColumns: { base: 'repeat(3, minmax(0, 1fr))', sm: 'repeat(4, minmax(0, 1fr))' },
   gap: '2',
 });
 
@@ -28,8 +28,6 @@ const tile = css({
   overflow: 'hidden',
   background: 'gray.100',
 });
-
-const coverTile = css({ gridColumn: 'span 2', gridRow: 'span 2' });
 
 const badge = css({
   position: 'absolute',
@@ -68,17 +66,22 @@ const addTile = css({
   '& svg': { width: '24px', height: '24px' },
 });
 
-const actions = css({
+const removeSlot = css({ position: 'absolute', top: '1', right: '1' });
+
+const bottomActions = css({
   position: 'absolute',
   bottom: '1',
+  left: '1',
   right: '1',
   display: 'flex',
+  justifyContent: 'space-between',
   gap: '1',
 });
 
+// 32px keeps three controls inside a ~110px phone tile (WCAG 2.5.8 minimum is 24px)
 const actionButton = css({
-  width: '44px',
-  height: '44px',
+  width: '32px',
+  height: '32px',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -89,12 +92,12 @@ const actionButton = css({
   cursor: 'pointer',
   '&:hover': { background: 'alpha.black.70' },
   '&:focus-visible': { outline: '2px solid', outlineColor: 'color.background.primary' },
-  '& svg': { width: '18px', height: '18px' },
+  '& svg': { width: '16px', height: '16px' },
 });
 
 const textAction = css({
-  minHeight: '44px',
-  paddingX: '3',
+  minHeight: '32px',
+  paddingX: '2.5',
   border: 'none',
   borderRadius: 'radius.md',
   background: 'alpha.black.60',
@@ -200,7 +203,7 @@ export default function VenuePhotoGrid({
         }}
       />
 
-      <div className={`${tile} ${coverTile}`} data-error-field="coverPhoto">
+      <div className={tile} data-error-field="coverPhoto">
         <span className={badge}>封面</span>
         {coverShown ? (
           <>
@@ -208,18 +211,11 @@ export default function VenuePhotoGrid({
               src={coverShown}
               alt="封面照片"
               fill
-              sizes="(min-width: 1024px) 373px, 66vw"
+              sizes="(min-width: 640px) 140px, 33vw"
               className={image}
             />
             {coverUploading && <Spinner label="封面上傳中" />}
-            <div className={actions}>
-              <button
-                type="button"
-                className={textAction}
-                onClick={() => coverInputRef.current?.click()}
-              >
-                更換封面
-              </button>
+            <div className={removeSlot}>
               <button
                 type="button"
                 className={actionButton}
@@ -227,6 +223,16 @@ export default function VenuePhotoGrid({
                 onClick={onRemoveCover}
               >
                 <XMarkIcon aria-hidden="true" />
+              </button>
+            </div>
+            <div className={bottomActions}>
+              <button
+                type="button"
+                className={textAction}
+                aria-label="更換封面"
+                onClick={() => coverInputRef.current?.click()}
+              >
+                更換
               </button>
             </div>
           </>
@@ -255,13 +261,23 @@ export default function VenuePhotoGrid({
                 src={src}
                 alt={`其他照片 ${n}`}
                 fill
-                sizes="(min-width: 1024px) 182px, 33vw"
+                sizes="(min-width: 640px) 140px, 33vw"
                 className={image}
               />
             )}
             {!slot.url && <Spinner label={`其他照片 ${n} 上傳中`} />}
-            <div className={actions}>
-              {index > 0 && (
+            <div className={removeSlot}>
+              <button
+                type="button"
+                className={actionButton}
+                aria-label={`移除其他照片 ${n}`}
+                onClick={() => onRemoveOther(slot.id)}
+              >
+                <XMarkIcon aria-hidden="true" />
+              </button>
+            </div>
+            <div className={bottomActions}>
+              {index > 0 ? (
                 <button
                   type="button"
                   className={actionButton}
@@ -270,6 +286,8 @@ export default function VenuePhotoGrid({
                 >
                   <ChevronLeftIcon aria-hidden="true" />
                 </button>
+              ) : (
+                <span />
               )}
               {index < others.length - 1 && (
                 <button
@@ -281,14 +299,6 @@ export default function VenuePhotoGrid({
                   <ChevronRightIcon aria-hidden="true" />
                 </button>
               )}
-              <button
-                type="button"
-                className={actionButton}
-                aria-label={`移除其他照片 ${n}`}
-                onClick={() => onRemoveOther(slot.id)}
-              >
-                <XMarkIcon aria-hidden="true" />
-              </button>
             </div>
           </div>
         );

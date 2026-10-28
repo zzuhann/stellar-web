@@ -24,6 +24,7 @@ import {
   optionalMark,
   questionLabel,
   sectionHeading,
+  srOnly,
   textarea,
 } from '../styles';
 import { RadioCard } from './Choices';
@@ -75,6 +76,8 @@ interface TextFieldProps {
   hintText?: string;
   placeholder?: string;
   inputMode?: 'url' | 'text';
+  // Inside a contact card the card title already names the field; keep the label for screen readers
+  hideLabel?: boolean;
   // A group-level error that also applies to this input (LINE: "at least one social account")
   groupErrorKey?: string;
   onChange: (value: string) => void;
@@ -90,6 +93,7 @@ function TextField({
   hintText,
   placeholder,
   inputMode = 'text',
+  hideLabel,
   groupErrorKey,
   onChange,
 }: TextFieldProps) {
@@ -98,7 +102,7 @@ function TextField({
   const hintId = `${id}-hint`;
   return (
     <div className={field} data-error-field={errorKey}>
-      <label htmlFor={id} className={questionLabel}>
+      <label htmlFor={id} className={hideLabel ? srOnly : questionLabel}>
         {label}
         {optional && <span className={optionalMark}>（選填）</span>}
       </label>
@@ -149,29 +153,31 @@ export default function StepContact({
   const socialClear = ['instagram', 'threads', 'socialMedia'];
 
   const groupErrorKey = contact === 'line' ? 'socialMedia' : undefined;
-  const instagramField = (optional: boolean) => (
+  const instagramField = (optional: boolean, inCard = false) => (
     <TextField
       id="venue-submit-instagram"
       errorKey="instagram"
       groupErrorKey={groupErrorKey}
       label="Instagram 帳號"
       optional={optional}
+      hideLabel={inCard}
       value={form.instagram}
       errors={errors}
-      placeholder="@username"
+      placeholder={inCard ? 'IG 帳號 @username' : '@username'}
       onChange={setText('instagram', socialClear)}
     />
   );
-  const threadsField = (optional: boolean) => (
+  const threadsField = (optional: boolean, inCard = false) => (
     <TextField
       id="venue-submit-threads"
       errorKey="threads"
       groupErrorKey={groupErrorKey}
       label="Threads 帳號"
       optional={optional}
+      hideLabel={inCard}
       value={form.threads}
       errors={errors}
-      placeholder="@username"
+      placeholder={inCard ? 'Threads 帳號 @username' : '@username'}
       onChange={setText('threads', socialClear)}
     />
   );
@@ -200,16 +206,17 @@ export default function StepContact({
                 )
               }
             >
-              {opt.value === 'instagram' && instagramField(false)}
-              {opt.value === 'threads' && threadsField(false)}
+              {opt.value === 'instagram' && instagramField(false, true)}
+              {opt.value === 'threads' && threadsField(false, true)}
               {opt.value === 'line' && (
                 <TextField
                   id="venue-submit-line"
                   errorKey="contactUrl"
                   label="LINE 連結"
+                  hideLabel
                   value={form.contactUrl}
                   errors={errors}
-                  placeholder="LINE 網址"
+                  placeholder="LINE 連結"
                   inputMode="url"
                   onChange={setText('contactUrl', ['contactUrl'])}
                 />
@@ -250,7 +257,7 @@ export default function StepContact({
           給主辦的說明文件<span className={optionalMark}>（選填）</span>
         </legend>
         <p id="venue-submit-source-links-hint" className={hint}>
-          寫了規則、方案、空間尺寸的 PDF、Canva、Google 文件或 IG 貼文等。
+          如果有提供給主辦看的規則、方案、空間尺寸相關的文件，歡迎提供！
         </p>
         {form.sourceLinks.map((row, i) => {
           const key = sourceLinkErrorKey(row.id);
@@ -336,7 +343,7 @@ export default function StepContact({
         <h2 id="venue-submit-photos-title" className={sectionHeading}>
           場地相關照片
         </h2>
-        <p className={hint}>可以放店內環境、佈置過的樣子、菜單等。</p>
+        <p className={hint}>可以放店內環境、佈置過的樣子、菜單等，最多 10 張（含封面）。</p>
         <VenuePhotoGrid
           coverUrl={form.coverPhoto}
           coverPreview={photos.coverPreview}

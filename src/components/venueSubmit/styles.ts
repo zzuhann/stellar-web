@@ -16,7 +16,7 @@ export const srOnly = css({
 
 export const stepBody = css({ display: 'flex', flexDirection: 'column', gap: '6' });
 
-export const field = css({ display: 'flex', flexDirection: 'column', gap: '2', minWidth: 0 });
+export const field = css({ display: 'flex', flexDirection: 'column', gap: '3', minWidth: 0 });
 
 export const fieldset = css({
   margin: 0,
@@ -25,7 +25,9 @@ export const fieldset = css({
   minWidth: 0,
   display: 'flex',
   flexDirection: 'column',
-  gap: '2',
+  gap: '3',
+  // A legend is not a flex item, so gap never reaches it
+  '& > legend': { marginBottom: '3' },
 });
 
 export const questionLabel = css({

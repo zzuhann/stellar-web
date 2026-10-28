@@ -189,7 +189,7 @@ describe('TC-011 完整填寫送出的 body', () => {
     check('發放應援物', uses);
     check('佈置、辦生咖', uses);
     fireEvent.click(screen.getByRole('radio', { name: '不用場地費' }));
-    check('這是限時優惠，免場地費到');
+    check('期間限定：免場地費到');
     fireEvent.change(screen.getByLabelText('免場地費的最後一天'), {
       target: { value: '2099-12-31' },
     });
@@ -472,7 +472,7 @@ describe('TC-103 / TC-123 / TC-124 還原', () => {
     await waitForStep(2);
     check('佈置、辦生咖', fieldset('主辦可以在這個空間做什麼？'));
     expect((screen.getByRole('radio', { name: '有' }) as HTMLInputElement).checked).toBe(true);
-    check('這是限時優惠，免場地費到');
+    check('期間限定：免場地費到');
     expect((screen.getByLabelText('免場地費的最後一天') as HTMLInputElement).value).toBe(
       '2099-01-01'
     );
