@@ -594,7 +594,9 @@ function mrtHintFrom(rows: TransitRowValue[]): string | null {
 
 // The preview card still shows one legacy station (cards switch over in PR 6)
 function previewStation(rows: TransitRowValue[]): { station: string; minutes: string } {
-  const stop = pickPrimaryTransit(toTransitStops(rows).filter((s) => s.type && s.station));
+  const stops = toTransitStops(rows).filter((s) => s.station);
+  // Legacy venues prefill a typeless row; fall back to it so the preview still shows the station
+  const stop = pickPrimaryTransit(stops) ?? stops[0];
   return { station: stop?.station ?? '', minutes: stop?.walkMinutes?.toString() ?? '' };
 }
 

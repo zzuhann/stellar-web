@@ -330,6 +330,9 @@ describe('TC-139 後台編輯交通，送出的 request', () => {
     expect((screen.getByLabelText('交通方式 1 站名') as HTMLInputElement).value).toBe('中山站');
     expect((screen.getByLabelText('交通方式 1 步行分鐘') as HTMLInputElement).value).toBe('5');
     expect(screen.getByRole('button', { name: '交通方式 1 類型：類型' })).toBeTruthy();
+    expect(
+      within(screen.getByRole('complementary', { name: '前台會這樣顯示' })).getByText(/中山站/)
+    ).toBeTruthy();
     rename();
     save();
     const sent = await body();
