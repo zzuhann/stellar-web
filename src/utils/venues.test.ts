@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { deriveVenueRegions, parseVenueCapacity, parseVenuePage, parseVenueSort } from './venues';
+import {
+  deriveVenueRegions,
+  parseVenueCapacity,
+  parseVenuePage,
+  parseVenueSort,
+  regionFromCity,
+} from './venues';
 
 describe('deriveVenueRegions', () => {
   it('依 REGIONS 的北到南順序回傳唯一地區，並在最前面加上「全部」', () => {
@@ -70,5 +76,22 @@ describe('parseVenuePage', () => {
 
   it('乾淨的正整數字串正確解析', () => {
     expect(parseVenuePage('3')).toBe(3);
+  });
+});
+
+describe('regionFromCity', () => {
+  it.each([
+    ['臺北市', '台北'],
+    ['新北市', '新北'],
+    ['彰化縣', '彰化'],
+    ['新竹縣', '新竹'],
+    ['臺東縣', '台東'],
+    ['連江縣', '連江'],
+  ])('%s → %s', (city, region) => {
+    expect(regionFromCity(city)).toBe(region);
+  });
+
+  it.each(['', 'Taipei City', '東京都'])('對不上清單 %j → null', (city) => {
+    expect(regionFromCity(city)).toBeNull();
   });
 });

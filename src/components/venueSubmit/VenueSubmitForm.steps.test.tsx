@@ -65,10 +65,10 @@ vi.mock('@/components/forms/PlaceAutocomplete', () => {
     },
     {
       place_id: 'place-2',
-      address: '台北市大安區 B 路 2 號',
-      coordinates: { lat: 25.03, lng: 121.54 },
+      address: '臺中市西區 B 路 2 號',
+      coordinates: { lat: 24.14, lng: 120.66 },
       name: 'B 咖啡',
-      city: '台北市',
+      city: '臺中市',
       types: ['establishment'],
     },
     {
@@ -208,11 +208,26 @@ describe('TC-108 搜尋結果與場地名稱', () => {
     fireEvent.click(screen.getByRole('button', { name: '重新搜尋' }));
     fireEvent.click(screen.getByRole('button', { name: '選 B 咖啡' }));
     expect((screen.getByLabelText('場地名稱') as HTMLInputElement).value).toBe('B 咖啡');
-    expect(screen.getByText('台北市大安區 B 路 2 號')).toBeTruthy();
+    expect(screen.getByText('臺中市西區 B 路 2 號')).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText('場地名稱'), { target: { value: '' } });
     next();
     expectFieldError(screen.getByLabelText('場地名稱'), '請填寫場地名稱');
+  });
+
+  it('h：選了搜尋結果就用它的縣市帶入地區；重新搜尋選別縣市會換掉；之後仍可手動改', async () => {
+    const region = () => screen.getByRole('button', { name: /^地區：/ });
+    renderPage();
+    await waitForStep(1);
+    fireEvent.click(screen.getByRole('button', { name: '選 A 咖啡' }));
+    expect(region().getAttribute('aria-label')).toBe('地區：台北');
+
+    chooseDropdown('地區', '新北');
+    expect(region().getAttribute('aria-label')).toBe('地區：新北');
+
+    fireEvent.click(screen.getByRole('button', { name: '重新搜尋' }));
+    fireEvent.click(screen.getByRole('button', { name: '選 B 咖啡' }));
+    expect(region().getAttribute('aria-label')).toBe('地區：台中');
   });
 
   it.each(['中山北路一段 1 號', '某處'])(

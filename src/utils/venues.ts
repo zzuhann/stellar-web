@@ -15,6 +15,15 @@ export function deriveVenueRegions(venues: Pick<Venue, 'region'>[]): string[] {
   return ['全部', ...unique];
 }
 
+/** Google's level-1 area ("臺北市", "彰化縣") → our region ("台北"); null when it is not one of REGIONS. */
+export function regionFromCity(city: string): string | null {
+  const region = city
+    .trim()
+    .replace(/臺/g, '台')
+    .replace(/[市縣]$/, '');
+  return (REGIONS as readonly string[]).includes(region) ? region : null;
+}
+
 const VALID_SORT_VALUES: VenueSort[] = ['composite', 'eventCount', 'newest', 'distance'];
 
 /**

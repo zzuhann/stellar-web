@@ -8,6 +8,7 @@ import TransitStopsField from '@/components/forms/TransitStopsField';
 import type { CapacityRange } from '@/types';
 import type { placesApi } from '@/lib/api';
 import { REGIONS } from '@/constants';
+import { regionFromCity } from '@/utils/venues';
 import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
 import type { TransitRowErrors } from '@/utils/transitStops';
 import { transitErrorKey, type FormErrors, type VenueSubmitFormValues } from '../venueSubmitModel';
@@ -95,6 +96,8 @@ export default function StepPlace({
               describedBy={`venue-submit-place-hint${errors.place ? ` ${errorId('place')}` : ''}`}
               onPlaceSelect={(place) => {
                 const isStore = place.types.includes('establishment');
+                // Every pick refills the region (a re-search may move cities); still editable after
+                const region = regionFromCity(place.city);
                 update(
                   (prev) => ({
                     ...prev,
@@ -107,8 +110,9 @@ export default function StepPlace({
                     },
                     // Addresses keep whatever name the store already typed
                     name: isStore ? place.name : prev.name,
+                    region: region ?? prev.region,
                   }),
-                  isStore ? ['place', 'name'] : ['place']
+                  [...(isStore ? ['place', 'name'] : ['place']), ...(region ? ['region'] : [])]
                 );
               }}
             />
