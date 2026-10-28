@@ -96,7 +96,8 @@ export default function StepPlace({
               describedBy={`venue-submit-place-hint${errors.place ? ` ${errorId('place')}` : ''}`}
               onPlaceSelect={(place) => {
                 const isStore = place.types.includes('establishment');
-                // Every pick refills the region (a re-search may move cities); still editable after
+                // Every pick refills the region (a re-search may move cities); an unmatched city clears
+                // it so a stale region cannot slip through. Still editable after
                 const region = regionFromCity(place.city);
                 update(
                   (prev) => ({
@@ -110,7 +111,7 @@ export default function StepPlace({
                     },
                     // Addresses keep whatever name the store already typed
                     name: isStore ? place.name : prev.name,
-                    region: region ?? prev.region,
+                    region: region ?? '',
                   }),
                   [...(isStore ? ['place', 'name'] : ['place']), ...(region ? ['region'] : [])]
                 );

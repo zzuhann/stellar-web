@@ -84,7 +84,7 @@ vi.mock('@/components/forms/PlaceAutocomplete', () => {
       address: '台北市某處',
       coordinates: { lat: 25.07, lng: 121.51 },
       name: '某處',
-      city: '台北市',
+      city: '',
       types: [],
     },
   ];
@@ -215,7 +215,7 @@ describe('TC-108 搜尋結果與場地名稱', () => {
     expectFieldError(screen.getByLabelText('場地名稱'), '請填寫場地名稱');
   });
 
-  it('h：選了搜尋結果就用它的縣市帶入地區；重新搜尋選別縣市會換掉；之後仍可手動改', async () => {
+  it('h：選了搜尋結果就用它的縣市帶入地區；重新搜尋選別縣市會換掉；對不上就清空；之後仍可手動改', async () => {
     const region = () => screen.getByRole('button', { name: /^地區：/ });
     renderPage();
     await waitForStep(1);
@@ -228,6 +228,12 @@ describe('TC-108 搜尋結果與場地名稱', () => {
     fireEvent.click(screen.getByRole('button', { name: '重新搜尋' }));
     fireEvent.click(screen.getByRole('button', { name: '選 B 咖啡' }));
     expect(region().getAttribute('aria-label')).toBe('地區：台中');
+
+    fireEvent.click(screen.getByRole('button', { name: '重新搜尋' }));
+    fireEvent.click(screen.getByRole('button', { name: '選 某處' }));
+    expect(region().getAttribute('aria-label')).toBe('地區：請選擇');
+    next();
+    expect(screen.getByText('請選擇地區')).toBeTruthy();
   });
 
   it.each(['中山北路一段 1 號', '某處'])(
