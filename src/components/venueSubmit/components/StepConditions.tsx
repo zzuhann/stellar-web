@@ -176,7 +176,7 @@ export default function StepConditions({ form, errors, today, update }: StepCond
                   />
                   <FieldError id={errorId('freeVenueUntil')} message={errors.freeVenueUntil} />
                   <p id="venue-submit-fee-until-hint" className={hint}>
-                    若目前沒有明確結束時間，可以留白
+                    若目前沒有明確結束時間，可以留白。
                   </p>
                 </div>
               )}
