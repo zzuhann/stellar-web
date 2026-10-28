@@ -12,9 +12,20 @@ export function readStateDepth(state: unknown): number | null {
   return typeof depth === 'number' && Number.isInteger(depth) && depth >= 0 ? depth : null;
 }
 
-// Spread keeps Next.js router internals stored in history.state
+// Next.js patches pushState/replaceState: a state that already carries its internals (__NA)
+// skips the router URL sync, and the router later rewrites the URL back. Leave those keys out
+// so Next copies them itself and learns the new URL; other custom keys are kept.
+const NEXT_INTERNAL_KEYS = ['__NA', '_N', '__PRIVATE_NEXTJS_INTERNALS_TREE'];
+
+function customState(state: unknown): Record<string, unknown> {
+  if (!state || typeof state !== 'object') return {};
+  const rest = { ...(state as Record<string, unknown>) };
+  for (const key of NEXT_INTERNAL_KEYS) delete rest[key];
+  return rest;
+}
+
 const withDepth = (state: unknown, depth: number) => ({
-  ...(state && typeof state === 'object' ? state : {}),
+  ...customState(state),
   [DEPTH_KEY]: depth,
 });
 
@@ -34,7 +45,7 @@ export function pushStep(history: HistoryLike, url: string): number {
 }
 
 export function replaceUrl(history: HistoryLike, url: string, depth?: number): void {
-  const state = depth === undefined ? history.state : withDepth(history.state, depth);
+  const state = depth === undefined ? customState(history.state) : withDepth(history.state, depth);
   history.replaceState(state, '', url);
 }
 
@@ -72,7 +83,7 @@ export function jumpBackToStep(
     history.go(-diff);
     return 'go';
   }
-  history.replaceState(history.state, '', url);
+  history.replaceState(customState(history.state), '', url);
   return 'replace';
 }
 

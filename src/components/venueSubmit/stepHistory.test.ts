@@ -24,11 +24,12 @@ function fakeHistory(state: unknown) {
 
 describe('TC-133 depth 的來源與退路', () => {
   it('a：history.state 沒有 depth、暫存的 depth 是 2 → replaceState 補回 2，不當成 0', () => {
-    const history = fakeHistory({ __NA: true });
+    const history = fakeHistory({ __NA: true, other: 'kept' });
     expect(restoreDepth(history, 2)).toBe(2);
     expect(history.replaceState).toHaveBeenCalledTimes(1);
     expect(readStateDepth(history.state)).toBe(2);
-    expect((history.state as Record<string, unknown>).__NA).toBe(true);
+    // Next internals are left for Next's patched history to copy (it then syncs its URL)
+    expect(history.state).toEqual({ other: 'kept', [DEPTH_KEY]: 2 });
 
     // Later success retreats with the restored depth
     const onLanded = vi.fn();
@@ -74,11 +75,7 @@ describe('TC-133 depth 的來源與退路', () => {
   it('e：在 depth 1 push 一筆 → 新的 history.state.depth 是 2', () => {
     const history = fakeHistory({ [DEPTH_KEY]: 1, __NA: true });
     expect(pushStep(history, '/submit-venue?step=3')).toBe(2);
-    expect(history.pushState).toHaveBeenCalledWith(
-      expect.objectContaining({ [DEPTH_KEY]: 2, __NA: true }),
-      '',
-      '/submit-venue?step=3'
-    );
+    expect(history.pushState).toHaveBeenCalledWith({ [DEPTH_KEY]: 2 }, '', '/submit-venue?step=3');
   });
 });
 

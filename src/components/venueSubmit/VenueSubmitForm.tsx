@@ -264,6 +264,7 @@ export default function VenueSubmitForm({
   const focusErrorsOnLandRef = useRef(false);
   const maxStepRef = useRef<SubmitStep>(init.draft?.maxStep ?? 1);
   const submittingRef = useRef(false);
+  const historyInitRef = useRef(false);
 
   const photos = usePhotoUploads({
     uploadPhoto,
@@ -375,18 +376,27 @@ export default function VenueSubmitForm({
     writeDraft({ version: DRAFT_VERSION, form, maxStep, depth });
   }, [form, maxStep, depth, phase]);
 
-  // History bookkeeping on mount and on back/forward
+  // One-time history fix-up. The ref survives StrictMode's effect re-run, which would
+  // otherwise fire history.go(-depth) twice and land two entries too far back.
   useEffect(() => {
+    if (historyInitRef.current) return;
+    historyInitRef.current = true;
     const { history, location } = window;
     if (init.returnToStart) {
       pendingLandingRef.current = returnToEntry(history, stepUrl(location, 1), () => {});
-    } else {
-      restoreDepth(history, init.draft?.depth ?? null);
-      if (init.step !== init.urlStep || !new URLSearchParams(location.search).has('step')) {
-        replaceUrl(history, stepUrl(location, init.step));
-      }
+      return;
     }
+    restoreDepth(history, init.draft?.depth ?? null);
+    if (init.step !== init.urlStep || !new URLSearchParams(location.search).has('step')) {
+      replaceUrl(history, stepUrl(location, init.step));
+    }
+    // init is frozen at mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // Back / forward
+  useEffect(() => {
+    const { history, location } = window;
     const onPopState = (event: PopStateEvent) => {
       const landing = pendingLandingRef.current;
       if (landing) {
@@ -413,8 +423,6 @@ export default function VenueSubmitForm({
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
-    // Runs once: init is frozen at mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
