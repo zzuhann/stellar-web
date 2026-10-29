@@ -428,6 +428,13 @@ describe('TC-116 照片同時上傳、刪除、排序', () => {
     submit();
     expect(await screen.findByText('有照片上傳失敗，請重新上傳或移除')).toBeTruthy();
     expect(api.create).not.toHaveBeenCalled();
+    // The error lands on the failed tile, which exists even when the add tile is hidden at 10
+    const retryCover = screen.getByRole('button', { name: '重新上傳封面照片' });
+    expect(retryCover.getAttribute('aria-invalid')).toBe('true');
+    expect(
+      screen.getByRole('button', { name: '新增照片' }).getAttribute('aria-invalid')
+    ).toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(retryCover));
 
     fireEvent.click(screen.getByRole('button', { name: '重新上傳封面照片' }));
     await waitFor(() => expect(uploads.calls).toHaveLength(3));

@@ -168,6 +168,11 @@ export default function VenuePhotoGrid({
   onMove,
 }: VenuePhotoGridProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  // The error sits on something that is always there: the first failed tile's retry, else the add tile
+  const firstFailed = photos.find((slot) => failedIds.includes(slot.id))?.id;
+  const errorOn = !invalid ? null : (firstFailed ?? 'add');
+  const errorProps = (target: string) =>
+    errorOn === target ? { 'aria-invalid': 'true' as const, 'aria-describedby': describedBy } : {};
 
   return (
     <div className={grid} data-error-field="photos">
@@ -209,6 +214,7 @@ export default function VenuePhotoGrid({
                   type="button"
                   className={actionButton}
                   aria-label={`重新上傳${name}`}
+                  {...errorProps(slot.id)}
                   onClick={() => onRetry(slot.id)}
                 >
                   <ArrowPathIcon aria-hidden="true" />
@@ -259,8 +265,7 @@ export default function VenuePhotoGrid({
             type="button"
             className={addTile}
             aria-label="新增照片"
-            aria-invalid={invalid ? 'true' : undefined}
-            aria-describedby={describedBy}
+            {...errorProps('add')}
             onClick={() => inputRef.current?.click()}
           >
             <PlusIcon aria-hidden="true" />
