@@ -5,6 +5,7 @@ import {
   parseVenuePage,
   parseVenueSort,
   regionFromCity,
+  canPermanentlyDeleteVenue,
 } from './venues';
 
 describe('deriveVenueRegions', () => {
@@ -93,5 +94,16 @@ describe('regionFromCity', () => {
 
   it.each(['', 'Taipei City', '東京都'])('對不上清單 %j → null', (city) => {
     expect(regionFromCity(city)).toBeNull();
+  });
+});
+
+describe('canPermanentlyDeleteVenue', () => {
+  it.each(['pending', 'rejected', 'inactive'] as const)('%s、沒有活動 → 可刪', (status) => {
+    expect(canPermanentlyDeleteVenue({ status, eventCount: 0 })).toBe(true);
+  });
+
+  it('上架中、或有關聯活動 → 不可刪', () => {
+    expect(canPermanentlyDeleteVenue({ status: 'active', eventCount: 0 })).toBe(false);
+    expect(canPermanentlyDeleteVenue({ status: 'inactive', eventCount: 1 })).toBe(false);
   });
 });

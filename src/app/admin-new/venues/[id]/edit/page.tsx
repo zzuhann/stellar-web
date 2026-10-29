@@ -19,6 +19,7 @@ import {
 } from '@/components/admin-new/adminVenueSubmission';
 import { transitRowsFromVenue } from '@/utils/transitStops';
 import { formatTagDate } from '@/utils/venueTags';
+import { canPermanentlyDeleteVenue } from '@/utils/venues';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
@@ -165,7 +166,10 @@ export default function VenueEditPage() {
   }
 
   const currentStatus = statusOverride ?? venue.status;
-  const canDelete = currentStatus === 'inactive' && venue.eventCount === 0;
+  const canDelete = canPermanentlyDeleteVenue({
+    status: currentStatus,
+    eventCount: venue.eventCount,
+  });
 
   const initialValues: AdminVenueFormValues = {
     name: venue.name,

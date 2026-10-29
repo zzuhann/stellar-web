@@ -24,6 +24,11 @@ export function regionFromCity(city: string): string | null {
   return (REGIONS as readonly string[]).includes(region) ? region : null;
 }
 
+/** Anything not live and without linked events can be removed for good (pending test submissions included). */
+export function canPermanentlyDeleteVenue(venue: { status: string; eventCount: number }): boolean {
+  return venue.status !== 'active' && venue.eventCount === 0;
+}
+
 const VALID_SORT_VALUES: VenueSort[] = ['composite', 'eventCount', 'newest', 'distance'];
 
 /**

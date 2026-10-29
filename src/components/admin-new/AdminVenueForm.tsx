@@ -1371,7 +1371,7 @@ export default function AdminVenueForm(props: AdminVenueFormProps) {
               <div className={dangerZone}>
                 <span className={dangerTitle}>危險操作</span>
                 <p className={dangerDescription}>
-                  場地已下架且無關聯活動，可永久刪除。此操作無法復原。
+                  場地未上架且無關聯活動，可永久刪除。此操作無法復原。
                 </p>
                 <button type="button" className={deleteBtn} onClick={props.onDeleteClick}>
                   永久刪除場地
