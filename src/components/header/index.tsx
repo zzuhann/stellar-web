@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import AuthModal from '../auth/AuthModal';
 import { css } from '@/styled-system/css';
 import { useHeaderTitleStore } from '@/store/useHeaderTitleStore';
+import { useSiteChromeStore } from '@/store/useSiteChromeStore';
 import DesktopNav from './DesktopNav';
 import BurgerButton from './BurgerButton';
 import HeaderSearchButton from './HeaderSearchButton';
@@ -30,6 +31,8 @@ const headerContainer = css({
   boxShadow: 'shadow.md',
   backgroundColor: 'color.background.primary',
   boxSizing: 'border-box',
+  // display: flex above would otherwise override the hidden attribute
+  '&[hidden]': { display: 'none' },
 });
 
 const srOnly = css({
@@ -114,10 +117,12 @@ const Header = () => {
   const showMobileBackButton = shouldShowMobileBackButton(pathname);
   const title = useHeaderTitleStore((state) => state.title);
   const eyebrow = useHeaderTitleStore((state) => state.eyebrow);
+  const chromeHidden = useSiteChromeStore((state) => state.hidden);
 
   return (
     <>
-      <header className={headerContainer}>
+      {/* hidden, not unmounted: MobileBackButton keeps its in-site depth across routes */}
+      <header className={headerContainer} hidden={chromeHidden}>
         <h1 className={srOnly}>STELLAR | 台灣生日應援地圖平台</h1>
         <div className={leftSlot}>
           <MobileBackButton pathname={pathname} />

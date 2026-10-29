@@ -40,6 +40,23 @@ describe('handleApiError', () => {
     ).toBe('LINE 連結：請輸入有效的網址');
   });
 
+  it('labels nested zod paths by their nearest labelled parent', () => {
+    expect(
+      handleApiError(
+        apiError({
+          error: 'Invalid url',
+          code: 'VALIDATION_ERROR',
+          field: 'venueConditions.sourceLinks.2',
+        })
+      )
+    ).toBe('給主辦的說明文件格式不正確，請確認後再試');
+    expect(
+      handleApiError(
+        apiError({ error: 'Required', code: 'VALIDATION_ERROR', field: 'transitStops.0.station' })
+      )
+    ).toBe('交通方式格式不正確，請確認後再試');
+  });
+
   it('TC-098 labels the booking form and contact fields with the new names', () => {
     expect(
       handleApiError(
