@@ -110,7 +110,7 @@ async function fillStep2(page: Page) {
 async function fillStep3(page: Page) {
   await pick(page, 'Instagram 私訊');
   await page.getByLabel('Instagram 帳號').fill('stellar');
-  await page.getByTestId('cover-file-input').setInputFiles(IMAGE);
+  await page.getByTestId('photo-file-input').setInputFiles(IMAGE);
   await expect(page.getByAltText('封面照片')).toBeVisible();
   await expect(page.getByRole('button', { name: '送出投稿' })).toBeEnabled();
 }
@@ -196,7 +196,7 @@ test.describe('TC-086 公開場地投稿（3 步）', () => {
     await expect(page.getByText('請選擇容納人數', { exact: true })).toBeVisible();
     await expect(page.getByText('請填寫場地名稱')).toHaveCount(0);
     await expect(page.getByText('請選擇偏好的聯絡方式')).toHaveCount(0);
-    await expect(page.getByText('請上傳封面圖片')).toHaveCount(0);
+    await expect(page.getByText('請至少上傳一張照片')).toHaveCount(0);
     expect(submissions.count).toBe(0);
   });
 
@@ -205,7 +205,7 @@ test.describe('TC-086 公開場地投稿（3 步）', () => {
     await toStep3(page);
     await page.getByRole('button', { name: '送出投稿' }).click();
     await expect(page.getByText('請選擇偏好的聯絡方式')).toBeVisible();
-    await expect(page.getByText('請上傳封面圖片')).toBeVisible();
+    await expect(page.getByText('請至少上傳一張照片')).toBeVisible();
     expect(submissions.count).toBe(0);
   });
 
@@ -222,7 +222,7 @@ test.describe('TC-086 公開場地投稿（3 步）', () => {
       }
     });
     await toStep3(page);
-    await page.getByTestId('cover-file-input').setInputFiles(IMAGE);
+    await page.getByTestId('photo-file-input').setInputFiles(IMAGE);
     await page.getByRole('button', { name: '點擊重新上傳圖片' }).click();
     await expect(page.getByAltText('封面照片')).toBeVisible();
     // Unlocked = every upload settled (the retry is in flight until then)

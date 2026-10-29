@@ -4,7 +4,12 @@ import { expect, vi } from 'vitest';
 import SubmitVenueClient from '@/app/submit-venue/SubmitVenueClient';
 import { DEPTH_KEY } from '../stepHistory';
 import { DRAFT_KEY, DRAFT_VERSION, serializeDraft } from '../venueSubmitDraft';
-import { createEmptyForm, type SubmitStep, type VenueSubmitFormValues } from '../venueSubmitModel';
+import {
+  createEmptyForm,
+  createPhotoSlot,
+  type SubmitStep,
+  type VenueSubmitFormValues,
+} from '../venueSubmitModel';
 
 // Shared helpers for the store form integration tests; each test file declares its own vi.mock
 
@@ -59,7 +64,7 @@ export function filledForm(overrides: Partial<VenueSubmitFormValues> = {}): Venu
     spaceTypes: ['cafe'],
     preferredContact: 'instagram',
     instagram: 'stellar_cafe',
-    coverPhoto: 'https://cdn.test/cover.jpg',
+    photos: [createPhotoSlot('https://cdn.test/cover.jpg')],
     ...overrides,
   };
 }
@@ -123,8 +128,7 @@ export function fillStep3Contact() {
   });
 }
 
-export const coverInput = () => screen.getByTestId('cover-file-input') as HTMLInputElement;
-export const otherInput = () => screen.getByTestId('other-file-input') as HTMLInputElement;
+export const photoInput = () => screen.getByTestId('photo-file-input') as HTMLInputElement;
 
 export const imageFile = (name: string) => new File(['x'], name, { type: 'image/png' });
 

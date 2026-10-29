@@ -10,8 +10,8 @@ import {
 // Per-tab draft in sessionStorage (venue-tags design-frontend §D「分頁內暫存」)
 
 export const DRAFT_KEY = 'stellar:venue-submit-draft';
-// Bump whenever the stored shape changes; 1 was the 4-step layout
-export const DRAFT_VERSION = 2;
+// Bump whenever the stored shape changes; 1 was the 4-step layout, 2 kept the cover separate
+export const DRAFT_VERSION = 3;
 
 export interface VenueSubmitDraft {
   version: number;
@@ -66,9 +66,8 @@ const storedFormSchema = z.object({
   bookingFormUrl: str,
   sourceLinks: z.array(str),
   calendarUrl: str,
-  coverPhoto: str,
   // Only finished uploads; blob previews and in-flight slots are never stored
-  otherPhotos: z.array(z.string().regex(/^https?:\/\//)),
+  photos: z.array(z.string().regex(/^https?:\/\//)),
   description: str,
 });
 
@@ -90,7 +89,7 @@ function toStoredForm(form: VenueSubmitFormValues): StoredForm {
       walkMinutes,
     })),
     sourceLinks: form.sourceLinks.map((row) => row.value),
-    otherPhotos: form.otherPhotos.flatMap((slot) => (slot.url ? [slot.url] : [])),
+    photos: form.photos.flatMap((slot) => (slot.url ? [slot.url] : [])),
   };
 }
 
@@ -103,7 +102,7 @@ function fromStoredForm(stored: StoredForm): VenueSubmitFormValues {
     sourceLinks: stored.sourceLinks.length
       ? stored.sourceLinks.map((value) => createLinkRow(value))
       : [createLinkRow()],
-    otherPhotos: stored.otherPhotos.map((url) => createPhotoSlot(url)),
+    photos: stored.photos.map((url) => createPhotoSlot(url)),
   };
 }
 

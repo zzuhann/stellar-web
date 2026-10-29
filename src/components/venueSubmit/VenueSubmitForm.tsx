@@ -234,7 +234,7 @@ interface VenueSubmitFormProps {
   onSubmitted: () => void;
   placeApi: typeof placesApi;
   uploadPhoto: UploadPhoto;
-  onUploadError?: (error: Error, file: File, kind: 'cover' | 'other') => void;
+  onUploadError?: (error: Error, file: File) => void;
 }
 
 export default function VenueSubmitForm({
@@ -274,7 +274,7 @@ export default function VenueSubmitForm({
   const photos = usePhotoUploads({
     uploadPhoto,
     setForm,
-    onCoverUploaded: () => clearErrors(['coverPhoto']),
+    onUploaded: () => clearErrors(['photos']),
     onUploadError,
   });
 

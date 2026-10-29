@@ -2,13 +2,12 @@ import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   controlledUploads,
-  coverInput,
   fieldset,
   filledForm,
   fillStep3Contact,
   goThroughToStep3,
   imageFile,
-  otherInput,
+  photoInput,
   readStoredDraft,
   renderPage,
   resetBrowserState,
@@ -141,7 +140,7 @@ function expectFieldError(field: HTMLElement, message: string) {
 }
 
 async function uploadCover() {
-  selectFiles(coverInput(), [imageFile('cover.png')]);
+  selectFiles(photoInput(), [imageFile('cover.png')]);
   await waitFor(() => expect(screen.getByAltText('封面照片')).toBeTruthy());
 }
 
@@ -275,21 +274,17 @@ describe('TC-114 照片上傳中不能送出', () => {
     fillStep3Contact();
     const uploads = controlledUploads(upload.uploadImageToAPI);
 
-    selectFiles(coverInput(), [imageFile('cover.png')]);
-    await waitFor(() => expect(uploads.calls).toHaveLength(1));
-    selectFiles(otherInput(), [imageFile('p1.png'), imageFile('p2.png')]);
-    await waitFor(() => expect(uploads.calls).toHaveLength(3));
+    selectFiles(photoInput(), [imageFile('p1.png'), imageFile('p2.png')]);
+    await waitFor(() => expect(uploads.calls).toHaveLength(2));
 
     const busy = screen.getByRole('button', { name: '照片上傳中' }) as HTMLButtonElement;
     expect(busy.disabled).toBe(true);
     expect(busy.getAttribute('aria-busy')).toBe('true');
     expect(busy.textContent).not.toContain('送出投稿');
 
-    await uploads.settle(1, 'p1.jpg');
+    await uploads.settle(0, 'p1.jpg');
     expect((submitButton() as HTMLButtonElement).disabled).toBe(true);
-    await uploads.settle(2, 'p2.jpg');
-    expect((submitButton() as HTMLButtonElement).disabled).toBe(true);
-    await uploads.settle(0, 'cover.jpg');
+    await uploads.settle(1, 'p2.jpg');
     await waitFor(() =>
       expect((screen.getByRole('button', { name: '送出投稿' }) as HTMLButtonElement).disabled).toBe(
         false
@@ -298,99 +293,55 @@ describe('TC-114 照片上傳中不能送出', () => {
   });
 });
 
-describe('TC-115 封面上傳中又換一張', () => {
-  it('a：A 慢、B 快 → 結果是 B，A 晚到也丟掉', async () => {
-    await toStep3();
-    fillStep3Contact();
-    const uploads = controlledUploads(upload.uploadImageToAPI);
-    selectFiles(coverInput(), [imageFile('a.png')]);
-    await waitFor(() => expect(uploads.calls).toHaveLength(1));
-    selectFiles(coverInput(), [imageFile('b.png')]);
-    await waitFor(() => expect(uploads.calls).toHaveLength(2));
-
-    await uploads.settle(1, 'b.jpg');
-    await uploads.settle(0, 'a.jpg');
-    expect(screen.getByAltText('封面照片').getAttribute('src')).toBe(`${CDN}b.jpg`);
-    expect(readStoredDraft().form.coverPhoto).toBe(`${CDN}b.jpg`);
-    submit();
-    await waitFor(() => expect(api.create).toHaveBeenCalledTimes(1));
-    expect(api.create.mock.calls[0][0].coverPhoto).toBe(`${CDN}b.jpg`);
-  });
-
-  it.each(['a.jpg', 'fail'] as const)(
-    'b：A 先結束（%s）、B 還在傳 → 仍停用、不顯示錯誤；B 完成才解鎖',
-    async (outcome) => {
-      await toStep3();
-      fillStep3Contact();
-      const uploads = controlledUploads(upload.uploadImageToAPI);
-      selectFiles(coverInput(), [imageFile('a.png')]);
-      await waitFor(() => expect(uploads.calls).toHaveLength(1));
-      selectFiles(coverInput(), [imageFile('b.png')]);
-      await waitFor(() => expect(uploads.calls).toHaveLength(2));
-
-      await uploads.settle(0, outcome);
-      const busy = screen.getByRole('button', { name: '照片上傳中' });
-      expect(busy.getAttribute('aria-busy')).toBe('true');
-      expect(screen.queryByText(/上傳失敗/)).toBeNull();
-
-      await uploads.settle(1, 'b.jpg');
-      await waitFor(() => expect(screen.getByRole('button', { name: '送出投稿' })).toBeTruthy());
-      expect(readStoredDraft().form.coverPhoto).toBe(`${CDN}b.jpg`);
-    }
-  );
-});
-
-describe('TC-116 其他照片同時上傳、刪除、排序', () => {
+describe('TC-116 照片同時上傳、刪除、排序', () => {
   async function withP1() {
     seedHistory(3);
-    storeDraft(
-      filledForm({
-        coverPhoto: `${CDN}cover.jpg`,
-        otherPhotos: [{ id: 'x', url: `${CDN}p1.jpg` }],
-      }),
-      { maxStep: 3, depth: 2 }
-    );
+    storeDraft(filledForm({ photos: [{ id: 'x', url: `${CDN}p1.jpg` }] }), {
+      maxStep: 3,
+      depth: 2,
+    });
     renderPage();
     await waitForStep(3);
     return controlledUploads(upload.uploadImageToAPI);
   }
 
-  const storedOthers = () => readStoredDraft().form.otherPhotos;
+  const storedPhotos = () => readStoredDraft().form.photos;
 
   it('a：p2 慢、p3 快 → [p1, p2, p3]', async () => {
     const uploads = await withP1();
-    selectFiles(otherInput(), [imageFile('p2.png')]);
-    selectFiles(otherInput(), [imageFile('p3.png')]);
+    selectFiles(photoInput(), [imageFile('p2.png')]);
+    selectFiles(photoInput(), [imageFile('p3.png')]);
     await waitFor(() => expect(uploads.calls).toHaveLength(2));
     await uploads.settle(1, 'p3.jpg');
-    expect(storedOthers()).toEqual([`${CDN}p1.jpg`, `${CDN}p3.jpg`]);
+    expect(storedPhotos()).toEqual([`${CDN}p1.jpg`, `${CDN}p3.jpg`]);
     await uploads.settle(0, 'p2.jpg');
-    expect(storedOthers()).toEqual([`${CDN}p1.jpg`, `${CDN}p2.jpg`, `${CDN}p3.jpg`]);
+    expect(storedPhotos()).toEqual([`${CDN}p1.jpg`, `${CDN}p2.jpg`, `${CDN}p3.jpg`]);
   });
 
   it('b：同一批 p2、p3，p3 先傳完 → 仍是 [p1, p2, p3]', async () => {
     const uploads = await withP1();
-    selectFiles(otherInput(), [imageFile('p2.png'), imageFile('p3.png')]);
+    selectFiles(photoInput(), [imageFile('p2.png'), imageFile('p3.png')]);
     await waitFor(() => expect(uploads.calls).toHaveLength(2));
     await uploads.settle(1, 'p3.jpg');
     await uploads.settle(0, 'p2.jpg');
-    expect(storedOthers()).toEqual([`${CDN}p1.jpg`, `${CDN}p2.jpg`, `${CDN}p3.jpg`]);
+    expect(storedPhotos()).toEqual([`${CDN}p1.jpg`, `${CDN}p2.jpg`, `${CDN}p3.jpg`]);
   });
 
-  it('c：p2 上傳中刪掉 p1 → p1 不會復活', async () => {
+  it('c：p2 上傳中刪掉 p1 → p1 不會復活，p2 變封面', async () => {
     const uploads = await withP1();
-    selectFiles(otherInput(), [imageFile('p2.png')]);
+    selectFiles(photoInput(), [imageFile('p2.png')]);
     await waitFor(() => expect(uploads.calls).toHaveLength(1));
-    fireEvent.click(screen.getByRole('button', { name: '移除其他照片 1' }));
+    fireEvent.click(screen.getByRole('button', { name: '移除封面照片' }));
     await uploads.settle(0, 'p2.jpg');
-    expect(storedOthers()).toEqual([`${CDN}p2.jpg`]);
+    expect(storedPhotos()).toEqual([`${CDN}p2.jpg`]);
+    expect(screen.getByAltText('封面照片').getAttribute('src')).toBe(`${CDN}p2.jpg`);
   });
 
   it('d：上傳中移動順序 → 傳完後順序維持', async () => {
     seedHistory(3);
     storeDraft(
       filledForm({
-        otherPhotos: [
+        photos: [
           { id: 'x', url: `${CDN}p1.jpg` },
           { id: 'y', url: `${CDN}p0.jpg` },
         ],
@@ -400,21 +351,77 @@ describe('TC-116 其他照片同時上傳、刪除、排序', () => {
     renderPage();
     await waitForStep(3);
     const uploads = controlledUploads(upload.uploadImageToAPI);
-    selectFiles(otherInput(), [imageFile('p2.png')]);
+    selectFiles(photoInput(), [imageFile('p2.png')]);
     await waitFor(() => expect(uploads.calls).toHaveLength(1));
-    fireEvent.click(screen.getByRole('button', { name: '其他照片 2 往前移' }));
+    fireEvent.click(screen.getByRole('button', { name: '將照片 2設為封面' }));
     await uploads.settle(0, 'p2.jpg');
-    expect(storedOthers()).toEqual([`${CDN}p0.jpg`, `${CDN}p1.jpg`, `${CDN}p2.jpg`]);
+    expect(storedPhotos()).toEqual([`${CDN}p0.jpg`, `${CDN}p1.jpg`, `${CDN}p2.jpg`]);
+  });
+
+  it('e：把第二張設為封面 → 它帶「封面」，送出時是 coverPhoto，其餘照順序是 otherPhotos', async () => {
+    seedHistory(3);
+    storeDraft(
+      filledForm({
+        photos: [
+          { id: 'x', url: `${CDN}p1.jpg` },
+          { id: 'y', url: `${CDN}p2.jpg` },
+          { id: 'z', url: `${CDN}p3.jpg` },
+        ],
+      }),
+      { maxStep: 3, depth: 2 }
+    );
+    renderPage();
+    await waitForStep(3);
+    fireEvent.click(screen.getByRole('button', { name: '將照片 2設為封面' }));
+    expect(screen.getByAltText('封面照片').getAttribute('src')).toBe(`${CDN}p2.jpg`);
+    submit();
+    await waitFor(() => expect(api.create).toHaveBeenCalledTimes(1));
+    const body = api.create.mock.calls[0][0];
+    expect(body.coverPhoto).toBe(`${CDN}p2.jpg`);
+    expect(body.otherPhotos).toEqual([`${CDN}p1.jpg`, `${CDN}p3.jpg`]);
+  });
+
+  it('f：沒有任何照片 → 送出時「請至少上傳一張照片」，不打 API', async () => {
+    seedHistory(3);
+    storeDraft(filledForm({ photos: [] }), { maxStep: 3, depth: 2 });
+    renderPage();
+    await waitForStep(3);
+    submit();
+    expect(await screen.findByText('請至少上傳一張照片')).toBeTruthy();
+    expect(screen.getByRole('button', { name: '新增照片' }).getAttribute('aria-invalid')).toBe(
+      'true'
+    );
+    expect(api.create).not.toHaveBeenCalled();
+  });
+
+  it('g：全新表單一次選多張 → 第一張是封面；超過 10 張擋下', async () => {
+    await toStep3();
+    upload.uploadImageToAPI.mockImplementation(async (file: File) => ({
+      success: true,
+      filename: file.name.replace('.png', '.jpg'),
+    }));
+    selectFiles(photoInput(), [imageFile('p1.png'), imageFile('p2.png')]);
+    await waitFor(() =>
+      expect(screen.getByAltText('封面照片').getAttribute('src')).toBe(`${CDN}p1.jpg`)
+    );
+    expect(screen.getByAltText('照片 2').getAttribute('src')).toBe(`${CDN}p2.jpg`);
+
+    selectFiles(
+      photoInput(),
+      Array.from({ length: 9 }, (_, i) => imageFile(`x${i}.png`))
+    );
+    expect(screen.getByText('最多只能上傳 10 張照片')).toBeTruthy();
+    expect(upload.uploadImageToAPI).toHaveBeenCalledTimes(2);
   });
 });
 
 describe('TC-125 停在第 3 步重新整理後的照片', () => {
-  it('還原的封面與其他照片顯示；再加一張後 body 是原本 2 張加新的', async () => {
+  it('還原的 3 張照片顯示、第一張是封面；再加一張後 body 的 coverPhoto／otherPhotos 正確', async () => {
     seedHistory(3);
     storeDraft(
       filledForm({
-        coverPhoto: `${CDN}cover.jpg`,
-        otherPhotos: [
+        photos: [
+          { id: 'c', url: `${CDN}cover.jpg` },
           { id: 'x', url: `${CDN}p1.jpg` },
           { id: 'y', url: `${CDN}p2.jpg` },
         ],
@@ -424,14 +431,15 @@ describe('TC-125 停在第 3 步重新整理後的照片', () => {
     renderPage();
     await waitForStep(3);
     expect(screen.getByAltText('封面照片').getAttribute('src')).toBe(`${CDN}cover.jpg`);
-    expect(screen.getByAltText('其他照片 1').getAttribute('src')).toBe(`${CDN}p1.jpg`);
-    expect(screen.getByAltText('其他照片 2').getAttribute('src')).toBe(`${CDN}p2.jpg`);
+    expect(screen.getByAltText('照片 2').getAttribute('src')).toBe(`${CDN}p1.jpg`);
+    expect(screen.getByAltText('照片 3').getAttribute('src')).toBe(`${CDN}p2.jpg`);
 
     upload.uploadImageToAPI.mockResolvedValue({ success: true, filename: 'p3.jpg' });
-    selectFiles(otherInput(), [imageFile('p3.png')]);
-    await waitFor(() => expect(screen.getByAltText('其他照片 3')).toBeTruthy());
+    selectFiles(photoInput(), [imageFile('p3.png')]);
+    await waitFor(() => expect(screen.getByAltText('照片 4')).toBeTruthy());
     submit();
     await waitFor(() => expect(api.create).toHaveBeenCalledTimes(1));
+    expect(api.create.mock.calls[0][0].coverPhoto).toBe(`${CDN}cover.jpg`);
     expect(api.create.mock.calls[0][0].otherPhotos).toEqual([
       `${CDN}p1.jpg`,
       `${CDN}p2.jpg`,
@@ -443,41 +451,41 @@ describe('TC-125 停在第 3 步重新整理後的照片', () => {
 describe('TC-126 上傳中重新整理', () => {
   it('a：已有 [p0]、p1 上傳中 → 暫存只有 [p0]，沒有 blob:', async () => {
     seedHistory(3);
-    storeDraft(filledForm({ otherPhotos: [{ id: 'x', url: `${CDN}p0.jpg` }] }), {
+    storeDraft(filledForm({ photos: [{ id: 'x', url: `${CDN}p0.jpg` }] }), {
       maxStep: 3,
       depth: 2,
     });
     renderPage();
     await waitForStep(3);
     const uploads = controlledUploads(upload.uploadImageToAPI);
-    selectFiles(otherInput(), [imageFile('p1.png')]);
+    selectFiles(photoInput(), [imageFile('p1.png')]);
     await waitFor(() => expect(uploads.calls).toHaveLength(1));
     const raw = window.sessionStorage.getItem('stellar:venue-submit-draft') ?? '';
     expect(raw).not.toContain('blob:');
-    expect(readStoredDraft().form.otherPhotos).toEqual([`${CDN}p0.jpg`]);
+    expect(readStoredDraft().form.photos).toEqual([`${CDN}p0.jpg`]);
 
     cleanup();
     renderPage();
     await waitForStep(3);
-    expect(screen.getAllByAltText(/^其他照片 /)).toHaveLength(1);
+    expect(screen.getByAltText('封面照片')).toBeTruthy();
+    expect(screen.queryByAltText(/^照片 /)).toBeNull();
   });
 
   it('b：同批 p1 傳完、p2 不回應 → 重新 render 後 p1 保留、p2 不保留', async () => {
     seedHistory(3);
-    storeDraft(filledForm(), { maxStep: 3, depth: 2 });
+    storeDraft(filledForm({ photos: [] }), { maxStep: 3, depth: 2 });
     renderPage();
     await waitForStep(3);
     const uploads = controlledUploads(upload.uploadImageToAPI);
-    selectFiles(otherInput(), [imageFile('p1.png'), imageFile('p2.png')]);
+    selectFiles(photoInput(), [imageFile('p1.png'), imageFile('p2.png')]);
     await waitFor(() => expect(uploads.calls).toHaveLength(2));
     await uploads.settle(0, 'p1.jpg');
-    expect(readStoredDraft().form.otherPhotos).toEqual([`${CDN}p1.jpg`]);
+    expect(readStoredDraft().form.photos).toEqual([`${CDN}p1.jpg`]);
 
     cleanup();
     renderPage();
     await waitForStep(3);
-    expect(screen.getAllByAltText(/^其他照片 /).map((img) => img.getAttribute('src'))).toEqual([
-      `${CDN}p1.jpg`,
-    ]);
+    expect(screen.getByAltText('封面照片').getAttribute('src')).toBe(`${CDN}p1.jpg`);
+    expect(screen.queryByAltText(/^照片 /)).toBeNull();
   });
 });

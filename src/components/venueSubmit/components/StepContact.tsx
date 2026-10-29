@@ -31,15 +31,6 @@ import { RadioCard } from './Choices';
 import VenuePhotoGrid from './VenuePhotoGrid';
 import type { usePhotoUploads } from '../hooks/usePhotoUploads';
 
-const linkRow = css({ display: 'flex', alignItems: 'flex-start', gap: '1' });
-const cardStack = css({ display: 'flex', flexDirection: 'column', gap: '3' });
-const consent = css({
-  margin: 0,
-  textStyle: 'caption',
-  color: 'color.text.secondary',
-  '& a': { color: 'color.link', textDecoration: 'underline', textUnderlineOffset: '2px' },
-});
-const bannerDetail = css({ margin: 0 });
 const retryButton = css({
   alignSelf: 'flex-start',
   minHeight: '44px',
@@ -55,6 +46,15 @@ const retryButton = css({
   '&:focus-visible': { outline: '2px solid', outlineColor: 'color.primary' },
 });
 
+const linkRow = css({ display: 'flex', alignItems: 'flex-start', gap: '1' });
+const cardStack = css({ display: 'flex', flexDirection: 'column', gap: '3' });
+const consent = css({
+  margin: 0,
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+  '& a': { color: 'color.link', textDecoration: 'underline', textUnderlineOffset: '2px' },
+});
+const bannerDetail = css({ margin: 0 });
 const CONTACT_OPTIONS: { value: SubmitContact; label: string }[] = [
   { value: 'instagram', label: 'Instagram 私訊' },
   { value: 'threads', label: 'Threads 私訊' },
@@ -343,50 +343,38 @@ export default function StepContact({
         <h2 id="venue-submit-photos-title" className={sectionHeading}>
           場地相關照片
         </h2>
-        <p className={hint}>可以放店內環境、佈置過的樣子、菜單等，最多 10 張（含封面）。</p>
+        <p className={hint}>可以放店內環境、佈置過的樣子、菜單等，最多 10 張，第一張是封面。</p>
         <VenuePhotoGrid
-          coverUrl={form.coverPhoto}
-          coverPreview={photos.coverPreview}
-          coverUploading={photos.coverUploading}
-          coverInvalid={!!errors.coverPhoto}
-          coverDescribedBy={describedBy(errors.coverPhoto && errorId('coverPhoto'))}
-          others={form.otherPhotos}
+          photos={form.photos}
           previews={photos.previews}
-          onSelectCover={photos.selectCover}
-          onRemoveCover={photos.removeCover}
-          onAddOthers={(files) => photos.addOthers(files, form.otherPhotos.length)}
-          onRemoveOther={(id) =>
-            update(
-              (prev) => ({ ...prev, otherPhotos: prev.otherPhotos.filter((s) => s.id !== id) }),
-              []
-            )
+          invalid={!!errors.photos}
+          describedBy={describedBy(errors.photos && errorId('photos'))}
+          onAdd={(files) => photos.addPhotos(files, form.photos.length)}
+          onRemove={(id) =>
+            update((prev) => ({ ...prev, photos: prev.photos.filter((s) => s.id !== id) }), [])
           }
-          onMoveOther={(id, delta) =>
+          onMove={(id, delta) =>
             update((prev) => {
-              const list = [...prev.otherPhotos];
+              const list = [...prev.photos];
               const from = list.findIndex((s) => s.id === id);
               const to = from + delta;
               if (from < 0 || to < 0 || to >= list.length) return prev;
               [list[from], list[to]] = [list[to], list[from]];
-              return { ...prev, otherPhotos: list };
+              return { ...prev, photos: list };
             }, [])
           }
         />
-        <FieldError id={errorId('coverPhoto')} message={errors.coverPhoto} />
-        <FieldError id="venue-submit-cover-upload-error" message={photos.coverError ?? undefined} />
-        {photos.failedCover && (
+        <FieldError id={errorId('photos')} message={errors.photos} />
+        <FieldError id="venue-submit-photo-upload-error" message={photos.error ?? undefined} />
+        {photos.failed.length > 0 && (
           <button
             type="button"
             className={retryButton}
-            onClick={() => photos.failedCover && photos.selectCover(photos.failedCover)}
+            onClick={() => photos.addPhotos(photos.failed, form.photos.length)}
           >
             點擊重新上傳圖片
           </button>
         )}
-        <FieldError
-          id="venue-submit-others-upload-error"
-          message={photos.othersError ?? undefined}
-        />
       </section>
 
       <div className={field}>

@@ -89,7 +89,7 @@ describe('buildSubmissionPayload', () => {
     capacityRange: '20-40',
     preferredContact: 'instagram',
     instagram: 'stellar_cafe',
-    coverPhoto: 'https://cdn.test/cover.jpg',
+    photos: [{ id: 'c', url: 'https://cdn.test/cover.jpg' }],
   });
 
   it('沒選佈置時不帶 fees；空的選填欄位不送；transitStops 全空送 []', () => {

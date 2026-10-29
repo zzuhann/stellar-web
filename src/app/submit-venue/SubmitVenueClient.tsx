@@ -101,10 +101,10 @@ export default function SubmitVenueClient() {
       }}
       placeApi={publicPlaceApi}
       uploadPhoto={uploadPhoto}
-      onUploadError={(error, file, kind) => {
+      onUploadError={(error, file) => {
         Sentry.captureException(error, {
           tags: { context: 'venue_submission_image_upload' },
-          extra: { category: kind, contentType: file.type, size: file.size },
+          extra: { contentType: file.type, size: file.size },
         });
       }}
     />

@@ -7,7 +7,6 @@ import { createLinkRow } from './venueSubmitModel';
 import {
   check,
   chooseDropdown,
-  coverInput,
   fieldset,
   filledForm,
   fillStep1,
@@ -15,6 +14,7 @@ import {
   fillStep3Contact,
   imageFile,
   next,
+  photoInput,
   readStoredDraft,
   renderPage,
   resetBrowserState,
@@ -162,7 +162,7 @@ async function fillEverything() {
   next();
   await waitForStep(3);
   fillStep3Contact();
-  selectFiles(coverInput(), [imageFile('cover.png')]);
+  selectFiles(photoInput(), [imageFile('cover.png')]);
   await waitFor(() => expect(screen.getByAltText('封面照片')).toBeTruthy());
 }
 
@@ -216,7 +216,7 @@ describe('TC-011 完整填寫送出的 body', () => {
     fireEvent.change(screen.getByLabelText(/檔期行事曆連結/), {
       target: { value: 'https://timetree.app/x' },
     });
-    selectFiles(coverInput(), [imageFile('cover.png')]);
+    selectFiles(photoInput(), [imageFile('cover.png')]);
     await waitFor(() => expect(screen.getByAltText('封面照片')).toBeTruthy());
     submit();
 
@@ -346,7 +346,7 @@ describe('TC-075 / TC-076 / TC-143 送出失敗', () => {
     next();
     await waitForStep(3);
     fillStep3Contact();
-    selectFiles(coverInput(), [imageFile('cover.png')]);
+    selectFiles(photoInput(), [imageFile('cover.png')]);
     await waitFor(() => expect(screen.getByAltText('封面照片')).toBeTruthy());
 
     api.create
@@ -453,7 +453,8 @@ describe('TC-103 / TC-123 / TC-124 還原', () => {
       sourceLinks: [createLinkRow('https://a.example'), createLinkRow('https://b.example')],
       calendarUrl: 'https://timetree.app/x',
       description: '店家介紹',
-      otherPhotos: [
+      photos: [
+        { id: 'c', url: `${CDN}cover.jpg` },
         { id: 'p1', url: `${CDN}p1.jpg` },
         { id: 'p2', url: `${CDN}p2.jpg` },
       ],
@@ -466,7 +467,8 @@ describe('TC-103 / TC-123 / TC-124 還原', () => {
       'https://b.example'
     );
     expect((screen.getByLabelText(/店家介紹/) as HTMLTextAreaElement).value).toBe('店家介紹');
-    expect(screen.getAllByAltText(/^其他照片 /)).toHaveLength(2);
+    expect(screen.getByAltText('封面照片')).toBeTruthy();
+    expect(screen.getAllByAltText(/^照片 /)).toHaveLength(2);
 
     fireEvent.click(screen.getByRole('button', { name: '上一步' }));
     await waitForStep(2);
@@ -496,7 +498,7 @@ describe('TC-103 / TC-123 / TC-124 還原', () => {
     next();
     await waitForStep(3);
     fillStep3Contact();
-    selectFiles(coverInput(), [imageFile('cover.png')]);
+    selectFiles(photoInput(), [imageFile('cover.png')]);
     await waitFor(() => expect(screen.getByAltText('封面照片')).toBeTruthy());
     submit();
     await waitFor(() => expect(api.create).toHaveBeenCalledTimes(1));
@@ -638,7 +640,7 @@ describe('TC-131 beforeunload', () => {
     next();
     await waitForStep(3);
     fillStep3Contact();
-    selectFiles(coverInput(), [imageFile('cover.png')]);
+    selectFiles(photoInput(), [imageFile('cover.png')]);
     await waitFor(() => expect(screen.getByAltText('封面照片')).toBeTruthy());
     submit();
     expect(await screen.findByRole('heading', { name: '已收到場地投稿' })).toBeTruthy();

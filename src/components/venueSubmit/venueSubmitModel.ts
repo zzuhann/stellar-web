@@ -77,8 +77,8 @@ export interface VenueSubmitFormValues {
   bookingFormUrl: string;
   sourceLinks: LinkRowValue[];
   calendarUrl: string;
-  coverPhoto: string;
-  otherPhotos: PhotoSlot[];
+  // One list; the first finished photo becomes the cover (venue-tags §D step 3)
+  photos: PhotoSlot[];
   description: string;
 }
 
@@ -115,7 +115,8 @@ export const EQUIPMENT_OPTIONS: { value: VenueEquipmentOption; label: string }[]
 
 export const NOTE_MAX_LENGTH = 1000;
 export const MAX_SOURCE_LINKS = 5;
-export const MAX_OTHER_PHOTOS = 9;
+export const MAX_PHOTOS = 10;
+export const PHOTOS_REQUIRED_ERROR = '請至少上傳一張照片';
 
 export const OPTION_OR_UNSURE_ERROR = '請至少選一項，或勾「還沒確定」。';
 export const FEES_REQUIRED_ERROR = '請至少回答一題，或勾「要看檔期和方案」。';
@@ -170,8 +171,7 @@ export function createEmptyForm(): VenueSubmitFormValues {
     bookingFormUrl: '',
     sourceLinks: [createLinkRow()],
     calendarUrl: '',
-    coverPhoto: '',
-    otherPhotos: [],
+    photos: [],
     description: '',
   };
 }
@@ -247,7 +247,7 @@ function validateStep3(form: VenueSubmitFormValues): FormErrors {
   }
   const calendarError = getHttpUrlError(form.calendarUrl.trim());
   if (calendarError) errors.calendarUrl = calendarError;
-  if (!form.coverPhoto) errors.coverPhoto = '請上傳封面圖片';
+  if (!form.photos.some((slot) => slot.url)) errors.photos = PHOTOS_REQUIRED_ERROR;
   return errors;
 }
 
@@ -318,7 +318,7 @@ export function buildSubmissionPayload(form: VenueSubmitFormValues): CreateVenue
 
   const instagram = trimmedOrUndefined(form.instagram);
   const threads = trimmedOrUndefined(form.threads);
-  const otherPhotos = form.otherPhotos.flatMap((slot) => (slot.url ? [slot.url] : []));
+  const [coverPhoto, ...otherPhotos] = form.photos.flatMap((slot) => (slot.url ? [slot.url] : []));
 
   const payload: CreateVenueSubmissionData = {
     name: form.name.trim(),
@@ -329,7 +329,7 @@ export function buildSubmissionPayload(form: VenueSubmitFormValues): CreateVenue
     lat: place.lat,
     lng: place.lng,
     transitStops: toTransitStops(form.transitStops),
-    coverPhoto: form.coverPhoto,
+    coverPhoto: coverPhoto ?? '', // validation guarantees one
     preferredContact: form.preferredContact as SubmitContact,
     venueConditions,
   };
@@ -356,7 +356,7 @@ function comparable(form: VenueSubmitFormValues) {
       .filter((row) => !isBlankTransitRow(row))
       .map(({ type, station, walkMinutes }) => [type, station, walkMinutes]),
     sourceLinks: form.sourceLinks.map((row) => row.value).filter((value) => value.trim()),
-    otherPhotos: form.otherPhotos.length,
+    photos: form.photos.length,
   });
 }
 

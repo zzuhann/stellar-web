@@ -77,18 +77,16 @@ describe('TC-104 丟棄暫存', () => {
 });
 
 describe('暫存只存已傳完的照片', () => {
-  it('上傳中的其他照片（url 是 null）不寫進暫存', () => {
+  it('上傳中的照片（url 是 null）不寫進暫存', () => {
     const form = {
       ...createEmptyForm(),
-      otherPhotos: [
+      photos: [
         { id: 'a', url: 'https://cdn.test/p0.jpg' },
         { id: 'b', url: null },
       ],
     };
     const raw = serializeDraft(draft({ form }));
     expect(raw).not.toContain('blob:');
-    expect(parseDraft(raw)?.form.otherPhotos.map((p) => p.url)).toEqual([
-      'https://cdn.test/p0.jpg',
-    ]);
+    expect(parseDraft(raw)?.form.photos.map((p) => p.url)).toEqual(['https://cdn.test/p0.jpg']);
   });
 });

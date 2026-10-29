@@ -150,7 +150,7 @@ describe('TC-106 步驟頁隱藏全站導覽', () => {
     expect(useSiteChromeStore.getState().hidden).toBe(true);
     fireEvent.click(screen.getByRole('radio', { name: 'Instagram 私訊' }));
     fireEvent.change(screen.getByLabelText('Instagram 帳號'), { target: { value: 'x' } });
-    fireEvent.change(screen.getByTestId('cover-file-input'), {
+    fireEvent.change(screen.getByTestId('photo-file-input'), {
       target: { files: [new File(['x'], 'c.png', { type: 'image/png' })] },
     });
     await waitFor(() => expect(screen.getByAltText('封面照片')).toBeTruthy());
@@ -180,7 +180,7 @@ describe('TC-107 第 1 步空白按「下一步」', () => {
     expect(screen.queryByLabelText('場地名稱')).toBeNull();
     expect(screen.queryByText('請填寫場地名稱')).toBeNull();
     expect(screen.queryByText('請選擇偏好的聯絡方式')).toBeNull();
-    expect(screen.queryByText('請上傳封面圖片')).toBeNull();
+    expect(screen.queryByText('請至少上傳一張照片')).toBeNull();
   });
 });
 
@@ -359,7 +359,7 @@ describe('TC-050 / TC-051 / TC-054 / TC-055 / TC-112 第 2 步的送出內容', 
     await waitForStep(3);
     fireEvent.click(screen.getByRole('radio', { name: 'Instagram 私訊' }));
     fireEvent.change(screen.getByLabelText('Instagram 帳號'), { target: { value: 'x' } });
-    fireEvent.change(screen.getByTestId('cover-file-input'), {
+    fireEvent.change(screen.getByTestId('photo-file-input'), {
       target: { files: [new File(['x'], 'c.png', { type: 'image/png' })] },
     });
     await waitFor(() => expect(screen.getByAltText('封面照片')).toBeTruthy());
@@ -591,7 +591,10 @@ describe('TC-117 圖示按鈕、封面標籤、選填標示', () => {
     await goThroughToStep3();
     expect(screen.getByRole('button', { name: '新增說明文件連結' }).textContent?.trim()).toBe('');
     expect(screen.getByRole('button', { name: '新增照片' })).toBeTruthy();
-    expect(screen.getByText('封面')).toBeTruthy();
+    fireEvent.change(screen.getByTestId('photo-file-input'), {
+      target: { files: [new File(['x'], 'c.png', { type: 'image/png' })] },
+    });
+    expect(await screen.findByText('封面')).toBeTruthy();
     for (const label of [/預約表單網址/, /給主辦的說明文件/, /檔期行事曆連結/, /店家介紹/]) {
       expect(screen.getAllByText(label)[0].textContent).toContain('（選填）');
     }
