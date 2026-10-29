@@ -117,6 +117,7 @@ export const NOTE_MAX_LENGTH = 1000;
 export const MAX_SOURCE_LINKS = 5;
 export const MAX_PHOTOS = 10;
 export const PHOTOS_REQUIRED_ERROR = '請至少上傳一張照片';
+export const PHOTOS_FAILED_ERROR = '有照片上傳失敗，請重新上傳或移除';
 
 export const OPTION_OR_UNSURE_ERROR = '請至少選一項，或勾「還沒確定」。';
 export const FEES_REQUIRED_ERROR = '請至少回答一題，或勾「要看檔期和方案」。';
@@ -247,7 +248,9 @@ function validateStep3(form: VenueSubmitFormValues): FormErrors {
   }
   const calendarError = getHttpUrlError(form.calendarUrl.trim());
   if (calendarError) errors.calendarUrl = calendarError;
-  if (!form.photos.some((slot) => slot.url)) errors.photos = PHOTOS_REQUIRED_ERROR;
+  // Submit waits for uploads, so a slot still without a url here is a failed one
+  if (form.photos.length === 0) errors.photos = PHOTOS_REQUIRED_ERROR;
+  else if (form.photos.some((slot) => !slot.url)) errors.photos = PHOTOS_FAILED_ERROR;
   return errors;
 }
 

@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import Image from 'next/image';
 import {
+  ArrowPathIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   PlusIcon,
@@ -116,6 +117,20 @@ const spinner = css({
   animation: 'spin 1s linear infinite',
 });
 
+const failedOverlay = css({
+  position: 'absolute',
+  inset: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '1',
+  background: 'alpha.black.60',
+  color: 'color.background.primary',
+  textStyle: 'caption',
+  fontWeight: 'semibold',
+});
+
 const hiddenInput = css({ display: 'none' });
 
 const ACCEPT = 'image/jpeg,image/jpg,image/png,image/webp';
@@ -123,10 +138,12 @@ const ACCEPT = 'image/jpeg,image/jpg,image/png,image/webp';
 interface VenuePhotoGridProps {
   photos: PhotoSlot[];
   previews: Record<string, string>;
+  failedIds: string[];
   invalid: boolean;
   describedBy?: string;
   onAdd: (files: File[]) => void;
   onRemove: (id: string) => void;
+  onRetry: (id: string) => void;
   onMove: (id: string, delta: -1 | 1) => void;
 }
 
@@ -142,10 +159,12 @@ function Spinner({ label }: { label: string }) {
 export default function VenuePhotoGrid({
   photos,
   previews,
+  failedIds,
   invalid,
   describedBy,
   onAdd,
   onRemove,
+  onRetry,
   onMove,
 }: VenuePhotoGridProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -183,7 +202,21 @@ export default function VenuePhotoGrid({
                 className={image}
               />
             )}
-            {!slot.url && <Spinner label={`${name} 上傳中`} />}
+            {failedIds.includes(slot.id) ? (
+              <div className={failedOverlay}>
+                <span>上傳失敗</span>
+                <button
+                  type="button"
+                  className={actionButton}
+                  aria-label={`重新上傳${name}`}
+                  onClick={() => onRetry(slot.id)}
+                >
+                  <ArrowPathIcon aria-hidden="true" />
+                </button>
+              </div>
+            ) : (
+              !slot.url && <Spinner label={`${name} 上傳中`} />
+            )}
             <div className={removeSlot}>
               <button
                 type="button"
@@ -199,7 +232,7 @@ export default function VenuePhotoGrid({
                 <button
                   type="button"
                   className={actionButton}
-                  aria-label={index === 1 ? `將${name}設為封面` : `${name} 往前移`}
+                  aria-label={index === 1 ? `將${name} 設為封面` : `${name} 往前移`}
                   onClick={() => onMove(slot.id, -1)}
                 >
                   <ChevronLeftIcon aria-hidden="true" />

@@ -353,7 +353,7 @@ describe('TC-116 照片同時上傳、刪除、排序', () => {
     const uploads = controlledUploads(upload.uploadImageToAPI);
     selectFiles(photoInput(), [imageFile('p2.png')]);
     await waitFor(() => expect(uploads.calls).toHaveLength(1));
-    fireEvent.click(screen.getByRole('button', { name: '將照片 2設為封面' }));
+    fireEvent.click(screen.getByRole('button', { name: '將照片 2 設為封面' }));
     await uploads.settle(0, 'p2.jpg');
     expect(storedPhotos()).toEqual([`${CDN}p0.jpg`, `${CDN}p1.jpg`, `${CDN}p2.jpg`]);
   });
@@ -372,7 +372,7 @@ describe('TC-116 照片同時上傳、刪除、排序', () => {
     );
     renderPage();
     await waitForStep(3);
-    fireEvent.click(screen.getByRole('button', { name: '將照片 2設為封面' }));
+    fireEvent.click(screen.getByRole('button', { name: '將照片 2 設為封面' }));
     expect(screen.getByAltText('封面照片').getAttribute('src')).toBe(`${CDN}p2.jpg`);
     submit();
     await waitFor(() => expect(api.create).toHaveBeenCalledTimes(1));
@@ -412,6 +412,62 @@ describe('TC-116 照片同時上傳、刪除、排序', () => {
     );
     expect(screen.getByText('最多只能上傳 10 張照片')).toBeTruthy();
     expect(upload.uploadImageToAPI).toHaveBeenCalledTimes(2);
+  });
+
+  it('h：封面上傳失敗 → 留在第一格、不能送出；在原位重傳成功後仍是封面', async () => {
+    await toStep3();
+    fillStep3Contact();
+    const uploads = controlledUploads(upload.uploadImageToAPI);
+    selectFiles(photoInput(), [imageFile('a.png'), imageFile('b.png')]);
+    await waitFor(() => expect(uploads.calls).toHaveLength(2));
+    await uploads.settle(0, 'fail');
+    await uploads.settle(1, 'b.jpg');
+    expect(screen.getByText('1 張照片上傳失敗，請重試或移除')).toBeTruthy();
+    expect(screen.getByRole('button', { name: '重新上傳封面照片' })).toBeTruthy();
+
+    submit();
+    expect(await screen.findByText('有照片上傳失敗，請重新上傳或移除')).toBeTruthy();
+    expect(api.create).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: '重新上傳封面照片' }));
+    await waitFor(() => expect(uploads.calls).toHaveLength(3));
+    expect(uploads.calls[2].name).toBe('a.png');
+    await uploads.settle(2, 'a.jpg');
+    expect(screen.queryByText(/張照片上傳失敗/)).toBeNull();
+    submit();
+    await waitFor(() => expect(api.create).toHaveBeenCalledTimes(1));
+    expect(api.create.mock.calls[0][0].coverPhoto).toBe(`${CDN}a.jpg`);
+    expect(api.create.mock.calls[0][0].otherPhotos).toEqual([`${CDN}b.jpg`]);
+  });
+
+  it('i：上傳中就移除的照片，之後失敗或成功都不影響畫面', async () => {
+    await toStep3();
+    fillStep3Contact();
+    const uploads = controlledUploads(upload.uploadImageToAPI);
+    selectFiles(photoInput(), [imageFile('a.png'), imageFile('b.png')]);
+    await waitFor(() => expect(uploads.calls).toHaveLength(2));
+    fireEvent.click(screen.getByRole('button', { name: '移除封面照片' }));
+    fireEvent.click(screen.getByRole('button', { name: '移除封面照片' }));
+    await uploads.settle(0, 'fail');
+    await uploads.settle(1, 'b.jpg');
+    expect(screen.queryByText(/上傳失敗/)).toBeNull();
+    expect(screen.queryByRole('button', { name: '點擊重新上傳圖片' })).toBeNull();
+    expect(screen.queryByAltText('封面照片')).toBeNull();
+    submit();
+    expect(await screen.findByText('請至少上傳一張照片')).toBeTruthy();
+  });
+
+  it('j：失敗的照片等著重試時再新增照片 → 失敗那格和重試按鈕都還在', async () => {
+    await toStep3();
+    const uploads = controlledUploads(upload.uploadImageToAPI);
+    selectFiles(photoInput(), [imageFile('a.png')]);
+    await waitFor(() => expect(uploads.calls).toHaveLength(1));
+    await uploads.settle(0, 'fail');
+    selectFiles(photoInput(), [imageFile('b.png')]);
+    await waitFor(() => expect(uploads.calls).toHaveLength(2));
+    await uploads.settle(1, 'b.jpg');
+    expect(screen.getByRole('button', { name: '重新上傳封面照片' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: '點擊重新上傳圖片' })).toBeTruthy();
   });
 });
 

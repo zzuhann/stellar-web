@@ -106,4 +106,8 @@ describe('canPermanentlyDeleteVenue', () => {
     expect(canPermanentlyDeleteVenue({ status: 'active', eventCount: 0 })).toBe(false);
     expect(canPermanentlyDeleteVenue({ status: 'inactive', eventCount: 1 })).toBe(false);
   });
+
+  it('沒列在可刪清單的狀態 → 不可刪', () => {
+    expect(canPermanentlyDeleteVenue({ status: 'scheduled', eventCount: 0 })).toBe(false);
+  });
 });

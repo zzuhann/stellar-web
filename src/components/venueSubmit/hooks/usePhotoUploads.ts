@@ -1,17 +1,17 @@
-import { useState, type Dispatch, type SetStateAction } from 'react';
+import { useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import { MAX_PHOTOS, createPhotoSlot, type VenueSubmitFormValues } from '../venueSubmitModel';
 
 // Photo uploads for step 3 (venue-tags §D 驗證, AC-19):
 // - one list; every photo lands in its own slot as soon as it finishes, in pick order
 // - results merge into the latest form state, so removals and reorders made meanwhile stick
+// - a failed upload keeps its slot (and position, so the cover never shifts) until retried or removed
+// - a removed slot ignores whatever its upload does later
 // - the submit button stays locked until every in-flight upload has settled
 
 export type UploadPhoto = (file: File) => Promise<string>;
 
 const ACCEPTED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const MAX_SIZE_MB = 5;
-
-const UPLOAD_FAILED = '上傳失敗，請重試';
 
 function validateFile(file: File): string | null {
   if (!ACCEPTED_TYPES.includes(file.type)) return '不支援的檔案格式，請選擇 JPG、PNG 或 WebP';
@@ -37,6 +37,12 @@ function revokePreview(url: string | null | undefined) {
   }
 }
 
+function without<T>(record: Record<string, T>, id: string): Record<string, T> {
+  const next = { ...record };
+  delete next[id];
+  return next;
+}
+
 interface Options {
   uploadPhoto: UploadPhoto;
   setForm: Dispatch<SetStateAction<VenueSubmitFormValues>>;
@@ -46,17 +52,38 @@ interface Options {
 
 export function usePhotoUploads({ uploadPhoto, setForm, onUploaded, onUploadError }: Options) {
   const [inFlight, setInFlight] = useState<string[]>([]);
+  // Pick-time problems (too many, wrong type); upload failures live on their slots
   const [error, setError] = useState<string | null>(null);
-  // Files whose upload failed, kept so one button can retry them
-  const [failed, setFailed] = useState<File[]>([]);
+  const [failed, setFailed] = useState<Record<string, File>>({});
   const [previews, setPreviews] = useState<Record<string, string>>({});
+  const removedRef = useRef(new Set<string>());
 
-  const start = (id: string) => setInFlight((prev) => [...prev, id]);
-  const finish = (id: string) => setInFlight((prev) => prev.filter((x) => x !== id));
+  function uploadInto(id: string, file: File) {
+    setInFlight((prev) => [...prev, id]);
+    setFailed((prev) => without(prev, id));
+    uploadPhoto(file)
+      .then((url) => {
+        if (removedRef.current.has(id)) return;
+        setForm((prev) => ({
+          ...prev,
+          photos: prev.photos.map((slot) => (slot.id === id ? { ...slot, url } : slot)),
+        }));
+        setPreviews((prev) => {
+          revokePreview(prev[id]);
+          return without(prev, id);
+        });
+        onUploaded();
+      })
+      .catch((err: unknown) => {
+        if (removedRef.current.has(id)) return;
+        onUploadError?.(err instanceof Error ? err : new Error('上傳失敗'), file);
+        setFailed((prev) => ({ ...prev, [id]: file }));
+      })
+      .finally(() => setInFlight((prev) => prev.filter((x) => x !== id)));
+  }
 
   function addPhotos(files: File[], currentCount: number) {
     setError(null);
-    setFailed([]);
     if (currentCount + files.length > MAX_PHOTOS) {
       setError(`最多只能上傳 ${MAX_PHOTOS} 張照片`);
       return;
@@ -70,35 +97,35 @@ export function usePhotoUploads({ uploadPhoto, setForm, onUploaded, onUploadErro
     // Slots are appended in pick order up front, so finish order never reorders them
     setForm((prev) => ({ ...prev, photos: [...prev.photos, ...slots] }));
     files.forEach((file, i) => {
-      const { id } = slots[i];
       const preview = previewOf(file);
-      if (preview) setPreviews((prev) => ({ ...prev, [id]: preview }));
-      start(id);
-      uploadPhoto(file)
-        .then((url) => {
-          setForm((prev) => ({
-            ...prev,
-            photos: prev.photos.map((slot) => (slot.id === id ? { ...slot, url } : slot)),
-          }));
-          onUploaded();
-        })
-        .catch((err: unknown) => {
-          onUploadError?.(err instanceof Error ? err : new Error(UPLOAD_FAILED), file);
-          setForm((prev) => ({ ...prev, photos: prev.photos.filter((slot) => slot.id !== id) }));
-          setFailed((prev) => [...prev, file]);
-          setError(files.length > 1 ? '部分照片上傳失敗，請重試' : UPLOAD_FAILED);
-        })
-        .finally(() => {
-          finish(id);
-          setPreviews((prev) => {
-            const nextPreviews = { ...prev };
-            revokePreview(nextPreviews[id]);
-            delete nextPreviews[id];
-            return nextPreviews;
-          });
-        });
+      if (preview) setPreviews((prev) => ({ ...prev, [slots[i].id]: preview }));
+      uploadInto(slots[i].id, file);
     });
   }
 
-  return { isUploading: inFlight.length > 0, error, failed, previews, addPhotos };
+  function retry(id: string) {
+    if (failed[id]) uploadInto(id, failed[id]);
+  }
+
+  // Call when the user removes a slot
+  function forget(id: string) {
+    removedRef.current.add(id);
+    setFailed((prev) => without(prev, id));
+    setPreviews((prev) => {
+      revokePreview(prev[id]);
+      return without(prev, id);
+    });
+  }
+
+  const failedIds = Object.keys(failed);
+  return {
+    isUploading: inFlight.length > 0,
+    error,
+    failedIds,
+    previews,
+    addPhotos,
+    retry,
+    retryAll: () => failedIds.forEach(retry),
+    forget,
+  };
 }

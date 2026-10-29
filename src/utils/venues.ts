@@ -25,8 +25,11 @@ export function regionFromCity(city: string): string | null {
 }
 
 /** Anything not live and without linked events can be removed for good (pending test submissions included). */
+const DELETABLE_STATUSES = ['pending', 'rejected', 'inactive'];
+
 export function canPermanentlyDeleteVenue(venue: { status: string; eventCount: number }): boolean {
-  return venue.status !== 'active' && venue.eventCount === 0;
+  // Allow-list, so a status added later stays protected until someone decides
+  return DELETABLE_STATUSES.includes(venue.status) && venue.eventCount === 0;
 }
 
 const VALID_SORT_VALUES: VenueSort[] = ['composite', 'eventCount', 'newest', 'distance'];

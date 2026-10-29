@@ -347,12 +347,18 @@ export default function StepContact({
         <VenuePhotoGrid
           photos={form.photos}
           previews={photos.previews}
+          failedIds={photos.failedIds}
           invalid={!!errors.photos}
           describedBy={describedBy(errors.photos && errorId('photos'))}
           onAdd={(files) => photos.addPhotos(files, form.photos.length)}
-          onRemove={(id) =>
-            update((prev) => ({ ...prev, photos: prev.photos.filter((s) => s.id !== id) }), [])
-          }
+          onRemove={(id) => {
+            photos.forget(id);
+            update(
+              (prev) => ({ ...prev, photos: prev.photos.filter((s) => s.id !== id) }),
+              ['photos']
+            );
+          }}
+          onRetry={photos.retry}
           onMove={(id, delta) =>
             update((prev) => {
               const list = [...prev.photos];
@@ -366,12 +372,16 @@ export default function StepContact({
         />
         <FieldError id={errorId('photos')} message={errors.photos} />
         <FieldError id="venue-submit-photo-upload-error" message={photos.error ?? undefined} />
-        {photos.failed.length > 0 && (
-          <button
-            type="button"
-            className={retryButton}
-            onClick={() => photos.addPhotos(photos.failed, form.photos.length)}
-          >
+        <FieldError
+          id="venue-submit-photo-failed"
+          message={
+            photos.failedIds.length > 0
+              ? `${photos.failedIds.length} 張照片上傳失敗，請重試或移除`
+              : undefined
+          }
+        />
+        {photos.failedIds.length > 0 && (
+          <button type="button" className={retryButton} onClick={photos.retryAll}>
             點擊重新上傳圖片
           </button>
         )}
