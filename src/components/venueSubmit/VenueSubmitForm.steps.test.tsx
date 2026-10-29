@@ -384,8 +384,8 @@ describe('TC-050 / TC-051 / TC-054 / TC-055 / TC-112 第 2 步的送出內容', 
     const uses = fieldset('主辦可以在這個空間做什麼？');
     check('佈置、辦生咖', uses);
     fireEvent.click(screen.getByRole('radio', { name: '不用場地費' }));
-    check('期間限定：免場地費到');
-    fireEvent.change(screen.getByLabelText('免場地費的最後一天'), {
+    check('期間限定');
+    fireEvent.change(screen.getByLabelText('免場地費到'), {
       target: { value: '2099-12-31' },
     });
     fireEvent.click(screen.getByRole('radio', { name: '要' }));
@@ -396,12 +396,10 @@ describe('TC-050 / TC-051 / TC-054 / TC-055 / TC-112 第 2 步的送出內容', 
     expect((screen.getByRole('radio', { name: '不用場地費' }) as HTMLInputElement).checked).toBe(
       true
     );
-    expect(
-      (screen.getByRole('checkbox', { name: '期間限定：免場地費到' }) as HTMLInputElement).checked
-    ).toBe(true);
-    expect((screen.getByLabelText('免場地費的最後一天') as HTMLInputElement).value).toBe(
-      '2099-12-31'
+    expect((screen.getByRole('checkbox', { name: '期間限定' }) as HTMLInputElement).checked).toBe(
+      true
     );
+    expect((screen.getByLabelText('免場地費到') as HTMLInputElement).value).toBe('2099-12-31');
     expect((screen.getByRole('radio', { name: '要' }) as HTMLInputElement).checked).toBe(true);
 
     check('佈置、辦生咖', uses);
@@ -417,7 +415,7 @@ describe('TC-050 / TC-051 / TC-054 / TC-055 / TC-112 第 2 步的送出內容', 
       name: 'a：限期但不選日期',
       act: () => {
         fireEvent.click(screen.getByRole('radio', { name: '不用場地費' }));
-        check('期間限定：免場地費到');
+        check('期間限定');
       },
       fees: { venueFee: 'free', freeVenueLimited: true },
     },
@@ -425,8 +423,8 @@ describe('TC-050 / TC-051 / TC-054 / TC-055 / TC-112 第 2 步的送出內容', 
       name: 'b：選了日期後改「要場地費」',
       act: () => {
         fireEvent.click(screen.getByRole('radio', { name: '不用場地費' }));
-        check('期間限定：免場地費到');
-        fireEvent.change(screen.getByLabelText('免場地費的最後一天'), {
+        check('期間限定');
+        fireEvent.change(screen.getByLabelText('免場地費到'), {
           target: { value: '2099-12-31' },
         });
         fireEvent.click(screen.getByRole('radio', { name: '要場地費' }));
@@ -437,11 +435,11 @@ describe('TC-050 / TC-051 / TC-054 / TC-055 / TC-112 第 2 步的送出內容', 
       name: 'd：選了日期後取消限期',
       act: () => {
         fireEvent.click(screen.getByRole('radio', { name: '不用場地費' }));
-        check('期間限定：免場地費到');
-        fireEvent.change(screen.getByLabelText('免場地費的最後一天'), {
+        check('期間限定');
+        fireEvent.change(screen.getByLabelText('免場地費到'), {
           target: { value: '2099-12-31' },
         });
-        check('期間限定：免場地費到');
+        check('期間限定');
       },
       fees: { venueFee: 'free' },
     },
@@ -459,22 +457,18 @@ describe('TC-050 / TC-051 / TC-054 / TC-055 / TC-112 第 2 步的送出內容', 
     await toStep2();
     check('佈置、辦生咖', fieldset('主辦可以在這個空間做什麼？'));
     fireEvent.click(screen.getByRole('radio', { name: '不用場地費' }));
-    check('期間限定：免場地費到');
-    fireEvent.change(screen.getByLabelText('免場地費的最後一天'), {
+    check('期間限定');
+    fireEvent.change(screen.getByLabelText('免場地費到'), {
       target: { value: '2099-12-31' },
     });
     fireEvent.click(screen.getByRole('radio', { name: '要場地費' }));
-    expect(screen.queryByLabelText('免場地費的最後一天')).toBeNull();
+    expect(screen.queryByLabelText('免場地費到')).toBeNull();
     fireEvent.click(screen.getByRole('radio', { name: '不用場地費' }));
-    expect((screen.getByLabelText('免場地費的最後一天') as HTMLInputElement).value).toBe(
-      '2099-12-31'
-    );
-    check('期間限定：免場地費到');
-    expect(screen.queryByLabelText('免場地費的最後一天')).toBeNull();
-    check('期間限定：免場地費到');
-    expect((screen.getByLabelText('免場地費的最後一天') as HTMLInputElement).value).toBe(
-      '2099-12-31'
-    );
+    expect((screen.getByLabelText('免場地費到') as HTMLInputElement).value).toBe('2099-12-31');
+    check('期間限定');
+    expect(screen.queryByLabelText('免場地費到')).toBeNull();
+    check('期間限定');
+    expect((screen.getByLabelText('免場地費到') as HTMLInputElement).value).toBe('2099-12-31');
   });
 
   it('TC-054 D、E 沒有「還沒確定」；E 全空可以送出', async () => {
@@ -541,8 +535,8 @@ describe('TC-111 限時優惠的日期', () => {
     await waitForStep(2);
     check('佈置、辦生咖', fieldset('主辦可以在這個空間做什麼？'));
     fireEvent.click(screen.getByRole('radio', { name: '不用場地費' }));
-    check('期間限定：免場地費到');
-    const date = screen.getByLabelText('免場地費的最後一天') as HTMLInputElement;
+    check('期間限定');
+    const date = screen.getByLabelText('免場地費到') as HTMLInputElement;
     expect(date.getAttribute('min')).toBe('2026-10-28');
     await userEvent.type(date, '2026-11-01');
     expect(date.value).toBe('');
@@ -562,7 +556,7 @@ describe('TC-111 限時優惠的日期', () => {
     expect(go).toHaveBeenCalledWith(-1);
     expect(push).not.toHaveBeenCalled();
     expect(api.create).not.toHaveBeenCalled();
-    const date = screen.getByLabelText('免場地費的最後一天');
+    const date = screen.getByLabelText('免場地費到');
     expectFieldError(date, '請重新選擇日期');
     await waitFor(() => expect(document.activeElement).toBe(date));
 

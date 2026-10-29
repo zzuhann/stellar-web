@@ -49,6 +49,7 @@ const feesHeading = css({ margin: 0, textStyle: 'h3', color: 'color.text.primary
 const twoColumns = css({ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2' });
 const limitBox = css({ display: 'flex', flexDirection: 'column', gap: '1' });
 const dateInput = css({ maxWidth: '200px', cursor: 'pointer' });
+const untilLabel = css({ textStyle: 'bodySmall', color: 'color.text.primary' });
 
 const USE_ICONS: Record<VenueUseOption, React.ReactNode> = {
   goods_distribution: <GiftIcon />,
@@ -145,16 +146,19 @@ export default function StepConditions({ form, errors, today, update }: StepCond
             >
               <PlainCheck
                 id="venue-submit-fee-limited"
-                label="期間限定：免場地費到"
+                label="期間限定"
                 checked={fees.freeVenueLimited}
                 onChange={(on) => setFees({ freeVenueLimited: on }, ['freeVenueUntil'])}
               />
               {fees.freeVenueLimited && (
                 <div className={limitBox} data-error-field="freeVenueUntil">
+                  <label htmlFor="venue-submit-fee-until" className={untilLabel}>
+                    免場地費到
+                  </label>
                   <input
+                    id="venue-submit-fee-until"
                     type="date"
                     className={`${input} ${dateInput}`}
-                    aria-label="免場地費的最後一天"
                     min={today}
                     value={fees.freeVenueUntil}
                     aria-invalid={errors.freeVenueUntil ? 'true' : undefined}

@@ -189,8 +189,8 @@ describe('TC-011 完整填寫送出的 body', () => {
     check('發放應援物', uses);
     check('佈置、辦生咖', uses);
     fireEvent.click(screen.getByRole('radio', { name: '不用場地費' }));
-    check('期間限定：免場地費到');
-    fireEvent.change(screen.getByLabelText('免場地費的最後一天'), {
+    check('期間限定');
+    fireEvent.change(screen.getByLabelText('免場地費到'), {
       target: { value: '2099-12-31' },
     });
     fireEvent.click(screen.getByRole('radio', { name: '有' }));
@@ -472,10 +472,8 @@ describe('TC-103 / TC-123 / TC-124 還原', () => {
     await waitForStep(2);
     check('佈置、辦生咖', fieldset('主辦可以在這個空間做什麼？'));
     expect((screen.getByRole('radio', { name: '有' }) as HTMLInputElement).checked).toBe(true);
-    check('期間限定：免場地費到');
-    expect((screen.getByLabelText('免場地費的最後一天') as HTMLInputElement).value).toBe(
-      '2099-01-01'
-    );
+    check('期間限定');
+    expect((screen.getByLabelText('免場地費到') as HTMLInputElement).value).toBe('2099-01-01');
     fireEvent.click(screen.getByRole('button', { name: '上一步' }));
     await waitForStep(1);
     expect((screen.getByLabelText('交通方式 3 站名') as HTMLInputElement).value).toBe('台北車站');
