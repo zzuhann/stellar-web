@@ -30,7 +30,6 @@ export const ERROR_CODE_MESSAGES: Record<string, string> = {
   SERVICE_UNAVAILABLE: '服務暫時無法使用，請稍後再試',
   CONTACT_SUBMISSION_FAILED: '聯絡表單送出失敗，請稍後再試',
   PLACES_API_ERROR: '地點搜尋服務暫時無法使用，請稍後再試',
-  R2_UNREACHABLE: '圖片服務暫時無法使用，請稍後再試',
   RATE_LIMITED: '請求過於頻繁，請稍後再試',
   ROUTE_NOT_FOUND: '找不到此頁面或資源',
 };
