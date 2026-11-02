@@ -18,11 +18,15 @@ interface PlaceAutocompleteProps {
     coordinates: { lat: number; lng: number };
     name: string;
     city: string;
+    types: string[];
   }) => void;
   placeholder?: string;
   defaultValue?: string;
   api?: typeof placesApi;
   disabled?: boolean;
+  inputId?: string;
+  invalid?: boolean;
+  describedBy?: string;
 }
 
 const container = css({
@@ -212,6 +216,9 @@ export default function PlaceAutocomplete({
   defaultValue = '',
   api = placesApi,
   disabled = false,
+  inputId,
+  invalid = false,
+  describedBy,
 }: PlaceAutocompleteProps) {
   const [query, setQuery] = useState(defaultValue);
   const [selectedPlace, setSelectedPlace] = useState<PlacePrediction | null>(null);
@@ -256,6 +263,7 @@ export default function PlaceAutocomplete({
           },
           name: result.name,
           city: result.city,
+          types: result.types ?? [],
         });
       }
     } catch {
@@ -268,8 +276,11 @@ export default function PlaceAutocomplete({
       <Combobox value={selectedPlace} onChange={handlePlaceSelect} disabled={disabled}>
         <div className={comboboxContainer}>
           <Combobox.Input
+            id={inputId}
             aria-label="搜尋地點"
-            className={comboboxInput({ isError, isDisabled: disabled })}
+            aria-invalid={invalid ? 'true' : undefined}
+            aria-describedby={describedBy}
+            className={comboboxInput({ isError: isError || invalid, isDisabled: disabled })}
             displayValue={(prediction: PlacePrediction | null) =>
               prediction
                 ? prediction.structured_formatting?.main_text || prediction.description

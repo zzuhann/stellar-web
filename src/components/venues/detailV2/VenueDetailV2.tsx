@@ -25,6 +25,7 @@ import VenueCorrectionNote from './components/VenueCorrectionNote';
 import VenueContactCard from './components/VenueContactCard';
 import VenueContactBar from './components/VenueContactBar';
 import { tag } from './components/styles';
+import { formatTransitHeader, pickPrimaryTransit } from '@/utils/transitStops';
 
 // Flex column so the sticky contact bar rests at the viewport bottom even on short pages
 const pageOuter = css({
@@ -124,7 +125,13 @@ const breadcrumbWrap = css({
   marginX: '-1',
 });
 
+// transitStops null = never saved with the new field: fall back to the legacy MRT fields;
+// [] = cleared on purpose, show nothing (design-backend §10.5, TC-141)
 const formatMrt = (venue: VenueDetail): string | null => {
+  if (Array.isArray(venue.transitStops)) {
+    const primary = pickPrimaryTransit(venue.transitStops);
+    return primary ? formatTransitHeader(primary) : null;
+  }
   if (!venue.nearestMrt) return null;
   const station = `${venue.nearestMrt.replace(/站$/, '')}站`;
   return venue.mrtWalkMinutes ? `${station}步行 ${venue.mrtWalkMinutes} 分鐘` : station;

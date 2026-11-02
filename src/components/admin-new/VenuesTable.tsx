@@ -6,6 +6,7 @@ import { css, cva } from '@/styled-system/css';
 import Skeleton from '@/components/ui/Skeleton';
 import type { AdminPagination } from '@/lib/api';
 import type { Venue } from '@/types';
+import { canPermanentlyDeleteVenue } from '@/utils/venues';
 
 // ─── Table CSS ────────────────────────────────────────────────────────────────
 
@@ -446,10 +447,6 @@ function formatDate(ts: { _seconds: number } | string | undefined): string {
   return `${y}-${m}-${d}`;
 }
 
-function canDelete(venue: Venue): boolean {
-  return venue.status === 'inactive' && venue.eventCount === 0;
-}
-
 // ─── Skeleton rows ────────────────────────────────────────────────────────────
 
 function SkeletonTableRows() {
@@ -616,7 +613,7 @@ export default function VenuesTable({
                         <PencilIcon aria-hidden="true" />
                         編輯
                       </button>
-                      {canDelete(venue) && (
+                      {canPermanentlyDeleteVenue(venue) && (
                         <button
                           type="button"
                           className={actionBtnText({ variant: 'destructive' })}
@@ -664,7 +661,7 @@ export default function VenuesTable({
                     >
                       <PencilIcon aria-hidden="true" />
                     </button>
-                    {canDelete(venue) && (
+                    {canPermanentlyDeleteVenue(venue) && (
                       <button
                         type="button"
                         className={actionBtn({ variant: 'destructive' })}

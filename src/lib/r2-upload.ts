@@ -93,7 +93,13 @@ export function compressImage(
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
+    const src = URL.createObjectURL(file);
 
+    // Undecodable image: upload the original and let the server reject it, rather than hang
+    img.onerror = () => {
+      URL.revokeObjectURL(src);
+      resolve(file);
+    };
     img.onload = () => {
       // 計算新尺寸，保持寬高比
       let { width, height } = img;
@@ -113,6 +119,7 @@ export function compressImage(
 
       // 繪製並壓縮圖片
       ctx?.drawImage(img, 0, 0, width, height);
+      URL.revokeObjectURL(src);
       canvas.toBlob(
         (blob) => {
           if (blob) {
@@ -130,6 +137,6 @@ export function compressImage(
       );
     };
 
-    img.src = URL.createObjectURL(file);
+    img.src = src;
   });
 }

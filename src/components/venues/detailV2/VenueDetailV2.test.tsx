@@ -195,6 +195,54 @@ describe('頁首地區與捷運', () => {
   });
 });
 
+describe('TC-141 新版詳情頁的交通退回規則', () => {
+  const headerLines = () =>
+    Array.from(
+      screen.getByRole('heading', { level: 1 }).parentElement?.querySelectorAll('p') ?? []
+    ).map((p) => p.textContent);
+
+  it('a：transitStops 是 null → 退回舊欄位「中山站步行 5 分鐘」', () => {
+    renderView(
+      makeVenue({
+        region: '',
+        transitStops: null,
+        nearestMrt: '中山站',
+        mrtWalkMinutes: 5,
+        capacityRange: null,
+      })
+    );
+    expect(headerLines()).toEqual(['中山站步行 5 分鐘']);
+  });
+
+  it('b：transitStops 是 []、nearestMrt 卻有值 → 不顯示交通、不退回', () => {
+    renderView(
+      makeVenue({
+        region: '',
+        transitStops: [],
+        nearestMrt: '中山站',
+        mrtWalkMinutes: 5,
+        capacityRange: null,
+      })
+    );
+    expect(headerLines()).toEqual([]);
+  });
+
+  it('有交通欄位時讀新欄位，照類型優先序挑一筆', () => {
+    renderView(
+      makeVenue({
+        region: '',
+        capacityRange: null,
+        nearestMrt: '舊站',
+        transitStops: [
+          { type: 'bus', station: '市政府', walkMinutes: 2 },
+          { type: 'mrt', station: '中山', walkMinutes: 5 },
+        ],
+      })
+    );
+    expect(headerLines()).toEqual(['中山站步行 5 分鐘']);
+  });
+});
+
 describe('TC-037 聯絡區的三種狀態', () => {
   const igVenue = {
     preferredContact: 'instagram' as const,

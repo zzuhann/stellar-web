@@ -384,6 +384,62 @@ export interface VenueTagDictionary {
 
 export type CapacityRange = '20以下' | '20-40' | '40-60' | '60以上';
 
+// ─── Transit stops (venue-tags design-backend §10) ─────────────────────────
+
+export type TransitType = 'mrt' | 'light_rail' | 'train' | 'hsr' | 'bus';
+
+export interface TransitStop {
+  type: TransitType;
+  station: string;
+  walkMinutes: number | null;
+}
+
+// ─── Store submission questionnaire (venue-tags design-backend §3.2) ───────
+
+export type VenueUseOption = 'goods_distribution' | 'can_decorate' | 'private_booking';
+export type VenueServiceOption =
+  | 'parcel_receiving'
+  | 'early_setup'
+  | 'custom_menu'
+  | 'beginner_friendly';
+export type VenueSpaceOption =
+  | 'cafe'
+  | 'exhibition_space'
+  | 'bar'
+  | 'multi_space'
+  | 'takeaway_shop';
+export type VenueEquipmentOption = 'projector' | 'sound_system' | 'display_fixtures';
+
+export interface VenueConditionFees {
+  venueFee?: 'free' | 'paid' | 'depends';
+  freeVenueLimited?: boolean;
+  freeVenueUntil?: string;
+  guarantee?: 'yes' | 'no';
+  deposit?: 'yes' | 'no';
+  discussable?: boolean;
+}
+
+export interface VenueConditionAnswers {
+  uses: { options: VenueUseOption[]; discussable?: boolean };
+  fees?: VenueConditionFees;
+  services: { options: VenueServiceOption[]; discussable?: boolean };
+  spaceTypes: { options: VenueSpaceOption[] };
+  equipment?: VenueEquipmentOption[];
+  note?: string;
+  sourceLinks?: string[];
+  calendarUrl?: string;
+}
+
+export type VenueSuggestedTag = VenueTag & { source: 'store' | 'auto' };
+
+// Admin detail only (design-backend §3.3, §7.3)
+export interface VenueSubmissionRecord {
+  submittedAt: FirebaseTimestamp | string;
+  answers: VenueConditionAnswers;
+  suggestedTags: VenueSuggestedTag[];
+  confirmedAt: FirebaseTimestamp | string | null;
+}
+
 export interface VenueDetail {
   id: string;
   name: string;
@@ -416,6 +472,10 @@ export interface VenueDetail {
   infoUpdatedOn?: string | null;
   // Admin detail only; never returned by public endpoints
   calendarUrl?: string | null;
+  // null = venue never saved transit stops yet; [] = cleared (design-backend §10.5)
+  transitStops?: TransitStop[] | null;
+  // Admin detail only; absent for admin-created and legacy venues
+  submission?: VenueSubmissionRecord;
   updatedAt?: FirebaseTimestamp | string;
   events: VenueEventCard[];
 }
@@ -502,6 +562,8 @@ export interface PlaceDetails {
   formatted_address: string;
   name: string;
   city: string;
+  // Google place types; 'establishment' means a business, not a plain address (design-backend §3.6)
+  types?: string[];
 }
 
 export interface UpdateVenueData {
@@ -530,6 +592,10 @@ export interface UpdateVenueData {
   equipmentNote?: string;
   infoUpdatedOn?: string | null;
   calendarUrl?: string | null;
+  // Omitted = untouched; [] clears (design-backend §10.2)
+  transitStops?: TransitStop[];
+  // true confirms pending store suggestions in the same write (design-backend §7.4)
+  confirmSuggestions?: boolean;
 }
 
 export interface CreateVenueData {
@@ -560,6 +626,27 @@ export interface CreateVenueData {
   equipmentNote?: string;
   infoUpdatedOn?: string | null;
   calendarUrl?: string | null;
+  transitStops?: TransitStop[];
+}
+
+// POST /venue-submissions body (design-backend §3.2, §7.4, §10.2)
+export interface CreateVenueSubmissionData {
+  name: string;
+  address: string;
+  region: string;
+  capacityRange: CapacityRange;
+  placeId: string;
+  lat: number;
+  lng: number;
+  transitStops: TransitStop[];
+  description?: string;
+  coverPhoto: string;
+  otherPhotos?: string[];
+  socialMedia?: { instagram?: string; threads?: string };
+  preferredContact: 'instagram' | 'threads' | 'line';
+  contactUrl?: string;
+  bookingFormUrl?: string;
+  venueConditions: VenueConditionAnswers;
 }
 
 export interface VenueFilterParams {

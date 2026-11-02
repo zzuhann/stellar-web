@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import api from './client';
+import type { CreateVenueSubmissionData } from '@/types';
 import { venueApi, venueSubmissionApi } from './venues';
 
 vi.mock('./client', () => ({
@@ -13,7 +14,12 @@ describe('venueSubmissionApi', () => {
       .mockResolvedValueOnce({ data: { predictions: [{ place_id: 'place-1' }] } });
     vi.mocked(api.get).mockResolvedValueOnce({ data: { name: '測試場地' } });
 
-    await venueSubmissionApi.create({ name: '測試場地', address: '測試地址', region: '台北' });
+    // Only the endpoint wiring is under test; the body is passed through untouched
+    await venueSubmissionApi.create({
+      name: '測試場地',
+      address: '測試地址',
+      region: '台北',
+    } as CreateVenueSubmissionData);
     const predictions = await venueSubmissionApi.autocomplete('測試');
     const details = await venueSubmissionApi.getPlaceDetails('place-1');
 

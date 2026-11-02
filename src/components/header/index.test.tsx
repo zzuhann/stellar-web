@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Header from './index';
 import { useHeaderTitleStore } from '@/store/useHeaderTitleStore';
+import { useSiteChromeStore } from '@/store/useSiteChromeStore';
 
 const back = vi.fn();
 const push = vi.fn();
@@ -41,6 +42,18 @@ describe('Header', () => {
   });
 
   afterEach(cleanup);
+
+  it('全螢幕流程（店家投稿步驟）隱藏 header，但不卸載', () => {
+    useSiteChromeStore.setState({ hidden: true });
+    try {
+      render(<Header />);
+      const header = document.querySelector('header');
+      expect(header).not.toBeNull();
+      expect(header?.hidden).toBe(true);
+    } finally {
+      useSiteChromeStore.setState({ hidden: false });
+    }
+  });
 
   it('地圖頁不再回傳 null,仍會渲染 header', () => {
     mockPathname = '/map/wonwoo';

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { deriveVenueRegions, parseVenueCapacity, parseVenuePage, parseVenueSort } from './venues';
+import {
+  deriveVenueRegions,
+  parseVenueCapacity,
+  parseVenuePage,
+  parseVenueSort,
+  regionFromCity,
+  canPermanentlyDeleteVenue,
+} from './venues';
 
 describe('deriveVenueRegions', () => {
   it('依 REGIONS 的北到南順序回傳唯一地區，並在最前面加上「全部」', () => {
@@ -70,5 +77,37 @@ describe('parseVenuePage', () => {
 
   it('乾淨的正整數字串正確解析', () => {
     expect(parseVenuePage('3')).toBe(3);
+  });
+});
+
+describe('regionFromCity', () => {
+  it.each([
+    ['臺北市', '台北'],
+    ['新北市', '新北'],
+    ['彰化縣', '彰化'],
+    ['新竹縣', '新竹'],
+    ['臺東縣', '台東'],
+    ['連江縣', '連江'],
+  ])('%s → %s', (city, region) => {
+    expect(regionFromCity(city)).toBe(region);
+  });
+
+  it.each(['', 'Taipei City', '東京都'])('對不上清單 %j → null', (city) => {
+    expect(regionFromCity(city)).toBeNull();
+  });
+});
+
+describe('canPermanentlyDeleteVenue', () => {
+  it.each(['pending', 'rejected', 'inactive'] as const)('%s、沒有活動 → 可刪', (status) => {
+    expect(canPermanentlyDeleteVenue({ status, eventCount: 0 })).toBe(true);
+  });
+
+  it('上架中、或有關聯活動 → 不可刪', () => {
+    expect(canPermanentlyDeleteVenue({ status: 'active', eventCount: 0 })).toBe(false);
+    expect(canPermanentlyDeleteVenue({ status: 'inactive', eventCount: 1 })).toBe(false);
+  });
+
+  it('沒列在可刪清單的狀態 → 不可刪', () => {
+    expect(canPermanentlyDeleteVenue({ status: 'scheduled', eventCount: 0 })).toBe(false);
   });
 });

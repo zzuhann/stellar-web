@@ -158,6 +158,14 @@ export function buildTagFieldsPatch(
   return patch;
 }
 
+// Confirming store suggestions sends the whole tag area as currently checked (design-backend §7.4)
+export function buildTagFieldsFull(
+  current: TagFormState,
+  dictionary: VenueTagDictionary
+): Partial<UpdateVenueData> {
+  return { ...normalize(current, dictionary) };
+}
+
 // POST: tags and infoUpdatedOn always; the rest only when filled
 export function buildTagFieldsCreate(
   current: TagFormState,

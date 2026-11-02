@@ -4,7 +4,12 @@ import { useRef, useState } from 'react';
 import { ChevronDownIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { css, cva } from '@/styled-system/css';
 import Skeleton from '@/components/ui/Skeleton';
-import type { VenueTagDefinition, VenueTagDictionary } from '@/types';
+import type {
+  VenueSubmissionRecord,
+  VenueSuggestedTag,
+  VenueTagDefinition,
+  VenueTagDictionary,
+} from '@/types';
 import { formatTagDate } from '@/utils/venueTags';
 import {
   EQUIPMENT_NOTE_MAX,
@@ -17,6 +22,8 @@ import {
   type TagDictionaryStatus,
   type TagLimitMode,
 } from './adminVenueTagFields';
+import { getSourceMarker, type SourceMarker } from './adminVenueSubmission';
+import AdminVenueSubmissionNotes from './AdminVenueSubmissionNotes';
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
@@ -264,6 +271,40 @@ const errorBox = css({
   color: 'red.800',
 });
 
+// Text differs per source, so it is never color-only (venue-tags §E 來源標記)
+const markerBadge = cva({
+  base: {
+    paddingX: '2',
+    paddingY: '0.5',
+    borderRadius: 'radius.sm',
+    textStyle: 'caption',
+    fontWeight: 'semibold',
+    whiteSpace: 'nowrap',
+    border: '1px solid transparent',
+  },
+  variants: {
+    kind: {
+      store: { background: 'stellarBlue.50', color: 'stellarBlue.700' },
+      neutral: { background: 'gray.100', color: 'color.text.primary' },
+      rejected: {
+        background: 'color.background.primary',
+        borderColor: 'stellarBlue.200',
+        borderStyle: 'dashed',
+        color: 'color.text.secondary',
+      },
+    },
+  },
+});
+
+const MARKER_KIND: Record<SourceMarker, 'store' | 'neutral' | 'rejected'> = {
+  店家建議: 'store',
+  自動帶入: 'neutral',
+  管理員新增: 'neutral',
+  '店家建議・未採用': 'rejected',
+};
+
+const legacyHostTags = css({ margin: 0, textStyle: 'bodySmall', color: 'color.text.secondary' });
+
 const skeletonRow = css({ display: 'flex', alignItems: 'center', gap: '2', paddingY: '3' });
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -356,10 +397,11 @@ interface TagRowProps {
   today: string;
   untilError?: string;
   showLimit: boolean;
+  marker: SourceMarker | null;
   onChange: (entry: TagEntry) => void;
 }
 
-function TagRow({ def, entry, hint, today, untilError, showLimit, onChange }: TagRowProps) {
+function TagRow({ def, entry, hint, today, untilError, showLimit, marker, onChange }: TagRowProps) {
   const checked = entry?.checked ?? false;
   const current: TagEntry = entry ?? { checked: false, mode: 'none', until: '' };
   const id = `venue-tag-${def.slug}`;
@@ -371,7 +413,7 @@ function TagRow({ def, entry, hint, today, untilError, showLimit, onChange }: Ta
     .join(' ');
 
   return (
-    <div className={tagRow}>
+    <div className={tagRow} data-tag-row={def.slug}>
       <label htmlFor={id} className={tagLabel}>
         <input
           id={id}
@@ -383,6 +425,7 @@ function TagRow({ def, entry, hint, today, untilError, showLimit, onChange }: Ta
         />
         {def.label}
       </label>
+      {marker && <span className={markerBadge({ kind: MARKER_KIND[marker] })}>{marker}</span>}
       {hint && (
         <span id={hintId} className={tagHint}>
           {hint}
@@ -436,15 +479,13 @@ interface AdminVenueTagSectionProps {
   initialEntries: Record<string, TagEntry>;
   errors: TagFieldErrors;
   today: string;
-  nearestMrt: string;
-  mrtWalkMinutes: string;
+  // Admin judges 近捷運 by hand; the hint reads the MRT / light-rail transit row (§E 交通組)
+  mrtHint: string | null;
+  // Pending store suggestions; null once confirmed or for admin-created venues
+  suggestedTags: VenueSuggestedTag[] | null;
+  submission?: VenueSubmissionRecord;
+  hostTags: string[];
   onChange: (updater: (prev: TagFormState) => TagFormState) => void;
-}
-
-function formatMrtHint(station: string, minutes: string): string | null {
-  const name = station.trim();
-  if (!name) return null;
-  return minutes ? `${name}，步行 ${minutes} 分鐘` : name;
 }
 
 export default function AdminVenueTagSection({
@@ -454,8 +495,10 @@ export default function AdminVenueTagSection({
   initialEntries,
   errors,
   today,
-  nearestMrt,
-  mrtWalkMinutes,
+  mrtHint,
+  suggestedTags,
+  submission,
+  hostTags,
   onChange,
 }: AdminVenueTagSectionProps) {
   // Loading or failed: nothing in this area is sent, so it must not be editable either
@@ -464,7 +507,7 @@ export default function AdminVenueTagSection({
   function hintFor(slug: string): string | null {
     if (slug === 'can_decorate') return CAN_DECORATE_HINT;
     if (slug === 'near_train') return NEAR_TRAIN_HINT;
-    if (slug === 'near_mrt') return formatMrtHint(nearestMrt, mrtWalkMinutes);
+    if (slug === 'near_mrt') return mrtHint;
     return null;
   }
 
@@ -487,6 +530,12 @@ export default function AdminVenueTagSection({
         <h2 id="venue-tags-title" className={sectionTitle}>
           標籤
         </h2>
+        {submission && (
+          <AdminVenueSubmissionNotes
+            answers={submission.answers}
+            pending={submission.confirmedAt == null}
+          />
+        )}
         {status === 'error' && (
           <div className={errorBox} role="alert">
             標籤載入失敗，請重新整理頁面
@@ -521,11 +570,25 @@ export default function AdminVenueTagSection({
                     hint={hintFor(def.slug)}
                     today={today}
                     untilError={errors.until[def.slug]}
+                    marker={
+                      suggestedTags
+                        ? getSourceMarker(
+                            def.slug,
+                            !!state.entries[def.slug]?.checked,
+                            suggestedTags
+                          )
+                        : null
+                    }
                     onChange={(entry) => setEntry(def.slug, entry)}
                   />
                 ))}
             </fieldset>
           ))}
+        {hostTags.length > 0 && (
+          <p className={legacyHostTags}>
+            店家舊自填標籤（已停用，只供參考）：{hostTags.join('、')}
+          </p>
+        )}
       </section>
 
       <section className={section} aria-labelledby="venue-store-info-title">

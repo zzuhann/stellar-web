@@ -1,6 +1,16 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import VenueForm from './VenueForm';
+import AdminVenueForm from './AdminVenueForm';
+
+// Moved from VenueForm.test.tsx when the store form left VenueForm (PR 5): TC-098 now only
+// covers admin create; the store-side cases live in TC-113 (venueSubmit tests)
+
+// Dictionary never resolves: the tag area stays out of these contact-only cases
+vi.mock('@/lib/api', () => ({
+  venueApi: { getTagDictionary: () => new Promise(() => {}) },
+  placesApi: {},
+}));
 
 // jsdom has no scrollIntoView; failed submits scroll to the first error
 const scrollIntoView = vi.fn();
@@ -27,7 +37,11 @@ const CONTACT_TRIGGER = /^(IG 私訊|Threads 私訊|LINE|請選擇)$/;
 
 function renderCreate() {
   const onSubmit = vi.fn();
-  render(<VenueForm mode="create" onSubmit={onSubmit} isSubmitting={false} submitError={null} />);
+  render(
+    <QueryClientProvider client={new QueryClient()}>
+      <AdminVenueForm mode="create" onSubmit={onSubmit} isSubmitting={false} submitError={null} />
+    </QueryClientProvider>
+  );
   return onSubmit;
 }
 
@@ -63,7 +77,7 @@ function expectFieldError(label: string, message: string) {
   expect(input.getAttribute('aria-describedby')).toBe(error.id);
 }
 
-describe('VenueForm create mode', () => {
+describe('AdminVenueForm create mode', () => {
   it('缺少容納人數、社群帳號及封面圖片時阻止送出', () => {
     const onSubmit = renderCreate();
 
@@ -126,7 +140,7 @@ describe('VenueForm create mode', () => {
   });
 });
 
-describe('VenueForm 聯絡方式（TC-098 新增模式）', () => {
+describe('AdminVenueForm 聯絡方式（TC-098 新增模式）', () => {
   it('TC-098 標題為「希望主辦怎麼聯絡你們？」，選項只有 IG 私訊、Threads 私訊、LINE', () => {
     renderCreate();
 
@@ -238,7 +252,7 @@ describe('VenueForm 聯絡方式（TC-098 新增模式）', () => {
   });
 });
 
-describe('VenueForm LINE 連結（TC-098，存 contactUrl）', () => {
+describe('AdminVenueForm LINE 連結（TC-098，存 contactUrl）', () => {
   function fillAndSubmit(contactUrl: string) {
     const onSubmit = renderCreate();
     fillRequired();
@@ -297,7 +311,7 @@ describe('VenueForm LINE 連結（TC-098，存 contactUrl）', () => {
   });
 });
 
-describe('VenueForm 預約表單網址（TC-098 新增模式，存 bookingFormUrl）', () => {
+describe('AdminVenueForm 預約表單網址（TC-098 新增模式，存 bookingFormUrl）', () => {
   function fillAndSubmit(bookingFormUrl: string) {
     const onSubmit = renderCreate();
     fillRequired();
