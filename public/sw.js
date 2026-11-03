@@ -3,7 +3,6 @@ const VERSION = '20260914T17224';
 const CACHE_NAME = `stellar-cache-v${VERSION}`;
 const STATIC_CACHE_URLS = [
   '/',
-  '/map',
   '/manifest.webmanifest',
   '/icon-192x192.png?v=2',
   '/icon-512x512.png?v=2',
