@@ -88,10 +88,10 @@ interface PhotoCellProps {
 }
 
 function PhotoCell({ src, index, venueName, column, row, onOpen }: PhotoCellProps) {
-  const ref = useRef<HTMLButtonElement>(null);
-  const cell = useElementSize(ref);
   // Orientation is only known once the photo loads; until then it fills the cell
   const [photo, setPhoto] = useState<Size | null>(null);
+  const ref = useRef<HTMLButtonElement>(null);
+  const cell = useElementSize(ref);
   const fit = getPhotoFit(photo, cell);
   const isCover = index === 0;
 
