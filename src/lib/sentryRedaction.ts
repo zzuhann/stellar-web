@@ -1,13 +1,9 @@
-// Sentry beforeBreadcrumb/beforeSend/beforeSendTransaction 共用的座標遮蔽邏輯，
-// 接在 src/instrumentation-client.ts 的 Sentry.init 上。遮蔽對象與
-// src/lib/privacyRedaction.ts 共用同一套 lat/lng key 判定。
-//
-// 背景（Codex 第一輪 code review P1）：venueApi.getVenues（src/lib/api/venues.ts）在
-// sort=distance 時送出的請求 URL 帶 lat/lng。瀏覽器端 Sentry SDK 的 xhr/fetch
-// breadcrumb 自動記錄完整請求 URL（breadcrumb.data.url），browserTracingIntegration
-// 的 outgoing request span 也會把同一個 URL 存進 span 的 http.url/url.full/http.query
-// 屬性——這兩條路徑都不受後端 stellar/src/utils/privacyRedaction.ts 的 Cloud Run log
-// 遮蔽保護，是獨立的外流管道。
+// Shared Sentry redaction for the browser (src/instrumentation-client.ts) and the Next.js
+// server and edge runtimes (sentry.server.config.ts, sentry.edge.config.ts), wired into
+// beforeBreadcrumb/beforeSend/beforeSendTransaction. It removes coordinates (venue distance
+// sort sends lat/lng in request URLs; key matching shared with src/lib/privacyRedaction.ts),
+// request bodies, credential/IP/location headers, emails and client IPs. Kept in sync with
+// the backend's stellar/src/utils/sentryRedaction.ts.
 import type { Breadcrumb, Event } from '@sentry/nextjs';
 import { redactCoordsFromQueryString, redactCoordsFromUrl } from './privacyRedaction';
 
@@ -70,17 +66,167 @@ function redactUrlLikeDataFields(data: Record<string, unknown> | undefined): voi
   }
 }
 
+// Bounded quantifiers keep matching linear (an unbounded pattern was quadratic on long
+// '@'-free strings), and excluding '/' keeps URL paths around an email intact.
+const EMAIL_PATTERN = /[A-Za-z0-9._%+'-]{1,64}@[A-Za-z0-9-]{1,63}(?:\.[A-Za-z0-9-]{1,63}){1,8}/g;
+
+function redactEmails(text: string): string {
+  return text.includes('@') ? text.replace(EMAIL_PATTERN, '[email]') : text;
+}
+
+// Request bodies (email, messages, submissions) are personal data; keep only their shape
+// (field names, types, lengths) so input-dependent bugs stay debuggable without storing values.
+const MAX_SHAPE_DEPTH = 2;
+
+function shapeOf(value: unknown, depth: number): unknown {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return `array(${value.length})`;
+  if (typeof value === 'string') return `string(${value.length})`;
+  if (typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>);
+    if (depth >= MAX_SHAPE_DEPTH) return `object(${entries.length})`;
+    return Object.fromEntries(
+      entries.map(([key, child]) => [redactEmails(key), shapeOf(child, depth + 1)])
+    );
+  }
+  return typeof value;
+}
+
+function redactRequestBody(request: NonNullable<Event['request']>): void {
+  const { data } = request;
+  if (data === undefined) return;
+  if (typeof data === 'string') {
+    try {
+      request.data = shapeOf(JSON.parse(data), 0);
+    } catch {
+      request.data = `[Filtered] string(${data.length})`;
+    }
+    return;
+  }
+  request.data = shapeOf(data, 0);
+}
+
+// Same idea as the SDK's own span-header filter: any header named like a credential or session.
+const SENSITIVE_HEADER_SNIPPETS = [
+  // credentials and sessions (aligned with the SDK's sensitive-key list)
+  'auth',
+  'token',
+  'session',
+  'cookie',
+  'key',
+  'secret',
+  'password',
+  'csrf',
+  'xsrf',
+  'jwt',
+  'bearer',
+  'signature',
+  'credential',
+  'identity',
+  'sso',
+  'sid',
+  // client IP and location (Vercel adds x-vercel-ip-latitude/longitude/city/postal-code)
+  '-ip',
+  'forwarded-for',
+  'geo',
+  'latitude',
+  'longitude',
+  'latlong',
+  'postal',
+];
+
+// Span attributes spell header names with '_' instead of '-', so normalize before matching.
+function isSensitiveHeaderName(name: string): boolean {
+  const normalized = name.toLowerCase().replace(/_/g, '-');
+  return (
+    normalized === 'forwarded' ||
+    SENSITIVE_HEADER_SNIPPETS.some((snippet) => normalized.includes(snippet))
+  );
+}
+
+function redactCredentials(request: NonNullable<Event['request']>): void {
+  delete request.cookies;
+  if (!request.headers) return;
+  for (const key of Object.keys(request.headers)) {
+    if (isSensitiveHeaderName(key)) request.headers[key] = '[Filtered]';
+  }
+}
+
+const MAX_EMAIL_SCAN_DEPTH = 5;
+
+function isPlainObject(value: object): boolean {
+  const proto = Object.getPrototypeOf(value) as unknown;
+  return proto === Object.prototype || proto === null;
+}
+
+// Rebuilds only arrays and plain objects; Error, Date and class instances pass through
+// untouched so the SDK can still serialize their message and stack.
+function redactEmailsDeep(value: unknown, depth = 0): unknown {
+  if (typeof value === 'string') return redactEmails(value);
+  if (depth >= MAX_EMAIL_SCAN_DEPTH || value === null || typeof value !== 'object') return value;
+  if (Array.isArray(value)) return value.map((item) => redactEmailsDeep(item, depth + 1));
+  if (!isPlainObject(value)) return value;
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).map(([k, v]) => [
+      k,
+      redactEmailsDeep(v, depth + 1),
+    ])
+  );
+}
+
+// Console breadcrumbs carry whatever was logged, e.g. emailService logging recipients.
+function redactBreadcrumbs(breadcrumbs: Event['breadcrumbs']): void {
+  breadcrumbs?.forEach((crumb) => {
+    if (typeof crumb.message === 'string') crumb.message = redactEmails(crumb.message);
+    if (crumb.data) crumb.data = redactEmailsDeep(crumb.data) as typeof crumb.data;
+  });
+}
+
+// The server span records the caller's IP even with sendDefaultPii off, and copies request
+// and response headers (including individual cookies) into http.*.header.* attributes.
+const CLIENT_IP_DATA_KEYS = [
+  'http.client_ip',
+  'client.address',
+  'net.peer.ip',
+  'net.sock.peer.addr',
+] as const;
+const HEADER_ATTRIBUTE_PREFIX = /^http\.(?:request|response)\.header\./;
+
+function redactSpanData(data: Record<string, unknown> | undefined): void {
+  if (!data) return;
+  for (const key of CLIENT_IP_DATA_KEYS) {
+    if (key in data) data[key] = '[Filtered]';
+  }
+  for (const key of Object.keys(data)) {
+    const header = key.replace(HEADER_ATTRIBUTE_PREFIX, '');
+    if (header !== key && isSensitiveHeaderName(header)) data[key] = '[Filtered]';
+  }
+}
+
 /**
- * Sentry beforeSend/beforeSendTransaction 共用：遮蔽 event 裡任何可能帶座標的欄位，
- * mutate in place 後回傳同一個 event（永遠不回傳 null）——錯誤或效能事件仍要回報，
- * 只是拿掉座標，不是整筆事件都丟掉。
+ * Shared by Sentry beforeSend/beforeSendTransaction (browser, server and edge): redacts
+ * coordinates, request bodies, credential headers, emails in breadcrumbs, and client IPs and
+ * header copies on spans, in place. Always returns the event so it is still reported.
  */
 export function redactSentryEvent<T extends Event>(event: T): T {
   redactRequestEventData(event.request);
-  redactUrlLikeDataFields(event.contexts?.trace?.data as Record<string, unknown> | undefined);
-  event.spans?.forEach((span) =>
-    redactUrlLikeDataFields(span.data as Record<string, unknown> | undefined)
-  );
+  if (event.request) {
+    redactRequestBody(event.request);
+    redactCredentials(event.request);
+  }
+  redactBreadcrumbs(event.breadcrumbs);
+  if (typeof event.message === 'string') event.message = redactEmails(event.message);
+  event.exception?.values?.forEach((exception) => {
+    if (typeof exception.value === 'string') exception.value = redactEmails(exception.value);
+  });
+  const traceData = event.contexts?.trace?.data as Record<string, unknown> | undefined;
+  redactUrlLikeDataFields(traceData);
+  redactSpanData(traceData);
+  event.spans?.forEach((span) => {
+    const spanData = span.data as Record<string, unknown> | undefined;
+    redactUrlLikeDataFields(spanData);
+    redactSpanData(spanData);
+  });
   return event;
 }
 
@@ -93,9 +239,8 @@ export function redactSentryEvent<T extends Event>(event: T): T {
 const BREADCRUMB_URL_KEYS = ['url', 'from', 'to'] as const;
 
 /**
- * Sentry beforeBreadcrumb 專用：遮蔽 breadcrumb.data 裡任何可能帶座標的 URL 欄位，
- * mutate in place 後回傳同一個 breadcrumb（永遠不回傳 null，breadcrumb 仍要記錄，
- * 只是拿掉座標）。沒有 `data` 或 `data` 不含任何目標 key 時原樣跳過。
+ * For beforeBreadcrumb: redacts coordinates in URL-ish breadcrumb data and emails in the
+ * message and data, in place. Always returns the breadcrumb so it is still recorded.
  */
 export function redactSentryBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb {
   const data = breadcrumb.data as Record<string, unknown> | undefined;
@@ -107,5 +252,11 @@ export function redactSentryBreadcrumb(breadcrumb: Breadcrumb): Breadcrumb {
       }
     }
   }
+  // Node outgoing fetch/http breadcrumbs (server/edge) keep data.url query-free and put the
+  // query string in data['http.query'] instead.
+  if (data && typeof data['http.query'] === 'string') {
+    data['http.query'] = redactCoordsFromQueryString(data['http.query']);
+  }
+  redactBreadcrumbs([breadcrumb]);
   return breadcrumb;
 }

@@ -4,6 +4,7 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs';
+import { redactSentryBreadcrumb, redactSentryEvent } from '@/lib/sentryRedaction';
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -14,4 +15,16 @@ Sentry.init({
 
   // Enable logs to be sent to Sentry
   enableLogs: true,
+
+  // Server-side events carry the incoming request's headers (cookies, analytics IDs) and body;
+  // redact them like the browser config does. See src/lib/sentryRedaction.ts.
+  beforeBreadcrumb(breadcrumb) {
+    return redactSentryBreadcrumb(breadcrumb);
+  },
+  beforeSend(event) {
+    return redactSentryEvent(event);
+  },
+  beforeSendTransaction(event) {
+    return redactSentryEvent(event);
+  },
 });
