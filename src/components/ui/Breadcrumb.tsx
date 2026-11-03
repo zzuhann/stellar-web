@@ -20,7 +20,6 @@ const linkStyle = css({
 const currentStyle = css({
   textStyle: 'bodySmall',
   color: 'color.text.secondary',
-  maxWidth: '180px',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
@@ -66,7 +65,10 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
       />
       <nav aria-label="breadcrumb" className={container}>
         {items.map((crumb, index) => (
-          <span key={index} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <span
+            key={index}
+            style={{ display: 'flex', alignItems: 'center', gap: '4px', minWidth: 0 }}
+          >
             {index > 0 && (
               <span className={separatorStyle} aria-hidden="true">
                 /
