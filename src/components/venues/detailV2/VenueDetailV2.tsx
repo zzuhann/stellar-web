@@ -78,7 +78,7 @@ const venueName = css({
   textStyle: 'h1',
   color: 'color.text.primary',
   overflowWrap: 'anywhere',
-  lg: { textStyle: 'display' },
+  lg: { fontSize: '4xl' },
 });
 
 const headerLine = css({
@@ -99,8 +99,8 @@ const headerLocation = css({
 });
 
 const breadcrumbWrap = css({
-  // Breadcrumb has its own 20px gutter; pull it back to the 16px content edge
-  marginX: '-1',
+  // Breadcrumb has its own 20px gutter; match the 16px content edge without overflowing
+  '& > nav': { paddingX: '4' },
 });
 
 // No same-region venues: keep a way back to the full list (same button as the old page)
