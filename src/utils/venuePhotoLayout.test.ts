@@ -88,60 +88,38 @@ describe('TC-145 桌機照片版面 getDesktopPhotoLayout', () => {
   });
 });
 
-describe('TC-145 填滿或完整顯示 getPhotoFit', () => {
-  const landscape = { width: 1600, height: 900 };
-  const portrait = { width: 900, height: 1600 };
-  const square = { width: 1080, height: 1080 };
-  const wideCell = { width: 560, height: 400 };
-  const tallCell = { width: 180, height: 196 };
+describe('TC-145 填滿或完整顯示 getPhotoFit（最多裁 20%）', () => {
+  const cell = { width: 1600, height: 900 };
+  const smallCell = { width: 315, height: 196 };
 
   it.each([
-    ['橫照放橫格', landscape, wideCell, 'cover'],
-    ['直照放直格', portrait, tallCell, 'cover'],
-    ['直照放橫格', portrait, wideCell, 'contain'],
-    ['橫照放直格', landscape, tallCell, 'contain'],
-    ['正方形照片放橫格（當成同方向）', square, wideCell, 'cover'],
-    ['正方形照片放直格（當成同方向）', square, tallCell, 'cover'],
-    ['還沒讀到照片寬高 → 先填滿', null, wideCell, 'cover'],
-    ['還沒量到格子大小 → 先填滿', portrait, null, 'cover'],
-    ['格子是 0×0（還沒排版或被隱藏）→ 先填滿', portrait, { width: 0, height: 0 }, 'cover'],
+    ['比例完全一樣', { width: 1600, height: 900 }, cell, 'cover'],
+    ['手機 4:3 照片放右側小格（裁約 17%）', { width: 800, height: 600 }, smallCell, 'cover'],
+    ['剛好裁 20%（1600×1125 放 16:9）', { width: 1600, height: 1125 }, cell, 'cover'],
+    ['裁超過 20%（1600×1140 放 16:9）', { width: 1600, height: 1140 }, cell, 'contain'],
     [
-      '接近正方形 1080×1081 放橫格（差 1px 不算直照）',
-      { width: 1080, height: 1081 },
-      wideCell,
+      '比格子寬也一樣算（2200×1000 放 16:9，裁約 19%）',
+      { width: 2200, height: 1000 },
+      cell,
       'cover',
     ],
+    ['正方形照片放右側小格', { width: 800, height: 800 }, smallCell, 'contain'],
     [
-      '接近正方形 1081×1080 放直格（差 1px 不算橫照）',
-      { width: 1081, height: 1080 },
-      tallCell,
-      'cover',
-    ],
-    [
-      '寬高比差 5% 以內（1080×1134）放橫格 → 當成正方形',
-      { width: 1080, height: 1134 },
-      wideCell,
-      'cover',
-    ],
-    [
-      '寬高比差超過 5%（1080×1150）放橫格 → 直照，完整顯示',
-      { width: 1080, height: 1150 },
-      wideCell,
+      '正方形 logo 放 1 張的整寬格（1120×360）',
+      { width: 1080, height: 1080 },
+      { width: 1120, height: 360 },
       'contain',
     ],
+    ['直照放橫格', { width: 900, height: 1600 }, cell, 'contain'],
+    ['還沒讀到照片寬高 → 先填滿', null, cell, 'cover'],
+    ['還沒量到格子大小 → 先填滿', { width: 900, height: 1600 }, null, 'cover'],
     [
-      '格子接近正方形（398×400）放橫照 → 當成同方向',
-      landscape,
-      { width: 398, height: 400 },
+      '格子是 0×0（還沒排版或被隱藏）→ 先填滿',
+      { width: 900, height: 1600 },
+      { width: 0, height: 0 },
       'cover',
     ],
-    [
-      '格子接近正方形（400×398）放直照 → 當成同方向',
-      portrait,
-      { width: 400, height: 398 },
-      'cover',
-    ],
-  ] as const)('%s → %s', (_, photo, cell, fit) => {
-    expect(getPhotoFit(photo, cell)).toBe(fit);
+  ] as const)('%s → %s', (_, photo, size, fit) => {
+    expect(getPhotoFit(photo, size)).toBe(fit);
   });
 });

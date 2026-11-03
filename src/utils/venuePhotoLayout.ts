@@ -83,24 +83,17 @@ export function getDesktopPhotoLayout(count: number): DesktopPhotoLayout | null 
   };
 }
 
-type Orientation = 'landscape' | 'portrait' | 'square';
+// Fill only when cropping loses at most 20% of the photo; beyond that show it whole over its
+// own blurred copy (logos and menus must stay readable). Unknown sizes fill first, so nothing
+// flashes letterboxed.
+const MAX_CROP = 0.2;
 
-// Within 5% counts as square, so a 1080×1081 photo (or a near-square cell) does not flip the fit
-const SQUARE_TOLERANCE = 1.05;
-
-const orientationOf = ({ width, height }: Size): Orientation => {
-  if (Math.max(width, height) <= Math.min(width, height) * SQUARE_TOLERANCE) return 'square';
-  return width > height ? 'landscape' : 'portrait';
-};
-
-// Same orientation → crop to fill; crossed → show whole photo over its own blurred copy.
-// Unknown sizes (not loaded / not laid out yet) fill first, so nothing flashes letterboxed.
 export function getPhotoFit(photo: Size | null, cell: Size | null): 'cover' | 'contain' {
   if (!photo || !cell || !photo.width || !photo.height || !cell.width || !cell.height) {
     return 'cover';
   }
-  const p = orientationOf(photo);
-  const c = orientationOf(cell);
-  if (p === 'square' || c === 'square') return 'cover';
-  return p === c ? 'cover' : 'contain';
+  const photoRatio = photo.width / photo.height;
+  const cellRatio = cell.width / cell.height;
+  const kept = Math.min(photoRatio, cellRatio) / Math.max(photoRatio, cellRatio);
+  return 1 - kept <= MAX_CROP + 1e-9 ? 'cover' : 'contain';
 }
