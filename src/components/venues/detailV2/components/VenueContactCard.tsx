@@ -6,7 +6,8 @@ import VenueContactActions from './VenueContactActions';
 // Desktop only; hidden on the element itself because a wrapper would break sticky
 const card = css({
   display: 'none',
-  lg: { display: 'block' },
+  // Right inset matches the 16px gutter of the photos and sections
+  lg: { display: 'block', marginRight: '4' },
   position: 'sticky',
   // Clears the 70px fixed site header
   top: 'calc(70px + token(spacing.6))',
