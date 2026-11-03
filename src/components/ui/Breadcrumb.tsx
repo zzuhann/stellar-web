@@ -67,7 +67,14 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
         {items.map((crumb, index) => (
           <span
             key={index}
-            style={{ display: 'flex', alignItems: 'center', gap: '4px', minWidth: 0 }}
+            // The current page takes the rest of the row, so it ellipsizes there instead of wrapping
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              minWidth: 0,
+              ...(crumb.href ? {} : { flex: '1 1 0%' }),
+            }}
           >
             {index > 0 && (
               <span className={separatorStyle} aria-hidden="true">
