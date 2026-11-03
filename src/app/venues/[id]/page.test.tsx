@@ -124,6 +124,32 @@ describe('正式頁 /venues/[id] 換成新版', () => {
     expect(metadata.alternates?.canonical).toBe('https://www.stellar-zone.com/venues/abc');
   });
 
+  it.each([
+    [
+      '捷運（transitStops 有捷運）→ 鄰近中山站',
+      { transitStops: [{ type: 'mrt' as const, station: '中山', walkMinutes: 5 }] },
+      '鄰近中山站',
+    ],
+    [
+      '公車 → 鄰近公車 復興新和街口（不加「站」）',
+      { transitStops: [{ type: 'bus' as const, station: '復興新和街口', walkMinutes: 3 }] },
+      '鄰近公車 復興新和街口',
+    ],
+    ['舊資料（transitStops 不存在）→ 退回 nearestMrt', {}, '鄰近中山站'],
+  ])('metadata 描述的交通跟頁首同一套規則：%s', async (_, overrides, expected) => {
+    vi.mocked(venueApi.getVenueById).mockResolvedValue({ ...venue, ...overrides });
+    const { description } = await pageModule.generateMetadata(params('abc'));
+    expect(description).toContain(`，${expected}，可容納20-40人。`);
+    expect(description).not.toMatch(/復興新和街口站/);
+  });
+
+  it('metadata：transitStops 是 [] 但 nearestMrt 還有舊值 → 描述不寫交通', async () => {
+    vi.mocked(venueApi.getVenueById).mockResolvedValue({ ...venue, transitStops: [] });
+    const { description } = await pageModule.generateMetadata(params('abc'));
+    expect(description).not.toContain('鄰近');
+    expect(description).toContain('生日應援場地，可容納20-40人。');
+  });
+
   it('渲染新版版面、不顯示 hostTags，並記一次瀏覽數', async () => {
     await renderPage();
     expect(screen.getByRole('heading', { level: 1, name: '月光咖啡' })).toBeTruthy();

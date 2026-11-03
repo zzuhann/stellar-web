@@ -4,6 +4,7 @@ import { Metadata } from 'next';
 import { venueApi } from '@/lib/api';
 import type { Venue } from '@/types';
 import { dateToTaipeiDateString } from '@/utils';
+import { formatTransitStationName, getVenueHeaderTransit } from '@/utils/transitStops';
 import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
 import VenueDetailV2 from '@/components/venues/detailV2/VenueDetailV2';
 import VenueViewTracker from '@/components/venues/VenueViewTracker';
@@ -30,8 +31,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const venue = await getVenue(id);
     const title = `${venue.name} | 場地詳情`;
+    const transit = getVenueHeaderTransit(venue);
     const details = [
-      venue.nearestMrt && `鄰近${venue.nearestMrt.replace(/站$/, '')}站`,
+      transit && `鄰近${formatTransitStationName(transit)}`,
       venue.capacityRange &&
         `可容納${CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}`,
     ]

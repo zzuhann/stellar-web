@@ -48,7 +48,7 @@ import {
 import {
   formatTransitHeader,
   formatTransitListItem,
-  pickPrimaryTransit,
+  getVenueHeaderTransit,
 } from '@/utils/transitStops';
 
 const header = css({
@@ -102,18 +102,6 @@ const breadcrumbWrap = css({
   marginX: '-1',
 });
 
-// transitStops null = never saved with the new field: fall back to the legacy MRT fields;
-// [] = cleared on purpose, show nothing (design-backend §10.5, TC-141)
-const formatMrt = (venue: VenueDetail): string | null => {
-  if (Array.isArray(venue.transitStops)) {
-    const primary = pickPrimaryTransit(venue.transitStops);
-    return primary ? formatTransitHeader(primary) : null;
-  }
-  if (!venue.nearestMrt) return null;
-  const station = `${venue.nearestMrt.replace(/站$/, '')}站`;
-  return venue.mrtWalkMinutes ? `${station}步行 ${venue.mrtWalkMinutes} 分鐘` : station;
-};
-
 interface VenueDetailV2Props {
   venue: VenueDetail;
   relatedVenues: Venue[];
@@ -144,7 +132,8 @@ export default function VenueDetailV2({
   const photos = [venue.coverPhoto, ...(venue.otherPhotos ?? [])].filter(Boolean) as string[];
 
   const region = venue.region?.trim() ?? '';
-  const mrtText = formatMrt(venue);
+  const headerTransit = getVenueHeaderTransit(venue);
+  const mrtText = headerTransit ? formatTransitHeader(headerTransit) : null;
   const capacityText = venue.capacityRange
     ? `容納 ${CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}`
     : null;

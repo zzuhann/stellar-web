@@ -3,6 +3,9 @@ import {
   createTransitRow,
   formatTransitHeader,
   formatTransitListItem,
+  formatTransitStationName,
+  getVenueHeaderTransit,
+  mrtStation,
   getTransitRowErrors,
   normalizeWalkMinutes,
   pickPrimaryTransit,
@@ -129,5 +132,52 @@ describe('TC-144 交通清單的每一筆 formatTransitListItem', () => {
     [{ type: 'hsr', station: '高鐵台中站', walkMinutes: 10 }, '高鐵台中站・步行 10 分鐘'],
   ] as const)('%o → %s', (stop, expected) => {
     expect(formatTransitListItem(stop)).toBe(expected);
+  });
+});
+
+describe('頁首與 metadata 共用的交通挑選 getVenueHeaderTransit（TC-141 規則）', () => {
+  const legacy = { nearestMrt: '中山站', mrtWalkMinutes: 5 };
+
+  it('transitStops 有值 → 照類型優先序挑一筆，不看舊欄位', () => {
+    expect(
+      getVenueHeaderTransit({
+        ...legacy,
+        transitStops: [
+          { type: 'bus', station: '復興新和街口', walkMinutes: 3 },
+          { type: 'train', station: '台中火車站', walkMinutes: 8 },
+        ],
+      })
+    ).toEqual({ type: 'train', station: '台中火車站', walkMinutes: 8 });
+  });
+
+  it('transitStops 是 [] → null，就算舊欄位還有值也不退回', () => {
+    expect(getVenueHeaderTransit({ ...legacy, transitStops: [] })).toBeNull();
+  });
+
+  it.each([null, undefined])('transitStops 是 %s → 退回舊欄位，當成捷運', (transitStops) => {
+    expect(getVenueHeaderTransit({ ...legacy, transitStops })).toEqual({
+      type: 'mrt',
+      station: '中山站',
+      walkMinutes: 5,
+    });
+    expect(
+      getVenueHeaderTransit({ nearestMrt: null, mrtWalkMinutes: null, transitStops })
+    ).toBeNull();
+  });
+});
+
+describe('站名（不含步行分鐘）formatTransitStationName', () => {
+  it.each([
+    [{ type: 'mrt', station: '中山', walkMinutes: 5 }, '中山站'],
+    [{ type: 'mrt', station: '中山站', walkMinutes: null }, '中山站'],
+    [{ type: 'bus', station: '復興新和街口', walkMinutes: 3 }, '公車 復興新和街口'],
+    [{ type: 'train', station: '台中火車站', walkMinutes: 8 }, '台中火車站'],
+  ] as const)('%o → %s', (stop, expected) => {
+    expect(formatTransitStationName(stop)).toBe(expected);
+  });
+
+  it('mrtStation：補一個「站」，原本有就不重複', () => {
+    expect(mrtStation('中山')).toBe('中山站');
+    expect(mrtStation('中山站')).toBe('中山站');
   });
 });

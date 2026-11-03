@@ -129,7 +129,7 @@ export function pickPrimaryTransit(stops: TransitStop[]): TransitStop | null {
   return null;
 }
 
-const mrtStation = (station: string) => `${station.replace(/站$/, '')}站`;
+export const mrtStation = (station: string) => `${station.replace(/站$/, '')}站`;
 
 // Station names that already carry the type word (台中火車站) are not prefixed again
 const withTypeWord = (type: TransitType, name: string): string => {
@@ -137,13 +137,28 @@ const withTypeWord = (type: TransitType, name: string): string => {
   return name.includes(word) ? name : `${word} ${name}`;
 };
 
+// Header and metadata share one rule: transitStops once saved ([] = show nothing);
+// legacy nearestMrt only while transitStops was never saved (design-backend §10.5, TC-141)
+export function getVenueHeaderTransit(venue: {
+  transitStops?: TransitStop[] | null;
+  nearestMrt: string | null;
+  mrtWalkMinutes: number | null;
+}): TransitStop | null {
+  if (Array.isArray(venue.transitStops)) return pickPrimaryTransit(venue.transitStops);
+  if (!venue.nearestMrt) return null;
+  return { type: 'mrt', station: venue.nearestMrt, walkMinutes: venue.mrtWalkMinutes ?? null };
+}
+
+// Station name as the header shows it, without walking minutes (used by the SEO description)
+export const formatTransitStationName = (stop: TransitStop): string =>
+  stop.type === 'mrt' ? mrtStation(stop.station) : withTypeWord(stop.type, stop.station);
+
 export function formatTransitHeader(stop: TransitStop): string {
-  if (stop.type === 'mrt') {
-    const station = mrtStation(stop.station);
-    return stop.walkMinutes ? `${station}步行 ${stop.walkMinutes} 分鐘` : station;
-  }
-  const name = withTypeWord(stop.type, stop.station);
-  return stop.walkMinutes ? `${name}，步行 ${stop.walkMinutes} 分鐘` : name;
+  const name = formatTransitStationName(stop);
+  if (!stop.walkMinutes) return name;
+  return stop.type === 'mrt'
+    ? `${name}步行 ${stop.walkMinutes} 分鐘`
+    : `${name}，步行 ${stop.walkMinutes} 分鐘`;
 }
 
 // One line of the detail page's transit list; unlike the header, MRT also gets its type word
