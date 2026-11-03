@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createTransitRow,
   formatTransitHeader,
+  formatTransitListItem,
   getTransitRowErrors,
   normalizeWalkMinutes,
   pickPrimaryTransit,
@@ -113,5 +114,20 @@ describe('TC-141 頁首交通挑選（類型優先序，同類型取最前面）
     expect(formatTransitHeader({ type: 'train', station: '台中火車站', walkMinutes: null })).toBe(
       '台中火車站'
     );
+  });
+});
+
+describe('TC-144 交通清單的每一筆 formatTransitListItem', () => {
+  it.each([
+    [{ type: 'bus', station: '復興新和街口', walkMinutes: 3 }, '公車 復興新和街口・步行 3 分鐘'],
+    [{ type: 'mrt', station: '中山', walkMinutes: 5 }, '捷運 中山站・步行 5 分鐘'],
+    [{ type: 'mrt', station: '中山站', walkMinutes: 5 }, '捷運 中山站・步行 5 分鐘'],
+    [{ type: 'mrt', station: '捷運中山站', walkMinutes: null }, '捷運中山站'],
+    [{ type: 'train', station: '台中火車站', walkMinutes: null }, '台中火車站'],
+    [{ type: 'train', station: '台中火車站', walkMinutes: 8 }, '台中火車站・步行 8 分鐘'],
+    [{ type: 'light_rail', station: '凱旋中華', walkMinutes: 2 }, '輕軌 凱旋中華・步行 2 分鐘'],
+    [{ type: 'hsr', station: '高鐵台中站', walkMinutes: 10 }, '高鐵台中站・步行 10 分鐘'],
+  ] as const)('%o → %s', (stop, expected) => {
+    expect(formatTransitListItem(stop)).toBe(expected);
   });
 });

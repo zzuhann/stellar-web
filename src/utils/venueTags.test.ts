@@ -334,3 +334,39 @@ describe.each(['America/Los_Angeles', 'UTC'])('TC-032 日期 formatter（TZ=%s�
     expect(formatConditionUntil('2027-01-31', TODAY)).toBe('2027/1/31');
   });
 });
+
+describe('TC-144 交通列換成清單 buildVenueFacilityRows(tags, dictionary, transitLines)', () => {
+  const lines = ['公車 復興新和街口・步行 3 分鐘', '捷運 中山站・步行 5 分鐘', '台中火車站'];
+
+  it('a：有清單 → 交通列只放清單、照原順序，不出現近捷運、近火車站標籤；其他列照舊', () => {
+    const rows = buildVenueFacilityRows(
+      visible(t('near_mrt', 'near_train', 'cafe')),
+      dictionary,
+      lines
+    );
+    expect(rows).toEqual([
+      { key: 'transport', label: '交通', tags: [], lines },
+      { key: 'space', label: '空間類型', tags: [{ slug: 'cafe', label: '咖啡廳' }] },
+    ]);
+  });
+
+  it('b：沒有清單（[]）→ 交通列照舊顯示標籤', () => {
+    const rows = buildVenueFacilityRows(visible(t('near_mrt')), dictionary, []);
+    expect(rows).toEqual([
+      { key: 'transport', label: '交通', tags: [{ slug: 'near_mrt', label: '近捷運' }] },
+    ]);
+  });
+
+  it('c：字典載入失敗（null）或完全沒有標籤 → 仍有交通列的清單，標題退回「交通」', () => {
+    expect(buildVenueFacilityRows([], null, lines)).toEqual([
+      { key: 'transport', label: '交通', tags: [], lines },
+    ]);
+    expect(buildVenueFacilityRows(visible([]), dictionary, lines)).toEqual([
+      { key: 'transport', label: '交通', tags: [], lines },
+    ]);
+  });
+
+  it('字典 null、也沒有清單 → 沒有任何列', () => {
+    expect(buildVenueFacilityRows([], null)).toEqual([]);
+  });
+});

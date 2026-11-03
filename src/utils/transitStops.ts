@@ -129,12 +129,26 @@ export function pickPrimaryTransit(stops: TransitStop[]): TransitStop | null {
   return null;
 }
 
+const mrtStation = (station: string) => `${station.replace(/站$/, '')}站`;
+
+// Station names that already carry the type word (台中火車站) are not prefixed again
+const withTypeWord = (type: TransitType, name: string): string => {
+  const word = TYPE_WORD[type];
+  return name.includes(word) ? name : `${word} ${name}`;
+};
+
 export function formatTransitHeader(stop: TransitStop): string {
   if (stop.type === 'mrt') {
-    const station = `${stop.station.replace(/站$/, '')}站`;
+    const station = mrtStation(stop.station);
     return stop.walkMinutes ? `${station}步行 ${stop.walkMinutes} 分鐘` : station;
   }
-  const word = TYPE_WORD[stop.type];
-  const name = stop.station.includes(word) ? stop.station : `${word} ${stop.station}`;
+  const name = withTypeWord(stop.type, stop.station);
   return stop.walkMinutes ? `${name}，步行 ${stop.walkMinutes} 分鐘` : name;
+}
+
+// One line of the detail page's transit list; unlike the header, MRT also gets its type word
+export function formatTransitListItem(stop: TransitStop): string {
+  const station = stop.type === 'mrt' ? mrtStation(stop.station) : stop.station;
+  const name = withTypeWord(stop.type, station);
+  return stop.walkMinutes ? `${name}・步行 ${stop.walkMinutes} 分鐘` : name;
 }
