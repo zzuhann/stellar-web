@@ -517,3 +517,23 @@ describe('TC-145 元件層：「查看全部 N 張照片」只在 6 張以上出
     expect(screen.getAllByRole('button', { name: /^放大檢視第 \d+ 張照片$/ })).toHaveLength(5);
   });
 });
+
+describe('相關場地區：沒有同地區場地時改放「查看全部場地」', () => {
+  it('relatedVenues 是空的 → 「查看全部場地」連到 /venues', () => {
+    renderView(makeVenue());
+    expect(screen.getByRole('link', { name: '查看全部場地' }).getAttribute('href')).toBe('/venues');
+  });
+
+  it('有相關場地 → 顯示相關場地，不出現「查看全部場地」', () => {
+    render(
+      <VenueDetailV2
+        venue={makeVenue()}
+        relatedVenues={[{ ...makeVenue({ id: 'v2', name: '星光咖啡' }) }]}
+        dictionary={dictionary}
+        today={TODAY}
+      />
+    );
+    expect(screen.getByText('星光咖啡')).toBeTruthy();
+    expect(screen.queryByRole('link', { name: '查看全部場地' })).toBeNull();
+  });
+});

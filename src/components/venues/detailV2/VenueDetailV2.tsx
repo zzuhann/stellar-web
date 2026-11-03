@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { css, cx } from '@/styled-system/css';
 import type { Venue, VenueDetail, VenueTagDictionary } from '@/types';
 import { useAuth } from '@/lib/auth-context';
@@ -100,6 +101,33 @@ const headerLocation = css({
 const breadcrumbWrap = css({
   // Breadcrumb has its own 20px gutter; pull it back to the 16px content edge
   marginX: '-1',
+});
+
+// No same-region venues: keep a way back to the full list (same button as the old page)
+const allVenuesWrap = css({ paddingX: '4' });
+
+const allVenuesLink = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%',
+  minHeight: '44px',
+  padding: '3',
+  borderRadius: 'radius.md',
+  border: '1px solid',
+  borderColor: 'color.border.light',
+  background: 'color.background.secondary',
+  color: 'color.text.primary',
+  textStyle: 'bodySmall',
+  fontWeight: 'medium',
+  textDecoration: 'none',
+  transition: 'border-color 0.15s ease, color 0.15s ease',
+  '&:hover': { borderColor: 'color.primary', color: 'color.primary' },
+  '&:focus-visible': {
+    outline: '2px solid',
+    outlineColor: 'color.primary',
+    outlineOffset: '2px',
+  },
 });
 
 interface VenueDetailV2Props {
@@ -235,11 +263,17 @@ export default function VenueDetailV2({
             </div>
           )}
 
-          {relatedVenues.length > 0 && (
-            <div className={areaRelated}>
+          <div className={areaRelated}>
+            {relatedVenues.length > 0 ? (
               <RelatedVenuesStrip venues={relatedVenues} region={venue.region} />
-            </div>
-          )}
+            ) : (
+              <div className={allVenuesWrap}>
+                <Link href="/venues" className={allVenuesLink}>
+                  查看全部場地
+                </Link>
+              </div>
+            )}
+          </div>
 
           <div className={areaCorrection}>
             <VenueCorrectionNote onClickLink={trackCorrection} />
