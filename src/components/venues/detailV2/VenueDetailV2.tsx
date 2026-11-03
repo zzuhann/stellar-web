@@ -4,7 +4,13 @@ import Image from 'next/image';
 import { css, cx } from '@/styled-system/css';
 import type { Venue, VenueDetail, VenueTagDictionary } from '@/types';
 import { useAuth } from '@/lib/auth-context';
-import { trackClickVenueContact } from '@/lib/analytics/venues';
+import {
+  trackClickVenueContact,
+  trackClickVenueCorrection,
+  trackClickVenueSourceLink,
+  type VenueContactButtonLocation,
+  type VenueCorrectionContactType,
+} from '@/lib/analytics/venues';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import { buildVenueContact } from '@/utils/venueContact';
 import {
@@ -25,54 +31,25 @@ import VenueCorrectionNote from './components/VenueCorrectionNote';
 import VenueContactCard from './components/VenueContactCard';
 import VenueContactBar from './components/VenueContactBar';
 import { tag } from './components/styles';
-import { formatTransitHeader, pickPrimaryTransit } from '@/utils/transitStops';
-
-// Flex column so the sticky contact bar rests at the viewport bottom even on short pages
-const pageOuter = css({
-  display: 'flex',
-  flexDirection: 'column',
-  minHeight: '100dvh',
-  background: 'color.background.primary',
-  paddingTop: '70px',
-});
-
-const shell = css({
-  flexGrow: 1,
-  width: '100%',
-  maxWidth: '640px',
-  marginX: 'auto',
-  paddingTop: '3',
-  paddingBottom: '10',
-  lg: { maxWidth: '1200px', paddingX: '6', paddingTop: '6' },
-});
-
-const columns = css({
-  lg: { display: 'flex', gap: '12' },
-});
-
-const mainCol = css({
-  minWidth: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '6',
-  lg: { flex: '999 1 560px', gap: '8' },
-});
-
-// Desktop-only right column; stretches to the main column height so the contact card stays sticky
-const asideCol = css({
-  display: 'none',
-  lg: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6',
-    flex: '1 1 360px',
-    minWidth: 0,
-  },
-});
-
-const mobileOnly = css({
-  lg: { display: 'none' },
-});
+import {
+  areaAside,
+  areaCorrection,
+  areaDescription,
+  areaEvents,
+  areaFacilities,
+  areaHeader,
+  areaPhotos,
+  areaRelated,
+  areaUsage,
+  detailLayout,
+  pageOuter,
+  shell,
+} from './layout';
+import {
+  formatTransitHeader,
+  formatTransitListItem,
+  pickPrimaryTransit,
+} from '@/utils/transitStops';
 
 const header = css({
   display: 'flex',
@@ -143,8 +120,6 @@ interface VenueDetailV2Props {
   dictionary: VenueTagDictionary | null;
   // Taipei YYYY-MM-DD from the server so render and hydration agree around midnight
   today: string;
-  // false on the preview page: store owners' own clicks must not count as conversions
-  analyticsEnabled: boolean;
 }
 
 export default function VenueDetailV2({
@@ -152,13 +127,17 @@ export default function VenueDetailV2({
   relatedVenues,
   dictionary,
   today,
-  analyticsEnabled,
 }: VenueDetailV2Props) {
   const { user } = useAuth();
+  const userId = user?.uid;
 
   const visibleTags = getVisibleVenueTags(venue.tags, dictionary, today);
   const usageRows = buildVenueUsageRows(visibleTags, today);
-  const facilityRows = dictionary ? buildVenueFacilityRows(visibleTags, dictionary) : [];
+  const facilityRows = buildVenueFacilityRows(
+    visibleTags,
+    dictionary,
+    (venue.transitStops ?? []).map(formatTransitListItem)
+  );
   const contact = buildVenueContact(venue);
   const sourceLinks = venue.sourceLinks ?? [];
   const infoUpdatedOn = venue.infoUpdatedOn ?? null;
@@ -170,105 +149,116 @@ export default function VenueDetailV2({
     ? `容納 ${CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}`
     : null;
 
-  const handleClickContact = analyticsEnabled
-    ? (contactType: string) =>
-        trackClickVenueContact({ userId: user?.uid, venueId: venue.id, contactType })
-    : undefined;
+  const trackContact = (buttonLocation: VenueContactButtonLocation) => (contactType: string) =>
+    trackClickVenueContact({ userId, venueId: venue.id, contactType, buttonLocation });
+  const trackSourceLink = (listPosition: number) =>
+    trackClickVenueSourceLink({ userId, venueId: venue.id, listPosition });
+  const trackCorrection = (contactType: VenueCorrectionContactType) =>
+    trackClickVenueCorrection({ userId, venueId: venue.id, contactType });
 
-  const sourceMeta = <VenueSourceMeta sourceLinks={sourceLinks} infoUpdatedOn={infoUpdatedOn} />;
   const hasSourceMeta = sourceLinks.length > 0 || Boolean(infoUpdatedOn);
 
   return (
     <div className={pageOuter}>
       <div className={shell}>
-        <div className={columns}>
-          <div className={mainCol}>
-            <div>
-              <div className={breadcrumbWrap}>
-                <Breadcrumb
-                  items={[
-                    { label: '生咖場地', href: '/venues' },
-                    {
-                      label: venue.region,
-                      href: `/venues?region=${encodeURIComponent(venue.region)}`,
-                    },
-                    { label: venue.name },
-                  ]}
-                />
-              </div>
-              <header className={header}>
-                {venue.coverPhoto && (
-                  <div className={thumb}>
-                    <Image
-                      src={venue.coverPhoto}
-                      alt=""
-                      fill
-                      sizes="64px"
-                      unoptimized
-                      style={{ objectFit: 'cover' }}
-                    />
-                  </div>
-                )}
-                <div className={headerText}>
-                  <h1 className={venueName}>{venue.name}</h1>
-                  {(region || mrtText) && (
-                    <p className={cx(headerLine, headerLocation)}>
-                      {region && <span className={tag}>{region}</span>}
-                      {mrtText && <span>{mrtText}</span>}
-                    </p>
-                  )}
-                  {capacityText && <p className={headerLine}>{capacityText}</p>}
-                </div>
-              </header>
+        <div className={detailLayout}>
+          <div className={areaHeader}>
+            <div className={breadcrumbWrap}>
+              <Breadcrumb
+                items={[
+                  { label: '生咖場地', href: '/venues' },
+                  {
+                    label: venue.region,
+                    href: `/venues?region=${encodeURIComponent(venue.region)}`,
+                  },
+                  { label: venue.name },
+                ]}
+              />
             </div>
+            <header className={header}>
+              {venue.coverPhoto && (
+                <div className={thumb}>
+                  <Image
+                    src={venue.coverPhoto}
+                    alt=""
+                    fill
+                    sizes="64px"
+                    unoptimized
+                    style={{ objectFit: 'cover' }}
+                  />
+                </div>
+              )}
+              <div className={headerText}>
+                <h1 className={venueName}>{venue.name}</h1>
+                {(region || mrtText) && (
+                  <p className={cx(headerLine, headerLocation)}>
+                    {region && <span className={tag}>{region}</span>}
+                    {mrtText && <span>{mrtText}</span>}
+                  </p>
+                )}
+                {capacityText && <p className={headerLine}>{capacityText}</p>}
+              </div>
+            </header>
+          </div>
 
-            {usageRows.length > 0 && (
+          {usageRows.length > 0 && (
+            <div className={areaUsage}>
               <VenueUsageSummary
                 rows={usageRows}
                 sourceLinks={sourceLinks}
                 infoUpdatedOn={infoUpdatedOn}
+                onClickSourceLink={trackSourceLink}
               />
-            )}
-
-            <div className={mobileOnly}>
-              <VenueGallery photos={photos} venueName={venue.name} />
             </div>
+          )}
 
-            <VenueFacilities rows={facilityRows} equipmentNote={venue.equipmentNote ?? ''} />
-
-            <VenueDescription
-              description={venue.description}
-              meta={usageRows.length === 0 && hasSourceMeta ? sourceMeta : undefined}
-            />
-
-            <div className={mobileOnly}>
-              <VenueLocation venue={venue} />
-            </div>
-
-            {venue.events?.length > 0 && (
-              <PastEventsStrip
-                events={venue.events}
-                showTimeStatus
-                trackClicks={analyticsEnabled}
-              />
-            )}
-
-            {relatedVenues.length > 0 && (
-              <RelatedVenuesStrip venues={relatedVenues} region={venue.region} />
-            )}
-
-            <VenueCorrectionNote />
+          <div className={areaPhotos}>
+            <VenueGallery photos={photos} venueName={venue.name} />
           </div>
 
-          <div className={asideCol}>
-            <VenueContactCard contact={contact} onClickContact={handleClickContact} />
-            <VenueGallery photos={photos} venueName={venue.name} />
+          <div className={areaFacilities}>
+            <VenueFacilities rows={facilityRows} equipmentNote={venue.equipmentNote ?? ''} />
+          </div>
+
+          <div className={areaDescription}>
+            <VenueDescription
+              description={venue.description}
+              meta={
+                usageRows.length === 0 && hasSourceMeta ? (
+                  <VenueSourceMeta
+                    sourceLinks={sourceLinks}
+                    infoUpdatedOn={infoUpdatedOn}
+                    onClickLink={trackSourceLink}
+                  />
+                ) : undefined
+              }
+            />
+          </div>
+
+          <div className={areaAside}>
+            <VenueContactCard contact={contact} onClickContact={trackContact('side_card')} />
             <VenueLocation venue={venue} />
+          </div>
+
+          {venue.events?.length > 0 && (
+            <div className={areaEvents}>
+              <PastEventsStrip events={venue.events} />
+            </div>
+          )}
+
+          {relatedVenues.length > 0 && (
+            <div className={areaRelated}>
+              <RelatedVenuesStrip venues={relatedVenues} region={venue.region} />
+            </div>
+          )}
+
+          <div className={areaCorrection}>
+            <VenueCorrectionNote onClickLink={trackCorrection} />
           </div>
         </div>
       </div>
 
-      {contact && <VenueContactBar contact={contact} onClickContact={handleClickContact} />}
+      {contact && <VenueContactBar contact={contact} onClickContact={trackContact('sticky_bar')} />}
     </div>
   );
 }

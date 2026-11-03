@@ -3,7 +3,10 @@ import { css } from '@/styled-system/css';
 import type { VenueContact } from '@/utils/venueContact';
 import VenueContactActions from './VenueContactActions';
 
+// Desktop only; hidden on the element itself because a wrapper would break sticky
 const card = css({
+  display: 'none',
+  lg: { display: 'block' },
   position: 'sticky',
   // Clears the 70px fixed site header
   top: 'calc(70px + token(spacing.6))',
@@ -41,7 +44,7 @@ const descOnly = css({
 
 interface VenueContactCardProps {
   contact: VenueContact | null;
-  onClickContact?: (contactType: string) => void;
+  onClickContact: (contactType: string) => void;
 }
 
 export default function VenueContactCard({ contact, onClickContact }: VenueContactCardProps) {

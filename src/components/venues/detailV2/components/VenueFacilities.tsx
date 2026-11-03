@@ -39,6 +39,18 @@ const tagGroup = css({
   gap: '1.5',
 });
 
+const lineList = css({
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  display: 'grid',
+  gap: '1',
+  textStyle: 'bodySmall',
+  color: 'color.text.primary',
+  overflowWrap: 'anywhere',
+  lg: { textStyle: 'body' },
+});
+
 const equipmentBox = css({
   padding: '4',
   borderRadius: 'radius.lg',
@@ -117,13 +129,23 @@ export default function VenueFacilities({ rows, equipmentNote }: VenueFacilities
           {rows.map((row) => (
             <div key={row.key} className={rowWrap}>
               <dt className={term}>{row.label}</dt>
-              <dd className={tagGroup}>
-                {row.tags.map((t) => (
-                  <span key={t.slug} className={tag}>
-                    {t.label}
-                  </span>
-                ))}
-              </dd>
+              {row.lines ? (
+                <dd className={tagGroup}>
+                  <ul className={lineList}>
+                    {row.lines.map((line, i) => (
+                      <li key={`${i}-${line}`}>{line}</li>
+                    ))}
+                  </ul>
+                </dd>
+              ) : (
+                <dd className={tagGroup}>
+                  {row.tags.map((t) => (
+                    <span key={t.slug} className={tag}>
+                      {t.label}
+                    </span>
+                  ))}
+                </dd>
+              )}
             </div>
           ))}
         </dl>

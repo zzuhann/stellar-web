@@ -198,23 +198,22 @@ const CARD_WIDTH = 180 + 10;
 
 interface PastEventsStripProps {
   events: VenueEventCard[];
-  // Opt-in for the new detail layout; production page keeps the old card
-  showTimeStatus?: boolean;
-  // Preview page passes false so store owners' clicks never reach GA
-  trackClicks?: boolean;
 }
 
-export default function PastEventsStrip({
-  events,
-  showTimeStatus = false,
-  trackClicks = true,
-}: PastEventsStripProps) {
+export default function PastEventsStrip({ events }: PastEventsStripProps) {
   const { user } = useAuth();
   const trackRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState(1);
   const count = events.length;
 
   if (count === 0) return null;
+
+  const trackClick = (event: VenueEventCard) =>
+    trackClickEventDetail({
+      userId: user?.uid,
+      eventId: event.id,
+      eventTimeStatus: event.timeStatus ?? null,
+    });
 
   const onScroll = () => {
     const el = trackRef.current;
@@ -249,13 +248,10 @@ export default function PastEventsStrip({
               href={`/event/${event.slug ?? event.id}`}
               role="listitem"
               className={card}
-              onClick={() => {
-                if (trackClicks) trackClickEventDetail({ userId: user?.uid, eventId: event.id });
-              }}
+              onClick={() => trackClick(event)}
               onAuxClick={(e) => {
                 // middle click opens a new tab, bypassing onClick, so track it separately
-                if (trackClicks && e.button === 1)
-                  trackClickEventDetail({ userId: user?.uid, eventId: event.id });
+                if (e.button === 1) trackClick(event);
               }}
             >
               <div className={coverWrap}>
@@ -271,7 +267,7 @@ export default function PastEventsStrip({
                 ) : (
                   <div className={coverPlaceholder}>🎂</div>
                 )}
-                {showTimeStatus && event.timeStatus && TIME_STATUS_LABEL[event.timeStatus] && (
+                {event.timeStatus && TIME_STATUS_LABEL[event.timeStatus] && (
                   <span className={timeStatusTag}>{TIME_STATUS_LABEL[event.timeStatus]}</span>
                 )}
               </div>

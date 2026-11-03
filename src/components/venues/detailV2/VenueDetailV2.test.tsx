@@ -1,7 +1,6 @@
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sendGAEvent } from '@next/third-parties/google';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { VenueDetail, VenueTag, VenueTagDictionary } from '@/types';
 import { venueTagDictionaryFixture as dictionary } from '@/test/venueTagDictionary.fixture';
 import { STELLAR_INSTAGRAM_URL, STELLAR_THREADS_URL } from '@/constants/stellarSocial';
@@ -43,16 +42,12 @@ const makeVenue = (overrides: Partial<VenueDetail> = {}): VenueDetail => ({
   ...overrides,
 });
 
-const renderView = (
-  venue: VenueDetail,
-  opts: { dictionary?: VenueTagDictionary | null; analyticsEnabled?: boolean } = {}
-) =>
+const renderView = (venue: VenueDetail, opts: { dictionary?: VenueTagDictionary | null } = {}) =>
   render(
     <VenueDetailV2
       venue={venue}
       relatedVenues={[]}
       dictionary={opts.dictionary === undefined ? dictionary : opts.dictionary}
-      analyticsEnabled={opts.analyticsEnabled ?? false}
       today={TODAY}
     />
   );
@@ -425,60 +420,100 @@ describe('資料有誤、想更新相關資訊', () => {
   });
 });
 
-describe('TC-085 元件層：analyticsEnabled=false 時不送任何自訂事件', () => {
-  const venue = makeVenue({
-    bookingFormUrl: 'https://forms.gle/book',
-    sourceLinks: ['https://a.com', 'https://b.com'],
-    events: [
-      {
-        id: 'e1',
-        title: '生日應援',
-        artistName: 'WONWOO',
-        startDate: '2026-10-10',
-        endDate: '2026-10-20',
-        coverImage: '',
-        slug: 'e1-slug',
-        timeStatus: 'ongoing',
-      },
-    ],
-  });
-
-  const clickEverything = async () => {
-    const user = userEvent.setup();
-    const preventNav = (e: Event) => e.preventDefault();
-    document.addEventListener('click', preventNav);
-    for (const name of [
-      /前往 月光咖啡/,
-      /預約表單/,
-      /店家原始說明 2/,
-      /聯絡表單/,
-      /STELLAR IG/,
-      /^Threads/,
-    ]) {
-      for (const link of screen.getAllByRole('link', { name })) await user.click(link);
-    }
-    const [poster] = within(
-      screen.getByRole('region', { name: '平台記錄的生咖、生日應援' })
-    ).getAllByRole('listitem');
-    await user.click(poster);
-    fireEvent(poster, new MouseEvent('auxclick', { bubbles: true, button: 1 }));
-    document.removeEventListener('click', preventNav);
+describe('TC-144 「服務、交通與空間」的交通清單', () => {
+  const stops = [
+    { type: 'bus' as const, station: '復興新和街口', walkMinutes: 3 },
+    { type: 'mrt' as const, station: '中山', walkMinutes: 5 },
+    { type: 'train' as const, station: '台中火車站', walkMinutes: null },
+  ];
+  const transitItems = () => {
+    const region = getFacilityRegion();
+    expect(
+      within(region)
+        .getAllByRole('term')
+        .map((el) => el.textContent)
+    ).toEqual(['交通']);
+    return within(region)
+      .getAllByRole('listitem')
+      .map((li) => li.textContent);
   };
 
-  it('關閉時：聯絡、預約表單、原始說明、資料有誤、活動海報（含中鍵）都不送', async () => {
-    renderView(venue, { analyticsEnabled: false });
-    await clickEverything();
-    expect(sendGAEvent).not.toHaveBeenCalled();
+  it('a：有 transitStops → 交通列一行一筆、照填的順序，不出現「近捷運」標籤', () => {
+    renderView(makeVenue({ tags: t('near_mrt'), transitStops: stops }));
+    expect(transitItems()).toEqual([
+      '公車 復興新和街口・步行 3 分鐘',
+      '捷運 中山站・步行 5 分鐘',
+      '台中火車站',
+    ]);
+    expect(within(getFacilityRegion()).queryByText('近捷運')).toBeNull();
   });
 
-  it('開啟時（對照組）：聯絡按鈕送實際管道、預約表單送 form、活動海報照送', async () => {
-    renderView(venue, { analyticsEnabled: true });
-    await clickEverything();
-    const calls = vi.mocked(sendGAEvent).mock.calls;
-    const contactTypes = calls
-      .filter((c) => c[1] === 'click_venue_contact')
-      .map((c) => (c[2] as Record<string, string>).contact_type);
-    expect(contactTypes).toEqual(['instagram', 'instagram', 'form', 'form']);
-    expect(calls.filter((c) => c[1] === 'click_event_detail').length).toBeGreaterThan(0);
+  it.each([null, []])(
+    'b：transitStops 是 %o → 交通列照舊顯示「近捷運」，不從 nearestMrt 組清單',
+    (transitStops) => {
+      renderView(makeVenue({ tags: t('near_mrt'), transitStops, nearestMrt: '中山站' }));
+      const region = getFacilityRegion();
+      expect(within(region).getByText('近捷運')).toBeTruthy();
+      expect(within(region).queryAllByRole('listitem')).toHaveLength(0);
+    }
+  );
+
+  it.each([
+    ['字典載入失敗', { dictionary: null }, t('near_mrt', 'cafe')],
+    ['完全沒有標籤', {}, []],
+  ] as const)('c：%s → 「服務、交通與空間」照樣出現，只有交通列的清單', (_, opts, tags) => {
+    renderView(makeVenue({ tags: [...tags], transitStops: stops }), opts);
+    const region = getFacilityRegion();
+    expect(
+      within(region)
+        .getAllByRole('term')
+        .map((el) => el.textContent)
+    ).toEqual(['交通']);
+    expect(within(region).getAllByRole('listitem')).toHaveLength(3);
+  });
+});
+
+describe('單一 DOM：地址地圖、照片不在手機流與桌機右欄各 render 一份', () => {
+  it('地址連結與地圖 iframe 各只有一份', () => {
+    vi.stubEnv('NEXT_PUBLIC_GOOGLE_MAPS_EMBED_API_KEY', 'test-key');
+    renderView(makeVenue());
+    expect(screen.getAllByRole('link', { name: /台北市中山區某路 1 號/ })).toHaveLength(1);
+    expect(document.querySelectorAll('iframe')).toHaveLength(1);
+    expect(screen.getAllByRole('region', { name: '社群與地址' })).toHaveLength(1);
+    vi.unstubAllEnvs();
+  });
+
+  it('沒有照片 → 空狀態只出現一次', () => {
+    renderView(makeVenue({ coverPhoto: null, otherPhotos: [] }));
+    expect(screen.getAllByText('店家尚未提供場地照片')).toHaveLength(1);
+  });
+});
+
+describe('TC-145 元件層：「查看全部 N 張照片」只在 6 張以上出現', () => {
+  // The mobile carousel scrolls its thumbnail strip on mount; jsdom has no scrollTo
+  beforeAll(() => {
+    Element.prototype.scrollTo = vi.fn();
+  });
+
+  const photosVenue = (count: number) =>
+    makeVenue({
+      coverPhoto: 'https://cdn.stellar-zone.com/p0.jpg',
+      otherPhotos: Array.from(
+        { length: count - 1 },
+        (_, i) => `https://cdn.stellar-zone.com/p${i + 1}.jpg`
+      ),
+    });
+
+  it('5 張沒有；6 張有「查看全部 6 張照片」', () => {
+    renderView(photosVenue(5));
+    expect(screen.queryByRole('button', { name: /查看全部/ })).toBeNull();
+    cleanup();
+    renderView(photosVenue(6));
+    expect(screen.getByRole('button', { name: '查看全部 6 張照片' })).toBeTruthy();
+  });
+
+  it('桌機格子每一格都是可以按的按鈕，只排前 5 張', () => {
+    renderView(photosVenue(7));
+    expect(screen.getAllByRole('button', { name: /^放大檢視第 \d+ 張照片$/ })).toHaveLength(5);
   });
 });

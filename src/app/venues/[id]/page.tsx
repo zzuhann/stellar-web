@@ -3,8 +3,10 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { venueApi } from '@/lib/api';
 import type { Venue } from '@/types';
+import { dateToTaipeiDateString } from '@/utils';
 import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
-import VenueDetailClient from './VenueDetailClient';
+import VenueDetailV2 from '@/components/venues/detailV2/VenueDetailV2';
+import VenueViewTracker from '@/components/venues/VenueViewTracker';
 
 export const revalidate = 86400;
 
@@ -61,20 +63,35 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function VenueDetailPage({ params }: PageProps) {
   const { id } = await params;
+  // Fired before awaiting the venue so both requests run in parallel; failure only hides tags
+  const dictionaryPromise = venueApi.getTagDictionary().catch(() => null);
+
   const venue = await getVenue(id).catch((err) => {
     if (err?.response?.status === 404) return null;
     throw err;
   });
   if (!venue) notFound();
 
-  const relatedVenues: Venue[] = venue
-    ? await venueApi
-        // 後端非 random 查詢現在預設分頁 20 筆，這裡要拿到該地區的全部場地，
-        // 不能只拿第一頁，故明確帶大 limit。
-        .getVenues({ region: [venue.region], status: 'active', limit: 1000 })
-        .then((r) => r.venues.filter((v) => v.id !== id))
-        .catch(() => [])
-    : [];
+  const [dictionary, relatedVenues] = await Promise.all([
+    dictionaryPromise,
+    venueApi
+      // 後端非 random 查詢現在預設分頁 20 筆，這裡要拿到該地區的全部場地，
+      // 不能只拿第一頁，故明確帶大 limit。
+      .getVenues({ region: [venue.region], status: 'active', limit: 1000 })
+      .then((r): Venue[] => r.venues.filter((v) => v.id !== id))
+      .catch((): Venue[] => []),
+  ]);
 
-  return <VenueDetailClient venue={venue} relatedVenues={relatedVenues} />;
+  return (
+    <>
+      <VenueViewTracker venueId={venue.id} />
+      <VenueDetailV2
+        venue={venue}
+        relatedVenues={relatedVenues}
+        dictionary={dictionary}
+        // ISR renders at most once a day, so "today" (tag expiry, event status) may lag a day
+        today={dateToTaipeiDateString(new Date())}
+      />
+    </>
+  );
 }

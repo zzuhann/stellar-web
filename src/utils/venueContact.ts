@@ -25,7 +25,7 @@ const CHANNEL_LABEL: Record<VenueContactChannel, string> = {
 const instagramUrl = (handle: string) => `https://www.instagram.com/${handle}`;
 const threadsUrl = (handle: string) => `https://www.threads.com/@${handle}`;
 
-// New-layout contact; production VenueDetailView keeps its own buildBookingChannel until the swap
+// Contact button of the venue detail page (venue-tags design-frontend §B item 11)
 export const buildVenueContact = (venue: VenueContactSource): VenueContact | null => {
   const ig = cleanSocialMediaHandle(venue.socialMedia?.instagram ?? '');
   const threads = cleanSocialMediaHandle(venue.socialMedia?.threads ?? '');
@@ -61,7 +61,7 @@ export interface VenueSocialLink {
   type: 'instagram' | 'threads' | 'line';
 }
 
-// Same rule as the production page's social row; duplicated so VenueDetailView stays untouched
+// Social row of the venue detail page: IG first, then Threads, then LINE
 export const buildVenueSocialLink = (
   venue: Pick<VenueDetail, 'socialMedia'>
 ): VenueSocialLink | null => {

@@ -23,7 +23,7 @@ const inner = css({
 
 interface VenueContactBarProps {
   contact: VenueContact;
-  onClickContact?: (contactType: string) => void;
+  onClickContact: (contactType: string) => void;
 }
 
 export default function VenueContactBar({ contact, onClickContact }: VenueContactBarProps) {

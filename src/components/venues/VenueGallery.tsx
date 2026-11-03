@@ -5,10 +5,16 @@ import Image from 'next/image';
 import { css } from '@/styled-system/css';
 import dynamic from 'next/dynamic';
 import 'yet-another-react-lightbox/styles.css';
+import VenuePhotoGrid from './VenuePhotoGrid';
 
 const Lightbox = dynamic(() => import('yet-another-react-lightbox'), {
   ssr: false,
 });
+
+// Mobile keeps the carousel; desktop swaps in the photo grid. Both read the same URLs, and the
+// hidden one's lazy images never load, so a given width downloads each photo once.
+const mobileOnly = css({ lg: { display: 'none' } });
+const desktopOnly = css({ display: 'none', lg: { display: 'block' } });
 
 const galleryWrap = css({
   position: 'relative',
@@ -88,6 +94,7 @@ const emptyGallery = css({
   color: 'color.text.secondary',
   background:
     'repeating-linear-gradient(135deg, var(--colors-gray-100) 0 14px, var(--colors-gray-50) 14px 28px)',
+  lg: { marginX: '4', borderRadius: 'radius.lg', borderBottom: 'none' },
 });
 
 const emptyHint = css({
@@ -127,6 +134,11 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
   // Each slide occupies 1/n of the track; active * (100/n)% moves by one container width
   const slidePercent = 100 / n;
   const slides = photos.map((src) => ({ src, alt: `${venueName} 場地照片` }));
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
 
   const onThumbScroll = () => {
     const el = stripRef.current;
@@ -197,85 +209,87 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
 
   return (
     <div>
-      <div
-        className={galleryWrap}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
+      <div className={mobileOnly}>
         <div
-          style={{
-            display: 'flex',
-            width: `${n * 100}%`,
-            height: '100%',
-            transform: `translateX(calc(-${active * slidePercent}% + ${dragX}px))`,
-            transition: isDragging ? 'none' : 'transform 0.3s ease',
-            willChange: 'transform',
-          }}
+          className={galleryWrap}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
-          {photos.map((src, i) => (
-            <div
-              key={i}
-              className={slideItem}
-              style={{ flex: `0 0 ${slidePercent}%` }}
-              onClick={() => {
-                setLightboxIndex(i);
-                setLightboxOpen(true);
-              }}
-            >
-              <Image
-                src={src}
-                alt={`${venueName} 場地照片 ${i + 1}`}
-                fill
-                style={{ objectFit: 'contain' }}
-                unoptimized
-                sizes="100vw"
-                priority={i === 0}
-              />
+          <div
+            style={{
+              display: 'flex',
+              width: `${n * 100}%`,
+              height: '100%',
+              transform: `translateX(calc(-${active * slidePercent}% + ${dragX}px))`,
+              transition: isDragging ? 'none' : 'transform 0.3s ease',
+              willChange: 'transform',
+            }}
+          >
+            {photos.map((src, i) => (
+              <div
+                key={i}
+                className={slideItem}
+                style={{ flex: `0 0 ${slidePercent}%` }}
+                onClick={() => openLightbox(i)}
+              >
+                <Image
+                  src={src}
+                  alt={`${venueName} 場地照片 ${i + 1}`}
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  unoptimized
+                  sizes="100vw"
+                  priority={i === 0}
+                />
+              </div>
+            ))}
+          </div>
+          {n > 1 && (
+            <div className={counter}>
+              {active + 1} / {n}
             </div>
-          ))}
+          )}
         </div>
         {n > 1 && (
-          <div className={counter}>
-            {active + 1} / {n}
+          <div className={thumbOuter}>
+            <div ref={stripRef} className={thumbStrip} onScroll={onThumbScroll}>
+              {photos.map((src, i) => (
+                <button
+                  key={i}
+                  ref={(el) => {
+                    thumbRefs.current[i] = el;
+                  }}
+                  type="button"
+                  aria-pressed={i === active}
+                  aria-label={`場地照片 ${i + 1}`}
+                  className={`${thumbBtn} ${i === active ? thumbBtnActive : ''}`}
+                  onClick={() => setActive(i)}
+                >
+                  <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <Image
+                      src={src}
+                      alt={`${venueName} 縮圖 ${i + 1}`}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      unoptimized
+                      sizes="56px"
+                    />
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div
+              aria-hidden="true"
+              className={thumbFadeRight}
+              style={{ opacity: thumbAtEnd ? 0 : 1 }}
+            />
           </div>
         )}
       </div>
-      {n > 1 && (
-        <div className={thumbOuter}>
-          <div ref={stripRef} className={thumbStrip} onScroll={onThumbScroll}>
-            {photos.map((src, i) => (
-              <button
-                key={i}
-                ref={(el) => {
-                  thumbRefs.current[i] = el;
-                }}
-                type="button"
-                aria-pressed={i === active}
-                aria-label={`場地照片 ${i + 1}`}
-                className={`${thumbBtn} ${i === active ? thumbBtnActive : ''}`}
-                onClick={() => setActive(i)}
-              >
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                  <Image
-                    src={src}
-                    alt={`${venueName} 縮圖 ${i + 1}`}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    unoptimized
-                    sizes="56px"
-                  />
-                </div>
-              </button>
-            ))}
-          </div>
-          <div
-            aria-hidden="true"
-            className={thumbFadeRight}
-            style={{ opacity: thumbAtEnd ? 0 : 1 }}
-          />
-        </div>
-      )}
+      <div className={desktopOnly}>
+        <VenuePhotoGrid photos={photos} venueName={venueName} onOpen={openLightbox} />
+      </div>
       <Lightbox
         open={lightboxOpen}
         close={() => setLightboxOpen(false)}

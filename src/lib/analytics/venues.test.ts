@@ -3,8 +3,11 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   trackClickEventDetail,
   trackClickHomeVenueDetail,
+  trackClickVenueContact,
+  trackClickVenueCorrection,
   trackClickVenueDetail,
   trackClickVenueListCta,
+  trackClickVenueSourceLink,
   trackFilterVenues,
   trackResolveVenueGeolocation,
   trackSortVenues,
@@ -210,23 +213,65 @@ describe('trackResolveVenueGeolocation（venue-distance-sort 新增事件）', (
 });
 
 describe('trackClickEventDetail', () => {
-  it('送出場地詳情頁的 click_event_detail，content_id 為 eventId 本身（不加 venue_ 前綴）', () => {
-    trackClickEventDetail({ userId: 'user-1', eventId: 'event-1' });
+  it('送出場地詳情頁的 click_event_detail，content_id 為 eventId 本身（不加 venue_ 前綴），帶 event_time_status', () => {
+    trackClickEventDetail({ userId: 'user-1', eventId: 'event-1', eventTimeStatus: 'ongoing' });
 
     expect(sendGAEvent).toHaveBeenCalledWith('event', 'click_event_detail', {
       event_page: '/venues/[id]',
       user_id: 'user-1',
       content_id: 'event-1',
+      event_time_status: 'ongoing',
     });
   });
 
-  it('未登入時 user_id 送空字串', () => {
-    trackClickEventDetail({ eventId: 'event-2' });
+  it('未登入時 user_id 送空字串；沒有活動狀態時 event_time_status 送空字串', () => {
+    trackClickEventDetail({ eventId: 'event-2', eventTimeStatus: null });
 
     expect(sendGAEvent).toHaveBeenCalledWith('event', 'click_event_detail', {
       event_page: '/venues/[id]',
       user_id: '',
       content_id: 'event-2',
+      event_time_status: '',
+    });
+  });
+});
+
+describe('venue-tags 詳情頁事件（tracking.md）', () => {
+  it('click_venue_contact 帶 button_location', () => {
+    trackClickVenueContact({
+      venueId: 'v1',
+      contactType: 'instagram',
+      buttonLocation: 'sticky_bar',
+    });
+
+    expect(sendGAEvent).toHaveBeenCalledWith('event', 'click_venue_contact', {
+      event_page: '/venues/[id]',
+      user_id: '',
+      content_id: 'venue_v1',
+      contact_type: 'instagram',
+      button_location: 'sticky_bar',
+    });
+  });
+
+  it('click_venue_source_link 帶 list_position（從 1 開始，由呼叫端給）', () => {
+    trackClickVenueSourceLink({ userId: 'user-1', venueId: 'v1', listPosition: 2 });
+
+    expect(sendGAEvent).toHaveBeenCalledWith('event', 'click_venue_source_link', {
+      event_page: '/venues/[id]',
+      user_id: 'user-1',
+      content_id: 'venue_v1',
+      list_position: 2,
+    });
+  });
+
+  it('click_venue_correction 帶 contact_type', () => {
+    trackClickVenueCorrection({ venueId: 'v1', contactType: 'threads' });
+
+    expect(sendGAEvent).toHaveBeenCalledWith('event', 'click_venue_correction', {
+      event_page: '/venues/[id]',
+      user_id: '',
+      content_id: 'venue_v1',
+      contact_type: 'threads',
     });
   });
 });
