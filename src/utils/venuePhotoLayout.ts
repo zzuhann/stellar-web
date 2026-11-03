@@ -85,8 +85,13 @@ export function getDesktopPhotoLayout(count: number): DesktopPhotoLayout | null 
 
 type Orientation = 'landscape' | 'portrait' | 'square';
 
-const orientationOf = ({ width, height }: Size): Orientation =>
-  width === height ? 'square' : width > height ? 'landscape' : 'portrait';
+// Within 5% counts as square, so a 1080×1081 photo (or a near-square cell) does not flip the fit
+const SQUARE_TOLERANCE = 1.05;
+
+const orientationOf = ({ width, height }: Size): Orientation => {
+  if (Math.max(width, height) <= Math.min(width, height) * SQUARE_TOLERANCE) return 'square';
+  return width > height ? 'landscape' : 'portrait';
+};
 
 // Same orientation → crop to fill; crossed → show whole photo over its own blurred copy.
 // Unknown sizes (not loaded / not laid out yet) fill first, so nothing flashes letterboxed.

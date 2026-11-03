@@ -105,6 +105,42 @@ describe('TC-145 填滿或完整顯示 getPhotoFit', () => {
     ['還沒讀到照片寬高 → 先填滿', null, wideCell, 'cover'],
     ['還沒量到格子大小 → 先填滿', portrait, null, 'cover'],
     ['格子是 0×0（還沒排版或被隱藏）→ 先填滿', portrait, { width: 0, height: 0 }, 'cover'],
+    [
+      '接近正方形 1080×1081 放橫格（差 1px 不算直照）',
+      { width: 1080, height: 1081 },
+      wideCell,
+      'cover',
+    ],
+    [
+      '接近正方形 1081×1080 放直格（差 1px 不算橫照）',
+      { width: 1081, height: 1080 },
+      tallCell,
+      'cover',
+    ],
+    [
+      '寬高比差 5% 以內（1080×1134）放橫格 → 當成正方形',
+      { width: 1080, height: 1134 },
+      wideCell,
+      'cover',
+    ],
+    [
+      '寬高比差超過 5%（1080×1150）放橫格 → 直照，完整顯示',
+      { width: 1080, height: 1150 },
+      wideCell,
+      'contain',
+    ],
+    [
+      '格子接近正方形（398×400）放橫照 → 當成同方向',
+      landscape,
+      { width: 398, height: 400 },
+      'cover',
+    ],
+    [
+      '格子接近正方形（400×398）放直照 → 當成同方向',
+      portrait,
+      { width: 400, height: 398 },
+      'cover',
+    ],
   ] as const)('%s → %s', (_, photo, cell, fit) => {
     expect(getPhotoFit(photo, cell)).toBe(fit);
   });
