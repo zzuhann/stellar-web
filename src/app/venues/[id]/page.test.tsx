@@ -159,13 +159,10 @@ describe('正式頁 /venues/[id] 換成新版', () => {
     expect(venueApi.recordView).toHaveBeenCalledWith('abc');
   });
 
-  it('TC-094 字典請求失敗不讓整頁壞掉：隱藏標籤內容，聯絡、原始說明、設備原文照常', async () => {
-    vi.mocked(venueApi.getTagDictionary).mockRejectedValue(new Error('500'));
-    await renderPage();
-    expect(screen.queryByRole('region', { name: '可以在這裡' })).toBeNull();
-    expect(screen.getByText('投影機')).toBeTruthy();
-    expect(screen.getAllByRole('link', { name: /店家原始說明/ })).toHaveLength(3);
-    expect(screen.getAllByRole('link', { name: /前往 月光咖啡 Instagram/ }).length).toBe(2);
+  it('TC-094 字典請求失敗 → 整頁丟錯，讓 ISR 繼續提供上一版，不快取沒有標籤的頁面', async () => {
+    const err = new Error('500');
+    vi.mocked(venueApi.getTagDictionary).mockRejectedValue(err);
+    await expect(VenueDetailPage(params('abc'))).rejects.toBe(err);
   });
 
   it('不存在或下架（API 回 404）→ notFound()', async () => {

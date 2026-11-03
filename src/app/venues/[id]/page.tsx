@@ -65,8 +65,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function VenueDetailPage({ params }: PageProps) {
   const { id } = await params;
-  // Fired before awaiting the venue so both requests run in parallel; failure only hides tags
-  const dictionaryPromise = venueApi.getTagDictionary().catch(() => null);
+  // Fired before awaiting the venue so both requests run in parallel. A failure throws: ISR then
+  // keeps serving the last good page instead of caching a tagless one for a day.
+  const dictionaryPromise = venueApi.getTagDictionary();
+  // Already handled by the await below; this only stops a 404 path from leaving it unhandled
+  dictionaryPromise.catch(() => {});
 
   const venue = await getVenue(id).catch((err) => {
     if (err?.response?.status === 404) return null;
