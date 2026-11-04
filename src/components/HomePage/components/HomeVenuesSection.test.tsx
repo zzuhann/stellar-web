@@ -212,3 +212,34 @@ describe('HomeVenuesSection', () => {
     });
   });
 });
+
+describe('HomeVenuesSection 捲動量測跟著新的列表', () => {
+  it('成功 → 背景請求失敗 → 相同筆數恢復：量測改訂閱新的列表元素', () => {
+    const observed: Element[] = [];
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe(el: Element) {
+          observed.push(el);
+        }
+        disconnect() {}
+        unobserve() {}
+      }
+    );
+    const query = (isError: boolean) =>
+      vi.mocked(useRandomVenuesQuery).mockReturnValue({
+        data: [venue],
+        isPending: false,
+        isError,
+      } as ReturnType<typeof useRandomVenuesQuery>);
+
+    const { rerender } = render(<HomeVenuesSection />);
+    query(true);
+    rerender(<HomeVenuesSection />);
+    query(false);
+    rerender(<HomeVenuesSection />);
+
+    const list = screen.getByRole('list', { name: '隨機推薦場地' });
+    expect(observed.filter((el) => el === list).length).toBeGreaterThanOrEqual(2);
+  });
+});

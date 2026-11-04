@@ -56,7 +56,8 @@ const HomeVenuesSection = () => {
   const listRef = useRef<HTMLUListElement>(null);
   // Cards wait for the dictionary so card_tags matches what is shown; a failed one settles too
   const isPending = isVenuesPending || isDictionaryPending;
-  const contentKey = isPending ? 0 : venues.length;
+  // isError unmounts the list, so a same-length recovery must still re-subscribe to the new one
+  const contentKey = isPending || isError ? 0 : venues.length;
   const overflows = useHorizontalScroll(listRef, contentKey, cardsOverflow, false);
 
   // hide the whole section (title included) when the API fails or returns nothing
