@@ -42,7 +42,7 @@ interface VenueCardCoverProps {
 }
 
 // Remount (key) per src from the parent so a failed image does not stick to the next venue
-export default function VenueCardCover({
+export default function VenueCardCoverClient({
   src,
   photoCount,
   venueName,

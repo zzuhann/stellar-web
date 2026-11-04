@@ -6,7 +6,7 @@ import { formatTransitHeader, getVenueHeaderTransit } from '@/utils/transitStops
 import type { VenueCardTagItem } from '@/utils/venueTags';
 import { CAPACITY_RANGE_LABEL } from './venueCapacity';
 import { VENUE_CARD_BODY_MIN_HEIGHT, VENUE_HOME_CARD_BODY_MIN_HEIGHT } from './venueCardLayout';
-import VenueCardCover from './VenueCardCover';
+import VenueCardCoverClient from './VenueCardCoverClient';
 import MrtIcon from './MrtIcon';
 
 // The <a> shell shared by the list card and the homepage card
@@ -185,7 +185,7 @@ export default function VenueCardContent({
 
   return (
     <>
-      <VenueCardCover
+      <VenueCardCoverClient
         key={photos[0] ?? ''}
         src={photos[0] ?? null}
         photoCount={photos.length}
