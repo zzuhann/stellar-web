@@ -28,9 +28,9 @@ interface VenueCardProps {
   // geolocation request is never triggered there), but the card still guards explicitly
   // rather than relying on that invariant holding elsewhere.
   isInAppBrowser?: boolean;
-  // null/undefined = dictionary failed: no tag row, card_tags 'dict_error'. The parent renders
+  // null = dictionary failed: no tag row, card_tags 'dict_error'. The parent renders
   // cards only once the dictionary query has settled (venue-list-redesign)
-  dictionary?: VenueTagDictionary | null;
+  dictionary: VenueTagDictionary | null;
 }
 
 // Keyed by listSort too (not just venueId): switching sort re-exposes a card under a
@@ -59,7 +59,7 @@ export default function VenueCard({
   listSort,
   userCoords,
   isInAppBrowser,
-  dictionary = null,
+  dictionary,
 }: VenueCardProps) {
   const cardRef = useRef<HTMLAnchorElement>(null);
   const tags = getVenueCardTags(venue.tags, dictionary, dateToTaipeiDateString(new Date()));

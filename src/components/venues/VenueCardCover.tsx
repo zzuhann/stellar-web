@@ -3,17 +3,12 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { css } from '@/styled-system/css';
-import { VENUE_HOME_CARD_COVER_HEIGHT } from './venueCardLayout';
+import { VENUE_HOME_CARD_COVER_HEIGHT, venueCardListRatio } from './venueCardLayout';
 
 const cover = css({
   position: 'relative',
   overflow: 'hidden',
   background: 'gray.100',
-});
-
-const listRatio = css({
-  aspectRatio: '16 / 10',
-  '@media (min-width: 768px)': { aspectRatio: '4 / 3' },
 });
 
 const placeholder = css({
@@ -55,7 +50,7 @@ export default function VenueCardCover({
 }: VenueCardCoverProps) {
   const [failed, setFailed] = useState(false);
   const sizeStyle = variant === 'home' ? { height: VENUE_HOME_CARD_COVER_HEIGHT } : undefined;
-  const ratioClass = variant === 'home' ? '' : listRatio;
+  const ratioClass = variant === 'home' ? '' : venueCardListRatio;
 
   if (!src) {
     return (

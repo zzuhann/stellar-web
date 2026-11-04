@@ -61,7 +61,13 @@ const USER_COORDS = { lat: 25.033, lng: 121.574 };
 
 function renderCard(overrides: Partial<Parameters<typeof VenueCard>[0]> = {}) {
   return render(
-    <VenueCard venue={BASE_VENUE} listPosition={1} listSort="composite" {...overrides} />
+    <VenueCard
+      venue={BASE_VENUE}
+      listPosition={1}
+      listSort="composite"
+      dictionary={dictionary}
+      {...overrides}
+    />
   );
 }
 

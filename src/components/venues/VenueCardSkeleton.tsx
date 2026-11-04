@@ -4,6 +4,7 @@ import {
   VENUE_CARD_BODY_MIN_HEIGHT,
   VENUE_HOME_CARD_BODY_MIN_HEIGHT,
   VENUE_HOME_CARD_COVER_HEIGHT,
+  venueCardListRatio,
 } from './venueCardLayout';
 
 const card = css({
@@ -14,12 +15,6 @@ const card = css({
   overflow: 'hidden',
   background: 'color.background.primary',
   boxShadow: 'shadow.sm',
-});
-
-// Same ratios as VenueCardCover so the swap to a real card does not move anything
-const listCover = css({
-  aspectRatio: '16 / 10',
-  '@media (min-width: 768px)': { aspectRatio: '4 / 3' },
 });
 
 const body = css({
@@ -48,6 +43,14 @@ const sectionDivider = css({
   borderColor: 'gray.200',
 });
 
+// Same gap token as the real card's footer
+const footer = css({
+  marginTop: 'auto',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '2',
+});
+
 const bottomStats = css({
   display: 'flex',
   justifyContent: 'space-between',
@@ -66,7 +69,7 @@ export default function VenueCardSkeleton({ variant = 'list' }: VenueCardSkeleto
       {isHome ? (
         <Skeleton height={VENUE_HOME_CARD_COVER_HEIGHT} borderRadius="0" />
       ) : (
-        <div className={listCover}>
+        <div className={venueCardListRatio}>
           <Skeleton height="100%" borderRadius="0" />
         </div>
       )}
@@ -84,7 +87,7 @@ export default function VenueCardSkeleton({ variant = 'list' }: VenueCardSkeleto
           <Skeleton width="64px" height="22px" borderRadius="4px" />
           <Skeleton width="72px" height="22px" borderRadius="4px" />
         </div>
-        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div className={footer}>
           <div className={sectionDivider} />
           <div className={bottomStats}>
             <Skeleton width="90px" height="21px" borderRadius="4px" />

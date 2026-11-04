@@ -51,4 +51,27 @@ describe('useVenueCardTagDictionary（VL-020、VL-021）', () => {
     await waitFor(() => expect(result.current.isPending).toBe(false));
     expect(venueApi.getTagDictionary).toHaveBeenCalledWith({ timeout: 5000 });
   });
+
+  it('失敗後重新 mount 不再重抓：立刻是 settled、沒有骨架狀態', async () => {
+    vi.mocked(venueApi.getTagDictionary).mockRejectedValue(new Error('timeout'));
+    const first = renderHook(() => useVenueCardTagDictionary(), { wrapper });
+    await waitFor(() => expect(first.result.current.isPending).toBe(false));
+    first.unmount();
+
+    const second = renderHook(() => useVenueCardTagDictionary(), { wrapper });
+    expect(second.result.current).toEqual({ dictionary: null, isPending: false });
+    expect(venueApi.getTagDictionary).toHaveBeenCalledTimes(1);
+  });
+
+  it('離線也照常發請求（networkMode always），並使用卡片專用的 query key', async () => {
+    vi.mocked(venueApi.getTagDictionary).mockResolvedValue(venueTagDictionaryFixture);
+    const { result } = renderHook(() => useVenueCardTagDictionary(), { wrapper });
+    await waitFor(() => expect(result.current.isPending).toBe(false));
+
+    const query = queryClient.getQueryCache().find({ queryKey: ['venue-card-tag-dictionary'] });
+    expect(query?.options.networkMode).toBe('always');
+    expect(
+      queryClient.getQueryCache().find({ queryKey: ['venue-tag-dictionary'] })
+    ).toBeUndefined();
+  });
 });
