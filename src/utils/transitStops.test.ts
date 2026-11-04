@@ -118,6 +118,15 @@ describe('TC-141 頁首交通挑選（類型優先序，同類型取最前面）
       '台中火車站'
     );
   });
+
+  it.each([
+    ['後驛站3號出口', 1, '後驛站3號出口，步行 1 分鐘'],
+    ['捷運市政府站4號', 3, '捷運市政府站4號，步行 3 分鐘'],
+    ['中山站R9', 10, '中山站R9，步行 10 分鐘'],
+    ['雙連', 3, '雙連站步行 3 分鐘'],
+  ])('捷運站名寫了出口：不再補「站」，步行前加逗號（%s）', (station, walkMinutes, expected) => {
+    expect(formatTransitHeader({ type: 'mrt', station, walkMinutes })).toBe(expected);
+  });
 });
 
 describe('TC-144 交通清單的每一筆 formatTransitListItem', () => {
@@ -126,6 +135,7 @@ describe('TC-144 交通清單的每一筆 formatTransitListItem', () => {
     [{ type: 'mrt', station: '中山', walkMinutes: 5 }, '捷運 中山站・步行 5 分鐘'],
     [{ type: 'mrt', station: '中山站', walkMinutes: 5 }, '捷運 中山站・步行 5 分鐘'],
     [{ type: 'mrt', station: '捷運中山站', walkMinutes: null }, '捷運中山站'],
+    [{ type: 'mrt', station: '古亭站7號出口', walkMinutes: 6 }, '捷運 古亭站7號出口・步行 6 分鐘'],
     [{ type: 'train', station: '台中火車站', walkMinutes: null }, '台中火車站'],
     [{ type: 'train', station: '台中火車站', walkMinutes: 8 }, '台中火車站・步行 8 分鐘'],
     [{ type: 'light_rail', station: '凱旋中華', walkMinutes: 2 }, '輕軌 凱旋中華・步行 2 分鐘'],
@@ -176,8 +186,10 @@ describe('站名（不含步行分鐘）formatTransitStationName', () => {
     expect(formatTransitStationName(stop)).toBe(expected);
   });
 
-  it('mrtStation：補一個「站」，原本有就不重複', () => {
+  it('mrtStation：補一個「站」，站名裡已經有「站」就不補', () => {
     expect(mrtStation('中山')).toBe('中山站');
     expect(mrtStation('中山站')).toBe('中山站');
+    expect(mrtStation('圓山捷運站1號出口')).toBe('圓山捷運站1號出口');
+    expect(mrtStation('新埔民生站/新埔站')).toBe('新埔民生站/新埔站');
   });
 });

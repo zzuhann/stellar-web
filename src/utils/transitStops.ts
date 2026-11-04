@@ -129,7 +129,8 @@ export function pickPrimaryTransit(stops: TransitStop[]): TransitStop | null {
   return null;
 }
 
-export const mrtStation = (station: string) => `${station.replace(/站$/, '')}站`;
+// Names that already contain 站 (後驛站3號出口, 新埔民生站/新埔站) are kept as typed
+export const mrtStation = (station: string) => (station.includes('站') ? station : `${station}站`);
 
 // Station names that already carry the type word (台中火車站) are not prefixed again
 const withTypeWord = (type: TransitType, name: string): string => {
@@ -156,7 +157,8 @@ export const formatTransitStationName = (stop: TransitStop): string =>
 export function formatTransitHeader(stop: TransitStop): string {
   const name = formatTransitStationName(stop);
   if (!stop.walkMinutes) return name;
-  return stop.type === 'mrt'
+  // A trailing exit or code (古亭站7號出口) would run into 步行, so only a bare 站 skips the comma
+  return stop.type === 'mrt' && name.endsWith('站')
     ? `${name}步行 ${stop.walkMinutes} 分鐘`
     : `${name}，步行 ${stop.walkMinutes} 分鐘`;
 }
