@@ -8,7 +8,7 @@ import type { VenueEventCard } from '@/types';
 import { formatDateRange } from '@/utils';
 import { useAuth } from '@/lib/auth-context';
 import { trackClickEventDetail } from '@/lib/analytics/venues';
-import { itemsOverflow, useHorizontalScroll } from '@/hooks/useHorizontalScroll';
+import { useHorizontalOverflow } from '@/hooks/useHorizontalScroll';
 import ScrollProgressBarClient from '@/components/ui/ScrollProgressBarClient';
 
 const section = css({
@@ -189,7 +189,6 @@ const fadeRight = css({
 const progressTrack = css({ marginX: '4', marginY: '0' });
 
 const CARD_WIDTH = 180 + 10;
-const cardsOverflow = itemsOverflow('[role="listitem"]');
 
 interface PastEventsStripProps {
   events: VenueEventCard[];
@@ -201,7 +200,7 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
   const [pos, setPos] = useState(1);
   const count = events.length;
   // Few events fit without scrolling: hide the counter, hint, fades and bar
-  const overflows = useHorizontalScroll(trackRef, count, cardsOverflow, false);
+  const overflows = useHorizontalOverflow(trackRef, count, '[role="listitem"]');
 
   if (count === 0) return null;
 

@@ -7,7 +7,7 @@ import { useRandomVenuesQuery } from '@/hooks/useHomePage';
 import { trackClickVenueListCta } from '@/lib/analytics/venues';
 import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
 import { useVenueCardTagDictionary } from '@/components/venues/hooks/useVenueCardTagDictionary';
-import { itemsOverflow, useHorizontalScroll } from '@/hooks/useHorizontalScroll';
+import { useHorizontalOverflow } from '@/hooks/useHorizontalScroll';
 import ScrollProgressBarClient from '@/components/ui/ScrollProgressBarClient';
 import HomeVenueCard from './HomeVenueCard';
 
@@ -48,7 +48,6 @@ const list = css({
 });
 const skeleton = css({ scrollSnapAlign: 'start' });
 const progressBar = css({ marginTop: '2', marginX: '1' });
-const cardsOverflow = itemsOverflow();
 
 const HomeVenuesSection = () => {
   const { data: venues = [], isPending: isVenuesPending, isError } = useRandomVenuesQuery(10);
@@ -58,7 +57,7 @@ const HomeVenuesSection = () => {
   const isPending = isVenuesPending || isDictionaryPending;
   // isError unmounts the list, so a same-length recovery must still re-subscribe to the new one
   const contentKey = isPending || isError ? 0 : venues.length;
-  const overflows = useHorizontalScroll(listRef, contentKey, cardsOverflow, false);
+  const overflows = useHorizontalOverflow(listRef, contentKey);
 
   // hide the whole section (title included) when the API fails or returns nothing
   if (isError || (!isVenuesPending && venues.length === 0)) {

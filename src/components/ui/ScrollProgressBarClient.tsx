@@ -16,7 +16,10 @@ const bar = css({
   borderRadius: '2px',
   width: '100%',
   background: 'color.primary',
+  transformOrigin: 'left',
 });
+
+const MIN_FILL = 0.08;
 
 interface ScrollProgressBarProps {
   scrollRef: RefObject<HTMLElement | null>;
@@ -26,7 +29,8 @@ interface ScrollProgressBarProps {
 }
 
 // Stands in for the hidden native scrollbar; always takes its 3px so showing it never shifts layout.
-// Width is written straight to the DOM on each scroll (no React render, no transition) so it tracks the finger.
+// Fill is written straight to the DOM on each scroll (no React render, no transition) so it tracks the finger;
+// scaleX instead of width keeps it on the compositor.
 export default function ScrollProgressBarClient({
   scrollRef,
   contentKey,
@@ -35,7 +39,8 @@ export default function ScrollProgressBarClient({
 }: ScrollProgressBarProps) {
   const barRef = useRef<HTMLDivElement>(null);
   const paint = useCallback((el: HTMLElement) => {
-    if (barRef.current) barRef.current.style.width = `${Math.max(8, scrollProgress(el) * 100)}%`;
+    if (barRef.current)
+      barRef.current.style.transform = `scaleX(${Math.max(MIN_FILL, scrollProgress(el))})`;
   }, []);
   useScrollListener(scrollRef, contentKey, paint);
 

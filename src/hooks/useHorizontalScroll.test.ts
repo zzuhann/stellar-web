@@ -22,19 +22,19 @@ const track = (
 
 describe('itemsOverflow', () => {
   it('最後一張卡的右緣在可見寬度內 → 不算超出，右側 spacer 不算', () => {
-    expect(itemsOverflow('[role="listitem"]')(track(600, 0, [196, 386, 576], 592))).toBe(false);
+    expect(itemsOverflow(track(600, 0, [196, 386, 576], 592), '[role="listitem"]')).toBe(false);
   });
 
   it('最後一張卡超出可見寬度 → 超出', () => {
-    expect(itemsOverflow()(track(400, 0, [196, 386, 576]))).toBe(true);
+    expect(itemsOverflow(track(400, 0, [196, 386, 576]))).toBe(true);
   });
 
   it('捲到底時仍算超出（右緣加回 scrollLeft）', () => {
-    expect(itemsOverflow()(track(400, 176, [20, 210, 400]))).toBe(true);
+    expect(itemsOverflow(track(400, 176, [20, 210, 400]))).toBe(true);
   });
 
   it('沒有項目 → 不算超出', () => {
-    expect(itemsOverflow()(track(400, 0, []))).toBe(false);
+    expect(itemsOverflow(track(400, 0, []))).toBe(false);
   });
 });
 
@@ -45,6 +45,10 @@ describe('scrollProgress', () => {
   it('開頭是可見比例，捲到底是 1', () => {
     expect(scrollProgress(el(0, 400, 1200))).toBeCloseTo(1 / 3);
     expect(scrollProgress(el(800, 400, 1200))).toBe(1);
+  });
+
+  it('離底不到 1px（高 DPR 的小數 scrollLeft）→ 1', () => {
+    expect(scrollProgress(el(799.4, 400, 1200))).toBe(1);
   });
 
   it('沒有內容（scrollWidth 0）→ 1', () => {
