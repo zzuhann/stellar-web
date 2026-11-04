@@ -6,7 +6,6 @@ import {
   buildVenueConditionText,
   buildVenueFacilityRows,
   buildVenueUsageRows,
-  formatCardTagLabel,
   formatConditionUntil,
   formatTagDate,
   getVenueCardTags,
@@ -319,15 +318,6 @@ describe.each(['America/Los_Angeles', 'UTC'])('TC-032 日期 formatter（TZ=%s�
     expect(formatTagDate(input)).toBe(expected);
   });
 
-  it.each<[VenueTag, string]>([
-    [{ slug: 'free_venue', limited: true, until: '2026-12-31' }, '免場地費・限期至 12/31'],
-    [{ slug: 'free_venue', limited: true, until: '2027-01-31' }, '免場地費・限期至 2027/1/31'],
-    [{ slug: 'free_venue', limited: true }, '免場地費（限期）'],
-    [{ slug: 'free_venue' }, '免場地費'],
-  ])('卡片限期 %j → %s', (tag, expected) => {
-    expect(formatCardTagLabel(tag, '免場地費', TODAY)).toBe(expected);
-  });
-
   it('條件文字日期：「2026/12/31 前」與合併句的「（至 12/31）」', () => {
     expect(conditionText([{ slug: 'free_venue', limited: true, until: '2026-12-31' }])).toBe(
       '2026/12/31 前免場地費'
@@ -374,7 +364,7 @@ describe('TC-144 交通列換成清單 buildVenueFacilityRows(tags, dictionary, 
 });
 
 describe('getVenueCardTags / toCardTagsParam（卡片標籤列與 card_tags）', () => {
-  it('依 cardRank 取前 3 個，label 取字典文字，限期帶期限', () => {
+  it('依 cardRank 取前 3 個，label 取字典文字；限期也只寫標籤名，期限看詳情頁', () => {
     const tags: VenueTag[] = [
       { slug: 'free_venue', limited: true, until: '2026-12-31' },
       { slug: 'goods_distribution' },
@@ -385,7 +375,7 @@ describe('getVenueCardTags / toCardTagsParam（卡片標籤列與 card_tags）',
     const items = getVenueCardTags(tags, dictionary, TODAY);
     expect(items).toEqual([
       { slug: 'goods_distribution', label: '應援物代發' },
-      { slug: 'free_venue', label: '免場地費・限期至 12/31' },
+      { slug: 'free_venue', label: '免場地費' },
       { slug: 'early_setup', label: '可提前佈展' },
     ]);
     expect(toCardTagsParam(items, dictionary)).toBe('goods_distribution,free_venue,early_setup');

@@ -1,7 +1,6 @@
 import type { CreateVenueData, UpdateVenueData, VenueTag, VenueTagDictionary } from '@/types';
 import {
   buildVenueUsageRows,
-  formatCardTagLabel,
   getVisibleVenueTags,
   pickCardTags,
   type VenueUsageRow,
@@ -257,8 +256,8 @@ export function buildAdminVenuePreview(
   const visible = getVisibleVenueTags(fields.tags, dictionary, today);
   const labelBySlug = new Map(dictionary.tags.map((d) => [d.slug, d.label]));
   return {
-    cardTagLabels: pickCardTags(visible, dictionary).map((tag) =>
-      formatCardTagLabel(tag, labelBySlug.get(tag.slug) ?? tag.slug, today)
+    cardTagLabels: pickCardTags(visible, dictionary).map(
+      (tag) => labelBySlug.get(tag.slug) ?? tag.slug
     ),
     usageRows: buildVenueUsageRows(visible, today),
     sourceLinks: fields.sourceLinks.filter((link) => !getTagUrlError(link)),

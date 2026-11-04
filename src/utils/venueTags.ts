@@ -18,12 +18,6 @@ export const formatConditionUntil = (ymd: string, today: string): string => {
   return year === parseYmd(today).year ? `${month}/${day}` : `${year}/${month}/${day}`;
 };
 
-export const formatCardTagLabel = (tag: VenueTag, label: string, today: string): string => {
-  if (tag.until) return `${label}・限期至 ${formatConditionUntil(tag.until, today)}`;
-  if (tag.limited) return `${label}（限期）`;
-  return label;
-};
-
 // until is inclusive; YYYY-MM-DD strings compare correctly as plain strings
 export const isVenueTagActiveOn = (tag: VenueTag, today: string): boolean =>
   !tag.until || tag.until >= today;
@@ -64,7 +58,7 @@ export interface VenueCardTagItem {
   label: string;
 }
 
-// What the card shows: expired tags out, top 3 by cardRank, limited ones carry their deadline
+// What the card shows: expired tags out, top 3 by cardRank; deadlines stay on the detail page (an active tag is true today)
 export const getVenueCardTags = (
   tags: VenueTag[] | undefined,
   dictionary: VenueTagDictionary | null,
@@ -74,7 +68,7 @@ export const getVenueCardTags = (
   const labelBySlug = new Map(dictionary.tags.map((d) => [d.slug, d.label]));
   return pickCardTags(getVisibleVenueTags(tags, dictionary, today), dictionary).map((tag) => ({
     slug: tag.slug,
-    label: formatCardTagLabel(tag, labelBySlug.get(tag.slug) ?? tag.slug, today),
+    label: labelBySlug.get(tag.slug) ?? tag.slug,
   }));
 };
 
