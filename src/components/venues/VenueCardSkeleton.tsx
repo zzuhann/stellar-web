@@ -62,7 +62,7 @@ interface VenueCardSkeletonProps {
 export default function VenueCardSkeleton({ variant = 'list' }: VenueCardSkeletonProps) {
   const isHome = variant === 'home';
   return (
-    <div className={card}>
+    <div className={card} data-testid="venue-card-skeleton">
       {isHome ? (
         <Skeleton height={VENUE_HOME_CARD_COVER_HEIGHT} borderRadius="0" />
       ) : (

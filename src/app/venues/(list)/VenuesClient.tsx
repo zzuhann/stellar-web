@@ -22,8 +22,21 @@ import VenueFilters, {
 } from '@/components/venues/VenueFilters';
 import VenueCard from '@/components/venues/VenueCard';
 import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
+import { useVenueCardTagDictionary } from '@/components/venues/hooks/useVenueCardTagDictionary';
+import Skeleton from '@/components/ui/Skeleton';
 import SubmissionsPagination from '@/components/ui/SubmissionsPagination';
 import ApiErrorState from '@/components/ui/ApiErrorState';
+import {
+  COUNT_ROW_HEIGHT,
+  cardGrid,
+  countRow,
+  heroSection,
+  inner,
+  listSection,
+  page,
+  subtitle,
+  title,
+} from './venueListLayout';
 
 // 定位失敗的 toast 文案（design-frontend.md「畫面規格 → 失敗提示」）：拒絕權限才有
 // 「去瀏覽器設定重新開啟」的專屬引導，不支援／逾時共用同一句通用訊息。
@@ -33,47 +46,6 @@ const LOCATION_UNAVAILABLE_MESSAGE = '目前無法取得你的位置，已改用
 const LOCATION_TOAST_DURATION_MS = 5000;
 
 const SCROLL_KEY = 'venues_scrollY';
-
-const page = css({
-  minHeight: '100vh',
-  background: 'color.background.primary',
-  paddingTop: '70px',
-});
-
-const inner = css({
-  maxWidth: '500px',
-  margin: '0 auto',
-  boxShadow: 'shadow.md',
-});
-
-const heroSection = css({
-  paddingTop: '4',
-  paddingX: '4',
-  paddingBottom: '3',
-  background: 'color.background.primary',
-});
-
-const title = css({
-  marginTop: '0.5',
-  marginX: '0',
-  marginBottom: '1.5',
-  textStyle: 'h3',
-  fontWeight: 'bold',
-  color: 'color.text.primary',
-});
-
-const subtitle = css({
-  margin: 0,
-  textStyle: 'bodySmall',
-  color: 'color.text.secondary',
-});
-
-const listSection = css({
-  padding: '4',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '3',
-});
 
 const emptyState = css({
   paddingY: '10',
@@ -91,7 +63,7 @@ const locationPrompt = css({
   textStyle: 'caption',
   color: 'color.text.secondary',
   textAlign: 'center',
-  marginBottom: '1',
+  marginBottom: '3',
 });
 
 interface VenuesClientProps {
@@ -274,7 +246,11 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
   const pagination = data?.pagination;
   // Total across all pages; venues.length is only the current page (max PAGE_LIMIT)
   const resultTotal = pagination?.total ?? venues.length;
-  const isLoadingList = isLoading || waitingForLocation;
+  // Cards wait for the tag dictionary so card_tags matches what is shown (a failed dictionary
+  // settles too). An empty or failed result has no cards, so it does not wait.
+  const { dictionary, isPending: isDictionaryPending } = useVenueCardTagDictionary();
+  const isLoadingList =
+    isLoading || waitingForLocation || (isDictionaryPending && !isError && venues.length > 0);
 
   // Restore scroll position on back navigation (popstate fires even when component is cached)
   useEffect(() => {
@@ -409,8 +385,24 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
           onClearFilters={handleClearFilters}
         />
 
-        <div aria-live="polite" aria-atomic="true" className="sr-only">
-          {isError ? '載入場地列表失敗' : isLoadingList ? '載入中' : `找到 ${resultTotal} 個場地`}
+        {/* One live region doubles as the visible result count; loading and error stay sr-only */}
+        <div
+          aria-live="polite"
+          aria-atomic="true"
+          className={isError || isLoadingList ? undefined : countRow}
+        >
+          {isError ? (
+            <span className="sr-only">載入場地列表失敗</span>
+          ) : isLoadingList ? (
+            <>
+              <span className="sr-only">載入中</span>
+              <div className={countRow} aria-hidden="true">
+                <Skeleton width="120px" height={COUNT_ROW_HEIGHT} />
+              </div>
+            </>
+          ) : (
+            `找到 ${resultTotal} 個場地`
+          )}
         </div>
 
         <section aria-label="場地列表" className={listSection}>
@@ -423,26 +415,31 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
                   正在取得你的位置…
                 </p>
               )}
-              {Array.from({ length: 6 }, (_, i) => (
-                <VenueCardSkeleton key={i} />
-              ))}
+              <div className={cardGrid} data-testid="venue-grid">
+                {Array.from({ length: 6 }, (_, i) => (
+                  <VenueCardSkeleton key={i} />
+                ))}
+              </div>
             </>
           ) : venues.length === 0 ? (
             <div className={emptyState}>
               沒有符合條件的場地。試試調整地區、容納人數或搜尋關鍵字。
             </div>
           ) : (
-            venues.map((venue, index) => (
-              <VenueCard
-                key={venue.id}
-                venue={venue}
-                listPosition={((pagination?.page ?? pageNum) - 1) * PAGE_LIMIT + index + 1}
-                userId={user?.uid}
-                listSort={sort}
-                userCoords={coords}
-                isInAppBrowser={isInAppBrowser}
-              />
-            ))
+            <div className={cardGrid} data-testid="venue-grid">
+              {venues.map((venue, index) => (
+                <VenueCard
+                  key={venue.id}
+                  venue={venue}
+                  listPosition={((pagination?.page ?? pageNum) - 1) * PAGE_LIMIT + index + 1}
+                  userId={user?.uid}
+                  listSort={sort}
+                  userCoords={coords}
+                  isInAppBrowser={isInAppBrowser}
+                  dictionary={dictionary}
+                />
+              ))}
+            </div>
           )}
         </section>
 

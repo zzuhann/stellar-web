@@ -11,6 +11,7 @@ import {
 } from '@/lib/analytics/venues';
 import { showToast } from '@/lib/toast';
 import { __resetVenueDistanceSortCacheForTests } from '@/components/venues/hooks/useVenueDistanceSort';
+import { venueTagDictionaryFixture } from '@/test/venueTagDictionary.fixture';
 import VenuesClient from './VenuesClient';
 
 // jsdom does not implement ResizeObserver; VenueFilters (rendered by VenuesClient) only
@@ -66,7 +67,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('@/lib/api', () => ({
-  venueApi: { getVenues: vi.fn() },
+  venueApi: { getVenues: vi.fn(), getTagDictionary: vi.fn() },
 }));
 
 vi.mock('@/lib/auth-context', () => ({
@@ -188,6 +189,8 @@ beforeEach(() => {
   __resetVenueDistanceSortCacheForTests();
   vi.mocked(venueApi.getVenues).mockReset();
   vi.mocked(venueApi.getVenues).mockResolvedValue(EMPTY_RESPONSE);
+  vi.mocked(venueApi.getTagDictionary).mockReset();
+  vi.mocked(venueApi.getTagDictionary).mockResolvedValue(venueTagDictionaryFixture);
   historyReplaceSpy = vi.spyOn(window.history, 'replaceState').mockImplementation(() => {});
   historyPushSpy = vi.spyOn(window.history, 'pushState').mockImplementation(() => {});
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
@@ -1246,5 +1249,153 @@ describe('venue-distance-sort — sort_venues／list_sort（qa.md 情境 41）',
     expect(trackSortVenues).not.toHaveBeenCalledWith(
       expect.objectContaining({ sortFrom: 'distance', sortTo: 'composite' })
     );
+  });
+});
+
+// ─── venue-list-redesign：等標籤字典、card_tags、結果數 ─────────────────────
+
+const TAGGED_VENUE = { ...VENUE_FIXTURE, tags: [{ slug: 'free_venue' }, { slug: 'early_setup' }] };
+const PLAIN_VENUE = { ...VENUE_FIXTURE, id: 'venue-2', name: '沒標籤場地' };
+
+function twoVenuesResponse() {
+  return {
+    venues: [TAGGED_VENUE, PLAIN_VENUE],
+    pagination: { page: 1, limit: 20, total: 2, totalPages: 1 },
+  };
+}
+
+describe('VenuesClient 等標籤字典再換成卡片（VL-020、VL-021）', () => {
+  it('字典 pending：6 張骨架、沒有卡片、不送曝光、沒有看得見的結果數；resolve 後才出現卡片與 card_tags', async () => {
+    let resolveDictionary!: (value: typeof venueTagDictionaryFixture) => void;
+    vi.mocked(venueApi.getTagDictionary).mockReturnValue(
+      new Promise((resolve) => {
+        resolveDictionary = resolve;
+      })
+    );
+    vi.mocked(venueApi.getVenues).mockResolvedValue(twoVenuesResponse());
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getVenues).toHaveBeenCalled());
+    // Let the venues response land so only the dictionary is outstanding
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getAllByTestId('venue-card-skeleton')).toHaveLength(6);
+    expect(screen.queryByRole('link', { name: /測試場地/ })).toBeNull();
+    expect(screen.queryByText('找到 2 個場地')).toBeNull();
+    expect(trackViewVenueCard).not.toHaveBeenCalled();
+
+    await act(async () => {
+      resolveDictionary(venueTagDictionaryFixture);
+    });
+
+    expect(await screen.findByRole('link', { name: /測試場地/ })).toBeTruthy();
+    expect(screen.queryAllByTestId('venue-card-skeleton')).toHaveLength(0);
+    expect(screen.getByText('找到 2 個場地')).toBeTruthy();
+    await waitFor(() => expect(trackViewVenueCard).toHaveBeenCalledTimes(2));
+    expect(trackViewVenueCard).toHaveBeenCalledWith(
+      expect.objectContaining({ venueId: 'venue-1', cardTags: 'free_venue,early_setup' })
+    );
+    expect(trackViewVenueCard).toHaveBeenCalledWith(
+      expect.objectContaining({ venueId: 'venue-2', cardTags: '' })
+    );
+  });
+
+  it('場地 pending、字典已回來：同樣是骨架', async () => {
+    vi.mocked(venueApi.getVenues).mockReturnValue(new Promise(() => {}));
+
+    renderVenuesClient();
+    await waitFor(() => expect(venueApi.getTagDictionary).toHaveBeenCalled());
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getAllByTestId('venue-card-skeleton')).toHaveLength(6);
+    expect(screen.queryByRole('link', { name: /測試場地/ })).toBeNull();
+  });
+
+  it('字典失敗：卡片照常出現、沒有標籤列與錯誤訊息，曝光與點擊都送 dict_error（逾時 5 秒、不重試）', async () => {
+    vi.mocked(venueApi.getTagDictionary).mockRejectedValue(new Error('timeout'));
+    vi.mocked(venueApi.getVenues).mockResolvedValue(twoVenuesResponse());
+
+    renderVenuesClient();
+    const card = await screen.findByRole('link', { name: /測試場地/ });
+
+    expect(screen.queryAllByTestId('tag-row')).toHaveLength(0);
+    expect(screen.queryByText(/失敗/)).toBeNull();
+    expect(screen.getAllByText('可容納', { exact: false }).length).toBeGreaterThan(0);
+    await waitFor(() => expect(trackViewVenueCard).toHaveBeenCalledTimes(2));
+    expect(trackViewVenueCard).toHaveBeenCalledWith(
+      expect.objectContaining({ venueId: 'venue-2', cardTags: 'dict_error' })
+    );
+    expect(trackViewVenueCard).toHaveBeenCalledWith(
+      expect.objectContaining({ venueId: 'venue-1', cardTags: 'dict_error' })
+    );
+
+    fireEvent.click(card);
+    expect(trackClickVenueDetail).toHaveBeenCalledWith(
+      expect.objectContaining({ venueId: 'venue-1', cardTags: 'dict_error' })
+    );
+    expect(venueApi.getTagDictionary).toHaveBeenCalledTimes(1);
+    expect(venueApi.getTagDictionary).toHaveBeenCalledWith({ timeout: 5000 });
+  });
+
+  it('0 筆結果時不等字典，直接顯示空狀態', async () => {
+    vi.mocked(venueApi.getTagDictionary).mockReturnValue(new Promise(() => {}));
+    renderVenuesClient();
+
+    expect(await screen.findByText(/沒有符合條件的場地/)).toBeTruthy();
+  });
+});
+
+describe('VenuesClient 看得見的結果數與錯誤狀態（VL-030）', () => {
+  it('a：顯示總數而不是當頁筆數，並有分頁', async () => {
+    vi.mocked(venueApi.getVenues).mockResolvedValue({
+      venues: Array.from({ length: 20 }, (_, i) => ({
+        ...VENUE_FIXTURE,
+        id: `venue-${i + 1}`,
+        name: `場地${i + 1}`,
+      })),
+      pagination: { page: 1, limit: 20, total: 41, totalPages: 3 },
+    });
+    renderVenuesClient();
+
+    const count = await screen.findByText('找到 41 個場地');
+    // One element is both the visible text and the polite live region
+    expect(count.closest('[aria-live="polite"]')).toBeTruthy();
+    expect(count.closest('.sr-only')).toBeNull();
+    expect(screen.getByRole('navigation', { name: /分頁/ })).toBeTruthy();
+  });
+
+  it('b：0 筆顯示「找到 0 個場地」、空狀態文案，沒有分頁', async () => {
+    renderVenuesClient();
+
+    expect(await screen.findByText('找到 0 個場地')).toBeTruthy();
+    expect(
+      screen.getByText('沒有符合條件的場地。試試調整地區、容納人數或搜尋關鍵字。')
+    ).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: /分頁/ })).toBeNull();
+  });
+
+  it('c：API 失敗顯示錯誤與重試，沒有看得見的結果數與分頁', async () => {
+    vi.mocked(venueApi.getVenues).mockRejectedValue(new Error('network error'));
+    renderVenuesClient();
+
+    expect(await screen.findByText('載入場地列表失敗，請重新整理頁面')).toBeTruthy();
+    expect(screen.getByRole('button', { name: '重試' })).toBeTruthy();
+    expect(screen.queryByText(/找到 \d+ 個場地/)).toBeNull();
+    expect(screen.queryByRole('navigation', { name: /分頁/ })).toBeNull();
+    expect(document.querySelector('.sr-only')?.textContent).toBe('載入場地列表失敗');
+  });
+
+  it('等待定位：提示在 grid 外、骨架仍是 6 張', async () => {
+    stubGeolocationApi(vi.fn());
+    setMockSearchParams([['sort', 'distance']]);
+    renderVenuesClient();
+
+    const prompt = await screen.findByText('正在取得你的位置…');
+    expect(screen.getAllByTestId('venue-card-skeleton')).toHaveLength(6);
+    expect(screen.getByTestId('venue-grid').contains(prompt)).toBe(false);
   });
 });
