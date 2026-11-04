@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useState, type RefObject } from 'react';
 
 type Measure<T> = (el: HTMLElement) => T;
 
@@ -16,25 +16,20 @@ export const itemsOverflow =
     return contentRight > el.clientWidth + 1;
   };
 
-// Share of the content seen so far (right edge ÷ total), 1 at the end; rounded to skip no-op renders
+// Share of the content seen so far (right edge ÷ total), 1 at the end
 export const scrollProgress: Measure<number> = ({ scrollLeft, clientWidth, scrollWidth }) =>
-  scrollWidth > 0
-    ? Math.round(Math.min(1, (scrollLeft + clientWidth) / scrollWidth) * 100) / 100
-    : 1;
+  scrollWidth > 0 ? Math.min(1, (scrollLeft + clientWidth) / scrollWidth) : 1;
 
-// Re-measures on scroll and container resize; measure must be stable (module-level)
-export function useHorizontalScroll<T>(
+// Runs onMeasure on mount, every scroll and container resize; onMeasure must be stable
+export function useScrollListener(
   ref: RefObject<HTMLElement | null>,
   contentKey: unknown,
-  measure: Measure<T>,
-  initial: T
-): T {
-  const [value, setValue] = useState(initial);
-
+  onMeasure: (el: HTMLElement) => void
+) {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const update = () => setValue(measure(el));
+    const update = () => onMeasure(el);
     update();
     el.addEventListener('scroll', update, { passive: true });
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
@@ -43,7 +38,18 @@ export function useHorizontalScroll<T>(
       el.removeEventListener('scroll', update);
       observer?.disconnect();
     };
-  }, [ref, contentKey, measure]);
+  }, [ref, contentKey, onMeasure]);
+}
 
+// State version for values that change rarely (e.g. overflow); measure must be stable (module-level)
+export function useHorizontalScroll<T>(
+  ref: RefObject<HTMLElement | null>,
+  contentKey: unknown,
+  measure: Measure<T>,
+  initial: T
+): T {
+  const [value, setValue] = useState(initial);
+  const update = useCallback((el: HTMLElement) => setValue(measure(el)), [measure]);
+  useScrollListener(ref, contentKey, update);
   return value;
 }

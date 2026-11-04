@@ -42,8 +42,8 @@ describe('scrollProgress', () => {
   const el = (scrollLeft: number, clientWidth: number, scrollWidth: number) =>
     ({ scrollLeft, clientWidth, scrollWidth }) as HTMLElement;
 
-  it('開頭是可見比例，捲到底是 1，四捨五入到小數兩位', () => {
-    expect(scrollProgress(el(0, 400, 1200))).toBe(0.33);
+  it('開頭是可見比例，捲到底是 1', () => {
+    expect(scrollProgress(el(0, 400, 1200))).toBeCloseTo(1 / 3);
     expect(scrollProgress(el(800, 400, 1200))).toBe(1);
   });
 

@@ -1,8 +1,8 @@
 'use client';
 
-import type { RefObject } from 'react';
+import { useCallback, useRef, type RefObject } from 'react';
 import { css, cx } from '@/styled-system/css';
-import { scrollProgress, useHorizontalScroll } from '@/hooks/useHorizontalScroll';
+import { scrollProgress, useScrollListener } from '@/hooks/useHorizontalScroll';
 
 const track = css({
   height: '3px',
@@ -14,8 +14,8 @@ const track = css({
 const bar = css({
   height: '100%',
   borderRadius: '2px',
+  width: '100%',
   background: 'color.primary',
-  transition: 'width 0.18s ease-out',
 });
 
 interface ScrollProgressBarProps {
@@ -26,14 +26,18 @@ interface ScrollProgressBarProps {
 }
 
 // Stands in for the hidden native scrollbar; always takes its 3px so showing it never shifts layout.
-// Owns its scroll subscription so only the bar re-renders while scrolling.
+// Width is written straight to the DOM on each scroll (no React render, no transition) so it tracks the finger.
 export default function ScrollProgressBarClient({
   scrollRef,
   contentKey,
   visible,
   className,
 }: ScrollProgressBarProps) {
-  const progress = useHorizontalScroll(scrollRef, contentKey, scrollProgress, 1);
+  const barRef = useRef<HTMLDivElement>(null);
+  const paint = useCallback((el: HTMLElement) => {
+    if (barRef.current) barRef.current.style.width = `${Math.max(8, scrollProgress(el) * 100)}%`;
+  }, []);
+  useScrollListener(scrollRef, contentKey, paint);
 
   return (
     <div
@@ -41,7 +45,7 @@ export default function ScrollProgressBarClient({
       className={cx(track, className)}
       style={{ visibility: visible ? 'visible' : 'hidden' }}
     >
-      <div className={bar} style={{ width: `${Math.max(8, progress * 100)}%` }} />
+      <div ref={barRef} className={bar} />
     </div>
   );
 }
