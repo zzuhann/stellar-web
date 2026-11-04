@@ -22,32 +22,14 @@ const placeholder = css({
     'repeating-linear-gradient(135deg, var(--colors-gray-100) 0 12px, var(--colors-gray-50) 12px 24px)',
 });
 
-const badge = css({
-  position: 'absolute',
-  right: '2',
-  bottom: '2',
-  paddingX: '2',
-  borderRadius: 'radius.sm',
-  background: 'alpha.black.60',
-  color: 'gray.0',
-  textStyle: 'caption',
-  fontVariantNumeric: 'tabular-nums',
-});
-
 interface VenueCardCoverProps {
   src: string | null;
-  photoCount: number;
   venueName: string;
   variant: 'list' | 'home';
 }
 
 // Remount (key) per src from the parent so a failed image does not stick to the next venue
-export default function VenueCardCoverClient({
-  src,
-  photoCount,
-  venueName,
-  variant,
-}: VenueCardCoverProps) {
+export default function VenueCardCoverClient({ src, venueName, variant }: VenueCardCoverProps) {
   const [failed, setFailed] = useState(false);
   const sizeStyle = variant === 'home' ? { height: VENUE_HOME_CARD_COVER_HEIGHT } : undefined;
   const ratioClass = variant === 'home' ? '' : venueCardListRatio;
@@ -92,7 +74,6 @@ export default function VenueCardCoverClient({
           onError={() => setFailed(true)}
         />
       )}
-      {photoCount >= 2 && <span className={badge}>{photoCount} 張照片</span>}
     </div>
   );
 }

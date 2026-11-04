@@ -1,11 +1,14 @@
 'use client';
 
+import { useRef } from 'react';
 import Link from 'next/link';
 import { css } from '@/styled-system/css';
 import { useRandomVenuesQuery } from '@/hooks/useHomePage';
 import { trackClickVenueListCta } from '@/lib/analytics/venues';
 import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
 import { useVenueCardTagDictionary } from '@/components/venues/hooks/useVenueCardTagDictionary';
+import { useHorizontalScroll } from '@/hooks/useHorizontalScroll';
+import ScrollProgressBar from '@/components/ui/ScrollProgressBar';
 import HomeVenueCard from './HomeVenueCard';
 
 const section = css({ marginTop: '5', marginBottom: '5' });
@@ -39,21 +42,26 @@ const list = css({
   overscrollBehaviorX: 'contain',
   scrollSnapType: 'x mandatory',
   listStyle: 'none',
+  scrollbarWidth: 'none',
+  '&::-webkit-scrollbar': { display: 'none' },
   '@media (min-width: 768px)': { gridAutoColumns: '260px' },
 });
 const skeleton = css({ scrollSnapAlign: 'start' });
+// Fixed slot so the bar appearing after load does not shift the section
+const progressSlot = css({ height: '3px', marginTop: '2', marginX: '1' });
 
 const HomeVenuesSection = () => {
   const { data: venues = [], isPending: isVenuesPending, isError } = useRandomVenuesQuery(10);
   const { dictionary, isPending: isDictionaryPending } = useVenueCardTagDictionary();
+  const listRef = useRef<HTMLUListElement>(null);
+  // Cards wait for the dictionary so card_tags matches what is shown; a failed one settles too
+  const isPending = isVenuesPending || isDictionaryPending;
+  const { overflows, progress } = useHorizontalScroll(listRef, isPending ? 0 : venues.length);
 
   // hide the whole section (title included) when the API fails or returns nothing
   if (isError || (!isVenuesPending && venues.length === 0)) {
     return null;
   }
-
-  // Cards wait for the dictionary so card_tags matches what is shown; a failed one settles too
-  const isPending = isVenuesPending || isDictionaryPending;
 
   return (
     <section className={section} aria-labelledby="home-venues-heading">
@@ -82,7 +90,7 @@ const HomeVenuesSection = () => {
       )}
 
       {!isPending && (
-        <ul className={list} aria-label="隨機推薦場地">
+        <ul ref={listRef} className={list} aria-label="隨機推薦場地">
           {venues.map((venue, index) => (
             <li key={venue.id}>
               <HomeVenueCard venue={venue} listPosition={index + 1} dictionary={dictionary} />
@@ -90,6 +98,8 @@ const HomeVenuesSection = () => {
           ))}
         </ul>
       )}
+
+      <div className={progressSlot}>{overflows && <ScrollProgressBar value={progress} />}</div>
     </section>
   );
 };

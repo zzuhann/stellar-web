@@ -188,7 +188,6 @@ export default function VenueCardContent({
       <VenueCardCoverClient
         key={photos[0] ?? ''}
         src={photos[0] ?? null}
-        photoCount={photos.length}
         venueName={venue.name}
         variant={variant}
       />

@@ -164,40 +164,37 @@ const stop = (type: TransitStop['type'], station: string, walkMinutes = 5): Tran
 });
 const FREE: VenueTag[] = [{ slug: 'free_venue' }];
 
-describe.each(variants)('$name 封面與張數（VL-010、VL-011）', ({ renderCard }) => {
+describe.each(variants)('$name 單張封面，不標張數（VL-010、VL-011）', ({ renderCard }) => {
   it.each([
-    { name: 'a：0 張 → 佔位圖，沒有 img、沒有 badge', cover: '', others: [], imgs: 0, badge: null },
-    { name: 'b：1 張 → 一張 img，沒有 badge', cover: 'c.jpg', others: [], imgs: 1, badge: null },
+    { name: 'a：0 張 → 佔位圖，沒有 img', cover: '', others: [], imgs: 0 },
+    { name: 'b：1 張 → 一張 img', cover: 'c.jpg', others: [], imgs: 1 },
     {
-      name: 'c：2 張 → 一張 img，badge 2',
+      name: 'c：2 張 → 一張 img',
       cover: 'c.jpg',
       others: ['o1.jpg'],
       imgs: 1,
-      badge: '2 張照片',
     },
     {
-      name: 'd：5 張 → 仍只有一張 img，badge 5',
+      name: 'd：5 張 → 仍只有一張 img',
       cover: 'c.jpg',
       others: ['o1.jpg', 'o2.jpg', 'o3.jpg', 'o4.jpg'],
       imgs: 1,
-      badge: '5 張照片',
     },
     {
-      name: 'e：coverPhoto 空 → 用 otherPhotos[0]，badge 2',
+      name: 'e：coverPhoto 空 → 用 otherPhotos[0]',
       cover: '',
       others: ['o1.jpg', 'o2.jpg'],
       imgs: 1,
-      badge: '2 張照片',
       src: 'o1.jpg',
     },
     {
-      name: 'f：otherPhotos 的空字串不計入張數',
-      cover: 'c.jpg',
+      name: 'f：otherPhotos 的空字串跳過，用下一張',
+      cover: '',
       others: ['', 'o1.jpg'],
       imgs: 1,
-      badge: '2 張照片',
+      src: 'o1.jpg',
     },
-  ])('$name', ({ cover, others, imgs, badge, src }) => {
+  ])('$name', ({ cover, others, imgs, src }) => {
     renderCard({ ...BASE_VENUE, coverPhoto: cover, otherPhotos: others });
 
     const images = document.querySelectorAll('img');
@@ -207,11 +204,7 @@ describe.each(variants)('$name 封面與張數（VL-010、VL-011）', ({ renderC
     } else {
       expect(images[0].getAttribute('src')).toContain(src ?? 'c.jpg');
     }
-    if (badge) {
-      expect(screen.getByText(badge)).toBeTruthy();
-    } else {
-      expect(screen.queryByText(/張照片/)).toBeNull();
-    }
+    expect(screen.queryByText(/張照片/)).toBeNull();
   });
 
   it('封面載入失敗 → 不顯示破圖，其他內容照常', () => {
