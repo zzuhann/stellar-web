@@ -43,8 +43,8 @@ export const venueApi = {
     return response.data;
   },
 
-  getTagDictionary: async (): Promise<VenueTagDictionary> => {
-    const response = await api.get<VenueTagDictionary>('/venues/tag-dictionary');
+  getTagDictionary: async (options?: { timeout?: number }): Promise<VenueTagDictionary> => {
+    const response = await api.get<VenueTagDictionary>('/venues/tag-dictionary', options);
     return response.data;
   },
 

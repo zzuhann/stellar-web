@@ -59,6 +59,33 @@ export const pickCardTags = (
     .slice(0, 3);
 };
 
+export interface VenueCardTagItem {
+  slug: string;
+  label: string;
+}
+
+// What the card shows: expired tags out, top 3 by cardRank, limited ones carry their deadline
+export const getVenueCardTags = (
+  tags: VenueTag[] | undefined,
+  dictionary: VenueTagDictionary | null,
+  today: string
+): VenueCardTagItem[] => {
+  if (!dictionary) return [];
+  const labelBySlug = new Map(dictionary.tags.map((d) => [d.slug, d.label]));
+  return pickCardTags(getVisibleVenueTags(tags, dictionary, today), dictionary).map((tag) => ({
+    slug: tag.slug,
+    label: formatCardTagLabel(tag, labelBySlug.get(tag.slug) ?? tag.slug, today),
+  }));
+};
+
+export const CARD_TAGS_DICT_ERROR = 'dict_error';
+
+// GA card_tags: shown slugs in order; '' = none; 'dict_error' keeps a failed dictionary apart from "no tags"
+export const toCardTagsParam = (
+  items: readonly VenueCardTagItem[],
+  dictionary: VenueTagDictionary | null
+): string => (dictionary ? items.map((item) => item.slug).join(',') : CARD_TAGS_DICT_ERROR);
+
 const indexBySlug = (tags: readonly VisibleVenueTag[]) =>
   new Map(tags.map((tag) => [tag.slug, tag]));
 
