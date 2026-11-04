@@ -18,6 +18,9 @@ interface VenueCardEventParams extends VenueEventBaseParams {
   // Only meaningful for the /venues list page; the homepage card variant has no sort
   // semantics (fixed sort=random), so HomeVenueCardEventParams omits it below.
   listSort: string;
+  // Slugs actually shown on the card, comma-joined in display order; '' = none, 'dict_error' =
+  // tag dictionary failed so the card shows no tags (tracking.md「card_tags 的值」)
+  cardTags: string;
 }
 
 type HomeVenueCardEventParams = Omit<VenueCardEventParams, 'userId' | 'listSort'>;
@@ -83,6 +86,7 @@ export function trackViewVenueCard({
   venueRegion,
   listPosition,
   listSort,
+  cardTags,
 }: VenueCardEventParams) {
   trackVenueEvent('view_venue_card', {
     event_page: VENUES_LIST_EVENT_PAGE,
@@ -91,6 +95,7 @@ export function trackViewVenueCard({
     venue_region: venueRegion,
     list_position: listPosition,
     list_sort: listSort,
+    card_tags: cardTags,
   });
 }
 
@@ -100,6 +105,7 @@ export function trackClickVenueDetail({
   venueRegion,
   listPosition,
   listSort,
+  cardTags,
 }: VenueCardEventParams) {
   trackVenueEvent('click_venue_detail', {
     event_page: VENUES_LIST_EVENT_PAGE,
@@ -108,6 +114,7 @@ export function trackClickVenueDetail({
     venue_region: venueRegion,
     list_position: listPosition,
     list_sort: listSort,
+    card_tags: cardTags,
   });
 }
 
@@ -115,6 +122,7 @@ export function trackViewHomeVenueCard({
   venueId,
   venueRegion,
   listPosition,
+  cardTags,
 }: HomeVenueCardEventParams) {
   trackVenueEvent('view_venue_card', {
     event_page: '/',
@@ -122,6 +130,7 @@ export function trackViewHomeVenueCard({
     content_id: toVenueContentId(venueId),
     venue_region: venueRegion,
     list_position: listPosition,
+    card_tags: cardTags,
   });
 }
 
@@ -129,6 +138,7 @@ export function trackClickHomeVenueDetail({
   venueId,
   venueRegion,
   listPosition,
+  cardTags,
 }: HomeVenueCardEventParams) {
   trackVenueEvent('click_venue_detail', {
     event_page: '/',
@@ -136,6 +146,7 @@ export function trackClickHomeVenueDetail({
     content_id: toVenueContentId(venueId),
     venue_region: venueRegion,
     list_position: listPosition,
+    card_tags: cardTags,
   });
 }
 

@@ -1,12 +1,27 @@
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import VenueCard from './VenueCard';
-import type { Venue } from '@/types';
+import HomeVenueCard from '@/components/HomePage/components/HomeVenueCard';
+import {
+  trackClickHomeVenueDetail,
+  trackClickVenueDetail,
+  trackViewHomeVenueCard,
+  trackViewVenueCard,
+} from '@/lib/analytics/venues';
+import { venueTagDictionaryFixture as dictionary } from '@/test/venueTagDictionary.fixture';
+import type { TransitStop, Venue, VenueTag } from '@/types';
 
-// jsdom has no IntersectionObserver; VenueCard only uses it for view-tracking, not
-// under test here (analytics is mocked out below).
+// jsdom has no IntersectionObserver; an observer that reports "visible" on observe() lets the
+// view-tracking assertions run without a real viewport.
 class IntersectionObserverStub {
-  observe() {}
+  private callback: IntersectionObserverCallback;
+  constructor(callback: IntersectionObserverCallback) {
+    this.callback = callback;
+  }
+  observe() {
+    this.callback([{ isIntersecting: true } as IntersectionObserverEntry], this as never);
+  }
   unobserve() {}
   disconnect() {}
 }
@@ -15,7 +30,14 @@ vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
 vi.mock('@/lib/analytics/venues', () => ({
   trackViewVenueCard: vi.fn(),
   trackClickVenueDetail: vi.fn(),
+  trackViewHomeVenueCard: vi.fn(),
+  trackClickHomeVenueDetail: vi.fn(),
 }));
+
+beforeEach(() => {
+  sessionStorage.clear();
+  vi.clearAllMocks();
+});
 
 afterEach(cleanup);
 
@@ -85,46 +107,6 @@ describe('VenueCard 距離顯示（venue-distance-sort）', () => {
     expect(screen.getByText(/100 公尺內/)).toBeTruthy();
   });
 
-  describe('捷運×距離四種組合與 sectionDivider', () => {
-    it('有捷運+有距離：同排左右呈現，sectionDivider 出現', () => {
-      renderCard({
-        venue: { ...BASE_VENUE, nearestMrt: '台北車站', mrtWalkMinutes: 5 },
-        userCoords: USER_COORDS,
-      });
-      expect(screen.getByText(/台北車站/)).toBeTruthy();
-      expect(screen.getByText(/約|公尺內|公里/)).toBeTruthy();
-      expect(screen.queryByTestId('section-divider')).toBeTruthy();
-    });
-
-    it('有捷運+無距離：維持現行樣式，只有捷運內容', () => {
-      renderCard({
-        venue: { ...BASE_VENUE, nearestMrt: '台北車站', mrtWalkMinutes: 5 },
-        userCoords: null,
-      });
-      expect(screen.getByText(/台北車站/)).toBeTruthy();
-      expect(screen.queryByText(/公尺|公里/)).toBeNull();
-      expect(screen.queryByTestId('section-divider')).toBeTruthy();
-    });
-
-    it('無捷運+有距離：這排仍要 render，只有距離，sectionDivider 出現', () => {
-      renderCard({
-        venue: { ...BASE_VENUE, nearestMrt: null },
-        userCoords: USER_COORDS,
-      });
-      expect(screen.getByText(/約|公尺內|公里/)).toBeTruthy();
-      expect(screen.queryByTestId('section-divider')).toBeTruthy();
-    });
-
-    it('無捷運+無距離：整排不 render，sectionDivider 不出現（無 hostTags 時）', () => {
-      renderCard({
-        venue: { ...BASE_VENUE, nearestMrt: null, hostTags: [] },
-        userCoords: null,
-      });
-      expect(screen.queryByText(/公尺|公里/)).toBeNull();
-      expect(screen.queryByTestId('section-divider')).toBeNull();
-    });
-  });
-
   it('已授權後切到其他排序（listSort 非 distance），只要卡片有座標仍持續顯示距離', () => {
     renderCard({ userCoords: USER_COORDS, listSort: 'newest' });
     expect(screen.getByText(/約|公尺內|公里/)).toBeTruthy();
@@ -141,5 +123,464 @@ describe('VenueCard 距離顯示（venue-distance-sort）', () => {
     const link = screen.getByRole('link', { name: /距離你 100 公尺內/ });
     expect(link).toBeTruthy();
     expect(screen.getByText('距離你 100 公尺內')).toBeTruthy();
+  });
+});
+
+// ─── venue-list-redesign：列表卡與首頁卡共用的內容規則 ───────────────────────
+
+type CardRenderer = (venue: Venue, tagDictionary?: typeof dictionary | null) => void;
+
+const variants: { name: string; renderCard: CardRenderer }[] = [
+  {
+    name: 'VenueCard',
+    renderCard: (venue, tagDictionary = dictionary) =>
+      render(
+        <VenueCard
+          venue={venue}
+          listPosition={1}
+          listSort="composite"
+          dictionary={tagDictionary}
+          userCoords={null}
+        />
+      ),
+  },
+  {
+    name: 'HomeVenueCard',
+    renderCard: (venue, tagDictionary = dictionary) =>
+      render(<HomeVenueCard venue={venue} listPosition={1} dictionary={tagDictionary} />),
+  },
+];
+
+const stop = (type: TransitStop['type'], station: string, walkMinutes = 5): TransitStop => ({
+  type,
+  station,
+  walkMinutes,
+});
+const FREE: VenueTag[] = [{ slug: 'free_venue' }];
+
+describe.each(variants)('$name 封面與張數（VL-010、VL-011）', ({ renderCard }) => {
+  it.each([
+    { name: 'a：0 張 → 佔位圖，沒有 img、沒有 badge', cover: '', others: [], imgs: 0, badge: null },
+    { name: 'b：1 張 → 一張 img，沒有 badge', cover: 'c.jpg', others: [], imgs: 1, badge: null },
+    {
+      name: 'c：2 張 → 一張 img，badge 2',
+      cover: 'c.jpg',
+      others: ['o1.jpg'],
+      imgs: 1,
+      badge: '2 張照片',
+    },
+    {
+      name: 'd：5 張 → 仍只有一張 img，badge 5',
+      cover: 'c.jpg',
+      others: ['o1.jpg', 'o2.jpg', 'o3.jpg', 'o4.jpg'],
+      imgs: 1,
+      badge: '5 張照片',
+    },
+    {
+      name: 'e：coverPhoto 空 → 用 otherPhotos[0]，badge 2',
+      cover: '',
+      others: ['o1.jpg', 'o2.jpg'],
+      imgs: 1,
+      badge: '2 張照片',
+      src: 'o1.jpg',
+    },
+    {
+      name: 'f：otherPhotos 的空字串不計入張數',
+      cover: 'c.jpg',
+      others: ['', 'o1.jpg'],
+      imgs: 1,
+      badge: '2 張照片',
+    },
+  ])('$name', ({ cover, others, imgs, badge, src }) => {
+    renderCard({ ...BASE_VENUE, coverPhoto: cover, otherPhotos: others });
+
+    const images = document.querySelectorAll('img');
+    expect(images.length).toBe(imgs);
+    if (imgs === 0) {
+      expect(screen.getByText('店家尚未提供場地照片')).toBeTruthy();
+    } else {
+      expect(images[0].getAttribute('src')).toContain(src ?? 'c.jpg');
+    }
+    if (badge) {
+      expect(screen.getByText(badge)).toBeTruthy();
+    } else {
+      expect(screen.queryByText(/張照片/)).toBeNull();
+    }
+  });
+
+  it('封面載入失敗 → 不顯示破圖，其他內容照常', () => {
+    renderCard({ ...BASE_VENUE, coverPhoto: 'broken.jpg' });
+    const img = document.querySelector('img');
+    expect(img).toBeTruthy();
+    fireEvent.error(img as HTMLImageElement);
+
+    expect(document.querySelector('img')).toBeNull();
+    expect(screen.getByText('測試場地')).toBeTruthy();
+  });
+});
+
+describe.each(variants)('$name 交通列的資料來源與圖示（VL-012）', ({ renderCard }) => {
+  const transitText = () => screen.queryByTestId('transit-row')?.textContent ?? null;
+  const hasIcon = () => screen.queryByTestId('mrt-icon') !== null;
+
+  it('a：mrt → formatTransitHeader 的結果，有 MrtIcon', () => {
+    renderCard({ ...BASE_VENUE, transitStops: [stop('mrt', '中山')] });
+    expect(screen.getByText('中山站步行 5 分鐘')).toBeTruthy();
+    expect(hasIcon()).toBe(true);
+  });
+
+  it('b：light_rail 有 MrtIcon', () => {
+    renderCard({ ...BASE_VENUE, transitStops: [stop('light_rail', '凱旋中華', 3)] });
+    expect(hasIcon()).toBe(true);
+  });
+
+  it.each([
+    ['train', '基隆', '火車 基隆站，步行 5 分鐘'],
+    ['hsr', '台中', '高鐵 台中，步行 5 分鐘'],
+    ['bus', '復興新和街口', '公車 復興新和街口，步行 5 分鐘'],
+  ] as const)('c：%s 沒有圖示，文字帶類型字', (type, station, text) => {
+    renderCard({
+      ...BASE_VENUE,
+      transitStops: [stop(type, type === 'train' ? `${station}站` : station)],
+    });
+    expect(transitText()).toContain(text);
+    expect(hasIcon()).toBe(false);
+  });
+
+  it('d：transitStops 為 null → 退回 nearestMrt 當捷運，有 MrtIcon', () => {
+    renderCard({ ...BASE_VENUE, transitStops: null, nearestMrt: '中山站', mrtWalkMinutes: 5 });
+    expect(screen.getByText('中山站步行 5 分鐘')).toBeTruthy();
+    expect(hasIcon()).toBe(true);
+  });
+
+  it('d2：舊 API 回應沒有 transitStops 欄位，同樣退回 nearestMrt', () => {
+    renderCard({ ...BASE_VENUE, nearestMrt: '中山站', mrtWalkMinutes: 5 });
+    expect(screen.getByText('中山站步行 5 分鐘')).toBeTruthy();
+  });
+
+  it('e：transitStops 為 [] → 整列不出現，不讀 nearestMrt', () => {
+    renderCard({
+      ...BASE_VENUE,
+      transitStops: [],
+      nearestMrt: '中山站',
+      mrtWalkMinutes: 5,
+      capacityRange: '20-40',
+    });
+    expect(screen.queryByText(/中山/)).toBeNull();
+    expect(screen.queryByTestId('transit-row')).toBeNull();
+    expect(hasIcon()).toBe(false);
+  });
+
+  it('f：多筆時顯示捷運那筆（類型優先序）', () => {
+    renderCard({
+      ...BASE_VENUE,
+      transitStops: [stop('bus', '復興新和街口'), stop('mrt', '中山')],
+    });
+    expect(screen.getByText('中山站步行 5 分鐘')).toBeTruthy();
+    expect(hasIcon()).toBe(true);
+  });
+});
+
+// VL-013（取代 venue-tags TC-095；R-1：捷運×距離四種組合的舊案例改成這張表）
+describe('VenueCard 交通×距離×標籤×底部（VL-013）', () => {
+  const venueFor = (o: { transit: boolean; tags: boolean; bottom: boolean }): Venue => ({
+    ...BASE_VENUE,
+    transitStops: o.transit ? [stop('mrt', '中山')] : null,
+    tags: o.tags ? FREE : [],
+    capacityRange: o.bottom ? '20-40' : null,
+    eventCount: 0,
+  });
+
+  it.each([
+    { id: 'a', transit: true, distance: true, tags: false, bottom: true, row: true, divider: true },
+    {
+      id: 'b',
+      transit: true,
+      distance: false,
+      tags: false,
+      bottom: true,
+      row: true,
+      divider: true,
+    },
+    {
+      id: 'c',
+      transit: false,
+      distance: true,
+      tags: false,
+      bottom: true,
+      row: true,
+      divider: true,
+    },
+    {
+      id: 'd',
+      transit: false,
+      distance: false,
+      tags: true,
+      bottom: true,
+      row: false,
+      divider: true,
+    },
+    {
+      id: 'e',
+      transit: false,
+      distance: false,
+      tags: false,
+      bottom: true,
+      row: false,
+      divider: false,
+    },
+    {
+      id: 'f',
+      transit: true,
+      distance: false,
+      tags: true,
+      bottom: false,
+      row: true,
+      divider: false,
+    },
+    {
+      id: 'g',
+      transit: false,
+      distance: false,
+      tags: false,
+      bottom: false,
+      row: false,
+      divider: false,
+    },
+  ])('$id', ({ transit, distance, tags, bottom, row, divider }) => {
+    render(
+      <VenueCard
+        venue={venueFor({ transit, tags, bottom })}
+        listPosition={1}
+        listSort="composite"
+        dictionary={dictionary}
+        userCoords={distance ? USER_COORDS : null}
+      />
+    );
+    expect(screen.queryByTestId('transit-row') !== null).toBe(row);
+    expect(screen.queryByTestId('tag-row') !== null).toBe(tags);
+    expect(screen.queryByTestId('section-divider') !== null).toBe(divider);
+    expect(screen.queryByTestId('bottom-row') !== null).toBe(bottom);
+    expect(screen.queryByText(/約|公尺內|公里/) !== null).toBe(distance);
+  });
+
+  it('距離貼右：只有距離時交通文字不出現，距離在同一列', () => {
+    render(
+      <VenueCard
+        venue={venueFor({ transit: false, tags: false, bottom: true })}
+        listPosition={1}
+        listSort="composite"
+        dictionary={dictionary}
+        userCoords={USER_COORDS}
+      />
+    );
+    const row = screen.getByTestId('transit-row');
+    expect(row.textContent).toMatch(/距離你/);
+    expect(screen.queryByTestId('mrt-icon')).toBeNull();
+  });
+
+  it('底部只有場數時只顯示場數；只有容納人數時只顯示人數', () => {
+    const { rerender } = render(
+      <VenueCard
+        venue={{ ...BASE_VENUE, capacityRange: null, eventCount: 3 }}
+        listPosition={1}
+        listSort="composite"
+        dictionary={dictionary}
+      />
+    );
+    expect(screen.getByText(/場生日應援紀錄/)).toBeTruthy();
+    expect(screen.queryByText(/可容納/)).toBeNull();
+
+    rerender(
+      <VenueCard
+        venue={{ ...BASE_VENUE, capacityRange: '20-40', eventCount: 0 }}
+        listPosition={1}
+        listSort="composite"
+        dictionary={dictionary}
+      />
+    );
+    expect(screen.getByText(/可容納/)).toBeTruthy();
+    expect(screen.queryByText(/場生日應援紀錄/)).toBeNull();
+  });
+});
+
+describe('HomeVenueCard 分隔線與標籤列（VL-013 首頁部分）', () => {
+  it('首頁卡沒有距離文字', () => {
+    render(<HomeVenueCard venue={BASE_VENUE} listPosition={1} dictionary={dictionary} />);
+    expect(screen.queryByText(/公尺|公里/)).toBeNull();
+  });
+
+  it.each([
+    { id: 'b', transit: true, tags: false, bottom: true, row: true, divider: true },
+    { id: 'd', transit: false, tags: true, bottom: true, row: false, divider: true },
+    { id: 'e', transit: false, tags: false, bottom: true, row: false, divider: false },
+    { id: 'f', transit: true, tags: true, bottom: false, row: true, divider: false },
+  ])('$id', ({ transit, tags, bottom, row, divider }) => {
+    render(
+      <HomeVenueCard
+        venue={{
+          ...BASE_VENUE,
+          transitStops: transit ? [stop('mrt', '中山')] : null,
+          tags: tags ? FREE : [],
+          capacityRange: bottom ? '20-40' : null,
+        }}
+        listPosition={1}
+        dictionary={dictionary}
+      />
+    );
+    expect(screen.queryByTestId('transit-row') !== null).toBe(row);
+    expect(screen.queryByTestId('tag-row') !== null).toBe(tags);
+    expect(screen.queryByTestId('section-divider') !== null).toBe(divider);
+    expect(screen.queryByTestId('bottom-row') !== null).toBe(bottom);
+  });
+});
+
+describe.each(variants)(
+  '$name 標籤列接線（沿用 venue-tags TC-013、TC-019、TC-036、TC-094）',
+  ({ renderCard }) => {
+    it('顯示字典 label、最多 3 個，不顯示 hostTags', () => {
+      renderCard({
+        ...BASE_VENUE,
+        hostTags: ['主辦標籤'],
+        tags: [
+          { slug: 'free_venue' },
+          { slug: 'goods_distribution' },
+          { slug: 'early_setup' },
+          { slug: 'beginner_friendly' },
+        ],
+      });
+      const row = screen.getByTestId('tag-row');
+      expect(row.textContent).toBe('應援物代發免場地費可提前佈展');
+      expect(screen.queryByText('主辦標籤')).toBeNull();
+    });
+
+    it('沒有標籤時沒有空容器', () => {
+      renderCard({ ...BASE_VENUE, tags: [] });
+      expect(screen.queryByTestId('tag-row')).toBeNull();
+    });
+
+    it('字典失敗（null）→ 沒有標籤列，卡片其他內容照常', () => {
+      renderCard({ ...BASE_VENUE, tags: FREE, capacityRange: '20-40' }, null);
+      expect(screen.queryByTestId('tag-row')).toBeNull();
+      expect(screen.getByText('測試場地')).toBeTruthy();
+      expect(screen.getByText(/可容納/)).toBeTruthy();
+    });
+  }
+);
+
+describe.each(variants)('$name 連結與無障礙（VL-014）', ({ name, renderCard }) => {
+  it('是指向詳情頁的 <a>，名稱由卡片文字組成，封面 alt 含店名', () => {
+    renderCard({
+      ...BASE_VENUE,
+      id: 'venue-1',
+      name: '小驢館',
+      coverPhoto: 'c.jpg',
+      tags: FREE,
+      transitStops: [stop('mrt', '中山')],
+    });
+    const link = screen.getByRole('link', { name: /小驢館/ });
+    expect(link.tagName).toBe('A');
+    expect(link.getAttribute('href')).toBe('/venues/venue-1');
+    expect(link.hasAttribute('tabindex')).toBe(false);
+    if (name === 'HomeVenueCard') expect(link.hasAttribute('aria-label')).toBe(false);
+
+    expect(screen.getByRole('link', { name: /免場地費/ })).toBe(link);
+    expect(screen.getByRole('link', { name: /中山站步行 5 分鐘/ })).toBe(link);
+    expect(document.querySelector('img')?.getAttribute('alt')).toContain('小驢館');
+  });
+
+  it('沒有封面時沒有 img', () => {
+    renderCard({ ...BASE_VENUE, coverPhoto: '' });
+    expect(document.querySelector('img')).toBeNull();
+  });
+});
+
+describe('VenueCard 點擊與曝光（VL-015、card_tags）', () => {
+  it('點卡片記下捲動位置並送一次 click_venue_detail', async () => {
+    Object.defineProperty(window, 'scrollY', { value: 1234, configurable: true });
+    render(
+      <VenueCard venue={BASE_VENUE} listPosition={1} listSort="composite" dictionary={dictionary} />
+    );
+    await userEvent.click(screen.getByRole('link'));
+
+    expect(sessionStorage.getItem('venues_scrollY')).toBe('1234');
+    expect(trackClickVenueDetail).toHaveBeenCalledTimes(1);
+  });
+
+  it('曝光與點擊帶實際顯示的 card_tags（照顯示順序）', async () => {
+    render(
+      <VenueCard
+        venue={{ ...BASE_VENUE, tags: [{ slug: 'early_setup' }, { slug: 'free_venue' }] }}
+        listPosition={1}
+        listSort="composite"
+        dictionary={dictionary}
+      />
+    );
+    await userEvent.click(screen.getByRole('link'));
+
+    expect(trackViewVenueCard).toHaveBeenCalledWith(
+      expect.objectContaining({ cardTags: 'free_venue,early_setup' })
+    );
+    expect(trackClickVenueDetail).toHaveBeenCalledWith(
+      expect.objectContaining({ cardTags: 'free_venue,early_setup' })
+    );
+  });
+
+  it('沒有標籤送空字串；字典失敗送 dict_error', async () => {
+    const { unmount } = render(
+      <VenueCard venue={BASE_VENUE} listPosition={1} listSort="composite" dictionary={dictionary} />
+    );
+    expect(trackViewVenueCard).toHaveBeenCalledWith(expect.objectContaining({ cardTags: '' }));
+    unmount();
+    sessionStorage.clear();
+
+    render(
+      <VenueCard
+        venue={{ ...BASE_VENUE, tags: FREE }}
+        listPosition={1}
+        listSort="composite"
+        dictionary={null}
+      />
+    );
+    await userEvent.click(screen.getByRole('link'));
+    expect(trackViewVenueCard).toHaveBeenLastCalledWith(
+      expect.objectContaining({ cardTags: 'dict_error' })
+    );
+    expect(trackClickVenueDetail).toHaveBeenLastCalledWith(
+      expect.objectContaining({ cardTags: 'dict_error' })
+    );
+  });
+});
+
+describe('HomeVenueCard 點擊與曝光', () => {
+  it('不寫捲動位置；曝光與點擊帶 card_tags', async () => {
+    render(
+      <HomeVenueCard
+        venue={{ ...BASE_VENUE, tags: FREE }}
+        listPosition={2}
+        dictionary={dictionary}
+      />
+    );
+    expect(trackViewHomeVenueCard).toHaveBeenCalledWith({
+      venueId: 'venue-1',
+      venueRegion: '台北',
+      listPosition: 2,
+      cardTags: 'free_venue',
+    });
+    await userEvent.click(screen.getByRole('link'));
+    expect(trackClickHomeVenueDetail).toHaveBeenCalledWith({
+      venueId: 'venue-1',
+      venueRegion: '台北',
+      listPosition: 2,
+      cardTags: 'free_venue',
+    });
+    expect(sessionStorage.getItem('venues_scrollY')).toBeNull();
+  });
+
+  it('字典失敗送 dict_error', () => {
+    render(<HomeVenueCard venue={BASE_VENUE} listPosition={1} dictionary={null} />);
+    expect(trackViewHomeVenueCard).toHaveBeenCalledWith(
+      expect.objectContaining({ cardTags: 'dict_error' })
+    );
   });
 });
