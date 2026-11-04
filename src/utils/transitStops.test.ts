@@ -123,6 +123,7 @@ describe('TC-141 頁首交通挑選（類型優先序，同類型取最前面）
     ['後驛站3號出口', 1, '後驛站3號出口，步行 1 分鐘'],
     ['捷運市政府站4號', 3, '捷運市政府站4號，步行 3 分鐘'],
     ['中山站R9', 10, '中山站R9，步行 10 分鐘'],
+    ['中山4號出口', 3, '中山4號出口，步行 3 分鐘'],
     ['雙連', 3, '雙連站步行 3 分鐘'],
   ])('捷運站名寫了出口：不再補「站」，步行前加逗號（%s）', (station, walkMinutes, expected) => {
     expect(formatTransitHeader({ type: 'mrt', station, walkMinutes })).toBe(expected);
@@ -191,5 +192,6 @@ describe('站名（不含步行分鐘）formatTransitStationName', () => {
     expect(mrtStation('中山站')).toBe('中山站');
     expect(mrtStation('圓山捷運站1號出口')).toBe('圓山捷運站1號出口');
     expect(mrtStation('新埔民生站/新埔站')).toBe('新埔民生站/新埔站');
+    expect(mrtStation('中山4號出口')).toBe('中山4號出口');
   });
 });

@@ -129,8 +129,8 @@ export function pickPrimaryTransit(stops: TransitStop[]): TransitStop | null {
   return null;
 }
 
-// Names that already contain 站 (後驛站3號出口, 新埔民生站/新埔站) are kept as typed
-export const mrtStation = (station: string) => (station.includes('站') ? station : `${station}站`);
+// Names that already contain 站 or an exit (後驛站3號出口, 中山4號出口) are kept as typed
+export const mrtStation = (station: string) => (/站|出口/.test(station) ? station : `${station}站`);
 
 // Station names that already carry the type word (台中火車站) are not prefixed again
 const withTypeWord = (type: TransitType, name: string): string => {
