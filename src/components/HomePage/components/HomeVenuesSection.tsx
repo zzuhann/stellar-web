@@ -8,7 +8,7 @@ import { trackClickVenueListCta } from '@/lib/analytics/venues';
 import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
 import { useVenueCardTagDictionary } from '@/components/venues/hooks/useVenueCardTagDictionary';
 import { itemsOverflow, useHorizontalScroll } from '@/hooks/useHorizontalScroll';
-import ScrollProgressBar from '@/components/ui/ScrollProgressBar';
+import ScrollProgressBarClient from '@/components/ui/ScrollProgressBarClient';
 import HomeVenueCard from './HomeVenueCard';
 
 const section = css({ marginTop: '5', marginBottom: '5' });
@@ -100,7 +100,7 @@ const HomeVenuesSection = () => {
         </ul>
       )}
 
-      <ScrollProgressBar
+      <ScrollProgressBarClient
         scrollRef={listRef}
         contentKey={contentKey}
         visible={overflows}

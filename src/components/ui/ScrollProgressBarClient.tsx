@@ -27,7 +27,7 @@ interface ScrollProgressBarProps {
 
 // Stands in for the hidden native scrollbar; always takes its 3px so showing it never shifts layout.
 // Owns its scroll subscription so only the bar re-renders while scrolling.
-export default function ScrollProgressBar({
+export default function ScrollProgressBarClient({
   scrollRef,
   contentKey,
   visible,

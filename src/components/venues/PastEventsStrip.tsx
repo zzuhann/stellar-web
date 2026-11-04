@@ -9,7 +9,7 @@ import { formatDateRange } from '@/utils';
 import { useAuth } from '@/lib/auth-context';
 import { trackClickEventDetail } from '@/lib/analytics/venues';
 import { itemsOverflow, useHorizontalScroll } from '@/hooks/useHorizontalScroll';
-import ScrollProgressBar from '@/components/ui/ScrollProgressBar';
+import ScrollProgressBarClient from '@/components/ui/ScrollProgressBarClient';
 
 const section = css({
   paddingTop: '5',
@@ -291,7 +291,7 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
         {overflows && pos < count && <div aria-hidden="true" className={fadeRight} />}
       </div>
 
-      <ScrollProgressBar
+      <ScrollProgressBarClient
         scrollRef={trackRef}
         contentKey={count}
         visible={overflows}
