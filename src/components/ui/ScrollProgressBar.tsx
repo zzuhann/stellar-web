@@ -1,4 +1,8 @@
+'use client';
+
+import type { RefObject } from 'react';
 import { css, cx } from '@/styled-system/css';
+import { scrollProgress, useHorizontalScroll } from '@/hooks/useHorizontalScroll';
 
 const track = css({
   height: '3px',
@@ -14,17 +18,30 @@ const bar = css({
   transition: 'width 0.18s ease-out',
 });
 
-// Stands in for the hidden native scrollbar on horizontal strips; value is 0..1
-export default function ScrollProgressBar({
-  value,
-  className,
-}: {
-  value: number;
+interface ScrollProgressBarProps {
+  scrollRef: RefObject<HTMLElement | null>;
+  contentKey: unknown;
+  visible: boolean;
   className?: string;
-}) {
+}
+
+// Stands in for the hidden native scrollbar; always takes its 3px so showing it never shifts layout.
+// Owns its scroll subscription so only the bar re-renders while scrolling.
+export default function ScrollProgressBar({
+  scrollRef,
+  contentKey,
+  visible,
+  className,
+}: ScrollProgressBarProps) {
+  const progress = useHorizontalScroll(scrollRef, contentKey, scrollProgress, 1);
+
   return (
-    <div aria-hidden="true" className={cx(track, className)}>
-      <div className={bar} style={{ width: `${Math.max(8, value * 100)}%` }} />
+    <div
+      aria-hidden="true"
+      className={cx(track, className)}
+      style={{ visibility: visible ? 'visible' : 'hidden' }}
+    >
+      <div className={bar} style={{ width: `${Math.max(8, progress * 100)}%` }} />
     </div>
   );
 }

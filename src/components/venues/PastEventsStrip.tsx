@@ -8,7 +8,7 @@ import type { VenueEventCard } from '@/types';
 import { formatDateRange } from '@/utils';
 import { useAuth } from '@/lib/auth-context';
 import { trackClickEventDetail } from '@/lib/analytics/venues';
-import { useHorizontalScroll } from '@/hooks/useHorizontalScroll';
+import { itemsOverflow, useHorizontalScroll } from '@/hooks/useHorizontalScroll';
 import ScrollProgressBar from '@/components/ui/ScrollProgressBar';
 
 const section = css({
@@ -189,6 +189,7 @@ const fadeRight = css({
 const progressTrack = css({ marginX: '4', marginY: '0' });
 
 const CARD_WIDTH = 180 + 10;
+const cardsOverflow = itemsOverflow('[role="listitem"]');
 
 interface PastEventsStripProps {
   events: VenueEventCard[];
@@ -199,8 +200,8 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState(1);
   const count = events.length;
-  // Few events fit without scrolling: drop the counter, hint, fade and bar
-  const { overflows } = useHorizontalScroll(trackRef, count);
+  // Few events fit without scrolling: hide the counter, hint, fades and bar
+  const overflows = useHorizontalScroll(trackRef, count, cardsOverflow, false);
 
   if (count === 0) return null;
 
@@ -234,11 +235,14 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
         )}
       </div>
 
-      {overflows && (
-        <p className={hint} aria-hidden="true">
-          ← 左右滑動瀏覽全部 →
-        </p>
-      )}
+      {/* visibility, not unmount: the line keeps its height so the strip does not shift after hydration */}
+      <p
+        className={hint}
+        aria-hidden="true"
+        style={{ visibility: overflows ? 'visible' : 'hidden' }}
+      >
+        ← 左右滑動瀏覽全部 →
+      </p>
 
       <div className={trackWrap}>
         <div ref={trackRef} role="list" className={track} onScroll={onScroll}>
@@ -283,11 +287,16 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
           <div style={{ flex: '0 0 6px' }} aria-hidden="true" />
         </div>
 
-        {pos > 1 && <div aria-hidden="true" className={fadeLeft} />}
+        {overflows && pos > 1 && <div aria-hidden="true" className={fadeLeft} />}
         {overflows && pos < count && <div aria-hidden="true" className={fadeRight} />}
       </div>
 
-      {overflows && <ScrollProgressBar value={pos / count} className={progressTrack} />}
+      <ScrollProgressBar
+        scrollRef={trackRef}
+        contentKey={count}
+        visible={overflows}
+        className={progressTrack}
+      />
     </section>
   );
 }

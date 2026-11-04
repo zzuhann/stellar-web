@@ -167,9 +167,9 @@ interface VenueCardContentProps {
   variant: 'list' | 'home';
 }
 
-// Empty strings do not count as photos (same rule as the detail page)
-const getPhotos = (venue: Venue): string[] =>
-  [venue.coverPhoto, ...(venue.otherPhotos ?? [])].filter((src): src is string => Boolean(src));
+// First non-empty photo (empty strings are skipped, same rule as the detail page)
+const getCoverPhoto = (venue: Venue): string | null =>
+  [venue.coverPhoto, ...(venue.otherPhotos ?? [])].find(Boolean) ?? null;
 
 export default function VenueCardContent({
   venue,
@@ -177,7 +177,7 @@ export default function VenueCardContent({
   distanceText,
   variant,
 }: VenueCardContentProps) {
-  const photos = getPhotos(venue);
+  const coverPhoto = getCoverPhoto(venue);
   const transit = getVenueHeaderTransit(venue);
   const hasTransitRow = Boolean(transit || distanceText);
   const hasBottom = Boolean(venue.capacityRange || venue.eventCount > 0);
@@ -186,8 +186,8 @@ export default function VenueCardContent({
   return (
     <>
       <VenueCardCoverClient
-        key={photos[0] ?? ''}
-        src={photos[0] ?? null}
+        key={coverPhoto ?? ''}
+        src={coverPhoto}
         venueName={venue.name}
         variant={variant}
       />

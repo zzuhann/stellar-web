@@ -7,7 +7,7 @@ import { useRandomVenuesQuery } from '@/hooks/useHomePage';
 import { trackClickVenueListCta } from '@/lib/analytics/venues';
 import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
 import { useVenueCardTagDictionary } from '@/components/venues/hooks/useVenueCardTagDictionary';
-import { useHorizontalScroll } from '@/hooks/useHorizontalScroll';
+import { itemsOverflow, useHorizontalScroll } from '@/hooks/useHorizontalScroll';
 import ScrollProgressBar from '@/components/ui/ScrollProgressBar';
 import HomeVenueCard from './HomeVenueCard';
 
@@ -47,8 +47,8 @@ const list = css({
   '@media (min-width: 768px)': { gridAutoColumns: '260px' },
 });
 const skeleton = css({ scrollSnapAlign: 'start' });
-// Fixed slot so the bar appearing after load does not shift the section
-const progressSlot = css({ height: '3px', marginTop: '2', marginX: '1' });
+const progressBar = css({ marginTop: '2', marginX: '1' });
+const cardsOverflow = itemsOverflow();
 
 const HomeVenuesSection = () => {
   const { data: venues = [], isPending: isVenuesPending, isError } = useRandomVenuesQuery(10);
@@ -56,7 +56,8 @@ const HomeVenuesSection = () => {
   const listRef = useRef<HTMLUListElement>(null);
   // Cards wait for the dictionary so card_tags matches what is shown; a failed one settles too
   const isPending = isVenuesPending || isDictionaryPending;
-  const { overflows, progress } = useHorizontalScroll(listRef, isPending ? 0 : venues.length);
+  const contentKey = isPending ? 0 : venues.length;
+  const overflows = useHorizontalScroll(listRef, contentKey, cardsOverflow, false);
 
   // hide the whole section (title included) when the API fails or returns nothing
   if (isError || (!isVenuesPending && venues.length === 0)) {
@@ -99,7 +100,12 @@ const HomeVenuesSection = () => {
         </ul>
       )}
 
-      <div className={progressSlot}>{overflows && <ScrollProgressBar value={progress} />}</div>
+      <ScrollProgressBar
+        scrollRef={listRef}
+        contentKey={contentKey}
+        visible={overflows}
+        className={progressBar}
+      />
     </section>
   );
 };
