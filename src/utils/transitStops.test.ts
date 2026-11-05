@@ -112,7 +112,7 @@ describe('TC-141 頁首交通挑選（類型優先序，同類型取最前面）
       '中山站步行 5 分鐘'
     );
     expect(formatTransitHeader({ type: 'bus', station: '市政府', walkMinutes: 3 })).toBe(
-      '公車 市政府，步行 3 分鐘'
+      '公車 市政府・步行 3 分鐘'
     );
     expect(formatTransitHeader({ type: 'train', station: '台中火車站', walkMinutes: null })).toBe(
       '台中火車站'
@@ -120,12 +120,12 @@ describe('TC-141 頁首交通挑選（類型優先序，同類型取最前面）
   });
 
   it.each([
-    ['後驛站3號出口', 1, '後驛站3號出口，步行 1 分鐘'],
-    ['捷運市政府站4號', 3, '捷運市政府站4號，步行 3 分鐘'],
-    ['中山站R9', 10, '中山站R9，步行 10 分鐘'],
-    ['中山4號出口', 3, '中山4號出口，步行 3 分鐘'],
+    ['後驛站3號出口', 1, '後驛站3號出口・步行 1 分鐘'],
+    ['捷運市政府站4號', 3, '捷運市政府站4號・步行 3 分鐘'],
+    ['中山站R9', 10, '中山站R9・步行 10 分鐘'],
+    ['中山4號出口', 3, '中山4號出口・步行 3 分鐘'],
     ['雙連', 3, '雙連站步行 3 分鐘'],
-  ])('捷運站名寫了出口：不再補「站」，步行前加逗號（%s）', (station, walkMinutes, expected) => {
+  ])('捷運站名寫了出口：不再補「站」，步行前加「・」（%s）', (station, walkMinutes, expected) => {
     expect(formatTransitHeader({ type: 'mrt', station, walkMinutes })).toBe(expected);
   });
 });

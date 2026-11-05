@@ -157,10 +157,10 @@ export const formatTransitStationName = (stop: TransitStop): string =>
 export function formatTransitHeader(stop: TransitStop): string {
   const name = formatTransitStationName(stop);
   if (!stop.walkMinutes) return name;
-  // A trailing exit or code (古亭站7號出口) would run into 步行, so only a bare 站 skips the comma
+  // A trailing exit or code (古亭站7號出口) would run into 步行, so only a bare 站 skips the separator
   return stop.type === 'mrt' && name.endsWith('站')
     ? `${name}步行 ${stop.walkMinutes} 分鐘`
-    : `${name}，步行 ${stop.walkMinutes} 分鐘`;
+    : `${name}・步行 ${stop.walkMinutes} 分鐘`;
 }
 
 // One line of the detail page's transit list; unlike the header, MRT also gets its type word
