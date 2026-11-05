@@ -26,6 +26,11 @@ const VENUE_FIXTURE = {
 async function mockVenuesList(page: Page) {
   await page.route('**/api/venues**', async (route) => {
     const url = new URL(route.request().url());
+    // The glob also catches the card tag dictionary; cards wait for it and need its shape
+    if (url.pathname.endsWith('/venues/tag-dictionary')) {
+      await route.fulfill({ json: { groups: [], tags: [] } });
+      return;
+    }
     if (url.searchParams.get('limit') === '1000') {
       // VenuesClient 的 page.tsx 另外打一次大量查詢來列舉地區 chip，與下方分頁查詢形狀不同。
       await route.fulfill({ json: { venues: [VENUE_FIXTURE] } });
