@@ -106,8 +106,17 @@ const emptyHint = css({
 const slideItem = css({
   position: 'relative',
   height: '100%',
-  background: 'black',
+  // Keeps the oversized blur from bleeding into neighbouring slides
+  overflow: 'hidden',
   cursor: 'pointer',
+});
+
+// Same blurred backdrop as the desktop grid, in place of black bars
+const blurLayer = css({
+  position: 'absolute',
+  // Fixed overshoot: on a 240px slide a scale() would leave the blur's faded edges visible
+  inset: '-72px',
+  filter: 'blur(24px)',
 });
 
 const emptyText = css({
@@ -233,6 +242,17 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
                 style={{ flex: `0 0 ${slidePercent}%` }}
                 onClick={() => openLightbox(i)}
               >
+                {/* ponytail: blur on every slide; render only near the active one if swipes jank on low-end phones */}
+                <span aria-hidden="true" className={blurLayer}>
+                  <Image
+                    src={src}
+                    alt=""
+                    fill
+                    unoptimized
+                    sizes="100vw"
+                    style={{ objectFit: 'cover' }}
+                  />
+                </span>
                 <Image
                   src={src}
                   alt={`${venueName} 場地照片 ${i + 1}`}
