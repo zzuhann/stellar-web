@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   createTransitRow,
   formatTransitHeader,
+  formatTransitListItem,
+  formatTransitStationName,
+  getVenueHeaderTransit,
+  mrtStation,
   getTransitRowErrors,
   normalizeWalkMinutes,
   pickPrimaryTransit,
@@ -108,10 +112,86 @@ describe('TC-141 頁首交通挑選（類型優先序，同類型取最前面）
       '中山站步行 5 分鐘'
     );
     expect(formatTransitHeader({ type: 'bus', station: '市政府', walkMinutes: 3 })).toBe(
-      '公車 市政府，步行 3 分鐘'
+      '公車 市政府・步行 3 分鐘'
     );
     expect(formatTransitHeader({ type: 'train', station: '台中火車站', walkMinutes: null })).toBe(
       '台中火車站'
     );
+  });
+
+  it.each([
+    ['後驛站3號出口', 1, '後驛站3號出口・步行 1 分鐘'],
+    ['捷運市政府站4號', 3, '捷運市政府站4號・步行 3 分鐘'],
+    ['中山站R9', 10, '中山站R9・步行 10 分鐘'],
+    ['中山4號出口', 3, '中山4號出口・步行 3 分鐘'],
+    ['雙連', 3, '雙連站步行 3 分鐘'],
+  ])('捷運站名寫了出口：不再補「站」，步行前加「・」（%s）', (station, walkMinutes, expected) => {
+    expect(formatTransitHeader({ type: 'mrt', station, walkMinutes })).toBe(expected);
+  });
+});
+
+describe('TC-144 交通清單的每一筆 formatTransitListItem', () => {
+  it.each([
+    [{ type: 'bus', station: '復興新和街口', walkMinutes: 3 }, '公車 復興新和街口・步行 3 分鐘'],
+    [{ type: 'mrt', station: '中山', walkMinutes: 5 }, '捷運 中山站・步行 5 分鐘'],
+    [{ type: 'mrt', station: '中山站', walkMinutes: 5 }, '捷運 中山站・步行 5 分鐘'],
+    [{ type: 'mrt', station: '捷運中山站', walkMinutes: null }, '捷運中山站'],
+    [{ type: 'mrt', station: '古亭站7號出口', walkMinutes: 6 }, '捷運 古亭站7號出口・步行 6 分鐘'],
+    [{ type: 'train', station: '台中火車站', walkMinutes: null }, '台中火車站'],
+    [{ type: 'train', station: '台中火車站', walkMinutes: 8 }, '台中火車站・步行 8 分鐘'],
+    [{ type: 'light_rail', station: '凱旋中華', walkMinutes: 2 }, '輕軌 凱旋中華・步行 2 分鐘'],
+    [{ type: 'hsr', station: '高鐵台中站', walkMinutes: 10 }, '高鐵台中站・步行 10 分鐘'],
+  ] as const)('%o → %s', (stop, expected) => {
+    expect(formatTransitListItem(stop)).toBe(expected);
+  });
+});
+
+describe('頁首與 metadata 共用的交通挑選 getVenueHeaderTransit（TC-141 規則）', () => {
+  const legacy = { nearestMrt: '中山站', mrtWalkMinutes: 5 };
+
+  it('transitStops 有值 → 照類型優先序挑一筆，不看舊欄位', () => {
+    expect(
+      getVenueHeaderTransit({
+        ...legacy,
+        transitStops: [
+          { type: 'bus', station: '復興新和街口', walkMinutes: 3 },
+          { type: 'train', station: '台中火車站', walkMinutes: 8 },
+        ],
+      })
+    ).toEqual({ type: 'train', station: '台中火車站', walkMinutes: 8 });
+  });
+
+  it('transitStops 是 [] → null，就算舊欄位還有值也不退回', () => {
+    expect(getVenueHeaderTransit({ ...legacy, transitStops: [] })).toBeNull();
+  });
+
+  it.each([null, undefined])('transitStops 是 %s → 退回舊欄位，當成捷運', (transitStops) => {
+    expect(getVenueHeaderTransit({ ...legacy, transitStops })).toEqual({
+      type: 'mrt',
+      station: '中山站',
+      walkMinutes: 5,
+    });
+    expect(
+      getVenueHeaderTransit({ nearestMrt: null, mrtWalkMinutes: null, transitStops })
+    ).toBeNull();
+  });
+});
+
+describe('站名（不含步行分鐘）formatTransitStationName', () => {
+  it.each([
+    [{ type: 'mrt', station: '中山', walkMinutes: 5 }, '中山站'],
+    [{ type: 'mrt', station: '中山站', walkMinutes: null }, '中山站'],
+    [{ type: 'bus', station: '復興新和街口', walkMinutes: 3 }, '公車 復興新和街口'],
+    [{ type: 'train', station: '台中火車站', walkMinutes: 8 }, '台中火車站'],
+  ] as const)('%o → %s', (stop, expected) => {
+    expect(formatTransitStationName(stop)).toBe(expected);
+  });
+
+  it('mrtStation：補一個「站」，站名裡已經有「站」就不補', () => {
+    expect(mrtStation('中山')).toBe('中山站');
+    expect(mrtStation('中山站')).toBe('中山站');
+    expect(mrtStation('圓山捷運站1號出口')).toBe('圓山捷運站1號出口');
+    expect(mrtStation('新埔民生站/新埔站')).toBe('新埔民生站/新埔站');
+    expect(mrtStation('中山4號出口')).toBe('中山4號出口');
   });
 });

@@ -61,10 +61,16 @@ const track = css({
   },
 });
 
-const card = css({
+// Wrapper carries the list role so the link keeps its own role for screen readers
+const cardItem = css({
   flex: '0 0 auto',
-  width: '180px',
+  // Flex so the link stretches to the row height like the cards did before
+  display: 'flex',
   scrollSnapAlign: 'start',
+});
+
+const card = css({
+  width: '180px',
   textDecoration: 'none',
   display: 'block',
   borderRadius: 'radius.lg',
@@ -153,58 +159,60 @@ export default function RelatedVenuesStrip({ venues, region }: RelatedVenuesStri
       <div className={trackWrap}>
         <div role="list" className={track}>
           {venues.map((venue) => (
-            <Link key={venue.id} href={`/venues/${venue.id}`} role="listitem" className={card}>
-              <div className={coverWrap}>
-                {venue.coverPhoto ? (
-                  <Image
-                    src={venue.coverPhoto}
-                    alt={`${venue.name} 場地照片`}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    unoptimized
-                    sizes="180px"
-                  />
-                ) : (
-                  <div className={coverPlaceholder} aria-hidden="true">
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M4 7h3l2-2h6l2 2h3v12H4z" />
-                      <circle cx="12" cy="13" r="3.5" />
-                      <path d="M3 3l18 18" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-              <div className={cardBody}>
-                <h3 className={cardName}>{venue.name}</h3>
-                {venue.nearestMrt && (
-                  <div className={cardMeta}>
-                    <MrtIcon size={14} />
-                    鄰近{venue.nearestMrt}
-                  </div>
-                )}
-                {venue.capacityRange && (
-                  <div className={cardMeta}>
-                    <UsersIcon aria-hidden="true" width={14} height={14} />
-                    容納 {CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}
-                  </div>
-                )}
-                {venue.eventCount > 0 && (
-                  <div className={cardMeta}>
-                    <StarIcon aria-hidden="true" width={14} height={14} />
-                    {venue.eventCount} 場生日應援紀錄
-                  </div>
-                )}
-              </div>
-            </Link>
+            <div key={venue.id} role="listitem" className={cardItem}>
+              <Link href={`/venues/${venue.id}`} className={card}>
+                <div className={coverWrap}>
+                  {venue.coverPhoto ? (
+                    <Image
+                      src={venue.coverPhoto}
+                      alt=""
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      unoptimized
+                      sizes="180px"
+                    />
+                  ) : (
+                    <div className={coverPlaceholder} aria-hidden="true">
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M4 7h3l2-2h6l2 2h3v12H4z" />
+                        <circle cx="12" cy="13" r="3.5" />
+                        <path d="M3 3l18 18" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+                <div className={cardBody}>
+                  <h3 className={cardName}>{venue.name}</h3>
+                  {venue.nearestMrt && (
+                    <div className={cardMeta}>
+                      <MrtIcon size={14} />
+                      鄰近{venue.nearestMrt}
+                    </div>
+                  )}
+                  {venue.capacityRange && (
+                    <div className={cardMeta}>
+                      <UsersIcon aria-hidden="true" width={14} height={14} />
+                      容納 {CAPACITY_RANGE_LABEL[venue.capacityRange] ?? venue.capacityRange}
+                    </div>
+                  )}
+                  {venue.eventCount > 0 && (
+                    <div className={cardMeta}>
+                      <StarIcon aria-hidden="true" width={14} height={14} />
+                      {venue.eventCount} 場生日應援紀錄
+                    </div>
+                  )}
+                </div>
+              </Link>
+            </div>
           ))}
           <div style={{ flex: '0 0 6px' }} aria-hidden="true" />
         </div>

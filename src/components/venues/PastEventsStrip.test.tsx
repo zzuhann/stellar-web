@@ -30,21 +30,29 @@ describe('PastEventsStrip 過往活動卡片點擊追蹤', () => {
     const user = userEvent.setup();
     render(<PastEventsStrip events={[event]} />);
 
-    const card = screen.getByRole('listitem');
+    const card = screen.getByRole('link');
 
     expect(card.getAttribute('href')).toBe('/event/wonwoo-birthday');
 
     await user.click(card);
 
-    expect(trackClickEventDetail).toHaveBeenCalledWith({ userId: 'user-1', eventId: 'event-1' });
+    expect(trackClickEventDetail).toHaveBeenCalledWith({
+      userId: 'user-1',
+      eventId: 'event-1',
+      eventTimeStatus: null,
+    });
   });
 
   it('中鍵點擊卡片送出 click_event_detail，右鍵點擊不送出', () => {
     render(<PastEventsStrip events={[event]} />);
-    const card = screen.getByRole('listitem');
+    const card = screen.getByRole('link');
 
     fireEvent(card, new MouseEvent('auxclick', { bubbles: true, button: 1 }));
-    expect(trackClickEventDetail).toHaveBeenCalledWith({ userId: 'user-1', eventId: 'event-1' });
+    expect(trackClickEventDetail).toHaveBeenCalledWith({
+      userId: 'user-1',
+      eventId: 'event-1',
+      eventTimeStatus: null,
+    });
 
     vi.mocked(trackClickEventDetail).mockClear();
     fireEvent(card, new MouseEvent('auxclick', { bubbles: true, button: 2 }));
@@ -52,7 +60,7 @@ describe('PastEventsStrip 過往活動卡片點擊追蹤', () => {
   });
 });
 
-describe('TC-018 活動卡狀態標籤（新版詳情才開，opt-in）', () => {
+describe('TC-018 活動卡狀態標籤', () => {
   const events: VenueEventCard[] = [
     {
       ...event,
@@ -78,8 +86,8 @@ describe('TC-018 活動卡狀態標籤（新版詳情才開，opt-in）', () => 
     { ...event, id: 'e-null', title: '沒有狀態的活動', startDate: '2026-09-01', timeStatus: null },
   ];
 
-  it('showTimeStatus：只有前兩筆分別顯示「進行中」「即將到來」，排序維持輸入順序', () => {
-    render(<PastEventsStrip events={events} showTimeStatus />);
+  it('只有前兩筆分別顯示「進行中」「即將到來」，排序維持輸入順序', () => {
+    render(<PastEventsStrip events={events} />);
     const cards = screen.getAllByRole('listitem');
     expect(cards.map((c) => c.querySelector('h3')?.textContent)).toEqual([
       '進行中的活動',
@@ -92,17 +100,17 @@ describe('TC-018 活動卡狀態標籤（新版詳情才開，opt-in）', () => 
     expect(screen.getAllByText(/^(進行中|即將到來)$/)).toHaveLength(2);
   });
 
-  it('預設（正式頁）不顯示狀態標籤', () => {
-    render(<PastEventsStrip events={events} />);
-    expect(screen.queryAllByText(/^(進行中|即將到來)$/)).toHaveLength(0);
-  });
-
-  it('trackClicks={false}：點擊與中鍵都不送 click_event_detail', async () => {
+  it('點擊帶該活動的 timeStatus（ongoing／upcoming／ended；沒有狀態送 null，GA helper 轉成空字串）', async () => {
     const user = userEvent.setup();
-    render(<PastEventsStrip events={[event]} trackClicks={false} />);
-    const card = screen.getByRole('listitem');
-    await user.click(card);
-    fireEvent(card, new MouseEvent('auxclick', { bubbles: true, button: 1 }));
-    expect(trackClickEventDetail).not.toHaveBeenCalled();
+    render(<PastEventsStrip events={events} />);
+    for (const card of screen.getAllByRole('link')) await user.click(card);
+    expect(
+      vi.mocked(trackClickEventDetail).mock.calls.map(([p]) => [p.eventId, p.eventTimeStatus])
+    ).toEqual([
+      ['e-ongoing', 'ongoing'],
+      ['e-upcoming', 'upcoming'],
+      ['e-ended', 'ended'],
+      ['e-null', null],
+    ]);
   });
 });

@@ -55,7 +55,7 @@ const formLead = css({ display: 'inline-flex', alignItems: 'center', whiteSpace:
 interface VenueContactActionsProps {
   contact: VenueContact;
   align: 'center' | 'start';
-  onClickContact?: (contactType: string) => void;
+  onClickContact: (contactType: string) => void;
 }
 
 export default function VenueContactActions({
@@ -73,7 +73,7 @@ export default function VenueContactActions({
         rel="noopener noreferrer"
         className={primaryBtn}
         aria-label={`${labelParts.before}${labelParts.name}${labelParts.after}（開新分頁）`}
-        onClick={() => onClickContact?.(contact.channel)}
+        onClick={() => onClickContact(contact.channel)}
       >
         <span data-part="prefix" className={fixedPart}>
           {labelParts.before}
@@ -93,7 +93,7 @@ export default function VenueContactActions({
               target="_blank"
               rel="noopener noreferrer"
               className={textLink}
-              onClick={() => onClickContact?.('form')}
+              onClick={() => onClickContact('form')}
             >
               預約表單
               <ArrowTopRightOnSquareIcon

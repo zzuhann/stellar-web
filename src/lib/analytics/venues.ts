@@ -1,4 +1,5 @@
 import { sendGAEvent } from '@next/third-parties/google';
+import type { VenueEventTimeStatus } from '@/types';
 
 const VENUES_LIST_EVENT_PAGE = '/venues';
 const VENUE_DETAIL_EVENT_PAGE = '/venues/[id]';
@@ -42,13 +43,30 @@ interface VenueSortEventParams extends VenueEventBaseParams {
   resultCount: number;
 }
 
+// sticky_bar: mobile bottom bar; side_card: desktop right-column card (venue-tags tracking.md)
+export type VenueContactButtonLocation = 'sticky_bar' | 'side_card' | 'inline';
+
 interface VenueContactEventParams extends VenueEventBaseParams {
   venueId: string;
   contactType: string;
+  buttonLocation: VenueContactButtonLocation;
 }
 
 interface VenueEventDetailEventParams extends VenueEventBaseParams {
   eventId: string;
+  eventTimeStatus: VenueEventTimeStatus | null;
+}
+
+interface VenueSourceLinkEventParams extends VenueEventBaseParams {
+  venueId: string;
+  listPosition: number; // 1-based
+}
+
+export type VenueCorrectionContactType = 'form' | 'instagram' | 'threads';
+
+interface VenueCorrectionEventParams extends VenueEventBaseParams {
+  venueId: string;
+  contactType: VenueCorrectionContactType;
 }
 
 function trackVenueEvent(eventName: string, payload: VenueAnalyticsPayload) {
@@ -184,19 +202,56 @@ export function trackResolveVenueGeolocation({
   });
 }
 
-export function trackClickVenueContact({ userId, venueId, contactType }: VenueContactEventParams) {
+export function trackClickVenueContact({
+  userId,
+  venueId,
+  contactType,
+  buttonLocation,
+}: VenueContactEventParams) {
   trackVenueEvent('click_venue_contact', {
     event_page: VENUE_DETAIL_EVENT_PAGE,
     user_id: userId ?? '',
     content_id: toVenueContentId(venueId),
     contact_type: contactType,
+    button_location: buttonLocation,
   });
 }
 
-export function trackClickEventDetail({ userId, eventId }: VenueEventDetailEventParams) {
+export function trackClickEventDetail({
+  userId,
+  eventId,
+  eventTimeStatus,
+}: VenueEventDetailEventParams) {
   trackVenueEvent('click_event_detail', {
     event_page: VENUE_DETAIL_EVENT_PAGE,
     user_id: userId ?? '',
     content_id: eventId,
+    event_time_status: eventTimeStatus ?? '',
+  });
+}
+
+export function trackClickVenueSourceLink({
+  userId,
+  venueId,
+  listPosition,
+}: VenueSourceLinkEventParams) {
+  trackVenueEvent('click_venue_source_link', {
+    event_page: VENUE_DETAIL_EVENT_PAGE,
+    user_id: userId ?? '',
+    content_id: toVenueContentId(venueId),
+    list_position: listPosition,
+  });
+}
+
+export function trackClickVenueCorrection({
+  userId,
+  venueId,
+  contactType,
+}: VenueCorrectionEventParams) {
+  trackVenueEvent('click_venue_correction', {
+    event_page: VENUE_DETAIL_EVENT_PAGE,
+    user_id: userId ?? '',
+    content_id: toVenueContentId(venueId),
+    contact_type: contactType,
   });
 }

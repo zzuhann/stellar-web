@@ -146,27 +146,39 @@ export interface VenueFacilityRow {
   key: VenueTagGroupKey;
   label: string;
   tags: { slug: string; label: string }[];
+  // Transit row only: the store's own stops replace the near_* tags (design-frontend §B item 5)
+  lines?: string[];
 }
 
 const FACILITY_GROUPS: VenueTagGroupKey[] = ['service', 'transport', 'space', 'equipment'];
 // Already shown as usage rows (or only drive them), so they stay out of this section
 const USAGE_ONLY_SLUGS = new Set(['goods_distribution', 'private_booking', 'can_decorate']);
 
+// The transit list does not depend on the dictionary, so it keeps a fixed fallback label
+const TRANSPORT_FALLBACK_LABEL = '交通';
+
 export const buildVenueFacilityRows = (
   tags: readonly VisibleVenueTag[],
-  dictionary: VenueTagDictionary
+  dictionary: VenueTagDictionary | null,
+  transitLines: string[] = []
 ): VenueFacilityRow[] => {
   const owned = new Set(tags.map((tag) => tag.slug));
   const hideParcel = owned.has('goods_distribution');
 
-  return FACILITY_GROUPS.map((key) => ({
-    key,
-    label: dictionary.groups.find((g) => g.key === key)?.label ?? key,
-    tags: dictionary.tags
-      .filter((d) => d.group === key && owned.has(d.slug))
-      .filter((d) => !USAGE_ONLY_SLUGS.has(d.slug))
-      .filter((d) => !(hideParcel && d.slug === 'parcel_receiving'))
-      .sort((a, b) => a.order - b.order)
-      .map((d) => ({ slug: d.slug, label: d.label })),
-  })).filter((row) => row.tags.length > 0);
+  return FACILITY_GROUPS.map((key): VenueFacilityRow => {
+    const label = dictionary?.groups.find((g) => g.key === key)?.label;
+    if (key === 'transport' && transitLines.length > 0) {
+      return { key, label: label ?? TRANSPORT_FALLBACK_LABEL, tags: [], lines: transitLines };
+    }
+    return {
+      key,
+      label: label ?? key,
+      tags: (dictionary?.tags ?? [])
+        .filter((d) => d.group === key && owned.has(d.slug))
+        .filter((d) => !USAGE_ONLY_SLUGS.has(d.slug))
+        .filter((d) => !(hideParcel && d.slug === 'parcel_receiving'))
+        .sort((a, b) => a.order - b.order)
+        .map((d) => ({ slug: d.slug, label: d.label })),
+    };
+  }).filter((row) => row.tags.length > 0 || (row.lines?.length ?? 0) > 0);
 };

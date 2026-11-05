@@ -5,10 +5,16 @@ import Image from 'next/image';
 import { css } from '@/styled-system/css';
 import dynamic from 'next/dynamic';
 import 'yet-another-react-lightbox/styles.css';
+import VenuePhotoGrid from './VenuePhotoGrid';
 
 const Lightbox = dynamic(() => import('yet-another-react-lightbox'), {
   ssr: false,
 });
+
+// Mobile keeps the carousel; desktop swaps in the photo grid. Both read the same URLs, and the
+// hidden one's lazy images never load, so a given width downloads each photo once.
+const mobileOnly = css({ lg: { display: 'none' } });
+const desktopOnly = css({ display: 'none', lg: { display: 'block' } });
 
 const galleryWrap = css({
   position: 'relative',
@@ -88,6 +94,7 @@ const emptyGallery = css({
   color: 'color.text.secondary',
   background:
     'repeating-linear-gradient(135deg, var(--colors-gray-100) 0 14px, var(--colors-gray-50) 14px 28px)',
+  lg: { marginX: '4', borderRadius: 'radius.lg', borderBottom: 'none' },
 });
 
 const emptyHint = css({
@@ -98,9 +105,28 @@ const emptyHint = css({
 
 const slideItem = css({
   position: 'relative',
+  display: 'block',
   height: '100%',
-  background: 'black',
+  padding: 0,
+  border: 'none',
+  background: 'transparent',
+  // Keeps the oversized blur from bleeding into neighbouring slides
+  overflow: 'hidden',
   cursor: 'pointer',
+  '&:focus-visible': {
+    outline: '3px solid',
+    outlineColor: 'color.primary',
+    // The gallery clips overflow, so the ring sits inside the slide
+    outlineOffset: '-3px',
+  },
+});
+
+// Same blurred backdrop as the desktop grid, in place of black bars
+const blurLayer = css({
+  position: 'absolute',
+  // Fixed overshoot: on a 240px slide a scale() would leave the blur's faded edges visible
+  inset: '-72px',
+  filter: 'blur(24px)',
 });
 
 const emptyText = css({
@@ -122,11 +148,19 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const slideRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const openedFromSlide = useRef(false);
   const touchStartX = useRef<number | null>(null);
   const n = photos.length;
   // Each slide occupies 1/n of the track; active * (100/n)% moves by one container width
   const slidePercent = 100 / n;
   const slides = photos.map((src) => ({ src, alt: `${venueName} 場地照片` }));
+
+  const openLightbox = (index: number, fromSlide = false) => {
+    openedFromSlide.current = fromSlide;
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
 
   const onThumbScroll = () => {
     const el = stripRef.current;
@@ -197,85 +231,106 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
 
   return (
     <div>
-      <div
-        className={galleryWrap}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
+      <div className={mobileOnly}>
         <div
-          style={{
-            display: 'flex',
-            width: `${n * 100}%`,
-            height: '100%',
-            transform: `translateX(calc(-${active * slidePercent}% + ${dragX}px))`,
-            transition: isDragging ? 'none' : 'transform 0.3s ease',
-            willChange: 'transform',
-          }}
+          className={galleryWrap}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
         >
-          {photos.map((src, i) => (
-            <div
-              key={i}
-              className={slideItem}
-              style={{ flex: `0 0 ${slidePercent}%` }}
-              onClick={() => {
-                setLightboxIndex(i);
-                setLightboxOpen(true);
-              }}
-            >
-              <Image
-                src={src}
-                alt={`${venueName} 場地照片 ${i + 1}`}
-                fill
-                style={{ objectFit: 'contain' }}
-                unoptimized
-                sizes="100vw"
-                priority={i === 0}
-              />
-            </div>
-          ))}
-        </div>
-        {n > 1 && (
-          <div className={counter}>
-            {active + 1} / {n}
-          </div>
-        )}
-      </div>
-      {n > 1 && (
-        <div className={thumbOuter}>
-          <div ref={stripRef} className={thumbStrip} onScroll={onThumbScroll}>
+          <div
+            style={{
+              display: 'flex',
+              width: `${n * 100}%`,
+              height: '100%',
+              transform: `translateX(calc(-${active * slidePercent}% + ${dragX}px))`,
+              transition: isDragging ? 'none' : 'transform 0.3s ease',
+              willChange: 'transform',
+            }}
+          >
             {photos.map((src, i) => (
               <button
                 key={i}
                 ref={(el) => {
-                  thumbRefs.current[i] = el;
+                  slideRefs.current[i] = el;
                 }}
                 type="button"
-                aria-pressed={i === active}
-                aria-label={`場地照片 ${i + 1}`}
-                className={`${thumbBtn} ${i === active ? thumbBtnActive : ''}`}
-                onClick={() => setActive(i)}
+                className={slideItem}
+                style={{ flex: `0 0 ${slidePercent}%` }}
+                // Off-screen slides can't take focus: a focus() there would scroll the clipped track
+                // out of line with its transform. Thumbnails switch between them
+                inert={i !== active}
+                aria-label={`放大檢視第 ${i + 1} 張照片`}
+                onClick={() => openLightbox(i, true)}
               >
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                {/* ponytail: blur on every slide; render only near the active one if swipes jank on low-end phones */}
+                <span aria-hidden="true" className={blurLayer}>
                   <Image
                     src={src}
-                    alt={`${venueName} 縮圖 ${i + 1}`}
+                    alt=""
                     fill
-                    style={{ objectFit: 'cover' }}
                     unoptimized
-                    sizes="56px"
+                    sizes="100vw"
+                    style={{ objectFit: 'cover' }}
                   />
-                </div>
+                </span>
+                <Image
+                  src={src}
+                  alt={`${venueName} 場地照片 ${i + 1}`}
+                  fill
+                  style={{ objectFit: 'contain' }}
+                  unoptimized
+                  sizes="100vw"
+                  priority={i === 0}
+                />
               </button>
             ))}
           </div>
-          <div
-            aria-hidden="true"
-            className={thumbFadeRight}
-            style={{ opacity: thumbAtEnd ? 0 : 1 }}
-          />
+          {n > 1 && (
+            <div className={counter}>
+              {active + 1} / {n}
+            </div>
+          )}
         </div>
-      )}
+        {n > 1 && (
+          <div className={thumbOuter}>
+            <div ref={stripRef} className={thumbStrip} onScroll={onThumbScroll}>
+              {photos.map((src, i) => (
+                <button
+                  key={i}
+                  ref={(el) => {
+                    thumbRefs.current[i] = el;
+                  }}
+                  type="button"
+                  aria-pressed={i === active}
+                  aria-label={`場地照片 ${i + 1}`}
+                  className={`${thumbBtn} ${i === active ? thumbBtnActive : ''}`}
+                  onClick={() => setActive(i)}
+                >
+                  <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <Image
+                      src={src}
+                      alt={`${venueName} 縮圖 ${i + 1}`}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      unoptimized
+                      sizes="56px"
+                    />
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div
+              aria-hidden="true"
+              className={thumbFadeRight}
+              style={{ opacity: thumbAtEnd ? 0 : 1 }}
+            />
+          </div>
+        )}
+      </div>
+      <div className={desktopOnly}>
+        <VenuePhotoGrid photos={photos} venueName={venueName} onOpen={openLightbox} />
+      </div>
       <Lightbox
         open={lightboxOpen}
         close={() => setLightboxOpen(false)}
@@ -285,6 +340,13 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
           view: ({ index }) => {
             setActive(index);
             setLightboxIndex(index);
+          },
+          // Lightbox refocuses the slide that opened it, which is inert once the viewer moves on;
+          // land on the photo they ended on instead
+          exiting: () => {
+            if (openedFromSlide.current) {
+              slideRefs.current[lightboxIndex]?.focus({ preventScroll: true });
+            }
           },
         }}
       />

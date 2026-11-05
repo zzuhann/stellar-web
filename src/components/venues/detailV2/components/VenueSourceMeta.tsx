@@ -29,9 +29,15 @@ const date = css({
 interface VenueSourceMetaProps {
   sourceLinks: string[];
   infoUpdatedOn: string | null;
+  // Omitted by the admin preview so admin clicks never reach GA
+  onClickLink?: (listPosition: number) => void;
 }
 
-export default function VenueSourceMeta({ sourceLinks, infoUpdatedOn }: VenueSourceMetaProps) {
+export default function VenueSourceMeta({
+  sourceLinks,
+  infoUpdatedOn,
+  onClickLink,
+}: VenueSourceMetaProps) {
   if (sourceLinks.length === 0 && !infoUpdatedOn) return null;
 
   return (
@@ -45,6 +51,7 @@ export default function VenueSourceMeta({ sourceLinks, infoUpdatedOn }: VenueSou
               target="_blank"
               rel="noopener noreferrer"
               className={textLink}
+              onClick={() => onClickLink?.(i + 1)}
             >
               {sourceLinks.length > 1 ? `店家原始說明 ${i + 1}` : '店家原始說明'}
               <ArrowTopRightOnSquareIcon
