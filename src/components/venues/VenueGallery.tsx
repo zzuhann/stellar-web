@@ -105,10 +105,20 @@ const emptyHint = css({
 
 const slideItem = css({
   position: 'relative',
+  display: 'block',
   height: '100%',
+  padding: 0,
+  border: 'none',
+  background: 'transparent',
   // Keeps the oversized blur from bleeding into neighbouring slides
   overflow: 'hidden',
   cursor: 'pointer',
+  '&:focus-visible': {
+    outline: '3px solid',
+    outlineColor: 'color.primary',
+    // The gallery clips overflow, so the ring sits inside the slide
+    outlineOffset: '-3px',
+  },
 });
 
 // Same blurred backdrop as the desktop grid, in place of black bars
@@ -138,13 +148,16 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const stripRef = useRef<HTMLDivElement>(null);
   const thumbRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const slideRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const openedFromSlide = useRef(false);
   const touchStartX = useRef<number | null>(null);
   const n = photos.length;
   // Each slide occupies 1/n of the track; active * (100/n)% moves by one container width
   const slidePercent = 100 / n;
   const slides = photos.map((src) => ({ src, alt: `${venueName} 場地照片` }));
 
-  const openLightbox = (index: number) => {
+  const openLightbox = (index: number, fromSlide = false) => {
+    openedFromSlide.current = fromSlide;
     setLightboxIndex(index);
     setLightboxOpen(true);
   };
@@ -236,11 +249,19 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
             }}
           >
             {photos.map((src, i) => (
-              <div
+              <button
                 key={i}
+                ref={(el) => {
+                  slideRefs.current[i] = el;
+                }}
+                type="button"
                 className={slideItem}
                 style={{ flex: `0 0 ${slidePercent}%` }}
-                onClick={() => openLightbox(i)}
+                // Off-screen slides can't take focus: a focus() there would scroll the clipped track
+                // out of line with its transform. Thumbnails switch between them
+                inert={i !== active}
+                aria-label={`放大檢視第 ${i + 1} 張照片`}
+                onClick={() => openLightbox(i, true)}
               >
                 {/* ponytail: blur on every slide; render only near the active one if swipes jank on low-end phones */}
                 <span aria-hidden="true" className={blurLayer}>
@@ -262,7 +283,7 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
                   sizes="100vw"
                   priority={i === 0}
                 />
-              </div>
+              </button>
             ))}
           </div>
           {n > 1 && (
@@ -319,6 +340,13 @@ export default function VenueGallery({ photos, venueName }: VenueGalleryProps) {
           view: ({ index }) => {
             setActive(index);
             setLightboxIndex(index);
+          },
+          // Lightbox refocuses the slide that opened it, which is inert once the viewer moves on;
+          // land on the photo they ended on instead
+          exiting: () => {
+            if (openedFromSlide.current) {
+              slideRefs.current[lightboxIndex]?.focus({ preventScroll: true });
+            }
           },
         }}
       />

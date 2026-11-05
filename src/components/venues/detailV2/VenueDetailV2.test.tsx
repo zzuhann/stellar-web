@@ -514,7 +514,12 @@ describe('TC-145 元件層：「查看全部 N 張照片」只在 6 張以上出
 
   it('桌機格子每一格都是可以按的按鈕，只排前 5 張', () => {
     renderView(photosVenue(7));
-    expect(screen.getAllByRole('button', { name: /^放大檢視第 \d+ 張照片$/ })).toHaveLength(5);
+    // jsdom ignores CSS, so the mobile carousel's slides render too; scope to the grid
+    const grid = screen.getByRole('button', { name: '查看全部 7 張照片' })
+      .parentElement as HTMLElement;
+    expect(within(grid).getAllByRole('button', { name: /^放大檢視第 \d+ 張照片$/ })).toHaveLength(
+      5
+    );
   });
 });
 
