@@ -365,7 +365,7 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
   };
 
   return (
-    <div className={page}>
+    <main id="main-content" className={page}>
       <div className={inner}>
         <section className={heroSection}>
           <h1 className={title}>生咖、生日應援場地列表</h1>
@@ -451,6 +451,6 @@ export default function VenuesClient({ regions }: VenuesClientProps) {
           />
         )}
       </div>
-    </div>
+    </main>
   );
 }

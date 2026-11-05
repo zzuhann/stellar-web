@@ -95,8 +95,8 @@ describe('HomeVenuesSection', () => {
     render(<HomeVenuesSection />);
 
     expect(screen.getByRole('heading', { name: '探索生咖場地' })).toBeTruthy();
-    const cover = screen.getByRole('img', { name: /測試場地/ });
-    expect(cover.getAttribute('src')).toContain('cover.jpg');
+    const cover = document.querySelector('img');
+    expect(cover?.getAttribute('src')).toContain('cover.jpg');
     expect(document.querySelectorAll('img')).toHaveLength(1);
     expect(screen.queryByText(/張照片/)).toBeNull();
     expect(screen.getByText('20-40人')).toBeTruthy();

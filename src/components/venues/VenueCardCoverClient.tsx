@@ -24,12 +24,11 @@ const placeholder = css({
 
 interface VenueCardCoverProps {
   src: string | null;
-  venueName: string;
   variant: 'list' | 'home';
 }
 
 // Remount (key) per src from the parent so a failed image does not stick to the next venue
-export default function VenueCardCoverClient({ src, venueName, variant }: VenueCardCoverProps) {
+export default function VenueCardCoverClient({ src, variant }: VenueCardCoverProps) {
   const [failed, setFailed] = useState(false);
   const sizeStyle = variant === 'home' ? { height: VENUE_HOME_CARD_COVER_HEIGHT } : undefined;
   const ratioClass = variant === 'home' ? '' : venueCardListRatio;
@@ -62,7 +61,8 @@ export default function VenueCardCoverClient({ src, venueName, variant }: VenueC
       {!failed && (
         <Image
           src={src}
-          alt={`${venueName} 場地照片`}
+          // The card link already reads the venue name
+          alt=""
           fill
           style={{ objectFit: 'cover' }}
           unoptimized

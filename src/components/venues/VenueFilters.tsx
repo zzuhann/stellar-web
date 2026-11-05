@@ -551,7 +551,7 @@ export default function VenueFilters({
             className={dropdownTrigger}
             aria-haspopup="menu"
             aria-expanded={capacityOpen}
-            aria-label="空間人數"
+            aria-label={`空間人數：${selectedCapacityLabel}`}
             onClick={() => setCapacityOpen((o) => !o)}
           >
             <span>{selectedCapacityLabel}</span>
@@ -607,7 +607,7 @@ export default function VenueFilters({
             className={dropdownTrigger}
             aria-haspopup="menu"
             aria-expanded={sortOpen}
-            aria-label="排序"
+            aria-label={`排序：${selectedSortOption.label}`}
             onClick={() => setSortOpen((o) => !o)}
           >
             <span>{selectedSortOption.label}</span>

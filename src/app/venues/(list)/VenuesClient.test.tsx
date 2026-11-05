@@ -173,7 +173,7 @@ function renderVenuesClient() {
   return { ...result, rerenderSame: () => result.rerender(buildTree()) };
 }
 
-const getSortTrigger = () => screen.getByRole('button', { name: '排序' });
+const getSortTrigger = () => screen.getByRole('button', { name: /^排序：/ });
 
 async function openSortMenu() {
   fireEvent.click(getSortTrigger());

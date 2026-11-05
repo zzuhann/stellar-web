@@ -468,7 +468,7 @@ describe.each(variants)(
 );
 
 describe.each(variants)('$name 連結與無障礙（VL-014）', ({ name, renderCard }) => {
-  it('是指向詳情頁的 <a>，名稱由卡片文字組成，封面 alt 含店名', () => {
+  it('是指向詳情頁的 <a>，名稱由卡片文字組成，封面 alt 留空（店名不重複念）', () => {
     renderCard({
       ...BASE_VENUE,
       id: 'venue-1',
@@ -485,7 +485,11 @@ describe.each(variants)('$name 連結與無障礙（VL-014）', ({ name, renderC
 
     expect(screen.getByRole('link', { name: /免場地費/ })).toBe(link);
     expect(screen.getByRole('link', { name: /中山站步行 5 分鐘/ })).toBe(link);
-    expect(document.querySelector('img')?.getAttribute('alt')).toContain('小驢館');
+    expect(document.querySelector('img')?.getAttribute('alt')).toBe('');
+    // /venues has no h2 above the cards; the homepage section heading is the h2
+    expect(screen.getByRole('heading', { name: '小驢館' }).tagName).toBe(
+      name === 'HomeVenueCard' ? 'H3' : 'H2'
+    );
   });
 
   it('沒有封面時沒有 img', () => {

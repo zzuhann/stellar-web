@@ -182,15 +182,12 @@ export default function VenueCardContent({
   const hasTransitRow = Boolean(transit || distanceText);
   const hasBottom = Boolean(venue.capacityRange || venue.eventCount > 0);
   const hasDivider = hasBottom && (hasTransitRow || tags.length > 0);
+  // /venues has only its h1 above the cards; the homepage nests them under an h2
+  const NameHeading = variant === 'list' ? 'h2' : 'h3';
 
   return (
     <>
-      <VenueCardCoverClient
-        key={coverPhoto ?? ''}
-        src={coverPhoto}
-        venueName={venue.name}
-        variant={variant}
-      />
+      <VenueCardCoverClient key={coverPhoto ?? ''} src={coverPhoto} variant={variant} />
       <div
         className={body}
         style={{
@@ -199,9 +196,12 @@ export default function VenueCardContent({
         }}
       >
         <div className={nameRow}>
-          <h3 className={venueName} style={{ WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+          <NameHeading
+            className={venueName}
+            style={{ WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}
+          >
             {venue.name}
-          </h3>
+          </NameHeading>
           <span className={regionBadge}>{venue.region}</span>
         </div>
 
