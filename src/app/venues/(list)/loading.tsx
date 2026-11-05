@@ -90,7 +90,7 @@ const filterDivider = css({
 
 export default function VenuesLoading() {
   return (
-    <main id="main-content" className={page} aria-busy="true">
+    <main id="main-content" className={page}>
       <div className={inner}>
         <section className={heroSection}>
           <h1 className={title}>生咖、生日應援場地列表</h1>

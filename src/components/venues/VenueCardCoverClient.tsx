@@ -35,7 +35,8 @@ export default function VenueCardCoverClient({ src, variant }: VenueCardCoverPro
 
   if (!src) {
     return (
-      <div className={`${cover} ${placeholder} ${ratioClass}`} style={sizeStyle}>
+      // Hidden like the cover alt: it would otherwise open every photo-less card's link name
+      <div className={`${cover} ${placeholder} ${ratioClass}`} style={sizeStyle} aria-hidden="true">
         <svg
           aria-hidden="true"
           width="18"
