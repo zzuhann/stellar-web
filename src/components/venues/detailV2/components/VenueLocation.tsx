@@ -17,10 +17,18 @@ const rows = css({
 });
 
 const infoLink = css({
+  position: 'relative',
   display: 'inline-flex',
   alignItems: 'center',
   gap: '1',
-  minHeight: '44px',
+  // 44px hit area without adding layout height; still covers wrapped addresses
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    insetX: 0,
+    top: 'min(0px, calc(50% - 22px))',
+    bottom: 'min(0px, calc(50% - 22px))',
+  },
   color: 'inherit',
   textDecoration: 'none',
   overflowWrap: 'anywhere',

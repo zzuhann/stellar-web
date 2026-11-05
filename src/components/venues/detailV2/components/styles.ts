@@ -31,6 +31,11 @@ export const textLink = css({
   },
 });
 
+// Keeps the 44px hit area but lets the link occupy one line height in the layout
+export const inlineHitArea = css({
+  marginY: 'calc((1lh - 44px) / 2)',
+});
+
 export const tag = css({
   display: 'inline-flex',
   alignItems: 'center',
