@@ -82,10 +82,16 @@ const track = css({
   },
 });
 
-const card = css({
+// Wrapper carries the list role so the link keeps its own role for screen readers
+const cardItem = css({
   flex: '0 0 auto',
-  width: '180px',
+  // Flex so the link stretches to the row height like the cards did before
+  display: 'flex',
   scrollSnapAlign: 'start',
+});
+
+const card = css({
+  width: '180px',
   textDecoration: 'none',
   display: 'block',
   borderRadius: 'radius.lg',
@@ -243,42 +249,44 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
       <div className={trackWrap}>
         <div ref={trackRef} role="list" className={track} onScroll={onScroll}>
           {events.map((event) => (
-            <Link
-              key={event.id}
-              href={`/event/${event.slug ?? event.id}`}
-              role="listitem"
-              className={card}
-              onClick={() => trackClick(event)}
-              onAuxClick={(e) => {
-                // middle click opens a new tab, bypassing onClick, so track it separately
-                if (e.button === 1) trackClick(event);
-              }}
-            >
-              <div className={coverWrap}>
-                {event.coverImage ? (
-                  <Image
-                    src={event.coverImage}
-                    alt={event.title}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    unoptimized
-                    sizes="144px"
-                  />
-                ) : (
-                  <div className={coverPlaceholder}>🎂</div>
-                )}
-                {event.timeStatus && TIME_STATUS_LABEL[event.timeStatus] && (
-                  <span className={timeStatusTag}>{TIME_STATUS_LABEL[event.timeStatus]}</span>
-                )}
-              </div>
-              <div className={cardBody}>
-                <h3 className={cardTitle}>{event.title}</h3>
-                <div className={cardMeta}>{event.artistName}</div>
-                <div className={cardMeta}>{formatDateRange(event.startDate, event.endDate)}</div>
-              </div>
-            </Link>
+            <div key={event.id} role="listitem" className={cardItem}>
+              <Link
+                href={`/event/${event.slug ?? event.id}`}
+                className={card}
+                onClick={() => trackClick(event)}
+                onAuxClick={(e) => {
+                  // middle click opens a new tab, bypassing onClick, so track it separately
+                  if (e.button === 1) trackClick(event);
+                }}
+              >
+                <div className={coverWrap}>
+                  {event.coverImage ? (
+                    <Image
+                      src={event.coverImage}
+                      alt=""
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      unoptimized
+                      sizes="144px"
+                    />
+                  ) : (
+                    <div className={coverPlaceholder} aria-hidden="true">
+                      🎂
+                    </div>
+                  )}
+                  {event.timeStatus && TIME_STATUS_LABEL[event.timeStatus] && (
+                    <span className={timeStatusTag}>{TIME_STATUS_LABEL[event.timeStatus]}</span>
+                  )}
+                </div>
+                <div className={cardBody}>
+                  <h3 className={cardTitle}>{event.title}</h3>
+                  <div className={cardMeta}>{event.artistName}</div>
+                  <div className={cardMeta}>{formatDateRange(event.startDate, event.endDate)}</div>
+                </div>
+              </Link>
+            </div>
           ))}
-          <div style={{ flex: '0 0 6px' }} />
+          <div style={{ flex: '0 0 6px' }} aria-hidden="true" />
         </div>
 
         {pos > 1 && <div aria-hidden="true" className={fadeLeft} />}

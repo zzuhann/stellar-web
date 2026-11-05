@@ -243,7 +243,7 @@ describe('TC-025 詳情頁事件參數（真的點按鈕）', () => {
     const user = userEvent.setup();
     const posters = within(
       screen.getByRole('region', { name: '平台記錄的生咖、生日應援' })
-    ).getAllByRole('listitem');
+    ).getAllByRole('link');
 
     await withoutNavigation(async () => {
       for (const poster of posters) await user.click(poster);

@@ -61,7 +61,7 @@ const contactBarMobile = css({
 
 export default function VenueDetailLoading() {
   return (
-    <div className={pageOuter} aria-busy="true">
+    <main id="main-content" className={pageOuter} aria-busy="true">
       <div className={shell}>
         <div className={detailLayout}>
           <div className={areaHeader}>
@@ -110,6 +110,6 @@ export default function VenueDetailLoading() {
       <div className={contactBarMobile}>
         <Skeleton width="100%" height="48px" borderRadius="8px" />
       </div>
-    </div>
+    </main>
   );
 }

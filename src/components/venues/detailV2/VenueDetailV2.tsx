@@ -176,7 +176,7 @@ export default function VenueDetailV2({
   const hasSourceMeta = sourceLinks.length > 0 || Boolean(infoUpdatedOn);
 
   return (
-    <div className={pageOuter}>
+    <main id="main-content" className={pageOuter}>
       <div className={shell}>
         <div className={detailLayout}>
           <div className={areaHeader}>
@@ -282,6 +282,6 @@ export default function VenueDetailV2({
       </div>
 
       {contact && <VenueContactBar contact={contact} onClickContact={trackContact('sticky_bar')} />}
-    </div>
+    </main>
   );
 }

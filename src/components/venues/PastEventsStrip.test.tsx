@@ -30,7 +30,7 @@ describe('PastEventsStrip 過往活動卡片點擊追蹤', () => {
     const user = userEvent.setup();
     render(<PastEventsStrip events={[event]} />);
 
-    const card = screen.getByRole('listitem');
+    const card = screen.getByRole('link');
 
     expect(card.getAttribute('href')).toBe('/event/wonwoo-birthday');
 
@@ -45,7 +45,7 @@ describe('PastEventsStrip 過往活動卡片點擊追蹤', () => {
 
   it('中鍵點擊卡片送出 click_event_detail，右鍵點擊不送出', () => {
     render(<PastEventsStrip events={[event]} />);
-    const card = screen.getByRole('listitem');
+    const card = screen.getByRole('link');
 
     fireEvent(card, new MouseEvent('auxclick', { bubbles: true, button: 1 }));
     expect(trackClickEventDetail).toHaveBeenCalledWith({
@@ -103,7 +103,7 @@ describe('TC-018 活動卡狀態標籤', () => {
   it('點擊帶該活動的 timeStatus（ongoing／upcoming／ended；沒有狀態送 null，GA helper 轉成空字串）', async () => {
     const user = userEvent.setup();
     render(<PastEventsStrip events={events} />);
-    for (const card of screen.getAllByRole('listitem')) await user.click(card);
+    for (const card of screen.getAllByRole('link')) await user.click(card);
     expect(
       vi.mocked(trackClickEventDetail).mock.calls.map(([p]) => [p.eventId, p.eventTimeStatus])
     ).toEqual([
