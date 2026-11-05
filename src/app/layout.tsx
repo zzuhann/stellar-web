@@ -1,6 +1,7 @@
 import { GoogleAnalytics } from '@next/third-parties/google';
 
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Noto_Sans_TC } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
@@ -16,6 +17,8 @@ import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistratio
 import { ShareProvider } from '@/context/ShareContext';
 import ClarityInit from '@/components/ClarityInit';
 import SoftNavigationPageView from '@/components/SoftNavigationPageView';
+
+const GA_ID = 'G-4HGC08K6JK';
 
 const notoSansTC = Noto_Sans_TC({
   subsets: ['latin'],
@@ -109,6 +112,10 @@ export default function RootLayout({
         {/* Secondary origins: DNS resolution only */}
         <link rel="dns-prefetch" href="https://pub-b7b01bb9cbef44f2bdd3b7b3a5c1b4b7.r2.dev" />
         <link rel="dns-prefetch" href="https://pub-1ea260dddf7f40e4b473626d08cc1689.r2.dev" />
+        {/* Keep localhost, preview deploys, E2E and browser automation out of GA; must run before gtag config */}
+        <Script id="ga-guard" strategy="beforeInteractive">
+          {`if (location.hostname !== 'www.stellar-zone.com' || navigator.webdriver) window['ga-disable-${GA_ID}'] = true;`}
+        </Script>
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
         <link rel="dns-prefetch" href="https://www.clarity.ms" />
@@ -155,7 +162,7 @@ export default function RootLayout({
           </AuthProvider>
         </QueryProvider>
       </body>
-      <GoogleAnalytics gaId="G-4HGC08K6JK" />
+      <GoogleAnalytics gaId={GA_ID} />
     </html>
   );
 }
