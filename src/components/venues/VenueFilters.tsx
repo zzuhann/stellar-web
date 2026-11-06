@@ -22,11 +22,32 @@ const filterBar = css({
   borderBottomColor: 'color.border.light',
   paddingTop: '2.5',
   paddingBottom: '3',
+  // Mobile stacks in a column; DOM order is search → controls → chips (keyboard order on
+  // desktop), so `order` below puts the chips back above the controls on mobile
+  display: 'flex',
+  flexDirection: 'column',
+  '@media (min-width: 768px)': {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    columnGap: '4',
+    rowGap: '2.5',
+    paddingX: '6',
+  },
 });
 
+// flex-basis 200px is the shrunk size: the controls only wrap to the next line once the search
+// box cannot get any smaller; it then grows back up to 360px
 const searchRow = css({
   paddingX: '4',
   marginBottom: '2.5',
+  order: 1,
+  '@media (min-width: 768px)': {
+    flex: '1 1 200px',
+    maxWidth: '360px',
+    paddingX: '0',
+    marginBottom: '0',
+  },
 });
 
 const searchFieldWrap = css({
@@ -87,8 +108,14 @@ const searchFieldClear = css({
 
 const regionWrap = css({
   position: 'relative',
+  order: 2,
+  '@media (min-width: 768px)': {
+    order: 3,
+    flexBasis: '100%',
+  },
 });
 
+// Mobile scrolls sideways; from 768px the chips wrap instead
 const regionRow = css({
   display: 'flex',
   gap: '1.5',
@@ -97,6 +124,11 @@ const regionRow = css({
   scrollbarWidth: 'none',
   '&::-webkit-scrollbar': {
     display: 'none',
+  },
+  '@media (min-width: 768px)': {
+    flexWrap: 'wrap',
+    overflowX: 'visible',
+    paddingX: '0',
   },
 });
 
@@ -109,6 +141,7 @@ const regionFadeLeft = css({
   background: 'linear-gradient(to right, rgba(255,255,255,0.96), rgba(255,255,255,0))',
   pointerEvents: 'none',
   transition: 'opacity 0.18s ease-out',
+  '@media (min-width: 768px)': { display: 'none' },
 });
 
 const regionFadeRight = css({
@@ -120,6 +153,7 @@ const regionFadeRight = css({
   background: 'linear-gradient(to left, rgba(255,255,255,0.96), rgba(255,255,255,0))',
   pointerEvents: 'none',
   transition: 'opacity 0.18s ease-out',
+  '@media (min-width: 768px)': { display: 'none' },
 });
 
 const regionChip = css({
@@ -154,6 +188,13 @@ const capacityRow = css({
   gap: '2',
   paddingX: '4',
   marginTop: '2.5',
+  order: 3,
+  '@media (min-width: 768px)': {
+    order: 2,
+    paddingX: '0',
+    marginTop: '0',
+    marginLeft: 'auto',
+  },
 });
 
 const dropdownContainer = css({
@@ -244,6 +285,8 @@ const sortDropdownMenu = css({
   borderRadius: 'radius.md',
   boxShadow: 'shadow.md',
   zIndex: 30,
+  // The trigger sits at the right edge of the bar from 768px, so grow leftwards, not off-screen
+  '@media (min-width: 768px)': { left: 'auto' },
   transformOrigin: 'top',
   animation: 'slideDown 0.18s ease-out',
   '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
@@ -501,28 +544,6 @@ export default function VenueFilters({
         </div>
       </div>
 
-      <div className={regionWrap}>
-        <div ref={rowRef} className={regionRow} onScroll={updateFades}>
-          {regions.map((r) => (
-            <button
-              key={r}
-              type="button"
-              aria-pressed={region === r}
-              className={`${regionChip} ${region === r ? regionChipActive : ''}`}
-              onClick={() => onRegionChange(r)}
-            >
-              {r}
-            </button>
-          ))}
-        </div>
-        <div className={regionFadeLeft} aria-hidden="true" style={{ opacity: showLeft ? 1 : 0 }} />
-        <div
-          className={regionFadeRight}
-          aria-hidden="true"
-          style={{ opacity: showRight ? 1 : 0 }}
-        />
-      </div>
-
       <div className={capacityRow}>
         <div ref={capacityRef} className={dropdownContainer}>
           <button
@@ -530,7 +551,7 @@ export default function VenueFilters({
             className={dropdownTrigger}
             aria-haspopup="menu"
             aria-expanded={capacityOpen}
-            aria-label="空間人數"
+            aria-label={`空間人數：${selectedCapacityLabel}`}
             onClick={() => setCapacityOpen((o) => !o)}
           >
             <span>{selectedCapacityLabel}</span>
@@ -586,7 +607,7 @@ export default function VenueFilters({
             className={dropdownTrigger}
             aria-haspopup="menu"
             aria-expanded={sortOpen}
-            aria-label="排序"
+            aria-label={`排序：${selectedSortOption.label}`}
             onClick={() => setSortOpen((o) => !o)}
           >
             <span>{selectedSortOption.label}</span>
@@ -644,6 +665,28 @@ export default function VenueFilters({
             <ArrowPathIcon className={clearFiltersIcon} aria-hidden="true" />
           </button>
         )}
+      </div>
+
+      <div className={regionWrap}>
+        <div ref={rowRef} className={regionRow} onScroll={updateFades}>
+          {regions.map((r) => (
+            <button
+              key={r}
+              type="button"
+              aria-pressed={region === r}
+              className={`${regionChip} ${region === r ? regionChipActive : ''}`}
+              onClick={() => onRegionChange(r)}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+        <div className={regionFadeLeft} aria-hidden="true" style={{ opacity: showLeft ? 1 : 0 }} />
+        <div
+          className={regionFadeRight}
+          aria-hidden="true"
+          style={{ opacity: showRight ? 1 : 0 }}
+        />
       </div>
     </div>
   );

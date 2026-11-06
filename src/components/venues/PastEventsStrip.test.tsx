@@ -114,3 +114,38 @@ describe('TC-018 活動卡狀態標籤', () => {
     ]);
   });
 });
+
+describe('PastEventsStrip 只有放不下時才顯示捲動提示', () => {
+  // jsdom has no layout: each card is 180px + 10px gap after 16px padding; the track is `width` wide
+  const layout = (width: number) => {
+    vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(width);
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement
+    ) {
+      const items = Array.from(this.parentElement?.querySelectorAll('[role="listitem"]') ?? []);
+      const index = items.indexOf(this);
+      const right = index === -1 ? 0 : 16 + index * 190 + 180;
+      return { left: 0, right } as DOMRect;
+    });
+  };
+  const events = [1, 2, 3].map((n) => ({ ...event, id: `event-${n}` }));
+  const hint = () => screen.getByText('← 左右滑動瀏覽全部 →');
+
+  afterEach(() => vi.restoreAllMocks());
+
+  it('3 張都放得下（含右側留白與 spacer）→ 計數、提示、進度條都不顯示', () => {
+    layout(16 + 3 * 190 - 10 + 1);
+    render(<PastEventsStrip events={events} />);
+
+    expect(screen.queryByText('/')).toBeNull();
+    expect(hint().style.visibility).toBe('hidden');
+  });
+
+  it('放不下 → 顯示「1 / 3」與提示', () => {
+    layout(400);
+    render(<PastEventsStrip events={events} />);
+
+    expect(screen.getByText('/')).toBeTruthy();
+    expect(hint().style.visibility).toBe('visible');
+  });
+});

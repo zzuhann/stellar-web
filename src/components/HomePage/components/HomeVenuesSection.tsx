@@ -1,10 +1,14 @@
 'use client';
 
+import { useRef } from 'react';
 import Link from 'next/link';
 import { css } from '@/styled-system/css';
 import { useRandomVenuesQuery } from '@/hooks/useHomePage';
 import { trackClickVenueListCta } from '@/lib/analytics/venues';
-import Skeleton from '@/components/ui/Skeleton';
+import VenueCardSkeleton from '@/components/venues/VenueCardSkeleton';
+import { useVenueCardTagDictionary } from '@/components/venues/hooks/useVenueCardTagDictionary';
+import { useHorizontalOverflow } from '@/hooks/useHorizontalScroll';
+import ScrollProgressBarClient from '@/components/ui/ScrollProgressBarClient';
 import HomeVenueCard from './HomeVenueCard';
 
 const section = css({ marginTop: '5', marginBottom: '5' });
@@ -38,20 +42,25 @@ const list = css({
   overscrollBehaviorX: 'contain',
   scrollSnapType: 'x mandatory',
   listStyle: 'none',
+  scrollbarWidth: 'none',
+  '&::-webkit-scrollbar': { display: 'none' },
   '@media (min-width: 768px)': { gridAutoColumns: '260px' },
 });
-const skeleton = css({
-  height: '260px',
-  borderRadius: 'radius.lg',
-  overflow: 'hidden',
-  scrollSnapAlign: 'start',
-});
+const skeleton = css({ scrollSnapAlign: 'start' });
+const progressBar = css({ marginTop: '2', marginX: '1' });
 
 const HomeVenuesSection = () => {
-  const { data: venues = [], isPending, isError } = useRandomVenuesQuery(10);
+  const { data: venues = [], isPending: isVenuesPending, isError } = useRandomVenuesQuery(10);
+  const { dictionary, isPending: isDictionaryPending } = useVenueCardTagDictionary();
+  const listRef = useRef<HTMLUListElement>(null);
+  // Cards wait for the dictionary so card_tags matches what is shown; a failed one settles too
+  const isPending = isVenuesPending || isDictionaryPending;
+  // isError unmounts the list, so a same-length recovery must still re-subscribe to the new one
+  const contentKey = isPending || isError ? 0 : venues.length;
+  const overflows = useHorizontalOverflow(listRef, contentKey);
 
   // hide the whole section (title included) when the API fails or returns nothing
-  if (isError || (!isPending && venues.length === 0)) {
+  if (isError || (!isVenuesPending && venues.length === 0)) {
     return null;
   }
 
@@ -75,21 +84,28 @@ const HomeVenuesSection = () => {
         <div role="status" aria-label="場地載入中" className={list}>
           {Array.from({ length: 2 }, (_, index) => (
             <div key={index} className={skeleton} aria-hidden="true">
-              <Skeleton height="260px" borderRadius="0" />
+              <VenueCardSkeleton variant="home" />
             </div>
           ))}
         </div>
       )}
 
       {!isPending && (
-        <ul className={list} aria-label="隨機推薦場地">
+        <ul ref={listRef} className={list} aria-label="隨機推薦場地">
           {venues.map((venue, index) => (
             <li key={venue.id}>
-              <HomeVenueCard venue={venue} listPosition={index + 1} />
+              <HomeVenueCard venue={venue} listPosition={index + 1} dictionary={dictionary} />
             </li>
           ))}
         </ul>
       )}
+
+      <ScrollProgressBarClient
+        scrollRef={listRef}
+        contentKey={contentKey}
+        visible={overflows}
+        className={progressBar}
+      />
     </section>
   );
 };

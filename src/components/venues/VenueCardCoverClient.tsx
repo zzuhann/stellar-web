@@ -1,0 +1,80 @@
+'use client';
+
+import { useState } from 'react';
+import Image from 'next/image';
+import { css } from '@/styled-system/css';
+import { VENUE_HOME_CARD_COVER_HEIGHT, venueCardListRatio } from './venueCardLayout';
+
+const cover = css({
+  position: 'relative',
+  overflow: 'hidden',
+  background: 'gray.100',
+});
+
+const placeholder = css({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: '2',
+  color: 'gray.500',
+  textStyle: 'caption',
+  background:
+    'repeating-linear-gradient(135deg, var(--colors-gray-100) 0 12px, var(--colors-gray-50) 12px 24px)',
+});
+
+interface VenueCardCoverProps {
+  src: string | null;
+  variant: 'list' | 'home';
+}
+
+// Remount (key) per src from the parent so a failed image does not stick to the next venue
+export default function VenueCardCoverClient({ src, variant }: VenueCardCoverProps) {
+  const [failed, setFailed] = useState(false);
+  const sizeStyle = variant === 'home' ? { height: VENUE_HOME_CARD_COVER_HEIGHT } : undefined;
+  const ratioClass = variant === 'home' ? '' : venueCardListRatio;
+
+  if (!src) {
+    return (
+      // Hidden like the cover alt: it would otherwise open every photo-less card's link name
+      <div className={`${cover} ${placeholder} ${ratioClass}`} style={sizeStyle} aria-hidden="true">
+        <svg
+          aria-hidden="true"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M4 7h3l2-2h6l2 2h3v12H4z" />
+          <circle cx="12" cy="13" r="3.5" />
+          <path d="M3 3l18 18" />
+        </svg>
+        <span>店家尚未提供場地照片</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`${cover} ${ratioClass}`} style={sizeStyle}>
+      {!failed && (
+        <Image
+          src={src}
+          // The card link already reads the venue name
+          alt=""
+          fill
+          style={{ objectFit: 'cover' }}
+          unoptimized
+          sizes={
+            variant === 'home'
+              ? '(min-width: 768px) 260px, 78vw'
+              : '(min-width: 1024px) 384px, (min-width: 768px) 50vw, 100vw'
+          }
+          onError={() => setFailed(true)}
+        />
+      )}
+    </div>
+  );
+}

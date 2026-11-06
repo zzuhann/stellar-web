@@ -8,6 +8,8 @@ import type { VenueEventCard } from '@/types';
 import { formatDateRange } from '@/utils';
 import { useAuth } from '@/lib/auth-context';
 import { trackClickEventDetail } from '@/lib/analytics/venues';
+import { useHorizontalOverflow } from '@/hooks/useHorizontalScroll';
+import ScrollProgressBarClient from '@/components/ui/ScrollProgressBarClient';
 
 const section = css({
   paddingTop: '5',
@@ -184,21 +186,7 @@ const fadeRight = css({
   pointerEvents: 'none',
 });
 
-const progressTrack = css({
-  height: '3px',
-  borderRadius: '2px',
-  background: 'gray.100',
-  overflow: 'hidden',
-  marginX: '4',
-  marginY: '0',
-});
-
-const progressBar = css({
-  height: '100%',
-  borderRadius: '2px',
-  background: 'color.primary',
-  transition: 'width 0.18s ease-out',
-});
+const progressTrack = css({ marginX: '4', marginY: '0' });
 
 const CARD_WIDTH = 180 + 10;
 
@@ -211,6 +199,8 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [pos, setPos] = useState(1);
   const count = events.length;
+  // Few events fit without scrolling: hide the counter, hint, fades and bar
+  const overflows = useHorizontalOverflow(trackRef, count, '[role="listitem"]');
 
   if (count === 0) return null;
 
@@ -235,14 +225,21 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
     <section aria-label="平台記錄的生咖、生日應援" className={section}>
       <div className={header}>
         <h2 className={sectionTitle}>平台記錄的生咖、生日應援</h2>
-        <div className={counter}>
-          <span className={counterPos}>{pos}</span>
-          <span className={counterDivider}>/</span>
-          <span>{count}</span>
-        </div>
+        {overflows && (
+          <div className={counter}>
+            <span className={counterPos}>{pos}</span>
+            <span className={counterDivider}>/</span>
+            <span>{count}</span>
+          </div>
+        )}
       </div>
 
-      <p className={hint} aria-hidden="true">
+      {/* visibility, not unmount: the line keeps its height so the strip does not shift after hydration */}
+      <p
+        className={hint}
+        aria-hidden="true"
+        style={{ visibility: overflows ? 'visible' : 'hidden' }}
+      >
         ← 左右滑動瀏覽全部 →
       </p>
 
@@ -289,13 +286,16 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
           <div style={{ flex: '0 0 6px' }} aria-hidden="true" />
         </div>
 
-        {pos > 1 && <div aria-hidden="true" className={fadeLeft} />}
-        {pos < count && <div aria-hidden="true" className={fadeRight} />}
+        {overflows && pos > 1 && <div aria-hidden="true" className={fadeLeft} />}
+        {overflows && pos < count && <div aria-hidden="true" className={fadeRight} />}
       </div>
 
-      <div className={progressTrack}>
-        <div className={progressBar} style={{ width: `${Math.max(8, (pos / count) * 100)}%` }} />
-      </div>
+      <ScrollProgressBarClient
+        scrollRef={trackRef}
+        contentKey={count}
+        visible={overflows}
+        className={progressTrack}
+      />
     </section>
   );
 }

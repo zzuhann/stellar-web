@@ -30,7 +30,7 @@ describe('TC-033 後台右欄預覽的過期判斷跟後端一致', () => {
       TODAY
     );
 
-    expect(preview.cardTagLabels).toEqual(['應援物代發', '免場地費・限期至 10/15', '可提前佈展']);
+    expect(preview.cardTagLabels).toEqual(['應援物代發', '免場地費', '可提前佈展']);
     expect(preview.usageRows.find((row) => row.key === 'decorate')?.description).toBe(
       '2026/10/15 前免場地費・可提前佈展'
     );

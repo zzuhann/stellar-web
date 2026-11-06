@@ -19,7 +19,12 @@ vi.mock('@next/third-parties/google', () => ({ sendGAEvent: vi.fn() }));
 
 describe('首頁場地 GA events', () => {
   it('曝光、點擊與 CTA 都標記 homepage_random placement', () => {
-    const cardParams = { venueId: 'venue-1', venueRegion: '台北', listPosition: 2 };
+    const cardParams = {
+      venueId: 'venue-1',
+      venueRegion: '台北',
+      listPosition: 2,
+      cardTags: 'free_venue,can_decorate',
+    };
 
     trackViewHomeVenueCard(cardParams);
     trackClickHomeVenueDetail(cardParams);
@@ -31,6 +36,7 @@ describe('首頁場地 GA events', () => {
       content_id: 'venue_venue-1',
       venue_region: '台北',
       list_position: 2,
+      card_tags: 'free_venue,can_decorate',
     });
     expect(sendGAEvent).toHaveBeenNthCalledWith(2, 'event', 'click_venue_detail', {
       event_page: '/',
@@ -38,6 +44,7 @@ describe('首頁場地 GA events', () => {
       content_id: 'venue_venue-1',
       venue_region: '台北',
       list_position: 2,
+      card_tags: 'free_venue,can_decorate',
     });
     expect(sendGAEvent).toHaveBeenNthCalledWith(3, 'event', 'click_venue_list_cta', {
       event_page: '/',
@@ -76,6 +83,7 @@ describe('列表頁卡片曝光/點擊帶 list_sort（Phase 2.8）', () => {
       venueRegion: '台北',
       listPosition: 3,
       listSort: 'newest',
+      cardTags: 'free_venue',
     });
 
     expect(sendGAEvent).toHaveBeenCalledWith('event', 'view_venue_card', {
@@ -85,6 +93,7 @@ describe('列表頁卡片曝光/點擊帶 list_sort（Phase 2.8）', () => {
       venue_region: '台北',
       list_position: 3,
       list_sort: 'newest',
+      card_tags: 'free_venue',
     });
   });
 
@@ -94,6 +103,7 @@ describe('列表頁卡片曝光/點擊帶 list_sort（Phase 2.8）', () => {
       venueRegion: '高雄',
       listPosition: 1,
       listSort: 'composite',
+      cardTags: 'dict_error',
     });
 
     expect(sendGAEvent).toHaveBeenCalledWith('event', 'click_venue_detail', {
@@ -103,6 +113,7 @@ describe('列表頁卡片曝光/點擊帶 list_sort（Phase 2.8）', () => {
       venue_region: '高雄',
       list_position: 1,
       list_sort: 'composite',
+      card_tags: 'dict_error',
     });
   });
 });

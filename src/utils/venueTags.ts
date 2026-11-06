@@ -18,12 +18,6 @@ export const formatConditionUntil = (ymd: string, today: string): string => {
   return year === parseYmd(today).year ? `${month}/${day}` : `${year}/${month}/${day}`;
 };
 
-export const formatCardTagLabel = (tag: VenueTag, label: string, today: string): string => {
-  if (tag.until) return `${label}・限期至 ${formatConditionUntil(tag.until, today)}`;
-  if (tag.limited) return `${label}（限期）`;
-  return label;
-};
-
 // until is inclusive; YYYY-MM-DD strings compare correctly as plain strings
 export const isVenueTagActiveOn = (tag: VenueTag, today: string): boolean =>
   !tag.until || tag.until >= today;
@@ -58,6 +52,33 @@ export const pickCardTags = (
     .sort((a, b) => rank(a) - rank(b))
     .slice(0, 3);
 };
+
+export interface VenueCardTagItem {
+  slug: string;
+  label: string;
+}
+
+// What the card shows: expired tags out, top 3 by cardRank; deadlines stay on the detail page (an active tag is true today)
+export const getVenueCardTags = (
+  tags: VenueTag[] | undefined,
+  dictionary: VenueTagDictionary | null,
+  today: string
+): VenueCardTagItem[] => {
+  if (!dictionary) return [];
+  const labelBySlug = new Map(dictionary.tags.map((d) => [d.slug, d.label]));
+  return pickCardTags(getVisibleVenueTags(tags, dictionary, today), dictionary).map((tag) => ({
+    slug: tag.slug,
+    label: labelBySlug.get(tag.slug) ?? tag.slug,
+  }));
+};
+
+export const CARD_TAGS_DICT_ERROR = 'dict_error';
+
+// GA card_tags: shown slugs in order; '' = none; 'dict_error' keeps a failed dictionary apart from "no tags"
+export const toCardTagsParam = (
+  items: readonly VenueCardTagItem[],
+  dictionary: VenueTagDictionary | null
+): string => (dictionary ? items.map((item) => item.slug).join(',') : CARD_TAGS_DICT_ERROR);
 
 const indexBySlug = (tags: readonly VisibleVenueTag[]) =>
   new Map(tags.map((tag) => [tag.slug, tag]));

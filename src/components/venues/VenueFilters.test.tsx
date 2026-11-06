@@ -139,16 +139,16 @@ describe('VenueFilters 清除篩選按鈕', () => {
 
 // Phase 2.8：排序 UI 由 segmented control 改為 dropdown，比照既有 capacity dropdown pattern。
 //
-// Trigger 用 aria-label="排序" 直接提供可及名稱（accessible name），畫面上不顯示「排序」
+// Trigger 用 aria-label="排序：<選中值>" 提供可及名稱（含畫面文字，WCAG 2.5.3），畫面上不顯示「排序」
 // 文字標籤（預設值就是「綜合排序」，畫面文字已足夠表意，省下的空間讓清除篩選 icon 按鈕
-// 能併進同一行，詳見 Phase 2.9「清除篩選版面調整」）。因此查詢 trigger 一律用 name: '排序'，
+// 能併進同一行，詳見 Phase 2.9「清除篩選版面調整」）。因此查詢 trigger 一律用 name: /^排序：/，
 // 選中值改用畫面可見文字（getByText）驗證。
 describe('VenueFilters 排序下拉選單（Phase 2.8）', () => {
   afterEach(() => {
     cleanup();
   });
 
-  const getSortTrigger = () => screen.getByRole('button', { name: '排序' });
+  const getSortTrigger = () => screen.getByRole('button', { name: /^排序：/ });
 
   it('未帶 sort（等同 composite）時，trigger 顯示「綜合排序」', () => {
     render(<VenueFilters {...baseProps} sort="composite" search="" />);
@@ -212,7 +212,7 @@ describe('VenueFilters 排序下拉選單（Phase 2.8）', () => {
     expect(screen.queryByRole('menu')).toBeNull();
   });
 
-  it('trigger 具備 aria-haspopup/aria-expanded/aria-label="排序"（畫面不顯示文字標籤）', () => {
+  it('trigger 具備 aria-haspopup/aria-expanded/aria-label 含選中值（畫面不顯示文字標籤）', () => {
     render(<VenueFilters {...baseProps} sort="composite" search="" />);
 
     expect(screen.queryByText('排序')).toBeNull();
@@ -220,7 +220,7 @@ describe('VenueFilters 排序下拉選單（Phase 2.8）', () => {
     const trigger = getSortTrigger();
     expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
-    expect(trigger.getAttribute('aria-label')).toBe('排序');
+    expect(trigger.getAttribute('aria-label')).toBe('排序：綜合排序');
 
     fireEvent.click(trigger);
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
@@ -246,7 +246,7 @@ describe('VenueFilters 距離最近選項與 IAB 判斷（venue-distance-sort）
     cleanup();
   });
 
-  const getSortTrigger = () => screen.getByRole('button', { name: '排序' });
+  const getSortTrigger = () => screen.getByRole('button', { name: /^排序：/ });
   const getOptionLabels = () => {
     fireEvent.click(getSortTrigger());
     const menu = screen.getByRole('menu');

@@ -6,11 +6,12 @@ import {
   buildVenueConditionText,
   buildVenueFacilityRows,
   buildVenueUsageRows,
-  formatCardTagLabel,
   formatConditionUntil,
   formatTagDate,
+  getVenueCardTags,
   getVisibleVenueTags,
   pickCardTags,
+  toCardTagsParam,
 } from './venueTags';
 
 const TODAY = '2026-10-15';
@@ -317,15 +318,6 @@ describe.each(['America/Los_Angeles', 'UTC'])('TC-032 日期 formatter（TZ=%s�
     expect(formatTagDate(input)).toBe(expected);
   });
 
-  it.each<[VenueTag, string]>([
-    [{ slug: 'free_venue', limited: true, until: '2026-12-31' }, '免場地費・限期至 12/31'],
-    [{ slug: 'free_venue', limited: true, until: '2027-01-31' }, '免場地費・限期至 2027/1/31'],
-    [{ slug: 'free_venue', limited: true }, '免場地費（限期）'],
-    [{ slug: 'free_venue' }, '免場地費'],
-  ])('卡片限期 %j → %s', (tag, expected) => {
-    expect(formatCardTagLabel(tag, '免場地費', TODAY)).toBe(expected);
-  });
-
   it('條件文字日期：「2026/12/31 前」與合併句的「（至 12/31）」', () => {
     expect(conditionText([{ slug: 'free_venue', limited: true, until: '2026-12-31' }])).toBe(
       '2026/12/31 前免場地費'
@@ -368,5 +360,45 @@ describe('TC-144 交通列換成清單 buildVenueFacilityRows(tags, dictionary, 
 
   it('字典 null、也沒有清單 → 沒有任何列', () => {
     expect(buildVenueFacilityRows([], null)).toEqual([]);
+  });
+});
+
+describe('getVenueCardTags / toCardTagsParam（卡片標籤列與 card_tags）', () => {
+  it('依 cardRank 取前 3 個，label 取字典文字；限期也只寫標籤名，期限看詳情頁', () => {
+    const tags: VenueTag[] = [
+      { slug: 'free_venue', limited: true, until: '2026-12-31' },
+      { slug: 'goods_distribution' },
+      { slug: 'needs_guarantee' },
+      { slug: 'early_setup' },
+      { slug: 'beginner_friendly' },
+    ];
+    const items = getVenueCardTags(tags, dictionary, TODAY);
+    expect(items).toEqual([
+      { slug: 'goods_distribution', label: '應援物代發' },
+      { slug: 'free_venue', label: '免場地費' },
+      { slug: 'early_setup', label: '可提前佈展' },
+    ]);
+    expect(toCardTagsParam(items, dictionary)).toBe('goods_distribution,free_venue,early_setup');
+  });
+
+  it('過期標籤先排除再取', () => {
+    const items = getVenueCardTags(
+      [{ slug: 'free_venue', limited: true, until: '2026-10-14' }, { slug: 'early_setup' }],
+      dictionary,
+      TODAY
+    );
+    expect(items.map((i) => i.slug)).toEqual(['early_setup']);
+  });
+
+  it('沒有標籤或 tags 缺值 → []，card_tags 是空字串（字典成功）', () => {
+    expect(getVenueCardTags(undefined, dictionary, TODAY)).toEqual([]);
+    expect(getVenueCardTags([], dictionary, TODAY)).toEqual([]);
+    expect(toCardTagsParam([], dictionary)).toBe('');
+  });
+
+  it('字典失敗（null）→ 沒有標籤列，card_tags 是 dict_error，跟「沒標籤」分開', () => {
+    const items = getVenueCardTags([{ slug: 'free_venue' }], null, TODAY);
+    expect(items).toEqual([]);
+    expect(toCardTagsParam(items, null)).toBe('dict_error');
   });
 });

@@ -8,6 +8,8 @@ const queryKey = {
     params !== undefined ? ['admin-venues', params] : ['admin-venues'],
   venueDetail: (venueId: string) => ['venue-detail', venueId],
   venueTagDictionary: () => ['venue-tag-dictionary'],
+  // Separate from the admin key: the card query has its own retry and timeout
+  venueCardTagDictionary: () => ['venue-card-tag-dictionary'],
   venues: (params?: {
     region?: string;
     capacityRange?: string;

@@ -533,6 +533,10 @@ export interface Venue {
   coverPhoto: string | null;
   otherPhotos?: string[];
   hostTags?: string[];
+  // Optional so responses from before the backend deploy still type-check
+  tags?: VenueTag[];
+  // null = never saved (fall back to nearestMrt); [] = cleared (design-backend §10.5)
+  transitStops?: TransitStop[] | null;
   status: 'active' | 'inactive' | 'pending' | 'rejected';
   socialMedia?: {
     threads?: string;
