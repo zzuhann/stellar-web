@@ -9,6 +9,7 @@ import { css } from '@/styled-system/css';
 import { Artist, MapEvent } from '@/types';
 import { initializeLeafletIcons } from '@/components/map/utils/leaflet-icons';
 import { createUserLocationIcon } from '@/components/map/utils/userLocationIcon';
+import { hasWebGL } from '@/utils/webgl';
 import { MapLibreTileLayer } from './MapLibreTileLayer';
 import MarkerLayer from './MarkerLayer';
 import { DEFAULT_CENTER, DEFAULT_ZOOM } from './constants';
@@ -30,23 +31,6 @@ interface MapSectionProps {
   onMultiMarkerClick: (events: MapEvent[]) => void;
   onMapReady: (map: L.Map) => void;
   onClearSelection: () => void;
-}
-
-// ponytail: MapLibre throws without WebGL and error.tsx swallows the page; probe only, catch inside the layer if Sentry still shows it
-let cachedWebGL: boolean | undefined;
-function hasWebGL() {
-  if (cachedWebGL !== undefined) return cachedWebGL;
-  try {
-    const canvas = document.createElement('canvas');
-    // Same buffers MapLibre requests in _setupPainter
-    const attrs: WebGLContextAttributes = { stencil: true, depth: true };
-    const gl = canvas.getContext('webgl2', attrs) || canvas.getContext('webgl', attrs);
-    gl?.getExtension('WEBGL_lose_context')?.loseContext();
-    cachedWebGL = !!gl;
-  } catch {
-    cachedWebGL = false;
-  }
-  return cachedWebGL;
 }
 
 // Internal component: captures map instance and signals when panes are ready
@@ -99,6 +83,7 @@ export default function MapSection({
       >
         <MapReadyCapture onMapReady={onMapReady} onReady={() => setIsMapReady(true)} />
 
+        {/* ponytail: MapLibre throws without WebGL and error.tsx swallows the page; probe only, catch inside the layer if Sentry still shows it */}
         {hasWebGL() ? (
           <MapLibreTileLayer
             attribution='&copy; <a href="https://openfreemap.org">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -109,6 +94,7 @@ export default function MapSection({
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
             noWrap
+            maxZoom={19}
           />
         )}
 
