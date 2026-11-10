@@ -320,7 +320,7 @@ export default function VenueDetailV2({
             )}
             {relatedTagStrip && (
               <RelatedVenuesStrip
-                title={`也有「${relatedTagStrip.label}」的場地`}
+                title={`其他「${relatedTagStrip.label}」的場地`}
                 venues={relatedTagStrip.venues}
                 showRegion
                 onClickVenue={trackRelated('related_tag', relatedTagStrip.slug)}

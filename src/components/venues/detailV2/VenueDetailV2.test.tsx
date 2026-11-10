@@ -587,9 +587,9 @@ describe('同標籤推薦的畫面', () => {
 
   it('TC-011 標題、aria-label、位置、卡片連結與地區行', () => {
     renderView(makeVenue(), { regionVenues, tagStrip });
-    const tagSection = screen.getByRole('region', { name: '也有「應援物代發」的場地' });
+    const tagSection = screen.getByRole('region', { name: '其他「應援物代發」的場地' });
     expect(
-      within(tagSection).getByRole('heading', { level: 2, name: '也有「應援物代發」的場地' })
+      within(tagSection).getByRole('heading', { level: 2, name: '其他「應援物代發」的場地' })
     ).toBeTruthy();
     expect(within(tagSection).queryByRole('link', { name: '查看全部' })).toBeNull();
 
@@ -626,7 +626,7 @@ describe('同標籤推薦的畫面', () => {
     renderView(makeVenue(), { tagStrip });
     const button = screen.getByRole('link', { name: '查看全部場地' });
     expect(button.getAttribute('href')).toBe('/venues');
-    const tagSection = screen.getByRole('region', { name: '也有「應援物代發」的場地' });
+    const tagSection = screen.getByRole('region', { name: '其他「應援物代發」的場地' });
     expect(
       button.compareDocumentPosition(tagSection) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
@@ -634,7 +634,7 @@ describe('同標籤推薦的畫面', () => {
 
   it('TC-004 畫面：沒有同標籤推薦 → 沒有標題也沒有空的 section', () => {
     renderView(makeVenue(), { regionVenues });
-    expect(screen.queryByText(/^也有「/)).toBeNull();
+    expect(screen.queryByText(/^其他「/)).toBeNull();
     expect(screen.getAllByRole('region', { name: /的其他場地$/ })).toHaveLength(1);
   });
 
@@ -648,7 +648,7 @@ describe('同標籤推薦的畫面', () => {
     const last = regionLinks[regionLinks.length - 1];
     last.focus();
     const tagLinks = within(
-      screen.getByRole('region', { name: '也有「應援物代發」的場地' })
+      screen.getByRole('region', { name: '其他「應援物代發」的場地' })
     ).getAllByRole('link');
     for (const link of tagLinks) {
       await user.tab();

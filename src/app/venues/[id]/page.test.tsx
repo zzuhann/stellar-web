@@ -370,7 +370,7 @@ describe('TC-017 抓場地失敗', () => {
     vi.mocked(venueApi.getVenues).mockRejectedValue(new Error('timeout'));
     await renderPage();
     expect(screen.queryByRole('region', { name: /的其他場地$/ })).toBeNull();
-    expect(screen.queryByRole('region', { name: /^也有「/ })).toBeNull();
+    expect(screen.queryByRole('region', { name: /^其他「/ })).toBeNull();
     expect(screen.getByRole('link', { name: '查看全部場地' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 1, name: '月光咖啡' })).toBeTruthy();
     expect(screen.getByRole('region', { name: '可以在這裡' })).toBeTruthy();
@@ -405,8 +405,8 @@ describe('推薦區 GA 事件', () => {
     const user = userEvent.setup();
     await withoutNavigation(async () => {
       await user.click(stripLinks('台北的其他場地')[1]);
-      await user.click(stripLinks('也有「免場地費」的場地')[0]);
-      await user.click(stripLinks('也有「免場地費」的場地')[1]);
+      await user.click(stripLinks('其他「免場地費」的場地')[0]);
+      await user.click(stripLinks('其他「免場地費」的場地')[1]);
     });
     const common = { event_page: '/venues/[id]', user_id: '', related_strips: 'both' };
     expect(gaCalls('click_related_venue')).toEqual([
@@ -448,7 +448,7 @@ describe('推薦區 GA 事件', () => {
     ]);
     await renderPage();
     await withoutNavigation(async () => {
-      await userEvent.setup().click(stripLinks('也有「免場地費」的場地')[1]);
+      await userEvent.setup().click(stripLinks('其他「免場地費」的場地')[1]);
     });
     expect(gaCalls('click_related_venue')).toEqual([
       expect.objectContaining({
@@ -482,7 +482,7 @@ describe('推薦區 GA 事件', () => {
       'c：只有同標籤那條 → tag_only',
       'abc',
       [listVenue('abc', '基隆', free), ...['a', 'b', 'c'].map((i) => listVenue(i, '台中', free))],
-      '也有「免場地費」的場地',
+      '其他「免場地費」的場地',
       'tag_only',
     ],
   ])('TC-019 %s', async (_, __, list, strip, expected) => {
