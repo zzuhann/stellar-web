@@ -13,6 +13,7 @@ import {
   trackClickVenueTag,
   type RelatedStrips,
   type RelatedVenuePlacement,
+  type VenueTagClickPlacement,
   type VenueContactButtonLocation,
   type VenueCorrectionContactType,
 } from '@/lib/analytics/venues';
@@ -22,9 +23,9 @@ import {
   buildVenueFacilityRows,
   buildVenueUsageRows,
   getVisibleVenueTags,
+  USAGE_ROW_TAG_SLUG,
 } from '@/utils/venueTags';
 import type { RelatedVenueCard, RelatedTagStrip } from '@/utils/venueRelated';
-import { USAGE_ROW_TAG_SLUG } from '@/utils/venueTags';
 import { CAPACITY_RANGE_LABEL } from '../venueCapacity';
 import VenueGallery from '../VenueGallery';
 import PastEventsStrip from '../PastEventsStrip';
@@ -181,21 +182,18 @@ export default function VenueDetailV2({
   const trackCorrection = (contactType: VenueCorrectionContactType) =>
     trackClickVenueCorrection({ userId, venueId: venue.id, contactType });
 
-  const trackTag = (placement: 'usage_summary' | 'facilities') => (tagSlug: string) =>
+  const trackTag = (placement: VenueTagClickPlacement) => (tagSlug: string) =>
     trackClickVenueTag({ userId, venueId: venue.id, tagSlug, placement });
   const hasRegionStrip = relatedRegionVenues.length > 0;
-  const relatedStrips: RelatedStrips | null =
-    hasRegionStrip && relatedTagStrip
+  // No strips means no cards to click, so 'tag_only' is never sent in that case.
+  const relatedStrips: RelatedStrips = hasRegionStrip
+    ? relatedTagStrip
       ? 'both'
-      : hasRegionStrip
-        ? 'region_only'
-        : relatedTagStrip
-          ? 'tag_only'
-          : null;
+      : 'region_only'
+    : 'tag_only';
   const trackRelated =
     (placement: RelatedVenuePlacement, tagSlug: string) =>
     (related: RelatedVenueCard, position: number) => {
-      if (!relatedStrips) return;
       trackClickRelatedVenue({
         userId,
         venueId: related.id,
