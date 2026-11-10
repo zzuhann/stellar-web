@@ -3,12 +3,17 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { css, cx } from '@/styled-system/css';
-import type { Venue, VenueDetail, VenueTagDictionary } from '@/types';
+import type { VenueDetail, VenueTagDictionary } from '@/types';
 import { useAuth } from '@/lib/auth-context';
 import {
   trackClickVenueContact,
   trackClickVenueCorrection,
+  trackClickRelatedVenue,
   trackClickVenueSourceLink,
+  trackClickVenueTag,
+  type RelatedStrips,
+  type RelatedVenuePlacement,
+  type VenueTagClickPlacement,
   type VenueContactButtonLocation,
   type VenueCorrectionContactType,
 } from '@/lib/analytics/venues';
@@ -18,7 +23,9 @@ import {
   buildVenueFacilityRows,
   buildVenueUsageRows,
   getVisibleVenueTags,
+  USAGE_ROW_TAG_SLUG,
 } from '@/utils/venueTags';
+import type { RelatedVenueCard, RelatedTagStrip } from '@/utils/venueRelated';
 import { CAPACITY_RANGE_LABEL } from '../venueCapacity';
 import VenueGallery from '../VenueGallery';
 import PastEventsStrip from '../PastEventsStrip';
@@ -132,7 +139,8 @@ const allVenuesLink = css({
 
 interface VenueDetailV2Props {
   venue: VenueDetail;
-  relatedVenues: Venue[];
+  relatedRegionVenues: RelatedVenueCard[];
+  relatedTagStrip: RelatedTagStrip | null;
   dictionary: VenueTagDictionary | null;
   // Taipei YYYY-MM-DD from the server so render and hydration agree around midnight
   today: string;
@@ -140,7 +148,8 @@ interface VenueDetailV2Props {
 
 export default function VenueDetailV2({
   venue,
-  relatedVenues,
+  relatedRegionVenues,
+  relatedTagStrip,
   dictionary,
   today,
 }: VenueDetailV2Props) {
@@ -172,6 +181,32 @@ export default function VenueDetailV2({
     trackClickVenueSourceLink({ userId, venueId: venue.id, listPosition });
   const trackCorrection = (contactType: VenueCorrectionContactType) =>
     trackClickVenueCorrection({ userId, venueId: venue.id, contactType });
+
+  const trackTag = (placement: VenueTagClickPlacement) => (tagSlug: string) => {
+    // A drag-select that ends on the row fires click too; that is not interest in the tag
+    if (window.getSelection()?.toString()) return;
+    trackClickVenueTag({ userId, venueId: venue.id, tagSlug, placement });
+  };
+  const hasRegionStrip = relatedRegionVenues.length > 0;
+  // No strips means no cards to click, so 'tag_only' is never sent in that case.
+  const relatedStrips: RelatedStrips = hasRegionStrip
+    ? relatedTagStrip
+      ? 'both'
+      : 'region_only'
+    : 'tag_only';
+  const trackRelated =
+    (placement: RelatedVenuePlacement, tagSlug: string) =>
+    (related: RelatedVenueCard, position: number) => {
+      trackClickRelatedVenue({
+        userId,
+        venueId: related.id,
+        venueRegion: related.region,
+        placement,
+        listPosition: position,
+        tagSlug,
+        relatedStrips,
+      });
+    };
 
   const hasSourceMeta = sourceLinks.length > 0 || Boolean(infoUpdatedOn);
 
@@ -225,6 +260,7 @@ export default function VenueDetailV2({
                 sourceLinks={sourceLinks}
                 infoUpdatedOn={infoUpdatedOn}
                 onClickSourceLink={trackSourceLink}
+                onClickRow={(key) => trackTag('usage_summary')(USAGE_ROW_TAG_SLUG[key])}
               />
             </div>
           )}
@@ -234,7 +270,11 @@ export default function VenueDetailV2({
           </div>
 
           <div className={areaFacilities}>
-            <VenueFacilities rows={facilityRows} equipmentNote={venue.equipmentNote ?? ''} />
+            <VenueFacilities
+              rows={facilityRows}
+              equipmentNote={venue.equipmentNote ?? ''}
+              onClickTag={trackTag('facilities')}
+            />
           </div>
 
           <div className={areaDescription}>
@@ -264,14 +304,27 @@ export default function VenueDetailV2({
           )}
 
           <div className={areaRelated}>
-            {relatedVenues.length > 0 ? (
-              <RelatedVenuesStrip venues={relatedVenues} region={venue.region} />
+            {hasRegionStrip ? (
+              <RelatedVenuesStrip
+                title={`${venue.region}的其他場地`}
+                venues={relatedRegionVenues}
+                seeAllHref={`/venues?region=${encodeURIComponent(venue.region)}`}
+                onClickVenue={trackRelated('related_region', '')}
+              />
             ) : (
               <div className={allVenuesWrap}>
                 <Link href="/venues" className={allVenuesLink}>
                   查看全部場地
                 </Link>
               </div>
+            )}
+            {relatedTagStrip && (
+              <RelatedVenuesStrip
+                title={`其他「${relatedTagStrip.label}」的場地`}
+                venues={relatedTagStrip.venues}
+                showRegion
+                onClickVenue={trackRelated('related_tag', relatedTagStrip.slug)}
+              />
             )}
           </div>
 

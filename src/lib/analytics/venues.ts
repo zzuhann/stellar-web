@@ -65,6 +65,28 @@ interface VenueSourceLinkEventParams extends VenueEventBaseParams {
   listPosition: number; // 1-based
 }
 
+export type VenueTagClickPlacement = 'usage_summary' | 'facilities';
+
+interface VenueTagClickEventParams extends VenueEventBaseParams {
+  venueId: string;
+  tagSlug: string;
+  placement: VenueTagClickPlacement;
+}
+
+export type RelatedVenuePlacement = 'related_region' | 'related_tag';
+export type RelatedStrips = 'both' | 'region_only' | 'tag_only';
+
+interface RelatedVenueClickEventParams extends VenueEventBaseParams {
+  // The clicked (destination) venue, not the page's own
+  venueId: string;
+  venueRegion: string;
+  placement: RelatedVenuePlacement;
+  listPosition: number; // 1-based
+  // '' for related_region
+  tagSlug: string;
+  relatedStrips: RelatedStrips;
+}
+
 export type VenueCorrectionContactType = 'form' | 'instagram' | 'threads';
 
 interface VenueCorrectionEventParams extends VenueEventBaseParams {
@@ -264,5 +286,41 @@ export function trackClickVenueCorrection({
     user_id: userId ?? '',
     content_id: toVenueContentId(venueId),
     contact_type: contactType,
+  });
+}
+
+export function trackClickVenueTag({
+  userId,
+  venueId,
+  tagSlug,
+  placement,
+}: VenueTagClickEventParams) {
+  trackVenueEvent('click_venue_tag', {
+    event_page: VENUE_DETAIL_EVENT_PAGE,
+    user_id: userId ?? '',
+    content_id: toVenueContentId(venueId),
+    tag_slug: tagSlug,
+    placement,
+  });
+}
+
+export function trackClickRelatedVenue({
+  userId,
+  venueId,
+  venueRegion,
+  placement,
+  listPosition,
+  tagSlug,
+  relatedStrips,
+}: RelatedVenueClickEventParams) {
+  trackVenueEvent('click_related_venue', {
+    event_page: VENUE_DETAIL_EVENT_PAGE,
+    user_id: userId ?? '',
+    content_id: toVenueContentId(venueId),
+    placement,
+    list_position: listPosition,
+    venue_region: venueRegion,
+    tag_slug: tagSlug,
+    related_strips: relatedStrips,
   });
 }

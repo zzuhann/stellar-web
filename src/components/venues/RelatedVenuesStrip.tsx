@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { StarIcon, UsersIcon } from '@heroicons/react/24/solid';
+import { MapPinIcon, StarIcon, UsersIcon } from '@heroicons/react/24/solid';
 import { css } from '@/styled-system/css';
-import type { Venue } from '@/types';
+import type { RelatedVenueCard } from '@/utils/venueRelated';
 import MrtIcon from './MrtIcon';
 import { CAPACITY_RANGE_LABEL } from './venueCapacity';
 
@@ -140,27 +140,45 @@ const fadeRight = css({
 });
 
 interface RelatedVenuesStripProps {
-  venues: Venue[];
-  region: string;
+  title: string;
+  venues: RelatedVenueCard[];
+  // Omitted for the tag strip: there is no tag filter to link to
+  seeAllHref?: string;
+  // The tag strip mixes regions, so each card names its own
+  showRegion?: boolean;
+  onClickVenue: (venue: RelatedVenueCard, position: number) => void;
 }
 
-export default function RelatedVenuesStrip({ venues, region }: RelatedVenuesStripProps) {
+export default function RelatedVenuesStrip({
+  title,
+  venues,
+  seeAllHref,
+  showRegion = false,
+  onClickVenue,
+}: RelatedVenuesStripProps) {
   if (venues.length === 0) return null;
 
   return (
-    <section aria-label={`${region}的其他場地`} className={section}>
+    <section aria-label={title} className={section}>
       <div className={header}>
-        <h2 className={sectionTitle}>{region}的其他場地</h2>
-        <Link href="/venues" className={seeAllLink}>
-          查看全部
-        </Link>
+        <h2 className={sectionTitle}>{title}</h2>
+        {seeAllHref && (
+          <Link href={seeAllHref} className={seeAllLink}>
+            查看全部
+          </Link>
+        )}
       </div>
 
       <div className={trackWrap}>
         <div role="list" className={track}>
-          {venues.map((venue) => (
+          {venues.map((venue, index) => (
             <div key={venue.id} role="listitem" className={cardItem}>
-              <Link href={`/venues/${venue.id}`} className={card}>
+              <Link
+                href={`/venues/${venue.id}`}
+                prefetch={false}
+                className={card}
+                onClick={() => onClickVenue(venue, index + 1)}
+              >
                 <div className={coverWrap}>
                   {venue.coverPhoto ? (
                     <Image
@@ -192,6 +210,12 @@ export default function RelatedVenuesStrip({ venues, region }: RelatedVenuesStri
                 </div>
                 <div className={cardBody}>
                   <h3 className={cardName}>{venue.name}</h3>
+                  {showRegion && venue.region && (
+                    <div className={cardMeta}>
+                      <MapPinIcon aria-hidden="true" width={14} height={14} />
+                      {venue.region}
+                    </div>
+                  )}
                   {venue.nearestMrt && (
                     <div className={cardMeta}>
                       <MrtIcon size={14} />

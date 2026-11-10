@@ -127,6 +127,13 @@ export const buildVenueConditionText = (
 
 export type VenueUsageRowKey = 'distribution' | 'decorate' | 'privateBooking';
 
+// click_venue_tag slug per usage row (the distribution row still reports goods_distribution when it also mentions parcel receiving)
+export const USAGE_ROW_TAG_SLUG: Record<VenueUsageRowKey, string> = {
+  distribution: 'goods_distribution',
+  decorate: 'can_decorate',
+  privateBooking: 'private_booking',
+};
+
 export interface VenueUsageRow {
   key: VenueUsageRowKey;
   title: string;
@@ -153,7 +160,7 @@ export const buildVenueUsageRows = (
     const condition = buildVenueConditionText(tags, today);
     rows.push({
       key: 'decorate',
-      title: '佈置、辦生咖',
+      title: '辦生咖',
       description: condition ?? NO_DECORATE_CONDITION_TEXT,
     });
   }
@@ -171,7 +178,8 @@ export interface VenueFacilityRow {
   lines?: string[];
 }
 
-const FACILITY_GROUPS: VenueTagGroupKey[] = ['service', 'transport', 'space', 'equipment'];
+// Price group shows only free_venue; the other price tags stay in the condition text
+const FACILITY_GROUPS: VenueTagGroupKey[] = ['price', 'service', 'transport', 'space', 'equipment'];
 // Already shown as usage rows (or only drive them), so they stay out of this section
 const USAGE_ONLY_SLUGS = new Set(['goods_distribution', 'private_booking', 'can_decorate']);
 
@@ -197,6 +205,7 @@ export const buildVenueFacilityRows = (
       tags: (dictionary?.tags ?? [])
         .filter((d) => d.group === key && owned.has(d.slug))
         .filter((d) => !USAGE_ONLY_SLUGS.has(d.slug))
+        .filter((d) => key !== 'price' || d.slug === 'free_venue')
         .filter((d) => !(hideParcel && d.slug === 'parcel_receiving'))
         .sort((a, b) => a.order - b.order)
         .map((d) => ({ slug: d.slug, label: d.label })),

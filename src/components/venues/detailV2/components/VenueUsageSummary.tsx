@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { CheckIcon } from '@heroicons/react/24/outline';
 import { css, cx } from '@/styled-system/css';
-import type { VenueUsageRow } from '@/utils/venueTags';
+import type { VenueUsageRow, VenueUsageRowKey } from '@/utils/venueTags';
 import VenueSourceMeta from './VenueSourceMeta';
 
 const card = css({
@@ -88,6 +88,8 @@ interface VenueUsageSummaryProps {
   sourceLinks: string[];
   infoUpdatedOn: string | null;
   onClickSourceLink: (listPosition: number) => void;
+  // Whole row counts as a click; rows stay non-interactive (no role/tabindex)
+  onClickRow: (key: VenueUsageRowKey) => void;
 }
 
 export default function VenueUsageSummary({
@@ -95,6 +97,7 @@ export default function VenueUsageSummary({
   sourceLinks,
   infoUpdatedOn,
   onClickSourceLink,
+  onClickRow,
 }: VenueUsageSummaryProps) {
   const headingId = useId();
 
@@ -105,7 +108,11 @@ export default function VenueUsageSummary({
       </h2>
       <ul className={list}>
         {rows.map((row) => (
-          <li key={row.key} className={cx(item, row.key === 'decorate' && fullRow)}>
+          <li
+            key={row.key}
+            className={cx(item, row.key === 'decorate' && fullRow)}
+            onClick={() => onClickRow(row.key)}
+          >
             <span className={checkDot} aria-hidden="true">
               <CheckIcon width={14} height={14} strokeWidth={2.5} />
             </span>

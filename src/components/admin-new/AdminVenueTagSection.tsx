@@ -317,7 +317,7 @@ const LIMIT_OPTIONS: { value: TagLimitMode; label: string }[] = [
 
 const PAST_UNTIL_WARNING = '這個日期已經過了，存了之後前台不會顯示這個標籤。';
 const NEAR_TRAIN_HINT = '步行 10 分鐘內，含高鐵';
-const CAN_DECORATE_HINT = '不上卡片，決定詳情頁「佈置、辦生咖」那一行';
+const CAN_DECORATE_HINT = '不上卡片，決定詳情頁「辦生咖」那一行';
 
 // ─── LimitDropdown ────────────────────────────────────────────────────────────
 

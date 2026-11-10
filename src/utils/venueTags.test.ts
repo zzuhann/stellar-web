@@ -82,9 +82,9 @@ describe('TC-014 三行用途 buildVenueUsageRows', () => {
     },
     { name: '只有代收 → 沒有發放行', tags: t('parcel_receiving'), expected: [] },
     {
-      name: 'can_decorate → 佈置行',
+      name: 'can_decorate → 辦生咖行',
       tags: t('can_decorate'),
-      expected: [{ key: 'decorate', title: '佈置、辦生咖' }],
+      expected: [{ key: 'decorate', title: '辦生咖' }],
     },
     {
       name: 'private_booking → 包場行只有標題',
@@ -185,22 +185,71 @@ describe('TC-015 條件文字 buildVenueConditionText', () => {
   });
 });
 
-describe('TC-016 「服務、交通與空間」分列 buildVenueFacilityRows', () => {
+describe('TC-016 「價格、服務、交通與空間」分列 buildVenueFacilityRows', () => {
   const allSlugs = dictionary.tags.map((d) => d.slug);
 
-  it('四列依序為服務、交通、空間類型、設備，標籤照字典順序', () => {
+  it('五列依序為價格、服務、交通、空間類型、設備，標籤照字典順序；價格列只有免場地費', () => {
     const rows = facilityRows(t(...allSlugs.slice().reverse()));
-    expect(rows.map((r) => r.label)).toEqual(['服務', '交通', '空間類型', '設備']);
-    expect(rows[0].tags.map((x) => x.label)).toEqual(['可提前佈展', '新手友善', '客製餐點']);
-    expect(rows[1].tags.map((x) => x.label)).toEqual(['近捷運', '近火車站']);
-    expect(rows[2].tags.map((x) => x.label)).toEqual([
+    expect(rows.map((r) => r.label)).toEqual(['價格', '服務', '交通', '空間類型', '設備']);
+    expect(rows[0]).toEqual({
+      key: 'price',
+      label: '價格',
+      tags: [{ slug: 'free_venue', label: '免場地費' }],
+    });
+    expect(rows[1].tags.map((x) => x.label)).toEqual(['可提前佈展', '新手友善', '客製餐點']);
+    expect(rows[2].tags.map((x) => x.label)).toEqual(['近捷運', '近火車站']);
+    expect(rows[3].tags.map((x) => x.label)).toEqual([
       '咖啡廳',
       '展覽空間',
       '酒吧/餐酒館',
       '多功能空間',
       '外帶為主',
     ]);
-    expect(rows[3].tags.map((x) => x.label)).toEqual(['投影/螢幕', '可播放音樂', '佈置設備']);
+    expect(rows[4].tags.map((x) => x.label)).toEqual(['投影/螢幕', '可播放音樂', '佈置設備']);
+  });
+
+  describe('TC-015 價格列', () => {
+    it.each([
+      {
+        name: 'a：free_venue 不限期 + 服務標籤 → 價格列在服務上面',
+        tags: t('free_venue', 'beginner_friendly'),
+        labels: ['價格', '服務'],
+        price: ['免場地費'],
+      },
+      {
+        name: 'e：限期 free_venue + 其他價格類 → 價格列只有免場地費、不帶日期',
+        tags: [
+          { slug: 'free_venue', limited: true as const, until: '2026-12-31' },
+          { slug: 'venue_fee' },
+          { slug: 'can_decorate' },
+          { slug: 'beginner_friendly' },
+        ],
+        labels: ['價格', '服務'],
+        price: ['免場地費'],
+      },
+      {
+        name: 'b：沒有 free_venue → 沒有價格列',
+        tags: t('cafe'),
+        labels: ['空間類型'],
+        price: undefined,
+      },
+      {
+        name: 'c：free_venue 已過期（過濾後拿掉）→ 沒有價格列',
+        tags: [{ slug: 'free_venue', until: '2026-10-14' }, { slug: 'cafe' }],
+        labels: ['空間類型'],
+        price: undefined,
+      },
+      {
+        name: 'd：只有其他價格類標籤 → 沒有價格列，也不出現在這一區',
+        tags: t('venue_fee', 'needs_guarantee', 'deposit', 'no_min_guarantee'),
+        labels: [],
+        price: undefined,
+      },
+    ])('$name', ({ tags, labels, price }) => {
+      const rows = facilityRows(tags);
+      expect(rows.map((r) => r.label)).toEqual(labels);
+      expect(rows.find((r) => r.key === 'price')?.tags.map((x) => x.label)).toEqual(price);
+    });
   });
 
   it('有代收但沒有代發時，代收放服務列', () => {
@@ -217,11 +266,13 @@ describe('TC-016 「服務、交通與空間」分列 buildVenueFacilityRows', (
     ]);
   });
 
-  it('代發和代收都有時，代收不在服務列；用途行的代發、包場、可佈置與價格類不在這一區', () => {
+  it('代發和代收都有時，代收不在服務列；用途行的代發、包場、可佈置不在這一區，價格類只留免場地費', () => {
     const rows = facilityRows(
       t('goods_distribution', 'parcel_receiving', 'private_booking', 'can_decorate', 'free_venue')
     );
-    expect(rows).toEqual([]);
+    expect(rows).toEqual([
+      { key: 'price', label: '價格', tags: [{ slug: 'free_venue', label: '免場地費' }] },
+    ]);
   });
 
   it('外帶為主在空間類型列；沒有標籤的列不顯示', () => {
