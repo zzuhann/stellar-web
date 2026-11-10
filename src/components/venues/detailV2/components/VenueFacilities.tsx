@@ -104,9 +104,11 @@ function EquipmentNote({ note, headingLevel: Heading }: EquipmentNoteProps) {
 interface VenueFacilitiesProps {
   rows: VenueFacilityRow[];
   equipmentNote: string;
+  // Tags stay non-interactive; the click is only reported
+  onClickTag: (slug: string) => void;
 }
 
-export default function VenueFacilities({ rows, equipmentNote }: VenueFacilitiesProps) {
+export default function VenueFacilities({ rows, equipmentNote, onClickTag }: VenueFacilitiesProps) {
   const headingId = useId();
   const note = equipmentNote.trim();
 
@@ -140,7 +142,7 @@ export default function VenueFacilities({ rows, equipmentNote }: VenueFacilities
               ) : (
                 <dd className={tagGroup}>
                   {row.tags.map((t) => (
-                    <span key={t.slug} className={tag}>
+                    <span key={t.slug} className={tag} onClick={() => onClickTag(t.slug)}>
                       {t.label}
                     </span>
                   ))}

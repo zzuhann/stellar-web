@@ -381,8 +381,11 @@ describe('TC-017 抓場地失敗', () => {
 describe('推薦區 GA 事件', () => {
   const freeVenue = () =>
     vi.mocked(venueApi.getVenueById).mockResolvedValue({ ...venue, tags: free });
+  // Cards only; the strip's "查看全部" link is not a card
   const stripLinks = (name: string) =>
-    within(screen.getByRole('region', { name })).getAllByRole('link');
+    within(screen.getByRole('region', { name }))
+      .getAllByRole('link')
+      .filter((a) => /^\/venues\/[^?]+$/.test(a.getAttribute('href') ?? ''));
 
   it('TC-018 click_related_venue 參數、位置各自算、載入與 rerender 不送', async () => {
     freeVenue();

@@ -4,6 +4,7 @@ import { Metadata } from 'next';
 import { venueApi } from '@/lib/api';
 import type { Venue } from '@/types';
 import { dateToTaipeiDateString } from '@/utils';
+import { buildRelatedVenues } from '@/utils/venueRelated';
 import { formatTransitStationName, getVenueHeaderTransit } from '@/utils/transitStops';
 import { CAPACITY_RANGE_LABEL } from '@/components/venues/venueCapacity';
 import VenueDetailV2 from '@/components/venues/detailV2/VenueDetailV2';
@@ -77,25 +78,31 @@ export default async function VenueDetailPage({ params }: PageProps) {
   });
   if (!venue) notFound();
 
-  const [dictionary, relatedVenues] = await Promise.all([
+  // ISR renders at most once a day, so "today" (tag expiry, event status) may lag a day
+  const today = dateToTaipeiDateString(new Date());
+
+  const [dictionary, allVenues] = await Promise.all([
     dictionaryPromise,
     venueApi
-      // 後端非 random 查詢現在預設分頁 20 筆，這裡要拿到該地區的全部場地，
-      // 不能只拿第一頁，故明確帶大 limit。
-      .getVenues({ region: [venue.region], status: 'active', limit: 1000 })
-      .then((r): Venue[] => r.venues.filter((v) => v.id !== id))
+      // The backend defaults to 20 per page for non-random queries, so ask for everything in one go.
+      // No sort param: the default composite order is what both strips keep.
+      .getVenues({ status: 'active', limit: 1000 })
+      .then((r): Venue[] => r.venues)
+      // A failed fetch hides both strips instead of failing the page
       .catch((): Venue[] => []),
   ]);
+  // Only card fields reach the client component, not the full venue list
+  const related = buildRelatedVenues({ venue, allVenues, dictionary, today });
 
   return (
     <>
       <VenueViewTracker venueId={venue.id} />
       <VenueDetailV2
         venue={venue}
-        relatedVenues={relatedVenues}
+        relatedRegionVenues={related.region}
+        relatedTagStrip={related.tag}
         dictionary={dictionary}
-        // ISR renders at most once a day, so "today" (tag expiry, event status) may lag a day
-        today={dateToTaipeiDateString(new Date())}
+        today={today}
       />
     </>
   );
