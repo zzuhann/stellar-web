@@ -2,7 +2,7 @@ import { test as base } from '@playwright/test';
 
 // E2E may run against production (BASE_URL); keep test runs out of Sentry and analytics
 const TELEMETRY =
-  /^https?:\/\/([^/]+\.)?(sentry\.io|clarity\.ms|google-analytics\.com|googletagmanager\.com)\/|\/_vercel\/(insights|speed-insights)\//;
+  /^https?:\/\/([^/]+\.)?(sentry\.io|clarity\.ms|google-analytics\.com|googletagmanager\.com|vercel-scripts\.com)\/|\/_vercel\/(insights|speed-insights)\//;
 
 export const test = base.extend({
   context: async ({ context }, provide) => {
