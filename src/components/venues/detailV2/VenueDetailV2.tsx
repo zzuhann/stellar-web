@@ -19,6 +19,7 @@ import {
   buildVenueUsageRows,
   getVisibleVenueTags,
 } from '@/utils/venueTags';
+import type { RelatedVenueCard, RelatedTagStrip } from '@/utils/venueRelated';
 import { CAPACITY_RANGE_LABEL } from '../venueCapacity';
 import VenueGallery from '../VenueGallery';
 import PastEventsStrip from '../PastEventsStrip';
@@ -132,7 +133,9 @@ const allVenuesLink = css({
 
 interface VenueDetailV2Props {
   venue: VenueDetail;
-  relatedVenues: Venue[];
+  relatedVenues?: Venue[];
+  relatedRegionVenues?: RelatedVenueCard[];
+  relatedTagStrip?: RelatedTagStrip | null;
   dictionary: VenueTagDictionary | null;
   // Taipei YYYY-MM-DD from the server so render and hydration agree around midnight
   today: string;
@@ -140,7 +143,7 @@ interface VenueDetailV2Props {
 
 export default function VenueDetailV2({
   venue,
-  relatedVenues,
+  relatedVenues = [],
   dictionary,
   today,
 }: VenueDetailV2Props) {
