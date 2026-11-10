@@ -182,8 +182,11 @@ export default function VenueDetailV2({
   const trackCorrection = (contactType: VenueCorrectionContactType) =>
     trackClickVenueCorrection({ userId, venueId: venue.id, contactType });
 
-  const trackTag = (placement: VenueTagClickPlacement) => (tagSlug: string) =>
+  const trackTag = (placement: VenueTagClickPlacement) => (tagSlug: string) => {
+    // A drag-select that ends on the row fires click too; that is not interest in the tag
+    if (window.getSelection()?.toString()) return;
     trackClickVenueTag({ userId, venueId: venue.id, tagSlug, placement });
+  };
   const hasRegionStrip = relatedRegionVenues.length > 0;
   // No strips means no cards to click, so 'tag_only' is never sent in that case.
   const relatedStrips: RelatedStrips = hasRegionStrip

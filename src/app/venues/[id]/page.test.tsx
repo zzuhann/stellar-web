@@ -374,7 +374,7 @@ describe('TC-017 抓場地失敗', () => {
     expect(screen.getByRole('link', { name: '查看全部場地' })).toBeTruthy();
     expect(screen.getByRole('heading', { level: 1, name: '月光咖啡' })).toBeTruthy();
     expect(screen.getByRole('region', { name: '可以在這裡' })).toBeTruthy();
-    expect(screen.getByRole('region', { name: '服務、交通與空間' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: '價格、服務、交通與空間' })).toBeTruthy();
     expect(screen.getByRole('region', { name: '聯絡場地' })).toBeTruthy();
   });
 });

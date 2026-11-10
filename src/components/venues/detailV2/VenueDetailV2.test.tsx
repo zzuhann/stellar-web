@@ -9,6 +9,11 @@ import { STELLAR_INSTAGRAM_URL, STELLAR_THREADS_URL } from '@/constants/stellarS
 import VenueDetailV2 from './VenueDetailV2';
 
 vi.mock('@next/third-parties/google', () => ({ sendGAEvent: vi.fn() }));
+const router = vi.hoisted(() => ({ push: vi.fn(), replace: vi.fn() }));
+vi.mock('next/navigation', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('next/navigation')>()),
+  useRouter: () => router,
+}));
 vi.mock('@/lib/auth-context', () => ({ useAuth: () => ({ user: null }) }));
 
 afterEach(cleanup);
@@ -90,8 +95,8 @@ const withoutNavigation = async (fn: () => Promise<void>) => {
 
 const usageRegion = () => screen.queryByRole('region', { name: '可以在這裡' });
 const getUsageRegion = () => screen.getByRole('region', { name: '可以在這裡' });
-const facilityRegion = () => screen.queryByRole('region', { name: '服務、交通與空間' });
-const getFacilityRegion = () => screen.getByRole('region', { name: '服務、交通與空間' });
+const facilityRegion = () => screen.queryByRole('region', { name: '價格、服務、交通與空間' });
+const getFacilityRegion = () => screen.getByRole('region', { name: '價格、服務、交通與空間' });
 const descriptionRegion = () => screen.getByRole('region', { name: '店家說明' });
 const contactBar = () => screen.queryByRole('complementary', { name: '聯絡店家' });
 const getContactBar = () => screen.getByRole('complementary', { name: '聯絡店家' });
@@ -177,7 +182,7 @@ describe('TC-034 完全沒有標籤', () => {
 });
 
 describe('TC-035 有標籤但三行用途都沒有', () => {
-  it('只有 cafe、near_mrt → 沒有空框，「服務、交通與空間」只有交通、空間類型兩列', () => {
+  it('只有 cafe、near_mrt → 沒有空框，「價格、服務、交通與空間」只有交通、空間類型兩列', () => {
     renderView(
       makeVenue({
         tags: t('cafe', 'near_mrt'),
@@ -456,7 +461,7 @@ describe('資料有誤、想更新相關資訊', () => {
   });
 });
 
-describe('TC-144 「服務、交通與空間」的交通清單', () => {
+describe('TC-144 「價格、服務、交通與空間」的交通清單', () => {
   const stops = [
     { type: 'bus' as const, station: '復興新和街口', walkMinutes: 3 },
     { type: 'mrt' as const, station: '中山', walkMinutes: 5 },
@@ -497,7 +502,7 @@ describe('TC-144 「服務、交通與空間」的交通清單', () => {
   it.each([
     ['字典載入失敗', { dictionary: null }, t('near_mrt', 'cafe')],
     ['完全沒有標籤', {}, []],
-  ] as const)('c：%s → 「服務、交通與空間」照樣出現，只有交通列的清單', (_, opts, tags) => {
+  ] as const)('c：%s → 「價格、服務、交通與空間」照樣出現，只有交通列的清單', (_, opts, tags) => {
     renderView(makeVenue({ tags: [...tags], transitStops: stops }), opts);
     const region = getFacilityRegion();
     expect(
@@ -749,13 +754,12 @@ describe('標籤點擊事件', () => {
     ]);
   });
 
-  it('TC-021 「服務、交通與空間」的標籤（含價格列）送 facilities', async () => {
+  it('TC-021 「價格、服務、交通與空間」的標籤（含價格列）送 facilities', async () => {
     const { container } = renderView(
       makeVenue({ id: 'abc', tags: t('free_venue', 'beginner_friendly', 'cafe', 'near_mrt') })
     );
     const region = getFacilityRegion();
     const htmlBefore = container.innerHTML;
-    const hrefBefore = window.location.href;
     const user = userEvent.setup();
     for (const label of ['免場地費', '新手友善', '咖啡廳', '近捷運']) {
       await user.click(within(region).getByText(label));
@@ -769,8 +773,30 @@ describe('標籤點擊事件', () => {
     );
     // Nothing changes on screen and the page does not navigate
     expect(container.innerHTML).toBe(htmlBefore);
-    expect(window.location.href).toBe(hrefBefore);
+    expect(router.push).not.toHaveBeenCalled();
+    expect(router.replace).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ['有選取文字', 'dragged text', 0],
+    ['沒有選取文字', '', 2],
+  ])(
+    'TC-024 %s → click_venue_tag 送 %i 次（用途列＋設施標籤各一次）',
+    async (_, selected, count) => {
+      const spy = vi.spyOn(window, 'getSelection').mockReturnValue({
+        toString: () => selected,
+      } as unknown as Selection);
+      try {
+        renderView(makeVenue({ id: 'abc', tags: t('goods_distribution', 'free_venue') }));
+        const user = userEvent.setup();
+        await user.click(within(getUsageRegion()).getByText('發放應援物'));
+        await user.click(within(getFacilityRegion()).getByText('免場地費'));
+        expect(gaCalls('click_venue_tag')).toHaveLength(count);
+      } finally {
+        spy.mockRestore();
+      }
+    }
+  );
 
   it('TC-022 不該送的地方完全不送，原始說明連結只送 click_venue_source_link', async () => {
     renderView(

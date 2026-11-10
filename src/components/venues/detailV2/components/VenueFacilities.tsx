@@ -124,7 +124,7 @@ export default function VenueFacilities({ rows, equipmentNote, onClickTag }: Ven
   return (
     <section aria-labelledby={headingId} className={section}>
       <h2 id={headingId} className={sectionTitle}>
-        服務、交通與空間
+        價格、服務、交通與空間
       </h2>
       <div className={layout}>
         <dl className={list}>

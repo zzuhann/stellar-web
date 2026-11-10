@@ -185,7 +185,7 @@ describe('TC-015 條件文字 buildVenueConditionText', () => {
   });
 });
 
-describe('TC-016 「服務、交通與空間」分列 buildVenueFacilityRows', () => {
+describe('TC-016 「價格、服務、交通與空間」分列 buildVenueFacilityRows', () => {
   const allSlugs = dictionary.tags.map((d) => d.slug);
 
   it('五列依序為價格、服務、交通、空間類型、設備，標籤照字典順序；價格列只有免場地費', () => {
