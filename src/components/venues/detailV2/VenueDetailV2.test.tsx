@@ -669,7 +669,20 @@ describe('同標籤推薦的畫面', () => {
 });
 
 describe('價格列與文案', () => {
-  it('TC-015 render：免場地費在「服務」上面，標籤不帶日期；條件文字不變', () => {
+  it('TC-015 render a：不限期免場地費＋新手友善 → 價格列在服務上面，只有免場地費、不帶日期', () => {
+    renderView(makeVenue({ tags: t('free_venue', 'beginner_friendly') }));
+    const region = getFacilityRegion();
+    const terms = within(region)
+      .getAllByRole('term')
+      .map((el) => el.textContent);
+    expect(terms.slice(0, 2)).toEqual(['價格', '服務']);
+    const priceTags = within(region).getByText('價格').nextElementSibling as HTMLElement;
+    expect(priceTags.textContent).toBe('免場地費');
+    expect(priceTags.children).toHaveLength(1);
+    expect(within(region).queryByText(/\d+\/\d+/)).toBeNull();
+  });
+
+  it('TC-015 render e：免場地費在「服務」上面，標籤不帶日期；條件文字不變', () => {
     renderView(
       makeVenue({
         tags: [
@@ -737,10 +750,12 @@ describe('標籤點擊事件', () => {
   });
 
   it('TC-021 「服務、交通與空間」的標籤（含價格列）送 facilities', async () => {
-    renderView(
+    const { container } = renderView(
       makeVenue({ id: 'abc', tags: t('free_venue', 'beginner_friendly', 'cafe', 'near_mrt') })
     );
     const region = getFacilityRegion();
+    const htmlBefore = container.innerHTML;
+    const hrefBefore = window.location.href;
     const user = userEvent.setup();
     for (const label of ['免場地費', '新手友善', '咖啡廳', '近捷運']) {
       await user.click(within(region).getByText(label));
@@ -752,7 +767,9 @@ describe('標籤點擊事件', () => {
         placement: 'facilities',
       }))
     );
-    expect(screen.getByRole('main')).toBeTruthy();
+    // Nothing changes on screen and the page does not navigate
+    expect(container.innerHTML).toBe(htmlBefore);
+    expect(window.location.href).toBe(hrefBefore);
   });
 
   it('TC-022 不該送的地方完全不送，原始說明連結只送 click_venue_source_link', async () => {
