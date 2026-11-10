@@ -4,15 +4,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sendGAEvent } from '@next/third-parties/google';
 import { notFound } from 'next/navigation';
 import { venueApi } from '@/lib/api';
-import type { VenueDetail } from '@/types';
+import type { Venue, VenueDetail, VenueTag } from '@/types';
 import { venueTagDictionaryFixture } from '@/test/venueTagDictionary.fixture';
 import { STELLAR_INSTAGRAM_URL, STELLAR_THREADS_URL } from '@/constants/stellarSocial';
 import * as pageModule from './page';
+import type * as React from 'react';
 
 const NOT_FOUND = new Error('NEXT_NOT_FOUND');
 
 vi.mock('@next/third-parties/google', () => ({ sendGAEvent: vi.fn() }));
-vi.mock('@/lib/auth-context', () => ({ useAuth: () => ({ user: null }) }));
+const authState = vi.hoisted(() => ({ user: null as { uid: string } | null }));
+vi.mock('@/lib/auth-context', () => ({ useAuth: () => ({ user: authState.user }) }));
 vi.mock('next/navigation', () => ({
   notFound: vi.fn(() => {
     throw NOT_FOUND;
@@ -81,6 +83,8 @@ const params = (id: string) => ({ params: Promise.resolve({ id }) });
 
 beforeEach(() => {
   sessionStorage.clear();
+  authState.user = null;
+  vi.mocked(sendGAEvent).mockClear();
   vi.mocked(venueApi.getVenueById).mockResolvedValue(venue);
   vi.mocked(venueApi.getTagDictionary).mockResolvedValue(venueTagDictionaryFixture);
   vi.mocked(venueApi.getVenues).mockResolvedValue({
@@ -273,6 +277,238 @@ describe('TC-025 詳情頁事件參數（真的點按鈕）', () => {
 
     expect(gaCalls('click_venue_contact')).toEqual([
       { ...base, contact_type: 'instagram', button_location: 'sticky_bar' },
+    ]);
+  });
+});
+
+const listVenue = (
+  id: string,
+  region: string,
+  tags: VenueTag[] = [],
+  extra: Partial<Venue> = {}
+): Venue => ({
+  id,
+  name: `店 ${id}`,
+  address: `${region}某路`,
+  region,
+  lat: 0,
+  lng: 0,
+  nearestMrt: null,
+  mrtWalkMinutes: null,
+  capacityRange: null,
+  eventCount: 0,
+  coverPhoto: null,
+  status: 'active',
+  tags,
+  ...extra,
+});
+
+const mockList = (venues: Venue[]) =>
+  vi.mocked(venueApi.getVenues).mockResolvedValue({
+    venues,
+    pagination: { page: 1, limit: 1000, total: venues.length, totalPages: 1 },
+  } as never);
+
+const free = [{ slug: 'free_venue' }];
+
+describe('同標籤推薦：抓資料與 props', () => {
+  it('TC-009 getVenues 只呼叫一次，帶 status/limit，沒有 region、sort 等其他參數', async () => {
+    await renderPage();
+    expect(venueApi.getVenues).toHaveBeenCalledTimes(1);
+    const params = vi.mocked(venueApi.getVenues).mock.calls[0][0] as Record<string, unknown>;
+    expect(params).toMatchObject({ status: 'active', limit: 1000 });
+    expect(Object.keys(params).sort()).toEqual(['limit', 'status']);
+  });
+
+  it('TC-010 只把卡片欄位傳給 client', async () => {
+    vi.mocked(venueApi.getVenueById).mockResolvedValue({
+      ...venue,
+      tags: [{ slug: 'goods_distribution' }],
+    });
+    const long = 'x'.repeat(5000);
+    const heavy = (id: string, region: string) =>
+      ({
+        ...listVenue(id, region, [{ slug: 'goods_distribution' }]),
+        description: long,
+        otherPhotos: [long],
+        socialMedia: { instagram: long },
+      }) as Venue;
+    mockList([
+      listVenue('abc', '台北', [{ slug: 'goods_distribution' }]),
+      ...Array.from({ length: 4 }, (_, i) => heavy(`tp${i}`, '台北')),
+      ...Array.from({ length: 12 }, (_, i) => heavy(`o${i}`, '高雄')),
+    ]);
+    const element = (await VenueDetailPage(params('abc'))) as React.ReactElement<{
+      children: React.ReactElement<Record<string, unknown>>[];
+    }>;
+    const detail = element.props.children.find((c) => 'relatedTagStrip' in c.props);
+    const props = detail?.props as {
+      relatedRegionVenues: Record<string, unknown>[];
+      relatedTagStrip: { venues: Record<string, unknown>[] };
+    };
+    const allowed = [
+      'capacityRange',
+      'coverPhoto',
+      'eventCount',
+      'id',
+      'name',
+      'nearestMrt',
+      'region',
+    ];
+    expect(props.relatedRegionVenues).toHaveLength(4);
+    expect(props.relatedTagStrip.venues).toHaveLength(10);
+    for (const card of [...props.relatedRegionVenues, ...props.relatedTagStrip.venues]) {
+      expect(Object.keys(card).sort()).toEqual(allowed);
+    }
+    expect(JSON.stringify(props)).not.toContain(long);
+    expect(Object.keys(props)).not.toContain('allVenues');
+  });
+});
+
+describe('TC-017 抓場地失敗', () => {
+  it('兩條都不顯示，「查看全部場地」留著，其他區塊照常', async () => {
+    vi.mocked(venueApi.getVenues).mockRejectedValue(new Error('timeout'));
+    await renderPage();
+    expect(screen.queryByRole('region', { name: /的其他場地$/ })).toBeNull();
+    expect(screen.queryByRole('region', { name: /^也有「/ })).toBeNull();
+    expect(screen.getByRole('link', { name: '查看全部場地' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1, name: '月光咖啡' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: '可以在這裡' })).toBeTruthy();
+    expect(screen.getByRole('region', { name: '聯絡場地' })).toBeTruthy();
+  });
+});
+
+describe('推薦區 GA 事件', () => {
+  const freeVenue = () =>
+    vi.mocked(venueApi.getVenueById).mockResolvedValue({ ...venue, tags: free });
+  const stripLinks = (name: string) =>
+    within(screen.getByRole('region', { name })).getAllByRole('link');
+
+  it('TC-018 click_related_venue 參數、位置各自算、載入與 rerender 不送', async () => {
+    freeVenue();
+    mockList([
+      listVenue('abc', '台北', free),
+      listVenue('v2', '台北'),
+      listVenue('v3', '台北', free),
+      listVenue('v9', '台中', free),
+      listVenue('v10', '高雄', free),
+    ]);
+    const { rerender } = await renderPage();
+    rerender(await VenueDetailPage(params('abc')));
+    expect(gaCalls('click_related_venue')).toHaveLength(0);
+    expect(gaCalls('click_venue_tag')).toHaveLength(0);
+
+    const user = userEvent.setup();
+    await withoutNavigation(async () => {
+      await user.click(stripLinks('台北的其他場地')[1]);
+      await user.click(stripLinks('也有「免場地費」的場地')[0]);
+      await user.click(stripLinks('也有「免場地費」的場地')[1]);
+    });
+    const common = { event_page: '/venues/[id]', user_id: '', related_strips: 'both' };
+    expect(gaCalls('click_related_venue')).toEqual([
+      {
+        ...common,
+        content_id: 'venue_v3',
+        placement: 'related_region',
+        list_position: 2,
+        venue_region: '台北',
+        tag_slug: '',
+      },
+      {
+        ...common,
+        content_id: 'venue_v3',
+        placement: 'related_tag',
+        list_position: 1,
+        venue_region: '台北',
+        tag_slug: 'free_venue',
+      },
+      {
+        ...common,
+        content_id: 'venue_v9',
+        placement: 'related_tag',
+        list_position: 2,
+        venue_region: '台中',
+        tag_slug: 'free_venue',
+      },
+    ]);
+  });
+
+  it('TC-018 已登入：user_id 是目前使用者 uid', async () => {
+    authState.user = { uid: 'u_123' };
+    freeVenue();
+    mockList([
+      listVenue('abc', '台北', free),
+      listVenue('v3', '台北', free),
+      listVenue('v9', '台中', free),
+      listVenue('v10', '高雄', free),
+    ]);
+    await renderPage();
+    await withoutNavigation(async () => {
+      await userEvent.setup().click(stripLinks('也有「免場地費」的場地')[1]);
+    });
+    expect(gaCalls('click_related_venue')).toEqual([
+      expect.objectContaining({
+        user_id: 'u_123',
+        content_id: 'venue_v9',
+        placement: 'related_tag',
+      }),
+    ]);
+  });
+
+  it.each([
+    [
+      'a：兩條都顯示 → both',
+      'abc',
+      [
+        listVenue('abc', '台北', free),
+        listVenue('r1', '台北'),
+        ...['a', 'b', 'c'].map((i) => listVenue(i, '台中', free)),
+      ],
+      '台北的其他場地',
+      'both',
+    ],
+    [
+      'b：只有地區那條 → region_only',
+      'abc',
+      [listVenue('abc', '台北', [{ slug: 'cafe' }]), listVenue('r1', '台北')],
+      '台北的其他場地',
+      'region_only',
+    ],
+    [
+      'c：只有同標籤那條 → tag_only',
+      'abc',
+      [listVenue('abc', '基隆', free), ...['a', 'b', 'c'].map((i) => listVenue(i, '台中', free))],
+      '也有「免場地費」的場地',
+      'tag_only',
+    ],
+  ])('TC-019 %s', async (_, __, list, strip, expected) => {
+    vi.mocked(venueApi.getVenueById).mockResolvedValue({
+      ...venue,
+      region: list[0].region,
+      tags: list[0].tags ?? [],
+    });
+    mockList(list);
+    await renderPage();
+    await withoutNavigation(async () => {
+      await userEvent.setup().click(stripLinks(strip)[0]);
+    });
+    expect(gaCalls('click_related_venue')).toEqual([
+      expect.objectContaining({ related_strips: expected }),
+    ]);
+  });
+
+  it('TC-020 已登入：用途列點擊 user_id 是 uid', async () => {
+    authState.user = { uid: 'u_123' };
+    await renderPage();
+    await userEvent.setup().click(screen.getByText('辦生咖'));
+    expect(gaCalls('click_venue_tag')).toEqual([
+      {
+        event_page: '/venues/[id]',
+        user_id: 'u_123',
+        content_id: 'venue_abc',
+        tag_slug: 'can_decorate',
+        placement: 'usage_summary',
+      },
     ]);
   });
 });

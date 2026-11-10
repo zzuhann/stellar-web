@@ -1,7 +1,9 @@
 import { cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { sendGAEvent } from '@next/third-parties/google';
 import type { VenueDetail, VenueTag, VenueTagDictionary } from '@/types';
+import type { RelatedVenueCard, RelatedTagStrip } from '@/utils/venueRelated';
 import { venueTagDictionaryFixture as dictionary } from '@/test/venueTagDictionary.fixture';
 import { STELLAR_INSTAGRAM_URL, STELLAR_THREADS_URL } from '@/constants/stellarSocial';
 import VenueDetailV2 from './VenueDetailV2';
@@ -42,15 +44,49 @@ const makeVenue = (overrides: Partial<VenueDetail> = {}): VenueDetail => ({
   ...overrides,
 });
 
-const renderView = (venue: VenueDetail, opts: { dictionary?: VenueTagDictionary | null } = {}) =>
+interface RenderOpts {
+  dictionary?: VenueTagDictionary | null;
+  regionVenues?: RelatedVenueCard[];
+  tagStrip?: RelatedTagStrip | null;
+}
+
+const renderView = (venue: VenueDetail, opts: RenderOpts = {}) =>
   render(
     <VenueDetailV2
       venue={venue}
-      relatedVenues={[]}
+      relatedRegionVenues={opts.regionVenues ?? []}
+      relatedTagStrip={opts.tagStrip ?? null}
       dictionary={opts.dictionary === undefined ? dictionary : opts.dictionary}
       today={TODAY}
     />
   );
+
+const card = (id: string, region = '台北', name = `店 ${id}`): RelatedVenueCard => ({
+  id,
+  name,
+  coverPhoto: null,
+  region,
+  nearestMrt: '中山站',
+  capacityRange: '20-40',
+  eventCount: 0,
+});
+
+const gaCalls = (name: string) =>
+  vi
+    .mocked(sendGAEvent)
+    .mock.calls.filter((c) => c[1] === name)
+    .map((c) => c[2]);
+
+// Stops jsdom from trying to navigate on link clicks
+const withoutNavigation = async (fn: () => Promise<void>) => {
+  const preventNav = (e: Event) => e.preventDefault();
+  document.addEventListener('click', preventNav);
+  try {
+    await fn();
+  } finally {
+    document.removeEventListener('click', preventNav);
+  }
+};
 
 const usageRegion = () => screen.queryByRole('region', { name: '可以在這裡' });
 const getUsageRegion = () => screen.getByRole('region', { name: '可以在這裡' });
@@ -524,21 +560,251 @@ describe('TC-145 元件層：「查看全部 N 張照片」只在 6 張以上出
 });
 
 describe('相關場地區：沒有同地區場地時改放「查看全部場地」', () => {
-  it('relatedVenues 是空的 → 「查看全部場地」連到 /venues', () => {
+  it('地區那條是空的 → 「查看全部場地」連到 /venues', () => {
     renderView(makeVenue());
     expect(screen.getByRole('link', { name: '查看全部場地' }).getAttribute('href')).toBe('/venues');
   });
 
   it('有相關場地 → 顯示相關場地，不出現「查看全部場地」', () => {
-    render(
+    renderView(makeVenue(), { regionVenues: [card('v2', '台北', '星光咖啡')] });
+    expect(screen.getByText('星光咖啡')).toBeTruthy();
+    expect(screen.queryByRole('link', { name: '查看全部場地' })).toBeNull();
+  });
+});
+
+describe('同標籤推薦的畫面', () => {
+  const tagStrip: RelatedTagStrip = {
+    slug: 'goods_distribution',
+    label: '應援物代發',
+    venues: [card('t1', '台北'), card('t2', '台中'), card('t3', '高雄')],
+  };
+  const regionVenues = [card('r1', '台北'), card('r2', '台北')];
+
+  it('TC-011 標題、aria-label、位置、卡片連結與地區行', () => {
+    renderView(makeVenue(), { regionVenues, tagStrip });
+    const tagSection = screen.getByRole('region', { name: '也有「應援物代發」的場地' });
+    expect(
+      within(tagSection).getByRole('heading', { level: 2, name: '也有「應援物代發」的場地' })
+    ).toBeTruthy();
+    expect(within(tagSection).queryByRole('link', { name: '查看全部' })).toBeNull();
+
+    const regionSection = screen.getByRole('region', { name: '台北的其他場地' });
+    expect(
+      regionSection.compareDocumentPosition(tagSection) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+
+    const items = within(tagSection).getAllByRole('listitem');
+    expect(items).toHaveLength(3);
+    expect(
+      within(tagSection)
+        .getAllByRole('link')
+        .map((a) => a.getAttribute('href'))
+    ).toEqual(['/venues/t1', '/venues/t2', '/venues/t3']);
+    // Region line with an aria-hidden pin icon, same-region venue included
+    expect(
+      within(items[0]).getByText('台北').querySelector('svg[aria-hidden="true"]')
+    ).toBeTruthy();
+    expect(within(items[1]).getByText('台中')).toBeTruthy();
+    // Region strip cards do not repeat the region
+    expect(within(regionSection).queryByText('台北', { selector: 'div' })).toBeNull();
+  });
+
+  it('TC-012 地區那條的「查看全部」帶地區', () => {
+    renderView(makeVenue(), { regionVenues });
+    const section = screen.getByRole('region', { name: '台北的其他場地' });
+    expect(within(section).getByRole('link', { name: '查看全部' }).getAttribute('href')).toBe(
+      '/venues?region=%E5%8F%B0%E5%8C%97'
+    );
+  });
+
+  it('TC-013 地區那條是空的、同標籤有 → 按鈕留在原位，同標籤那條在它下面', () => {
+    renderView(makeVenue(), { tagStrip });
+    const button = screen.getByRole('link', { name: '查看全部場地' });
+    expect(button.getAttribute('href')).toBe('/venues');
+    const tagSection = screen.getByRole('region', { name: '也有「應援物代發」的場地' });
+    expect(
+      button.compareDocumentPosition(tagSection) & Node.DOCUMENT_POSITION_FOLLOWING
+    ).toBeTruthy();
+  });
+
+  it('TC-004 畫面：沒有同標籤推薦 → 沒有標題也沒有空的 section', () => {
+    renderView(makeVenue(), { regionVenues });
+    expect(screen.queryByText(/^也有「/)).toBeNull();
+    expect(screen.getAllByRole('region', { name: /的其他場地$/ })).toHaveLength(1);
+  });
+
+  it('TC-014 鍵盤：Tab 依序進入同標籤每張卡片，Enter 送一次 click_related_venue', async () => {
+    vi.mocked(sendGAEvent).mockClear();
+    renderView(makeVenue({ id: 'abc' }), { regionVenues, tagStrip });
+    const user = userEvent.setup();
+    const regionLinks = within(screen.getByRole('region', { name: '台北的其他場地' })).getAllByRole(
+      'link'
+    );
+    const last = regionLinks[regionLinks.length - 1];
+    last.focus();
+    const tagLinks = within(
+      screen.getByRole('region', { name: '也有「應援物代發」的場地' })
+    ).getAllByRole('link');
+    for (const link of tagLinks) {
+      await user.tab();
+      expect(document.activeElement).toBe(link);
+    }
+    tagLinks[0].focus();
+    await withoutNavigation(async () => {
+      await user.keyboard('{Enter}');
+    });
+    expect(gaCalls('click_related_venue')).toEqual([
+      {
+        event_page: '/venues/[id]',
+        user_id: '',
+        content_id: 'venue_t1',
+        placement: 'related_tag',
+        list_position: 1,
+        venue_region: '台北',
+        tag_slug: 'goods_distribution',
+        related_strips: 'both',
+      },
+    ]);
+  });
+});
+
+describe('價格列與文案', () => {
+  it('TC-015 render：免場地費在「服務」上面，標籤不帶日期；條件文字不變', () => {
+    renderView(
+      makeVenue({
+        tags: [
+          { slug: 'free_venue', limited: true, until: '2026-12-31' },
+          { slug: 'venue_fee' },
+          { slug: 'can_decorate' },
+          { slug: 'beginner_friendly' },
+        ],
+      })
+    );
+    const region = getFacilityRegion();
+    const terms = within(region)
+      .getAllByRole('term')
+      .map((el) => el.textContent);
+    expect(terms.slice(0, 2)).toEqual(['價格', '服務']);
+    expect(within(region).getByText('免場地費')).toBeTruthy();
+    expect(within(getUsageRegion()).getByText('依方案免場地費（至 12/31）或需場地費')).toBeTruthy();
+  });
+
+  it('TC-015 render：沒有 free_venue 就沒有價格列', () => {
+    renderView(makeVenue({ tags: t('cafe') }));
+    expect(within(getFacilityRegion()).queryByText('價格')).toBeNull();
+  });
+
+  it('TC-016 render：「可以在這裡」是「辦生咖」，整頁沒有「佈置、辦生咖」', () => {
+    renderView(makeVenue({ tags: t('can_decorate') }));
+    expect(within(getUsageRegion()).getByText('辦生咖')).toBeTruthy();
+    expect(screen.queryByText('佈置、辦生咖')).toBeNull();
+  });
+});
+
+describe('標籤點擊事件', () => {
+  const base = { event_page: '/venues/[id]', user_id: '', content_id: 'venue_abc' };
+  beforeEach(() => vi.mocked(sendGAEvent).mockClear());
+
+  it('TC-020 用途列：整個 li 都算點擊範圍，載入與 rerender 不送', async () => {
+    const venue = makeVenue({
+      id: 'abc',
+      tags: t('goods_distribution', 'parcel_receiving', 'can_decorate', 'private_booking'),
+    });
+    const { rerender } = renderView(venue);
+    rerender(
       <VenueDetailV2
-        venue={makeVenue()}
-        relatedVenues={[{ ...makeVenue({ id: 'v2', name: '星光咖啡' }) }]}
+        venue={venue}
+        relatedRegionVenues={[]}
+        relatedTagStrip={null}
         dictionary={dictionary}
         today={TODAY}
       />
     );
-    expect(screen.getByText('星光咖啡')).toBeTruthy();
-    expect(screen.queryByRole('link', { name: '查看全部場地' })).toBeNull();
+    expect(gaCalls('click_venue_tag')).toHaveLength(0);
+
+    const user = userEvent.setup();
+    const region = getUsageRegion();
+    await user.click(within(region).getByText('店家可以代發，也可以代收應援物'));
+    const decorateLi = within(region).getByText('辦生咖').closest('li') as HTMLElement;
+    await user.click(decorateLi.querySelector('svg') as SVGElement);
+    await user.click(within(region).getByText('包場'));
+
+    expect(gaCalls('click_venue_tag')).toEqual([
+      { ...base, tag_slug: 'goods_distribution', placement: 'usage_summary' },
+      { ...base, tag_slug: 'can_decorate', placement: 'usage_summary' },
+      { ...base, tag_slug: 'private_booking', placement: 'usage_summary' },
+    ]);
+  });
+
+  it('TC-021 「服務、交通與空間」的標籤（含價格列）送 facilities', async () => {
+    renderView(
+      makeVenue({ id: 'abc', tags: t('free_venue', 'beginner_friendly', 'cafe', 'near_mrt') })
+    );
+    const region = getFacilityRegion();
+    const user = userEvent.setup();
+    for (const label of ['免場地費', '新手友善', '咖啡廳', '近捷運']) {
+      await user.click(within(region).getByText(label));
+    }
+    expect(gaCalls('click_venue_tag')).toEqual(
+      ['free_venue', 'beginner_friendly', 'cafe', 'near_mrt'].map((slug) => ({
+        ...base,
+        tag_slug: slug,
+        placement: 'facilities',
+      }))
+    );
+    expect(screen.getByRole('main')).toBeTruthy();
+  });
+
+  it('TC-022 不該送的地方完全不送，原始說明連結只送 click_venue_source_link', async () => {
+    renderView(
+      makeVenue({
+        id: 'abc',
+        tags: t('goods_distribution', 'beginner_friendly', 'free_venue'),
+        transitStops: [{ type: 'mrt', station: '中山', walkMinutes: 5 }],
+        equipmentNote: '投影機',
+        sourceLinks: ['https://a.com', 'https://b.com'],
+      })
+    );
+    const usage = getUsageRegion();
+    const facility = getFacilityRegion();
+    const targets = [
+      within(usage).getByRole('heading', { name: '可以在這裡' }),
+      within(usage).getByText('沒列出的項目，也可以詢問店家討論。'),
+      within(usage).getByText('費用依方案而定，以店家最新說明、私訊討論為準。'),
+      within(facility).getByText('服務'),
+      within(facility).getByText('價格'),
+      within(facility).getByText(/中山/),
+      within(facility).getByText('店家提供的設備').parentElement as HTMLElement,
+    ];
+    const user = userEvent.setup();
+    await withoutNavigation(async () => {
+      for (const el of targets) await user.click(el);
+      await user.click(within(usage).getByRole('link', { name: '店家原始說明 2（開新分頁）' }));
+    });
+    expect(gaCalls('click_venue_tag')).toEqual([]);
+    expect(gaCalls('click_venue_source_link')).toEqual([{ ...base, list_position: 2 }]);
+  });
+
+  it('TC-023 標籤與用途列維持不可互動', async () => {
+    renderView(
+      makeVenue({ tags: t('goods_distribution', 'free_venue', 'beginner_friendly', 'cafe') }),
+      { regionVenues: [], tagStrip: null }
+    );
+    const usageItems = within(getUsageRegion()).getAllByRole('listitem');
+    const tagEls = ['免場地費', '新手友善', '咖啡廳'].map((l) =>
+      within(getFacilityRegion()).getByText(l)
+    );
+    for (const el of [...usageItems, ...tagEls]) {
+      expect(el.getAttribute('role')).toBeNull();
+      expect(el.hasAttribute('tabindex')).toBe(false);
+      expect(['BUTTON', 'A']).not.toContain(el.tagName);
+    }
+    const user = userEvent.setup();
+    const focusable = new Set<Element>();
+    for (let i = 0; i < 40; i++) {
+      await user.tab();
+      focusable.add(document.activeElement as Element);
+    }
+    for (const el of [...usageItems, ...tagEls]) expect(focusable.has(el)).toBe(false);
   });
 });
