@@ -1,4 +1,4 @@
-// import { test, expect } from '@playwright/test';
+// import { test, expect } from './fixtures';
 
 // test.describe('Event detail', () => {
 //   test('can open event from home and see detail', async ({ page }) => {

@@ -1,4 +1,4 @@
-// import { test, expect } from '@playwright/test';
+// import { test, expect } from './fixtures';
 
 // test.describe('Map', () => {
 //   test('map without artistId redirects to home', async ({ page }) => {

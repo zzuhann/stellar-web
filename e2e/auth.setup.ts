@@ -5,7 +5,7 @@
  * Run: npx playwright test --project=setup --headed
  * Or:  npm run test:e2e:auth
  */
-import { test as setup, expect } from '@playwright/test';
+import { test as setup, expect } from './fixtures';
 
 const authFile = 'e2e/.auth/user.json';
 

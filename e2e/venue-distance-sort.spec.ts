@@ -1,4 +1,4 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect, type Page } from './fixtures';
 
 // qa.md 情境 42：分享連結進站不閃綜合排序；重新整理後需重新定位。
 //

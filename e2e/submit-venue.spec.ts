@@ -1,4 +1,4 @@
-import { expect, test, type Page, type Route } from '@playwright/test';
+import { expect, test, type Page, type Route } from './fixtures';
 
 // Store submission, 3-step form (venue-tags §D, qa.md TC-086 and the E2E-only history cases).
 // jsdom cannot traverse real cross-entry history, so back/forward/reload land here.
