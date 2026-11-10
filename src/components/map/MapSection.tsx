@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Marker, MapContainer, useMap } from 'react-leaflet';
+import { Marker, MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -30,6 +30,18 @@ interface MapSectionProps {
   onMultiMarkerClick: (events: MapEvent[]) => void;
   onMapReady: (map: L.Map) => void;
   onClearSelection: () => void;
+}
+
+// ponytail: MapLibre throws without WebGL and error.tsx swallows the page; probe only, catch inside the layer if Sentry still shows it
+function hasWebGL() {
+  try {
+    const canvas = document.createElement('canvas');
+    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    return !!gl;
+  } catch {
+    return false;
+  }
 }
 
 // Internal component: captures map instance and signals when panes are ready
@@ -63,6 +75,7 @@ export default function MapSection({
   onClearSelection,
 }: MapSectionProps) {
   const [isMapReady, setIsMapReady] = useState(false);
+  const [webGLSupported] = useState(hasWebGL);
   const userLocationIcon = createUserLocationIcon();
 
   return (
@@ -82,10 +95,17 @@ export default function MapSection({
       >
         <MapReadyCapture onMapReady={onMapReady} onReady={() => setIsMapReady(true)} />
 
-        <MapLibreTileLayer
-          attribution='&copy; <a href="https://openfreemap.org">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://tiles.openfreemap.org/styles/positron"
-        />
+        {webGLSupported ? (
+          <MapLibreTileLayer
+            attribution='&copy; <a href="https://openfreemap.org">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://tiles.openfreemap.org/styles/positron"
+          />
+        ) : (
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
+        )}
 
         {isMapReady && (
           <>
