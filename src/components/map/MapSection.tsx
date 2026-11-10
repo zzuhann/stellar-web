@@ -33,15 +33,20 @@ interface MapSectionProps {
 }
 
 // ponytail: MapLibre throws without WebGL and error.tsx swallows the page; probe only, catch inside the layer if Sentry still shows it
+let cachedWebGL: boolean | undefined;
 function hasWebGL() {
+  if (cachedWebGL !== undefined) return cachedWebGL;
   try {
     const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+    // Same buffers MapLibre requests in _setupPainter
+    const attrs: WebGLContextAttributes = { stencil: true, depth: true };
+    const gl = canvas.getContext('webgl2', attrs) || canvas.getContext('webgl', attrs);
     gl?.getExtension('WEBGL_lose_context')?.loseContext();
-    return !!gl;
+    cachedWebGL = !!gl;
   } catch {
-    return false;
+    cachedWebGL = false;
   }
+  return cachedWebGL;
 }
 
 // Internal component: captures map instance and signals when panes are ready
@@ -75,7 +80,6 @@ export default function MapSection({
   onClearSelection,
 }: MapSectionProps) {
   const [isMapReady, setIsMapReady] = useState(false);
-  const [webGLSupported] = useState(hasWebGL);
   const userLocationIcon = createUserLocationIcon();
 
   return (
@@ -95,7 +99,7 @@ export default function MapSection({
       >
         <MapReadyCapture onMapReady={onMapReady} onReady={() => setIsMapReady(true)} />
 
-        {webGLSupported ? (
+        {hasWebGL() ? (
           <MapLibreTileLayer
             attribution='&copy; <a href="https://openfreemap.org">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://tiles.openfreemap.org/styles/positron"
@@ -104,6 +108,7 @@ export default function MapSection({
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+            noWrap
           />
         )}
 
