@@ -195,7 +195,8 @@ export default function ArtistSearchModal({
   const {
     data: searchResults = [],
     isLoading: searchLoading,
-    isError: searchError,
+    isSuccess: searchSuccess,
+    isFetching: searchFetching,
   } = useArtistSearch(debouncedSearchQuery);
 
   const isSubmitArtistEntry = entryPoint === 'submit_artist_page';
@@ -212,6 +213,7 @@ export default function ArtistSearchModal({
 
   const searchInputRef = useRef<HTMLInputElement>(null);
   const authHandoffTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sentSearchTermsRef = useRef(new Set<string>());
 
   // Clear input on any isOpen true->false flip (incl. external route-change closes) via useState, not a ref, per React's "adjusting state when a prop changes" pattern (refs can't be touched during render).
   const [previousIsOpen, setPreviousIsOpen] = useState(isOpen);
@@ -226,6 +228,7 @@ export default function ArtistSearchModal({
   useEffect(() => {
     if (isOpen) {
       searchInputRef.current?.focus();
+      sentSearchTermsRef.current.clear();
       sendGAEvent('event', 'search_artist', {
         event_page: pathname,
         user_id: user?.uid ?? '',
@@ -239,8 +242,13 @@ export default function ArtistSearchModal({
 
   // GA4 recommended `search` event: search_term maps to the built-in Search term dimension, no custom definition needed
   const searchTerm = debouncedSearchQuery.trim().toLowerCase();
+  // isLoading/isError miss paused (offline) and stale-while-refetching states, which would report a wrong result_count
+  const searchSettled = searchSuccess && !searchFetching;
   useEffect(() => {
-    if (!isOpen || !searchTerm || searchLoading || searchError) return;
+    if (!isOpen || !searchTerm || !searchSettled) return;
+    // Once per term per modal session; case-only edits refetch under a new query key
+    if (sentSearchTermsRef.current.has(searchTerm)) return;
+    sentSearchTermsRef.current.add(searchTerm);
     sendGAEvent('event', 'search', {
       event_page: pathname,
       user_id: user?.uid ?? '',
@@ -248,9 +256,9 @@ export default function ArtistSearchModal({
       result_count: searchResults.length,
       entry_point: entryPoint,
     });
-    // Fire once per settled query; other values are read at that moment
+    // Other values are read at the moment the query settles
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, searchLoading, searchError]);
+  }, [searchTerm, searchSettled]);
 
   // Listener lives at document level so Escape closes the modal from any focused child (input, result card, or the CTA).
   useEffect(() => {
