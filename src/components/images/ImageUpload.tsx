@@ -341,7 +341,7 @@ export default function ImageUpload({
       if (authToken || uploadImageOverride) {
         const uploadResult = uploadImageOverride
           ? await uploadImageOverride(file)
-          : await uploadImageToAPI(file, authToken);
+          : await uploadImageToAPI(file, authToken, undefined, { compress: false });
         if (uploadResult.success && uploadResult.filename) {
           const fullImageUrl = CDN_DOMAIN + uploadResult.filename;
           setConfirmedImageUrl(fullImageUrl);

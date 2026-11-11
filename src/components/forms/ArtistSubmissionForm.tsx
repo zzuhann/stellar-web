@@ -468,7 +468,10 @@ export default function ArtistSubmissionForm({
     if (selectedImageFile && hasImageChanged) {
       try {
         setIsUploadingImage(true);
-        const uploadResult = await uploadImageToAPI(selectedImageFile, token || '');
+        // ImageUpload already compressed (and cropped) it
+        const uploadResult = await uploadImageToAPI(selectedImageFile, token || '', undefined, {
+          compress: false,
+        });
         if (uploadResult.success && uploadResult.filename) {
           finalImageUrl = CDN_DOMAIN + uploadResult.filename;
         } else {
