@@ -42,7 +42,7 @@ const publicPlaceApi = {
 const SUBMISSION_NOTICE =
   '資料送出後會由 STELLAR 審核，通常會在 1–3 個工作天內完成。審核通過後，平台上就可以看見你們的場地資訊囉～！ 投稿後如需修改，請聯絡 STELLAR 平台（IG 或是 Threads 皆可）。';
 
-// Same size as the admin venue form, so store-submitted photos aren't softer than admin ones
+// Admin venue form's otherPhotos size (its cover is 1200x800); one uploader serves cover and others here
 const uploadPhoto: UploadPhoto = async (file) => {
   const compressed = await compressImage(file, 1200, 900, 0.85);
   const result = await uploadImageToAPI(compressed, undefined, '/venue-submissions/images', {
