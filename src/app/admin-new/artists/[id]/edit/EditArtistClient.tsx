@@ -42,9 +42,10 @@ export default function EditArtistClient({ id }: { id: string }) {
   });
 
   const backToList = () => {
-    // Admin list/edit caches are 10 min stale; without this, re-editing loads stale group names and writes them back
+    // Admin caches are 10 min stale. Remove (not invalidate) the edit query: invalidate keeps the old data
+    // while refetching, so a quick re-edit would seed the form with stale group names and write them back
     queryClient.invalidateQueries({ queryKey: ['admin-artists'] });
-    queryClient.invalidateQueries({ queryKey: ['admin-artist-edit', id] });
+    queryClient.removeQueries({ queryKey: ['admin-artist-edit', id] });
     router.push('/admin-new/artists');
   };
 
