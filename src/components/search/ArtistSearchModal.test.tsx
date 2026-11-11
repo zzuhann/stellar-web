@@ -12,6 +12,10 @@ let mockUser: { uid: string } | null = { uid: 'user-1' };
 const sendGAEvent = vi.fn();
 const searchResults: Array<{ id: string; stageName: string }> = [];
 let searchLoading = false;
+let searchStatus: { isSuccess: boolean; fetchStatus: 'idle' | 'fetching' | 'paused' } = {
+  isSuccess: true,
+  fetchStatus: 'idle',
+};
 
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push }),
@@ -27,7 +31,7 @@ vi.mock('@/lib/auth-context', () => ({
 }));
 
 vi.mock('@/hooks/useArtistSearch', () => ({
-  useArtistSearch: () => ({ data: searchResults, isLoading: searchLoading }),
+  useArtistSearch: () => ({ data: searchResults, isLoading: searchLoading, ...searchStatus }),
 }));
 
 // Debounce adds real timers noise unrelated to what these tests verify; pass value through.
@@ -59,6 +63,7 @@ describe('ArtistSearchModal', () => {
     mockUser = { uid: 'user-1' };
     searchResults.length = 0;
     searchLoading = false;
+    searchStatus = { isSuccess: true, fetchStatus: 'idle' };
     push.mockClear();
     toggleAuthModal.mockClear();
     sendGAEvent.mockClear();
@@ -149,6 +154,77 @@ describe('ArtistSearchModal', () => {
       })
     );
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  const searchEvents = () => sendGAEvent.mock.calls.filter((call) => call[1] === 'search');
+
+  it('fires search once per term per session: trailing space and case-only edits do not resend', async () => {
+    searchResults.push({ id: 'a1', stageName: 'Winter' });
+    render(<ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />);
+    const input = screen.getByRole('textbox', { name: '搜尋藝人' });
+    await userEvent.type(input, ' Winter ');
+    await userEvent.clear(input);
+    await userEvent.type(input, 'WINTER');
+
+    expect(searchEvents().filter((call) => call[2].search_term === 'winter')).toEqual([
+      [
+        'event',
+        'search',
+        expect.objectContaining({ search_term: 'winter', result_count: 1, entry_point: 'header' }),
+      ],
+    ]);
+  });
+
+  it('does not fire search until the query settles successfully, then reports the fresh count', () => {
+    searchStatus = { isSuccess: false, fetchStatus: 'paused' }; // offline, no cache
+    const { rerender } = render(
+      <ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />
+    );
+    fireEvent.change(screen.getByRole('textbox', { name: '搜尋藝人' }), {
+      target: { value: 'winter' },
+    });
+    searchStatus = { isSuccess: true, fetchStatus: 'paused' }; // offline with stale cache
+    rerender(<ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />);
+    searchStatus = { isSuccess: true, fetchStatus: 'fetching' }; // stale cache refetching
+    rerender(<ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />);
+    expect(searchEvents()).toHaveLength(0);
+
+    searchResults.push({ id: 'a1', stageName: 'Winter' }, { id: 'a2', stageName: 'Winter 2' });
+    searchStatus = { isSuccess: true, fetchStatus: 'idle' };
+    rerender(<ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />);
+    expect(searchEvents()).toEqual([
+      ['event', 'search', expect.objectContaining({ search_term: 'winter', result_count: 2 })],
+    ]);
+  });
+
+  it('keeps dedupe across uid changes while open, and resets it when the modal reopens', () => {
+    const type = (value: string) =>
+      fireEvent.change(screen.getByRole('textbox', { name: '搜尋藝人' }), { target: { value } });
+    const terms = () => searchEvents().map((call) => call[2].search_term);
+    const { rerender } = render(
+      <ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />
+    );
+    type('winter');
+    mockUser = { uid: 'user-2' };
+    rerender(<ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />);
+    type('aespa');
+    type('winter');
+    expect(terms()).toEqual(['winter', 'aespa']);
+
+    rerender(<ArtistSearchModal isOpen={false} onClose={vi.fn()} entryPoint="header" />);
+    rerender(<ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />);
+    type('winter');
+    expect(terms()).toEqual(['winter', 'aespa', 'winter']);
+  });
+
+  it('fires search with result_count 0 when the artist is not on the site', () => {
+    render(<ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />);
+    fireEvent.change(screen.getByRole('textbox', { name: '搜尋藝人' }), {
+      target: { value: '邊佑錫' },
+    });
+    expect(searchEvents()).toEqual([
+      ['event', 'search', expect.objectContaining({ search_term: '邊佑錫', result_count: 0 })],
+    ]);
   });
 
   it('pressing Escape closes the modal regardless of which element has focus (TC-011)', async () => {

@@ -184,6 +184,22 @@
 
 **實作位置：** `src/components/search/ArtistSearchModal.tsx`（開啟 modal 的 `useEffect`）。`entry_point` 由呼叫端（`HeaderSearchButton` / `TopArtistsSection` / `SearchSection`）經 `useSearchModalStore` 傳入，同一次 modal session 內與 `click_artist` 的值一致。
 
+### search
+
+在藝人搜尋 modal 輸入關鍵字，debounce（800ms）後 API 回應完成時觸發，每個正規化後的關鍵字送一次；API 失敗不送。用 GA4 推薦事件名稱，`search_term` 會直接進內建維度「搜尋字詞」（`searchTerm`），不用另外註冊。
+
+| 參數         | 值                                     |
+| ------------ | -------------------------------------- |
+| event_page   | 觸發當下實際頁面路徑                   |
+| user_id      | 用戶 UID                               |
+| search_term  | 關鍵字，trim 加轉小寫                  |
+| result_count | 搜尋結果筆數；`0` 代表站上沒有這位藝人 |
+| entry_point  | 同 `search_artist`                     |
+
+**判讀：** 打字中途停下超過 800ms 也會送一次，所以會出現 `shotar` 這種半截的字。看「沒有的藝人」時，篩 `result_count = 0`，再人工合併錯字與半截字。
+
+**實作位置：** `src/components/search/ArtistSearchModal.tsx`
+
 ### click_artist
 
 點擊藝人卡片，從搜尋結果跳轉到藝人地圖頁。
