@@ -4,6 +4,12 @@ import { css } from '@/styled-system/css';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useContactMutation } from '@/hooks/useContact';
+import { handleApiError } from '@/lib/api';
+
+// Mirrors stellar contactSchemas.submit
+const NAME_MAX = 100;
+const EMAIL_MAX = 254;
+const MESSAGE_MAX = 5000;
 
 type FormData = {
   name: string;
@@ -23,6 +29,14 @@ function validate(data: FormData): FormErrors {
   }
   if (!data.message.trim()) errors.message = '請輸入內容';
   return errors;
+}
+
+function submitErrorText(error: unknown): string {
+  const data = (error as { response?: { data?: { code?: string; field?: string } } })?.response
+    ?.data;
+  // Empty content is caught client-side, so a backend rejection of message means too long
+  if (data?.code === 'VALIDATION_ERROR' && data.field === 'message') return '內容過長';
+  return handleApiError(error, '送出失敗，請稍後再試');
 }
 
 const pageContainer = css({
@@ -147,6 +161,13 @@ const fieldError = css({
   margin: '0',
 });
 
+const charCount = css({
+  textStyle: 'caption',
+  color: 'color.text.secondary',
+  margin: '0',
+  textAlign: 'right',
+});
+
 const buttonsRow = css({
   display: 'flex',
   alignItems: 'center',
@@ -266,6 +287,7 @@ export default function ContactPage() {
                 placeholder="請輸入暱稱…"
                 value={formData.name}
                 onChange={handleChange}
+                maxLength={NAME_MAX}
                 aria-required="true"
                 aria-invalid={!!errors.name}
                 aria-describedby={errors.name ? 'contact-name-error' : undefined}
@@ -289,6 +311,7 @@ export default function ContactPage() {
                 placeholder="請輸入電子郵件…"
                 value={formData.email}
                 onChange={handleChange}
+                maxLength={EMAIL_MAX}
                 aria-required="true"
                 aria-invalid={!!errors.email}
                 aria-describedby={errors.email ? 'contact-email-error' : undefined}
@@ -311,21 +334,29 @@ export default function ContactPage() {
                 placeholder="請輸入內容…"
                 value={formData.message}
                 onChange={handleChange}
+                maxLength={MESSAGE_MAX}
                 rows={6}
                 aria-required="true"
                 aria-invalid={!!errors.message}
-                aria-describedby={errors.message ? 'contact-message-error' : undefined}
+                aria-describedby={
+                  errors.message
+                    ? 'contact-message-error contact-message-count'
+                    : 'contact-message-count'
+                }
               />
               {errors.message && (
                 <p id="contact-message-error" className={fieldError} role="alert">
                   {errors.message}
                 </p>
               )}
+              <p id="contact-message-count" className={charCount}>
+                {formData.message.length} / {MESSAGE_MAX}
+              </p>
             </div>
 
             {mutation.isError && (
               <p className={submitError} role="alert">
-                送出失敗，請稍後再試，或直接透過 email 聯絡我們。
+                {submitErrorText(mutation.error)}。也可以直接透過 email 聯絡我們。
               </p>
             )}
 
