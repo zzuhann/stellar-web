@@ -193,12 +193,12 @@ const VerticalArtistCard = ({
         <button
           type="button"
           className={imageOverlay({
-            isExists: artist.status === 'exists' || artist.status === 'approved',
+            isExists: artist.status === 'approved',
           })}
           aria-label={`前往 ${artist.stageName} 的生日應援地圖頁面`}
-          disabled={artist.status !== 'approved' && artist.status !== 'exists'}
+          disabled={artist.status !== 'approved'}
           onClick={() => {
-            if (artist.status === 'approved' || artist.status === 'exists') {
+            if (artist.status === 'approved') {
               onClick?.(artist);
             }
           }}
