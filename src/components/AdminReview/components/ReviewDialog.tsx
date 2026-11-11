@@ -205,7 +205,12 @@ const confirmButton = cva({
   },
 });
 
-export default function ReviewDialog({
+// Unmount when closed so every open starts with an empty reason / fresh groups
+export default function ReviewDialog(props: ReviewDialogProps) {
+  return props.open ? <ReviewDialogBody {...props} /> : null;
+}
+
+function ReviewDialogBody({
   open,
   title,
   description,
@@ -246,8 +251,6 @@ export default function ReviewDialog({
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [busy, dirty, initialValues, onClose, open]);
-
-  if (!open) return null;
 
   return (
     <ModalOverlay isOpen zIndex={1000} padding="16px" onClick={close}>
