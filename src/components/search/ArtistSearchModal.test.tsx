@@ -151,6 +151,21 @@ describe('ArtistSearchModal', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('fires search once per settled query with normalized search_term and result_count', async () => {
+    searchResults.push({ id: 'a1', stageName: 'Winter' });
+    render(<ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />);
+    await userEvent.type(screen.getByRole('textbox', { name: '搜尋藝人' }), ' Winter ');
+
+    const searchCalls = sendGAEvent.mock.calls.filter((call) => call[1] === 'search');
+    expect(searchCalls.at(-1)).toEqual([
+      'event',
+      'search',
+      expect.objectContaining({ search_term: 'winter', result_count: 1, entry_point: 'header' }),
+    ]);
+    // Trailing space leaves the normalized term unchanged, so no duplicate event
+    expect(searchCalls.filter((call) => call[2].search_term === 'winter')).toHaveLength(1);
+  });
+
   it('pressing Escape closes the modal regardless of which element has focus (TC-011)', async () => {
     searchResults.push({ id: 'artist-3', stageName: '找得到的藝人' });
     const onClose = vi.fn();

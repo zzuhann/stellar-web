@@ -192,8 +192,11 @@ export default function ArtistSearchModal({
   const [inputValue, setInputValue] = useState('');
   const debouncedSearchQuery = useDebounce(inputValue, 800);
 
-  const { data: searchResults = [], isLoading: searchLoading } =
-    useArtistSearch(debouncedSearchQuery);
+  const {
+    data: searchResults = [],
+    isLoading: searchLoading,
+    isError: searchError,
+  } = useArtistSearch(debouncedSearchQuery);
 
   const isSubmitArtistEntry = entryPoint === 'submit_artist_page';
   const showResults = debouncedSearchQuery.trim().length > 0;
@@ -233,6 +236,21 @@ export default function ArtistSearchModal({
     // entryPoint/pathname only need to be read at the moment the modal opens, not on every change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.uid]);
+
+  // GA4 recommended `search` event: search_term maps to the built-in Search term dimension, no custom definition needed
+  const searchTerm = debouncedSearchQuery.trim().toLowerCase();
+  useEffect(() => {
+    if (!isOpen || !searchTerm || searchLoading || searchError) return;
+    sendGAEvent('event', 'search', {
+      event_page: pathname,
+      user_id: user?.uid ?? '',
+      search_term: searchTerm,
+      result_count: searchResults.length,
+      entry_point: entryPoint,
+    });
+    // Fire once per settled query; other values are read at that moment
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchTerm, searchLoading, searchError]);
 
   // Listener lives at document level so Escape closes the modal from any focused child (input, result card, or the CTA).
   useEffect(() => {
