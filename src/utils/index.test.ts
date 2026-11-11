@@ -17,6 +17,7 @@ import {
   parseTaipeiDateString,
   taipeiDateStringToLocalDate,
   getTaipeiToday,
+  splitGroupNames,
 } from './index';
 
 describe('formatEventDate', () => {
@@ -559,5 +560,19 @@ describe('isValidCalendarDateString', () => {
     expect(isValidCalendarDateString('2026-8-5')).toBe(false);
     expect(isValidCalendarDateString('not-a-date')).toBe(false);
     expect(isValidCalendarDateString('')).toBe(false);
+  });
+});
+
+describe('splitGroupNames', () => {
+  it('以頓號分隔並去除空白', () => {
+    expect(splitGroupNames(' SEVENTEEN 、BSS')).toEqual(['SEVENTEEN', 'BSS']);
+  });
+
+  it('空字串回傳空陣列（清空團名）', () => {
+    expect(splitGroupNames('')).toEqual([]);
+  });
+
+  it('略過連續或結尾的頓號', () => {
+    expect(splitGroupNames('SEVENTEEN、、BSS、')).toEqual(['SEVENTEEN', 'BSS']);
   });
 });
