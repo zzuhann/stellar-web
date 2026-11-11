@@ -6,6 +6,8 @@ import { handleApiError } from './api/misc';
 
 export const UPLOAD_TIMEOUT_MS = 60000;
 export const UPLOAD_NO_RESPONSE_MESSAGE = '可能遇到伺服器或網路問題，請稍後重試';
+// Under the API's 5MB multer limit with room for multipart overhead
+const COMPRESSED_MAX_BYTES = 4.5 * 1024 * 1024;
 
 export interface UploadResponse {
   success: boolean;
@@ -20,18 +22,20 @@ export interface DeleteResponse {
 }
 
 // 上傳圖片到後端 API
+// Callers that already ran compressImage with their own size/quality pass compress: false,
+// otherwise this second lossy pass shrinks their output back to 800px
 export async function uploadImageToAPI(
   file: File,
   authToken?: string,
-  endpoint = '/images/upload'
+  endpoint = '/images/upload',
+  { compress = true }: { compress?: boolean } = {}
 ): Promise<UploadResponse> {
   try {
-    // 先壓縮圖片
-    const compressedFile = await compressImage(file);
+    const body = compress ? await compressImage(file) : file;
 
     // 創建 FormData
     const formData = new FormData();
-    formData.append('image', compressedFile);
+    formData.append('image', body);
 
     const response = await api.post(endpoint, formData, {
       headers: {
@@ -111,6 +115,13 @@ export function compressImage(
       resolve(file);
     };
     img.onload = () => {
+      // No 2D context (low-memory WebView): drawing would upload a blank canvas
+      if (!ctx) {
+        URL.revokeObjectURL(src);
+        resolve(file);
+        return;
+      }
+
       // 計算新尺寸，保持寬高比
       let { width, height } = img;
 
@@ -128,19 +139,23 @@ export function compressImage(
       canvas.height = height;
 
       // 繪製並壓縮圖片
-      ctx?.drawImage(img, 0, 0, width, height);
+      ctx.drawImage(img, 0, 0, width, height);
       URL.revokeObjectURL(src);
+
+      // Label with the encoded type: Safari can't encode WebP and returns PNG, which the API's
+      // magic-byte check rejects when labelled image/webp
+      const finish = (blob: Blob | null) =>
+        resolve(
+          blob ? new File([blob], file.name, { type: blob.type, lastModified: Date.now() }) : file
+        );
       canvas.toBlob(
         (blob) => {
-          if (blob) {
-            const compressedFile = new File([blob], file.name, {
-              type: file.type,
-              lastModified: Date.now(),
-            });
-            resolve(compressedFile);
-          } else {
-            resolve(file);
+          // PNG ignores quality, so a large noisy photo can exceed the API's 5MB limit
+          if (blob && blob.size > COMPRESSED_MAX_BYTES && blob.type !== 'image/jpeg') {
+            canvas.toBlob(finish, 'image/jpeg', quality);
+            return;
           }
+          finish(blob);
         },
         file.type,
         quality

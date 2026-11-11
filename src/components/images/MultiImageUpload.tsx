@@ -258,7 +258,7 @@ export default function MultiImageUpload({
 
       const uploadResult = uploadImageOverride
         ? await uploadImageOverride(compressedFile)
-        : await uploadImageToAPI(compressedFile, authToken);
+        : await uploadImageToAPI(compressedFile, authToken, undefined, { compress: false });
       if (uploadResult.success && uploadResult.filename) {
         return CDN_DOMAIN + uploadResult.filename;
       }
