@@ -20,6 +20,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import showToast from '@/lib/toast';
 import { uploadImageToAPI } from '@/lib/r2-upload';
 import { CDN_DOMAIN } from '@/constants';
+import { splitGroupNames } from '@/utils';
 import { sendGAEvent } from '@next/third-parties/google';
 
 const formContainer = css({
@@ -296,6 +297,8 @@ const loadingSpinner = css({
 interface ArtistSubmissionFormProps {
   mode?: 'create' | 'edit';
   existingArtist?: Artist;
+  // Only the admin edit page shows the group-name field (e.g. to remove a group after a member leaves)
+  canEditGroupNames?: boolean;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -303,6 +306,7 @@ interface ArtistSubmissionFormProps {
 export default function ArtistSubmissionForm({
   mode = 'create',
   existingArtist,
+  canEditGroupNames = false,
   onSuccess,
   onCancel,
 }: ArtistSubmissionFormProps) {
@@ -348,6 +352,7 @@ export default function ArtistSubmissionForm({
           stageName: existingArtist.stageName,
           stageNameZh: existingArtist.stageNameZh || '',
           realName: existingArtist.realName || '',
+          groupNames: existingArtist.groupNames?.join('、') ?? '',
           birthday: existingArtist.birthday || '',
           profileImage: existingArtist.profileImage || '',
         }
@@ -355,6 +360,7 @@ export default function ArtistSubmissionForm({
           stageName: '',
           stageNameZh: '',
           realName: '',
+          groupNames: '',
           birthday: '',
           profileImage: '',
         },
@@ -490,6 +496,8 @@ export default function ArtistSubmissionForm({
       realName: data.realName,
       birthday: data.birthday,
       profileImage: finalImageUrl,
+      // Omitted for non-admins so their edits never clear existing group names
+      ...(canEditGroupNames ? { groupNames: splitGroupNames(data.groupNames ?? '') } : {}),
       ...(mode === 'create' && submitterEmail ? { submitterEmail } : {}),
     };
 
@@ -612,6 +620,34 @@ export default function ArtistSubmissionForm({
             </p>
           )}
         </div>
+
+        {/* 團名（僅管理員） */}
+        {canEditGroupNames && (
+          <div className={formGroup}>
+            <label className={label} htmlFor="groupNames">
+              團名
+            </label>
+            <input
+              className={input}
+              id="groupNames"
+              type="text"
+              placeholder="例：SEVENTEEN、BOYNEXTDOOR（沒有可不填）"
+              {...register('groupNames')}
+              aria-invalid={!!errors.groupNames}
+              aria-describedby={
+                errors.groupNames ? 'groupNames-helper groupNames-error' : 'groupNames-helper'
+              }
+            />
+            <p id="groupNames-helper" className={helperText}>
+              多個團名請用頓號（、）分隔；退團請直接刪掉舊團名
+            </p>
+            {errors.groupNames && (
+              <p id="groupNames-error" className={errorText} role="alert">
+                {errors.groupNames.message}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* 生日 */}
         <div className={formGroup} ref={birthdayFieldRef}>
