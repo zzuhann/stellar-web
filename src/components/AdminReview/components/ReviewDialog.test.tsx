@@ -21,6 +21,26 @@ describe('ReviewDialog', () => {
     expect(onConfirm).toHaveBeenCalledWith('資料不完整');
   });
 
+  it('送出後關閉，再打開時拒絕原因是空的', async () => {
+    const user = userEvent.setup();
+    const props = {
+      kind: 'reject',
+      title: '拒絕投稿',
+      onClose: vi.fn(),
+      onConfirm: vi.fn(),
+    } as const;
+    const { rerender } = render(<ReviewDialog open {...props} />);
+
+    await user.type(screen.getByRole('textbox', { name: /拒絕原因/ }), '照片不清楚');
+    await user.click(screen.getByRole('button', { name: '確認拒絕' }));
+    rerender(<ReviewDialog open={false} {...props} />);
+    rerender(<ReviewDialog open {...props} />);
+
+    expect((screen.getByRole('textbox', { name: /拒絕原因/ }) as HTMLTextAreaElement).value).toBe(
+      ''
+    );
+  });
+
   it('已有輸入時關閉會要求確認離開', async () => {
     const user = userEvent.setup();
     const onClose = vi.fn();
