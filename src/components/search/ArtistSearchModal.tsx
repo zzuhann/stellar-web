@@ -196,7 +196,7 @@ export default function ArtistSearchModal({
     data: searchResults = [],
     isLoading: searchLoading,
     isSuccess: searchSuccess,
-    isFetching: searchFetching,
+    fetchStatus: searchFetchStatus,
   } = useArtistSearch(debouncedSearchQuery);
 
   const isSubmitArtistEntry = entryPoint === 'submit_artist_page';
@@ -228,7 +228,6 @@ export default function ArtistSearchModal({
   useEffect(() => {
     if (isOpen) {
       searchInputRef.current?.focus();
-      sentSearchTermsRef.current.clear();
       sendGAEvent('event', 'search_artist', {
         event_page: pathname,
         user_id: user?.uid ?? '',
@@ -240,10 +239,15 @@ export default function ArtistSearchModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user?.uid]);
 
+  // Reset per modal session only, not on uid changes while open
+  useEffect(() => {
+    if (isOpen) sentSearchTermsRef.current.clear();
+  }, [isOpen]);
+
   // GA4 recommended `search` event: search_term maps to the built-in Search term dimension, no custom definition needed
   const searchTerm = debouncedSearchQuery.trim().toLowerCase();
-  // isLoading/isError miss paused (offline) and stale-while-refetching states, which would report a wrong result_count
-  const searchSettled = searchSuccess && !searchFetching;
+  // 'idle' excludes refetching and paused (offline, even with stale cache), which would report a wrong result_count
+  const searchSettled = searchSuccess && searchFetchStatus === 'idle';
   useEffect(() => {
     if (!isOpen || !searchTerm || !searchSettled) return;
     // Once per term per modal session; case-only edits refetch under a new query key
