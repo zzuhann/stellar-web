@@ -308,3 +308,10 @@ export const generateGoogleCalendarUrlAtTime = ({
 
   return `https://calendar.google.com/calendar/render?${params.toString()}&sprop=website:https://www.stellar-zone.com/`;
 };
+
+// Admin forms take group names as one 、-separated string; the API expects an array
+export const splitGroupNames = (value: string): string[] =>
+  value
+    .split('、')
+    .map((name) => name.trim())
+    .filter(Boolean);

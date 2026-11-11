@@ -52,6 +52,7 @@ export default function EditArtistClient({ id }: { id: string }) {
           <ArtistSubmissionForm
             mode="edit"
             existingArtist={data}
+            canEditGroupNames
             onSuccess={backToList}
             onCancel={backToList}
           />

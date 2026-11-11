@@ -1,7 +1,7 @@
 // 表單驗證 schemas
 
 import { z } from 'zod';
-import { isHttpUrl, isValidCalendarDateString } from '@/utils';
+import { isHttpUrl, isValidCalendarDateString, splitGroupNames } from '@/utils';
 import { isValidTimeString } from '@/components/TimePicker/utils';
 
 // 活動投稿表單驗證
@@ -97,6 +97,15 @@ export const artistSubmissionSchema = z.object({
   stageName: z.string().min(1, '請輸入英文藝名').max(50, '英文藝名不能超過50個字元'),
   stageNameZh: z.string().max(50, '中文藝名不能超過50個字元').optional().or(z.literal('')),
   realName: z.string().max(50, '本名不能超過50個字元').optional().or(z.literal('')),
+  // Admin-only field; limits mirror the backend artist schema
+  groupNames: z
+    .string()
+    .optional()
+    .refine((val) => splitGroupNames(val ?? '').length <= 5, '最多只能填 5 個團名')
+    .refine(
+      (val) => splitGroupNames(val ?? '').every((name) => name.length <= 50),
+      '每個團名不能超過 50 個字元'
+    ),
   birthday: z
     .string()
     .min(1, '請填寫生日')
