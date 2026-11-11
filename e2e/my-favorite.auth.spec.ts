@@ -1,4 +1,4 @@
-// import { test, expect } from '@playwright/test';
+// import { test, expect } from './fixtures';
 
 // test.describe('My Favorite (authenticated)', () => {
 //   test('my-favorite page loads when logged in', async ({ page }) => {

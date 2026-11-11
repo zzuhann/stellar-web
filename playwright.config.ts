@@ -24,6 +24,8 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'on-first-retry',
+    // Requests served by the service worker skip context.route, letting telemetry through
+    serviceWorkers: 'block',
   },
   timeout: 30_000,
   expect: {

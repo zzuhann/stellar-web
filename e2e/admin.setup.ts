@@ -7,7 +7,7 @@
  * Run: npx playwright test --project=admin-setup --headed
  * Or:  npm run test:e2e:auth:admin
  */
-import { test as setup, expect } from '@playwright/test';
+import { test as setup, expect } from './fixtures';
 import { initializeApp, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 

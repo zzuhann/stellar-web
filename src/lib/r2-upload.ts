@@ -1,7 +1,11 @@
 // 圖片上傳到後端 API
 
+import axios from 'axios';
 import api from './api';
 import { handleApiError } from './api/misc';
+
+export const UPLOAD_TIMEOUT_MS = 60000;
+export const UPLOAD_NO_RESPONSE_MESSAGE = '可能遇到伺服器或網路問題，請稍後重試';
 
 export interface UploadResponse {
   success: boolean;
@@ -34,10 +38,16 @@ export async function uploadImageToAPI(
         ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
         'Content-Type': 'multipart/form-data',
       },
+      // The global 10s timeout aborts uploads on slow mobile networks (Sentry WEB-27)
+      timeout: UPLOAD_TIMEOUT_MS,
     });
 
     return response.data;
   } catch (error) {
+    // No response at all: timed out or the connection dropped
+    if (axios.isAxiosError(error) && !error.response) {
+      return { success: false, error: UPLOAD_NO_RESPONSE_MESSAGE };
+    }
     return {
       success: false,
       error: handleApiError(error, '上傳失敗'),
