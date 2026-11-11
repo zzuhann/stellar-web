@@ -40,9 +40,11 @@ export default function useAdminReview(tab: 'artists' | 'events') {
         await artistsApi.approve(updates[0].artistId, updates[0].groupNames);
         return;
       }
-      await artistsApi.reject(updates[0].artistId, {
-        reason: updates[0].reason || '藝人已存在',
-      });
+      if (updates[0].status === 'exists') {
+        await artistsApi.review(updates[0].artistId, { status: 'exists' });
+        return;
+      }
+      await artistsApi.reject(updates[0].artistId, { reason: updates[0].reason });
     },
     onSuccess: () => {
       revalidatePublicPages();
