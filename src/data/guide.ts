@@ -49,7 +49,7 @@ export const guideSections: GuideSection[] = [
       },
       {
         title: '送出後，等待審核',
-        description: '我們會盡快審核，通過後會寄信通知給你。',
+        description: '我們會盡快審核，審核後會寄信通知給你。',
         imageSrc: '/guide/submit-event/5.png',
         imageAlt: '送出活動投稿、等待審核畫面截圖',
       },
@@ -81,7 +81,7 @@ export const guideSections: GuideSection[] = [
       },
       {
         title: '送出後，等待審核',
-        description: '我們會盡快審核，通過後會寄信通知給你。',
+        description: '我們會盡快審核，審核後會寄信通知給你。',
         imageSrc: '/guide/submit-artist/4.png',
         imageAlt: '送出藝人投稿、等待審核畫面截圖',
       },

@@ -757,7 +757,7 @@ export default function ArtistSubmissionForm({
           <div className={emailSection}>
             <p className={emailSectionTitle}>你的信箱（選填）</p>
             <p className={emailSectionDesc}>
-              如果你想要取得最新的審核狀態，可以填寫你的電子信箱，我們會在審核通過後寄信通知你～！
+              如果你想要取得最新的審核狀態，可以填寫你的電子信箱，我們會在審核後寄信通知你～！
             </p>
             <input
               className={input}

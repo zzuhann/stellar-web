@@ -12,6 +12,7 @@ vi.mock('@/lib/api', () => ({
     getAll: vi.fn(),
     approve: vi.fn(),
     reject: vi.fn(),
+    review: vi.fn(),
     getById: vi.fn(),
     batchReview: vi.fn(),
     update: vi.fn(),
@@ -54,6 +55,7 @@ vi.mock('@tanstack/react-query', () => ({
 
 const approveMock = vi.mocked(artistsApi.approve);
 const rejectMock = vi.mocked(artistsApi.reject);
+const reviewMock = vi.mocked(artistsApi.review);
 const batchReviewMock = vi.mocked(artistsApi.batchReview);
 const updateMock = vi.mocked(artistsApi.update);
 
@@ -91,6 +93,39 @@ describe('useAdminReview artistMutation', () => {
 
     expect(rejectMock).toHaveBeenCalledWith('artist-2', { reason: '不符合規則' });
     expect(revalidatePublicPages).toHaveBeenCalledTimes(1);
+  });
+
+  it('單筆標記已存在時打 review API，不打 reject', async () => {
+    reviewMock.mockResolvedValueOnce(
+      undefined as unknown as Awaited<ReturnType<typeof artistsApi.review>>
+    );
+
+    const { result } = renderHook(() => useAdminReview('artists'));
+
+    await act(async () => {
+      result.current.artistMutation.mutate([
+        { artistId: 'artist-1', status: 'exists', reason: '藝人已存在' },
+      ]);
+      await Promise.resolve();
+    });
+
+    expect(reviewMock).toHaveBeenCalledWith('artist-1', { status: 'exists' });
+    expect(rejectMock).not.toHaveBeenCalled();
+    expect(revalidatePublicPages).toHaveBeenCalledTimes(1);
+    expect(showToast.success).toHaveBeenCalledWith('審核完成');
+  });
+
+  it('單筆拒絕沒填原因時，不帶 fallback 原因', async () => {
+    rejectMock.mockResolvedValueOnce(undefined);
+
+    const { result } = renderHook(() => useAdminReview('artists'));
+
+    await act(async () => {
+      result.current.artistMutation.mutate([{ artistId: 'artist-2', status: 'rejected' }]);
+      await Promise.resolve();
+    });
+
+    expect(rejectMock).toHaveBeenCalledWith('artist-2', { reason: undefined });
   });
 
   it('批次審核成功後，清全部公開頁快取', async () => {
