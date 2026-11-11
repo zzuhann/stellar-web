@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { css } from '@/styled-system/css';
 import { adminApi } from '@/lib/api';
@@ -32,6 +32,7 @@ const notFoundBox = css({
 
 export default function EditArtistClient({ id }: { id: string }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-artist-edit', id],
@@ -40,7 +41,12 @@ export default function EditArtistClient({ id }: { id: string }) {
     refetchOnWindowFocus: false,
   });
 
-  const backToList = () => router.push('/admin-new/artists');
+  const backToList = () => {
+    // Admin list/edit caches are 10 min stale; without this, re-editing loads stale group names and writes them back
+    queryClient.invalidateQueries({ queryKey: ['admin-artists'] });
+    queryClient.invalidateQueries({ queryKey: ['admin-artist-edit', id] });
+    router.push('/admin-new/artists');
+  };
 
   return (
     <div className={pageWrapper}>
