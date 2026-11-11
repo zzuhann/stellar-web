@@ -20,18 +20,16 @@ export interface DeleteResponse {
 }
 
 // 上傳圖片到後端 API
+// Callers compress first (with their own size/quality); a second lossy pass here would override them
 export async function uploadImageToAPI(
   file: File,
   authToken?: string,
   endpoint = '/images/upload'
 ): Promise<UploadResponse> {
   try {
-    // 先壓縮圖片
-    const compressedFile = await compressImage(file);
-
     // 創建 FormData
     const formData = new FormData();
-    formData.append('image', compressedFile);
+    formData.append('image', file);
 
     const response = await api.post(endpoint, formData, {
       headers: {
