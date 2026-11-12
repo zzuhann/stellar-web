@@ -12,7 +12,12 @@ const useMapPageData = ({ artistId }: UseMapPageDataProps) => {
   const { data: artistData, isLoading: isArtistLoading } = useArtist(artistId);
   const resolvedArtistId = artistData?.id;
 
-  const { data: mapData, isLoading: isMapLoading } = useMapData({
+  const {
+    data: mapData,
+    isLoading: isMapLoading,
+    isError: isMapError,
+    error: mapError,
+  } = useMapData({
     status: 'all',
     search,
     artistId: resolvedArtistId,
@@ -25,6 +30,8 @@ const useMapPageData = ({ artistId }: UseMapPageDataProps) => {
   return {
     mapEvents,
     isMapLoading,
+    isMapError,
+    mapError,
     artistData,
     isArtistLoading,
   };

@@ -49,6 +49,7 @@ const emptyArea = css({
 
 // Poster images in the first row are the LCP candidates
 const PRIORITY_COUNT = 3;
+const OVERVIEW_HEADER_TITLE = '生咖總覽';
 
 interface MapOverviewProps {
   // Route param (slug, or id when the artist has no slug)
@@ -56,8 +57,13 @@ interface MapOverviewProps {
 }
 
 export default function MapOverview({ artistId }: MapOverviewProps) {
-  const { mapEvents, isMapLoading, artistData } = useMapPageData({ artistId });
-  useMapHeaderTitle(artistData);
+  const { mapEvents, isMapLoading, isMapError, mapError, artistData } = useMapPageData({
+    artistId,
+  });
+  useMapHeaderTitle(artistData, OVERVIEW_HEADER_TITLE);
+
+  // Failure with nothing to show must not look like "no events"; let error.tsx handle it
+  if (isMapError && mapEvents.length === 0) throw mapError;
 
   const showEmpty = !isMapLoading && mapEvents.length === 0;
 
