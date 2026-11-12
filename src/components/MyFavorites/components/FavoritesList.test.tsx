@@ -15,28 +15,26 @@ vi.mock('next/link', () => ({
   ),
 }));
 afterEach(cleanup);
-describe('favorites poster groups', () => {
-  it('只展開指定藝人，使用收藏頁追蹤來源', () => {
-    const groups = ['A', 'B'].map((id) => ({
-      id,
-      name: id,
-      events: Array.from(
-        { length: 13 },
-        (_, i) => ({ id: `${id}-${i}`, title: `${id}-${i}` }) as CoffeeEvent
-      ),
-    }));
-    render(<FavoritesList groups={groups} hasFavorites onReset={vi.fn()} />);
-    expect(screen.queryByText('A-12')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: '顯示更多 A 的活動' }));
-    expect(screen.getByText('A-12').getAttribute('data-source')).toBe('favorites_grid');
-    expect(screen.queryByText('B-12')).toBeNull();
+describe('favorites poster wall', () => {
+  it('全部活動在同一面海報牆，沒有藝人分段或截斷', () => {
+    const events = Array.from(
+      { length: 26 },
+      (_, i) => ({ id: `event-${i}`, title: `活動 ${i}` }) as CoffeeEvent
+    );
+    render(<FavoritesList events={events} artistId="" hasFavorites onReset={vi.fn()} />);
+    expect(screen.getAllByRole('list')).toHaveLength(1);
+    expect(screen.getAllByRole('link')).toHaveLength(26);
+    expect(screen.queryByRole('heading')).toBeNull();
+    expect(screen.getByText('活動 25').getAttribute('data-source')).toBe('favorites_grid');
   });
   it('篩選無結果可重設，真正空清單導回首頁', () => {
     const reset = vi.fn();
-    const { rerender } = render(<FavoritesList groups={[]} hasFavorites onReset={reset} />);
+    const { rerender } = render(
+      <FavoritesList events={[]} artistId="" hasFavorites onReset={reset} />
+    );
     fireEvent.click(screen.getByRole('button', { name: '重設篩選' }));
     expect(reset).toHaveBeenCalledOnce();
-    rerender(<FavoritesList groups={[]} hasFavorites={false} onReset={reset} />);
+    rerender(<FavoritesList events={[]} artistId="" hasFavorites={false} onReset={reset} />);
     expect(screen.getByRole('link', { name: '前往首頁找活動' }).getAttribute('href')).toBe('/');
   });
 });

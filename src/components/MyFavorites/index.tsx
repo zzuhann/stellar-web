@@ -11,7 +11,7 @@ import FavoritesList from './components/FavoritesList';
 import { useFavorites } from './hooks/useFavorites';
 import { QueryStateProvider, useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
 import { useSortBy, useArtistId, useShowOnlyActive } from './queryState';
-import { buildFavoriteGroups } from '@/utils/favoriteGroups';
+import { buildFavoriteList } from '@/utils/favoriteList';
 
 const pageContainer = css({ minHeight: '100dvh', background: 'color.background.primary' });
 const mainContainer = css({
@@ -21,8 +21,8 @@ const mainContainer = css({
   paddingX: '4',
   paddingBottom: '10',
 });
-const content = css({ display: 'flex', flexDirection: 'column', gap: '6' });
-const title = css({ textStyle: 'h1' });
+const content = css({ display: 'flex', flexDirection: 'column', gap: '3' });
+const title = css({ textStyle: 'h1', marginBottom: '2' });
 const summary = css({ textStyle: 'bodySmall', color: 'color.text.secondary' });
 const errorBox = css({ textStyle: 'bodySmall', color: 'color.status.error' });
 const retryButton = css({
@@ -40,7 +40,7 @@ function MyFavoritesContent() {
   const [sortBy, setSortBy] = useSortBy();
   const [artistId, setArtistId] = useArtistId();
   const { data, isLoading, error, refetch, isFetching } = useFavorites(user?.uid);
-  const { groups, artists, total } = buildFavoriteGroups(data ?? [], {
+  const { events, artists, total } = buildFavoriteList(data ?? [], {
     artistId,
     showOnlyActive,
     sortBy,
@@ -96,8 +96,8 @@ function MyFavoritesContent() {
                 共 {total} 場生日應援
               </p>
               <FavoritesList
-                key={JSON.stringify([user.uid, artistId, showOnlyActive, sortBy])}
-                groups={groups}
+                events={events}
+                artistId={artistId}
                 hasFavorites={data.length > 0}
                 onReset={resetFilters}
               />

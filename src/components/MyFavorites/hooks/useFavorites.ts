@@ -10,7 +10,7 @@ export const useFavorites = (userId?: string) => {
       const favorites: FavoritesResponse['favorites'] = [];
       let page = 1;
       let totalPages = 1;
-      // shortcut: read existing API pages to build complete groups; use a grouped API if large lists become slow.
+      // shortcut: read existing API pages to build the complete list; use a dedicated API if large lists become slow.
       do {
         signal.throwIfAborted();
         const result = await usersApi.favorites.getAll({

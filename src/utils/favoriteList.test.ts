@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildFavoriteGroups } from './favoriteGroups';
+import { buildFavoriteList } from './favoriteList';
 import type { FavoritesResponse } from '@/types';
 
 function item(id: string, artistIds: string[], start = 100, end = 200, added = 50) {
@@ -22,35 +22,31 @@ const options = {
   now: 200000,
 };
 
-describe('favorite groups', () => {
-  it('聯合應援分別出現，活動與組內去重，選單涵蓋完整清單', () => {
+describe('favorite list', () => {
+  it('全部混排且聯合應援只出現一次，選單涵蓋完整清單', () => {
     const joint = item('joint', ['A', 'B', 'A']);
-    const result = buildFavoriteGroups([joint, joint, item('solo', ['C'])], options);
+    const result = buildFavoriteList([joint, joint, item('solo', ['C'])], options);
     expect(result.total).toBe(2);
-    expect(result.groups.map((g) => [g.id, g.events.map((e) => e.id)])).toEqual([
-      ['A', ['joint']],
-      ['B', ['joint']],
-      ['C', ['solo']],
-    ]);
+    expect(result.events.map((event) => event.id)).toEqual(['joint', 'solo']);
     expect(result.artists).toHaveLength(3);
   });
-  it('單選藝人不顯示聯合應援的其他組，但保留完整選單', () => {
-    const result = buildFavoriteGroups([item('joint', ['A', 'B'])], { ...options, artistId: 'B' });
-    expect(result.groups.map((g) => g.id)).toEqual(['B']);
+  it('選任何相關藝人都找得到聯合應援，並保留完整選單', () => {
+    const result = buildFavoriteList([item('joint', ['A', 'B'])], { ...options, artistId: 'B' });
+    expect(result.events.map((event) => event.id)).toEqual(['joint']);
     expect(result.total).toBe(1);
     expect(result.artists).toHaveLength(2);
   });
   it('截止時間相等仍顯示，過期活動篩掉但藝人留在選單', () => {
-    const result = buildFavoriteGroups([item('ended', ['A'], 1, 199), item('now', ['B'])], {
+    const result = buildFavoriteList([item('ended', ['A'], 1, 199), item('now', ['B'])], {
       ...options,
       showOnlyActive: true,
     });
-    expect(result.groups.map((g) => g.id)).toEqual(['B']);
+    expect(result.events.map((event) => event.id)).toEqual(['now']);
     expect(result.artists).toHaveLength(2);
   });
-  it('無效藝人為空結果，沒有藝人資料收在其他活動', () => {
-    expect(buildFavoriteGroups([item('x', [])], options).groups[0].name).toBe('其他活動');
-    expect(buildFavoriteGroups([item('x', ['A'])], { ...options, artistId: 'missing' }).total).toBe(
+  it('無效藝人為空結果，沒有藝人資料仍保留在全部', () => {
+    expect(buildFavoriteList([item('x', [])], options).events[0].id).toBe('x');
+    expect(buildFavoriteList([item('x', ['A'])], { ...options, artistId: 'missing' }).total).toBe(
       0
     );
   });
@@ -62,9 +58,9 @@ describe('favorite groups', () => {
       ['startTime-asc', ['b', 'a']],
       ['startTime-desc', ['a', 'b']],
     ] as const) {
-      expect(
-        buildFavoriteGroups(items, { ...options, sortBy }).groups[0].events.map((e) => e.id)
-      ).toEqual(expected);
+      expect(buildFavoriteList(items, { ...options, sortBy }).events.map((e) => e.id)).toEqual(
+        expected
+      );
     }
     expect(items.map((i) => i.event.id)).toEqual(['a', 'b']);
   });
