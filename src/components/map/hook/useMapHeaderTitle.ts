@@ -8,13 +8,16 @@ interface ArtistNames {
 }
 
 // Feeds the artist name into the global Header; clears on unmount so other pages don't show a stale title
-export default function useMapHeaderTitle(artist: ArtistNames | undefined) {
+export default function useMapHeaderTitle(
+  artist: ArtistNames | undefined,
+  title: string = MAP_HEADER_TITLE
+) {
   const setHeaderTitle = useHeaderTitleStore((state) => state.setTitle);
   const eyebrow = buildMapHeaderTitle(artist?.stageName, artist?.stageNameZh);
 
   useEffect(() => {
     if (!eyebrow) return;
-    setHeaderTitle(MAP_HEADER_TITLE, eyebrow);
+    setHeaderTitle(title, eyebrow);
     return () => setHeaderTitle(null);
-  }, [eyebrow, setHeaderTitle]);
+  }, [eyebrow, title, setHeaderTitle]);
 }
