@@ -345,15 +345,17 @@
 
 ### click_event_detail
 
-點擊活動卡片進入活動詳情頁 `/event/[slug]`。地圖頁與場地詳情頁都有觸發，參數不同。
+點擊活動卡片進入活動詳情頁 `/event/[slug]`。地圖頁、生咖總覽頁與場地詳情頁都有觸發，參數不同。
 
-| 參數       | 值（地圖頁）                   | 值（場地詳情頁） |
-| ---------- | ------------------------------ | ---------------- |
-| event_page | `/map/[artistId]`              | `/venues/[id]`   |
-| user_id    | 用戶 UID                       | 用戶 UID         |
-| content_id | eventId                        | eventId          |
-| artist_id  | artistId                       | -                |
-| ui_source  | `map_single_card` / `carousel` | -                |
+| 參數       | 值（地圖頁）                   | 值（總覽頁）               | 值（場地詳情頁） |
+| ---------- | ------------------------------ | -------------------------- | ---------------- |
+| event_page | `/map/[artistId]`              | `/map/[artistId]/overview` | `/venues/[id]`   |
+| user_id    | 用戶 UID                       | 用戶 UID                   | 用戶 UID         |
+| content_id | eventId                        | eventId                    | eventId          |
+| artist_id  | 網址參數（slug 或 id）         | 藝人 Firestore id          | -                |
+| ui_source  | `map_single_card` / `carousel` | `overview_grid`            | -                |
+
+兩頁的 `artist_id` 取值不同（地圖頁是網址參數，可能是 slug；總覽頁是解析後的 Firestore id），跨頁合併時要先對應。
 
 注意：參數名不可用 `source`，GA4 會把它當流量來源覆蓋 session 歸因（2026-10 起改名為 `ui_source`，與 `resolve_venue_geolocation` 共用同一個自訂維度）。
 
