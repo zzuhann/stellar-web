@@ -18,6 +18,7 @@ export function normalizeMapDataOptions(options: MapDataKeyOptions): MapDataKeyO
 }
 
 const queryKey = {
+  favorites: (userId?: string) => ['favorites', 'all', userId],
   // Shared by map page prefetch, useMapData and the overview page: a mismatch silently
   // leaves the server HTML without cards while the page still looks fine
   mapData: (options: MapDataKeyOptions) => ['map-data', normalizeMapDataOptions(options)],

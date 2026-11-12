@@ -1,255 +1,147 @@
-import { useState, useRef, useEffect } from 'react';
 import { css } from '@/styled-system/css';
-import { SortByOption } from '../queryState';
+import FormDropdown from '@/components/forms/FormDropdown';
+import type { SortByOption } from '../queryState';
 
-const filterBarContainer = css({
+const container = css({
   display: 'flex',
   flexDirection: 'column',
-  gap: '3',
-  padding: '4',
-  background: 'white',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  borderRadius: 'radius.lg',
+  gap: '0',
+  minWidth: 0,
+  '& [role="listbox"]': {
+    width: 'max-content',
+    minWidth: '200px',
+    maxWidth: 'min(320px, calc(100vw - 32px))',
+    padding: '1',
+    borderRadius: 'radius.lg',
+    borderColor: 'color.border.light',
+    boxShadow: 'shadow.md',
+    overflowX: 'hidden',
+  },
+  '& [role="option"]': {
+    position: 'relative',
+    display: 'block',
+    textStyle: 'bodySmall',
+    paddingX: '3',
+    paddingRight: '8',
+    borderRadius: 'radius.sm',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    '&[aria-selected="true"]': {
+      background: 'color.background.secondary',
+      color: 'color.primary',
+      '&::after': {
+        content: '"✓"',
+        position: 'absolute',
+        right: '3',
+        top: '50%',
+        transform: 'translateY(-50%)',
+      },
+    },
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '-2px',
+    },
+  },
 });
-
-const filterRow = css({
+const toolbar = css({
   display: 'flex',
-  flexDirection: 'column',
-  gap: '2',
-});
-
-const dropdownContainer = css({
-  position: 'relative',
-  flex: 1,
-});
-
-const dropdownButton = css({
-  textStyle: 'bodySmall',
-  width: '100%',
-  paddingY: '2.5',
-  paddingX: '3',
-  borderRadius: 'radius.md',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  background: 'white',
-  color: 'color.text.primary',
-  cursor: 'pointer',
-  textAlign: 'left',
-  display: 'flex',
-  justifyContent: 'space-between',
   alignItems: 'center',
-  transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-  '&:hover': {
-    borderColor: 'color.primary',
-  },
-  '&:focus-visible': {
-    outline: 'none',
-    borderColor: 'color.primary',
-    boxShadow: 'shadow.sm',
-  },
-});
-
-const dropdownArrow = css({
-  display: 'inline-block',
-  transition: 'transform 0.2s ease',
-});
-
-const dropdownArrowOpen = css({
-  transform: 'rotate(180deg)',
-});
-
-const dropdownMenu = css({
-  position: 'absolute',
-  top: 'calc(100% + 4px)',
-  left: 0,
-  right: 0,
-  background: 'white',
-  border: '1px solid',
-  borderColor: 'color.border.light',
-  borderRadius: 'radius.md',
-  boxShadow: 'shadow.md',
-  zIndex: 10,
-  overflow: 'hidden',
-  transformOrigin: 'top',
-  animation: 'slideDown 0.2s ease-out',
-});
-
-const dropdownOption = css({
-  textStyle: 'bodySmall',
-  paddingY: '2.5',
-  paddingX: '3',
-  cursor: 'pointer',
-  display: 'flex',
   justifyContent: 'space-between',
-  alignItems: 'center',
-  transition: 'background 0.15s',
-  width: '100%',
-  '&:hover': {
-    background: 'gray.50',
+  gap: '4',
+});
+const artistControl = css({
+  minWidth: '0',
+  flex: '1',
+  '& > div > button': {
+    border: 'none',
+    paddingX: '0',
+    background: 'transparent',
+    textStyle: 'bodySmall',
+    fontWeight: 'semibold',
+    justifyContent: 'flex-start',
   },
 });
-
-const dropdownOptionSelected = css({
-  color: 'color.primary',
-  fontWeight: 'medium',
+const sortControl = css({
+  width: '120px',
+  flexShrink: '0',
+  '& [role="listbox"]': { left: 'auto', right: '0', minWidth: '180px' },
+  '& > div > button': {
+    border: 'none',
+    paddingX: '0',
+    background: 'transparent',
+    textStyle: 'bodySmall',
+    color: 'color.text.secondary',
+    justifyContent: 'flex-end',
+  },
 });
-
-const checkbox = css({
-  width: '16px',
-  height: '16px',
-  cursor: 'pointer',
-});
-
 const checkboxLabel = css({
-  textStyle: 'bodySmall',
   display: 'flex',
   alignItems: 'center',
   gap: '2',
-  color: 'color.text.primary',
+  minHeight: '44px',
+  textStyle: 'bodySmall',
   cursor: 'pointer',
-  userSelect: 'none',
 });
-
-type FilterBarProps = {
+const checkbox = css({ width: '18px', height: '18px', accentColor: 'color.primary' });
+const sortOptions: { value: SortByOption; label: string }[] = [
+  { value: 'favorited-desc', label: '最新加入' },
+  { value: 'favorited-asc', label: '最早加入' },
+  { value: 'startTime-asc', label: '活動由近到遠' },
+  { value: 'startTime-desc', label: '活動由遠到近' },
+];
+interface FilterBarProps {
+  artists: { id: string; name: string }[];
+  artistId: string;
+  onArtistChange: (id: string) => void;
   showOnlyActive: boolean;
   onShowOnlyActiveChange: (show: boolean) => void;
   sortBy: SortByOption;
   onSortByChange: (sortBy: SortByOption) => void;
-};
-
-const FilterBar = ({
+}
+export default function FilterBar({
+  artists,
+  artistId,
+  onArtistChange,
   showOnlyActive,
   onShowOnlyActiveChange,
   sortBy,
   onSortByChange,
-}: FilterBarProps) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // 排序選項
-  const sortOptions = [
-    { value: 'favorited-desc' as const, label: '收藏時間：由新到舊' },
-    { value: 'favorited-asc' as const, label: '收藏時間：由舊到新' },
-    { value: 'startTime-asc' as const, label: '活動時間：由早到晚' },
-    { value: 'startTime-desc' as const, label: '活動時間：由晚到早' },
-  ];
-
-  const currentOption = sortOptions.find((opt) => opt.value === sortBy);
-
-  const handleOptionSelect = (value: SortByOption) => {
-    onSortByChange(value);
-    setIsDropdownOpen(false);
-  };
-
-  // 點擊外部關閉 dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isDropdownOpen]);
-
-  // 鍵盤操作
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (!isDropdownOpen) {
-      if (event.key === 'ArrowDown' || event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        setIsDropdownOpen(true);
-      }
-      return;
-    }
-
-    const currentIndex = sortOptions.findIndex((opt) => opt.value === sortBy);
-
-    switch (event.key) {
-      case 'Escape':
-        event.preventDefault();
-        setIsDropdownOpen(false);
-        break;
-      case 'ArrowDown':
-        event.preventDefault();
-        if (currentIndex < sortOptions.length - 1) {
-          onSortByChange(sortOptions[currentIndex + 1].value);
-        }
-        break;
-      case 'ArrowUp':
-        event.preventDefault();
-        if (currentIndex > 0) {
-          onSortByChange(sortOptions[currentIndex - 1].value);
-        }
-        break;
-      case 'Enter':
-      case ' ':
-        event.preventDefault();
-        setIsDropdownOpen(false);
-        break;
-    }
-  };
-
+}: FilterBarProps) {
   return (
-    <div className={filterBarContainer}>
-      <div className={filterRow}>
-        <label className={checkboxLabel}>
-          <input
-            type="checkbox"
-            className={checkbox}
-            checked={showOnlyActive}
-            onChange={(e) => onShowOnlyActiveChange(e.target.checked)}
+    <div className={container}>
+      <div className={toolbar}>
+        <div className={artistControl}>
+          <FormDropdown
+            label="顯示藝人"
+            value={artistId}
+            placeholder="此藝人已不在清單中"
+            options={[
+              { value: '', label: '全部藝人' },
+              ...artists.map((artist) => ({ value: artist.id, label: artist.name })),
+            ]}
+            onChange={onArtistChange}
           />
-          <span>只顯示未結束的應援</span>
-        </label>
-      </div>
-
-      <div className={filterRow}>
-        <div className={dropdownContainer} ref={dropdownRef}>
-          <button
-            type="button"
-            className={dropdownButton}
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-            onKeyDown={handleKeyDown}
-            aria-label="選擇排序方式"
-            aria-expanded={isDropdownOpen}
-            aria-haspopup="listbox"
-          >
-            <span>{currentOption?.label}</span>
-            <span className={`${dropdownArrow} ${isDropdownOpen ? dropdownArrowOpen : ''}`}>▼</span>
-          </button>
-
-          {isDropdownOpen && (
-            <div className={dropdownMenu} role="listbox" aria-label="排序選項">
-              {sortOptions.map((option) => {
-                const isSelected = option.value === sortBy;
-                return (
-                  <button
-                    type="button"
-                    key={option.value}
-                    className={`${dropdownOption} ${isSelected ? dropdownOptionSelected : ''}`}
-                    onClick={() => handleOptionSelect(option.value)}
-                    role="option"
-                    aria-selected={isSelected}
-                    aria-label={option.label}
-                  >
-                    <span>{option.label}</span>
-                    {isSelected && <span> ✓</span>}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+        </div>
+        <div className={sortControl}>
+          <FormDropdown
+            label="排序方式"
+            value={sortBy}
+            options={sortOptions}
+            onChange={onSortByChange}
+          />
         </div>
       </div>
+      <label className={checkboxLabel}>
+        <input
+          className={checkbox}
+          type="checkbox"
+          checked={showOnlyActive}
+          onChange={(event) => onShowOnlyActiveChange(event.target.checked)}
+        />
+        只顯示未結束的應援
+      </label>
     </div>
   );
-};
-
-export default FilterBar;
+}

@@ -25,12 +25,8 @@ export const useSortBy = () => {
   });
 };
 
-export const usePage = () => {
-  return useQueryState('page', {
-    defaultValue: 1,
-    parse: (value) => {
-      const parsed = parseInt(value);
-      return isNaN(parsed) || parsed < 1 ? 1 : parsed;
-    },
+export const useArtistId = () =>
+  useQueryState('artistId', {
+    defaultValue: '',
+    parse: (value) => value,
   });
-};

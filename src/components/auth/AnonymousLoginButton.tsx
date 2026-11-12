@@ -275,7 +275,7 @@ const AnonymousLoginButton = ({ onSuccess }: AnonymousLoginButtonProps) => {
       </div>
 
       <div className={disclaimer}>
-        使用訪客模式時，投稿/收藏的資料只會儲存在此瀏覽器中。清除瀏覽器資料或更換裝置後，資料可能會遺失。
+        使用訪客模式時，投稿／「我想去」的資料只會儲存在此瀏覽器中。清除瀏覽器資料或更換裝置後，資料可能會遺失。
       </div>
     </>
   );

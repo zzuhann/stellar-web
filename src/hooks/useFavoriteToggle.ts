@@ -1,3 +1,4 @@
+import { useRouter } from 'next/navigation';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usersApi } from '@/lib/api';
 import { CoffeeEvent } from '@/types';
@@ -12,6 +13,7 @@ interface UseFavoriteToggleOptions {
 
 export const useFavoriteToggle = () => {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   return useMutation({
     mutationFn: async ({ eventId, isFavorited }: UseFavoriteToggleOptions) => {
@@ -46,7 +48,7 @@ export const useFavoriteToggle = () => {
       }
       // 關閉所有 toast，避免快速點擊時出現多個 toast
       toast.dismiss();
-      toast.error('收藏生日應援失敗，請稍後再試');
+      toast.error('更新「我想去」失敗，請稍後再試');
     },
     onSuccess: (data) => {
       // Track only confirmed writes; auth.currentUser also covers the post-login path where the caller's user is stale
@@ -57,13 +59,26 @@ export const useFavoriteToggle = () => {
       });
       // 關閉所有 toast，避免快速點擊時出現多個 toast
       toast.dismiss();
-      const message = data.isFavorited ? '已加入收藏' : '已取消收藏';
-      toast.success(message);
+      // Mark inactive lists stale before the notification can navigate to them.
+      void queryClient.invalidateQueries({ queryKey: ['favorites'] });
+      if (data.isFavorited) {
+        toast.success('已加入「我想去」', {
+          duration: 8000,
+          action: {
+            label: '查看',
+            onClick: () => {
+              toast.dismiss();
+              router.push('/my-favorite');
+            },
+          },
+        });
+      } else {
+        toast.success('已從「我想去」移除');
+      }
     },
     onSettled: (_data, _error, { eventId }) => {
       // 重新 fetch 確保資料正確
       queryClient.invalidateQueries({ queryKey: ['favorite', eventId] });
-      queryClient.invalidateQueries({ queryKey: ['favorites'] });
     },
   });
 };

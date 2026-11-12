@@ -1,7 +1,7 @@
 import { toast, type ExternalToast } from 'sonner';
 
 export const showToast = {
-  success: (message: string) => toast.success(message),
+  success: (message: string, options?: ExternalToast) => toast.success(message, options),
 
   error: (message: string) => toast.error(message),
 

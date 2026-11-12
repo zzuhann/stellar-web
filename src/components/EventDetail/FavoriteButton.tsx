@@ -118,7 +118,7 @@ export default function FavoriteButton({ eventId, eventTitle }: FavoriteButtonPr
       className={isFavorited ? favoriteButtonActive : favoriteButton}
       onClick={handleFavoriteClick}
       disabled={favoriteToggle.isPending || isFavoriteStatusLoading}
-      aria-label={isFavorited ? `取消收藏「${eventTitle}」` : `收藏「${eventTitle}」`}
+      aria-label={isFavorited ? `從「我想去」移除「${eventTitle}」` : `將「${eventTitle}」加入「我想去」`}
       aria-pressed={isFavorited}
       aria-busy={favoriteToggle.isPending}
     >
@@ -132,7 +132,7 @@ export default function FavoriteButton({ eventId, eventTitle }: FavoriteButtonPr
           aria-hidden="true"
         />
       )}
-      <span aria-hidden="true">{isFavorited ? '已收藏' : '收藏'}</span>
+      <span aria-hidden="true">{isFavorited ? '已加入' : '我想去'}</span>
     </button>
   );
 }

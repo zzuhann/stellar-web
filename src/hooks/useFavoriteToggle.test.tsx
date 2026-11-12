@@ -3,8 +3,11 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { sendGAEvent } from '@next/third-parties/google';
 import { usersApi } from '@/lib/api';
+import toast from '@/lib/toast';
 import { useFavoriteToggle } from './useFavoriteToggle';
 
+const { push } = vi.hoisted(() => ({ push: vi.fn() }));
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 vi.mock('@next/third-parties/google', () => ({ sendGAEvent: vi.fn() }));
 vi.mock('@/lib/firebase', () => ({ auth: { currentUser: { uid: 'user-1' } } }));
 vi.mock('@/lib/api', () => ({
@@ -67,5 +70,30 @@ describe('useFavoriteToggle GA tracking', () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(sendGAEvent).not.toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
   });
+});
+
+it('成功通知提供查看，點擊前往清單', async () => {
+  vi.mocked(usersApi.favorites.add).mockResolvedValue(undefined as never);
+  const { result } = renderToggle();
+  result.current.mutate({ eventId: 'evt-1', isFavorited: false });
+  await waitFor(() =>
+    expect(toast.success).toHaveBeenCalledWith(
+      '已加入「我想去」',
+      expect.objectContaining({ action: expect.objectContaining({ label: '查看' }) })
+    )
+  );
+  const options = vi.mocked(toast.success).mock.calls[0][1];
+  if (options?.action && typeof options.action === 'object' && 'onClick' in options.action) {
+    options.action.onClick({} as React.MouseEvent<HTMLButtonElement>);
+  }
+  expect(push).toHaveBeenCalledWith('/my-favorite');
+});
+
+it('移除通知不提供查看', async () => {
+  vi.mocked(usersApi.favorites.remove).mockResolvedValue(undefined as never);
+  const { result } = renderToggle();
+  result.current.mutate({ eventId: 'evt-1', isFavorited: true });
+  await waitFor(() => expect(toast.success).toHaveBeenCalledWith('已從「我想去」移除'));
 });

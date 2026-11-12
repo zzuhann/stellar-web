@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import { showToast } from '@/lib/toast';
@@ -10,126 +10,108 @@ import FilterBar from './components/FilterBar';
 import FavoritesList from './components/FavoritesList';
 import { useFavorites } from './hooks/useFavorites';
 import { QueryStateProvider, useQueryStateContextMergeUpdates } from '@/hooks/useQueryStateContext';
-import { useSortBy, usePage, useShowOnlyActive, SortByOption } from './queryState';
+import { useSortBy, useArtistId, useShowOnlyActive } from './queryState';
+import { buildFavoriteList } from '@/utils/favoriteList';
 
-const pageContainer = css({
-  minHeight: '100vh',
-  background: 'color.background.primary',
-});
-
+const pageContainer = css({ minHeight: '100dvh', background: 'color.background.primary' });
 const mainContainer = css({
   maxWidth: '600px',
   margin: '0 auto',
   paddingTop: '25',
   paddingX: '4',
   paddingBottom: '10',
-  '@media (min-width: 768px)': {
-    paddingTop: '25',
-    paddingX: '6',
-    paddingBottom: '15',
-  },
 });
-
-const contentWrapper = css({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '4',
+const content = css({ display: 'flex', flexDirection: 'column', gap: '3' });
+const title = css({ textStyle: 'h1', color: 'color.text.primary', marginBottom: '2' });
+const summary = css({ textStyle: 'bodySmall', color: 'color.text.secondary' });
+const errorBox = css({ textStyle: 'bodySmall', color: 'color.status.error' });
+const retryButton = css({
+  minHeight: '44px',
+  paddingX: '3',
+  textDecoration: 'underline',
+  cursor: 'pointer',
 });
 
 function MyFavoritesContent() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
-
   const { mergeUpdates } = useQueryStateContextMergeUpdates();
-
   const [showOnlyActive, setShowOnlyActive] = useShowOnlyActive();
   const [sortBy, setSortBy] = useSortBy();
-  const [page, setPage] = usePage();
+  const [artistId, setArtistId] = useArtistId();
+  const { data, isLoading, error, refetch, isFetching } = useFavorites(user?.uid);
+  const { events, artists, total } = buildFavoriteList(data ?? [], {
+    artistId,
+    showOnlyActive,
+    sortBy,
+  });
 
-  // 把 sortBy 拆解為 sort 和 sortOrder
-  const { sort, sortOrder } = useMemo((): {
-    sort: 'favoritedAt' | 'startTime';
-    sortOrder: 'asc' | 'desc';
-  } => {
-    const [field, order] = sortBy.split('-') as ['favorited' | 'startTime', 'asc' | 'desc'];
-    return {
-      sort: field === 'favorited' ? 'favoritedAt' : 'startTime',
-      sortOrder: order,
-    };
-  }, [sortBy]);
-
-  // 取得收藏列表
-  const { data, isLoading, error } = useFavorites(
-    {
-      status: showOnlyActive ? 'notEnded' : 'all',
-      sort,
-      sortOrder,
-      page,
-      limit: 50,
-    },
-    !!user
-  );
-
-  const handleShowOnlyActiveChange = (show: boolean) => {
+  const resetFilters = () =>
     mergeUpdates(() => {
-      setShowOnlyActive(show);
-      setPage(1);
+      setArtistId('');
+      setShowOnlyActive(false);
     });
-  };
 
-  const handleSortByChange = (newSortBy: SortByOption) => {
-    mergeUpdates(() => {
-      setSortBy(newSortBy);
-      setPage(1);
-    });
-  };
-
-  // 權限檢查
   useEffect(() => {
     if (!authLoading && !user) {
-      showToast.warning('請先登入後才能查看收藏的生日應援');
+      showToast.warning('請先登入後查看「我想去」');
       router.push('/');
     }
   }, [user, authLoading, router]);
 
-  const isLoadingState = authLoading || isLoading;
-
-  if (!user) {
-    return null;
-  }
-
-  if (error) {
-    showToast.error('載入失敗，請稍後再試');
-  }
+  if (authLoading) return <Loading description="載入中..." />;
+  if (!user) return null;
 
   return (
     <div className={pageContainer}>
-      <div className={mainContainer}>
-        <div className={contentWrapper}>
-          <FilterBar
-            showOnlyActive={showOnlyActive}
-            onShowOnlyActiveChange={handleShowOnlyActiveChange}
-            sortBy={sortBy}
-            onSortByChange={handleSortByChange}
-          />
-
-          {isLoadingState && <Loading description="載入中..." />}
-
-          {!isLoadingState && data && (
-            <FavoritesList data={data} currentPage={page} onPageChange={setPage} />
+      <main className={mainContainer}>
+        <div className={content}>
+          <h1 className={title}>我想去的生日應援</h1>
+          {isLoading && <Loading description="載入中..." />}
+          {error && (
+            <div className={errorBox} role="alert">
+              <p>{data ? '更新失敗，目前顯示上次載入的清單。' : '載入失敗，請稍後再試。'}</p>
+              <button
+                type="button"
+                className={retryButton}
+                disabled={isFetching}
+                onClick={() => void refetch()}
+              >
+                重新載入
+              </button>
+            </div>
+          )}
+          {data && (
+            <>
+              <FilterBar
+                artists={artists}
+                artistId={artistId}
+                onArtistChange={setArtistId}
+                showOnlyActive={showOnlyActive}
+                onShowOnlyActiveChange={setShowOnlyActive}
+                sortBy={sortBy}
+                onSortByChange={setSortBy}
+              />
+              <p className={summary} aria-live="polite">
+                共 {total} 場生日應援
+              </p>
+              <FavoritesList
+                events={events}
+                artistId={artistId}
+                hasFavorites={data.length > 0}
+                onReset={resetFilters}
+              />
+            </>
           )}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
-
-function MyFavorites() {
+export default function MyFavorites() {
   return (
     <QueryStateProvider>
       <MyFavoritesContent />
     </QueryStateProvider>
   );
 }
-
-export default MyFavorites;
