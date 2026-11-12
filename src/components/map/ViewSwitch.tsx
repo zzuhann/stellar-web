@@ -98,7 +98,8 @@ export default function ViewSwitch({ artistId, current, floating = false }: View
             className={item}
             aria-current={current === view ? 'page' : undefined}
             data-active={active === view}
-            onClick={() => setActive(view)}
+            // onNavigate skips ⌘/Ctrl-click new tabs, which would leave this page's indicator on the wrong side
+            onNavigate={() => setActive(view)}
           >
             <Icon width={16} height={16} aria-hidden="true" />
             {label}
