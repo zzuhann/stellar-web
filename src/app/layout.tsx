@@ -17,6 +17,7 @@ import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistratio
 import { ShareProvider } from '@/context/ShareContext';
 import ClarityInit from '@/components/ClarityInit';
 import SoftNavigationPageView from '@/components/SoftNavigationPageView';
+import { STELLAR_INSTAGRAM_URL, STELLAR_THREADS_URL } from '@/constants/stellarSocial';
 
 const GA_ID = 'G-4HGC08K6JK';
 
@@ -133,10 +134,7 @@ export default function RootLayout({
               name: 'STELLAR',
               url: 'https://www.stellar-zone.com',
               logo: 'https://cdn.stellar-zone.com/images/og-image.png',
-              sameAs: [
-                'https://www.instagram.com/stellar_tw',
-                'https://www.threads.com/@stellar_tw',
-              ],
+              sameAs: [STELLAR_INSTAGRAM_URL, STELLAR_THREADS_URL],
             }),
           }}
         />
