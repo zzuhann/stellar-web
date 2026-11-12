@@ -14,6 +14,7 @@ import { useMapNewState } from './hooks/useMapNewState';
 import { useMapStateStorage } from './hooks/useMapStateStorage';
 import useMapHeaderTitle from './hook/useMapHeaderTitle';
 import MapBottomSheet from './MapBottomSheet';
+import ViewSwitch from './ViewSwitch';
 import MapSingleEventCard from './MapSingleEventCard';
 import { MapEvent } from '@/types';
 
@@ -141,6 +142,7 @@ export default function MapPage({ artistId }: MapPageProps) {
   return (
     <>
       <div className={pageContainer} id="main-content">
+        <ViewSwitch artistId={artistId} current="map" floating />
         <div className={mapArea}>
           <MapSection
             mapEvents={mapEvents}
