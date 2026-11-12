@@ -22,7 +22,7 @@ const mainContainer = css({
   paddingBottom: '10',
 });
 const content = css({ display: 'flex', flexDirection: 'column', gap: '3' });
-const title = css({ textStyle: 'h1', marginBottom: '2' });
+const title = css({ textStyle: 'h1', color: 'color.text.primary', marginBottom: '2' });
 const summary = css({ textStyle: 'bodySmall', color: 'color.text.secondary' });
 const errorBox = css({ textStyle: 'bodySmall', color: 'color.status.error' });
 const retryButton = css({
@@ -66,7 +66,7 @@ function MyFavoritesContent() {
     <div className={pageContainer}>
       <main className={mainContainer}>
         <div className={content}>
-          <h1 className={title}>我想去</h1>
+          <h1 className={title}>我想去的生日應援</h1>
           {isLoading && <Loading description="載入中..." />}
           {error && (
             <div className={errorBox} role="alert">
