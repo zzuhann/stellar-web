@@ -122,6 +122,15 @@ describe('MapOverview cards and count', () => {
     expect(card.getAttribute('href')).toBe('/event/e-1');
     expect(card.querySelectorAll('a')).toHaveLength(0);
   });
+
+  // TC-031
+  it('shows a short region label only when the city is known', () => {
+    const { container } = renderOverview([e1, e2]);
+    const [withCity, withoutCity] = cardLinks(container);
+    expect(within(withCity).getByText('台北')).toBeTruthy();
+    expect(within(withCity).queryByText('臺北市')).toBeNull();
+    expect(within(withoutCity).queryByText('台北')).toBeNull();
+  });
 });
 
 describe('MapOverview semantics', () => {

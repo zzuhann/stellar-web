@@ -28,7 +28,12 @@ export const e1 = makeEvent({
   slug: 'e-1',
   title: '甲',
   mainImage: 'https://img.test/e1.jpg',
-  location: { address: '台北市', coordinates: { lat: 25, lng: 121 }, name: 'S1' },
+  location: {
+    address: '台北市',
+    city: '臺北市',
+    coordinates: { lat: 25, lng: 121 },
+    name: 'S1',
+  },
 });
 export const e2 = makeEvent({
   id: 'ev-2',

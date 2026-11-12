@@ -8,6 +8,7 @@ import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
 import { useAuth } from '@/lib/auth-context';
 import { formatEventDateShort } from '@/utils';
+import { regionFromCity } from '@/utils/venues';
 
 const card = css({
   display: 'flex',
@@ -79,6 +80,7 @@ export default function OverviewEventCard({ event, artistId, priority }: Overvie
     event.datetime?.start && event.datetime?.end
       ? formatEventDateShort(event.datetime.start, event.datetime.end)
       : '';
+  const region = event.location?.city ? regionFromCity(event.location.city) : null;
 
   const handleClick = () => {
     sendGAEvent('event', 'click_event_detail', {
@@ -107,6 +109,7 @@ export default function OverviewEventCard({ event, artistId, priority }: Overvie
       </div>
       <div className={textArea}>
         <p className={title}>{event.title}</p>
+        {region && <p className={venue}>{region}</p>}
         {event.location?.name && <p className={venue}>{event.location.name}</p>}
         {dateText && <p className={date}>{dateText}</p>}
       </div>
