@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import Link from 'next/link';
 import { MapIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import { css, cx } from '@/styled-system/css';
@@ -17,9 +20,10 @@ const floatingNav = css({
 });
 
 const group = css({
-  display: 'inline-flex',
+  position: 'relative',
+  display: 'inline-grid',
+  gridTemplateColumns: '1fr 1fr',
   padding: '0.5',
-  gap: '0.5',
   borderRadius: 'radius.lg',
   border: '1px solid',
   borderColor: 'color.border.light',
@@ -31,54 +35,75 @@ const floatingGroup = css({
   boxShadow: 'shadow.md',
 });
 
+// Slides between the two equal-width columns
+const indicator = css({
+  position: 'absolute',
+  top: '0.5',
+  bottom: '0.5',
+  left: '0.5',
+  width: 'calc(50% - 2px)',
+  borderRadius: 'radius.md',
+  background: 'color.primary',
+  transition: 'transform 0.25s ease',
+  '&[data-active="overview"]': { transform: 'translateX(100%)' },
+  _motionReduce: { transition: 'none' },
+});
+
 const item = css({
+  position: 'relative',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: '1.5',
-  minHeight: '44px',
-  paddingX: '4',
-  borderRadius: 'radius.md',
+  gap: '1',
+  // 32px still clears the WCAG 2.2 AA 24px target size
+  minHeight: '32px',
+  paddingX: '3',
   textStyle: 'button',
+  fontSize: '13px',
   textDecoration: 'none',
   color: 'color.text.primary',
-  background: 'transparent',
-  '&[aria-current="page"]': {
-    background: 'color.primary',
-    color: 'color.background.primary',
-  },
+  transition: 'color 0.25s ease',
+  '&[data-active="true"]': { color: 'color.background.primary' },
+  _motionReduce: { transition: 'none' },
 });
+
+type View = 'map' | 'overview';
+
+const VIEWS: { view: View; label: string; Icon: typeof MapIcon }[] = [
+  { view: 'map', label: '地圖', Icon: MapIcon },
+  { view: 'overview', label: '總覽', Icon: Squares2X2Icon },
+];
 
 interface ViewSwitchProps {
   // Route param (slug, or id when the artist has no slug)
   artistId: string;
-  current: 'map' | 'overview';
+  current: View;
   floating?: boolean;
 }
 
 // Plain links on purpose: Header back-button depth lives in memory and a full reload would reset it
 export default function ViewSwitch({ artistId, current, floating = false }: ViewSwitchProps) {
+  // Moves the indicator on tap, before the next page finishes loading
+  const [active, setActive] = useState<View>(current);
+
   return (
     <nav aria-label="切換檢視" className={floating ? floatingNav : inlineNav}>
       <div className={cx(group, floating && floatingGroup)}>
-        <Link
-          href={`/map/${artistId}`}
-          prefetch={false}
-          className={item}
-          aria-current={current === 'map' ? 'page' : undefined}
-        >
-          <MapIcon width={18} height={18} aria-hidden="true" />
-          地圖
-        </Link>
-        <Link
-          href={`/map/${artistId}/overview`}
-          prefetch={false}
-          className={item}
-          aria-current={current === 'overview' ? 'page' : undefined}
-        >
-          <Squares2X2Icon width={18} height={18} aria-hidden="true" />
-          總覽
-        </Link>
+        <span className={indicator} data-active={active} aria-hidden="true" />
+        {VIEWS.map(({ view, label, Icon }) => (
+          <Link
+            key={view}
+            href={view === 'map' ? `/map/${artistId}` : `/map/${artistId}/overview`}
+            prefetch={false}
+            className={item}
+            aria-current={current === view ? 'page' : undefined}
+            data-active={active === view}
+            onClick={() => setActive(view)}
+          >
+            <Icon width={16} height={16} aria-hidden="true" />
+            {label}
+          </Link>
+        ))}
       </div>
     </nav>
   );
