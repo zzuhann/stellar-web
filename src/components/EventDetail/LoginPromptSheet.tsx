@@ -169,14 +169,14 @@ export default function LoginPromptSheet({
         }}
         role="dialog"
         aria-modal="true"
-        aria-label="收藏活動"
+        aria-label="加入我想去"
         aria-hidden={!isOpen}
       >
         <div className={handleBar} aria-hidden="true" />
-        <h2 className={title}>收藏這個活動</h2>
-        <p className={description}>登入後可以收藏活動，或直接分享給朋友</p>
+        <h2 className={title}>想去這個活動？</h2>
+        <p className={description}>登入後可以加入「我想去」，或直接分享給朋友</p>
         <button ref={loginButtonRef} className={primaryButton} onClick={onLoginToFavorite}>
-          登入以收藏
+          登入並加入
         </button>
         <button ref={shareButtonRef} className={secondaryButton} onClick={onShare}>
           分享此活動

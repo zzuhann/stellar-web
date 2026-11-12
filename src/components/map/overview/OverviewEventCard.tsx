@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
-import { MapEvent } from '@/types';
+import { CoffeeEvent, MapEvent } from '@/types';
 import { useAuth } from '@/lib/auth-context';
 import { formatEventDateShort } from '@/utils';
 import { regionFromCity } from '@/utils/venues';
@@ -65,12 +65,18 @@ const date = css({
 });
 
 interface OverviewEventCardProps {
-  event: MapEvent;
+  event: MapEvent | CoffeeEvent;
   artistId: string;
   priority?: boolean;
+  source?: 'overview_grid' | 'favorites_grid';
 }
 
-export default function OverviewEventCard({ event, artistId, priority }: OverviewEventCardProps) {
+export default function OverviewEventCard({
+  event,
+  artistId,
+  priority,
+  source = 'overview_grid',
+}: OverviewEventCardProps) {
   const { user } = useAuth();
   const [imageFailed, setImageFailed] = useState(false);
 
@@ -84,11 +90,11 @@ export default function OverviewEventCard({ event, artistId, priority }: Overvie
 
   const handleClick = () => {
     sendGAEvent('event', 'click_event_detail', {
-      event_page: '/map/[artistId]/overview',
+      event_page: source === 'favorites_grid' ? '/my-favorite' : '/map/[artistId]/overview',
       user_id: user?.uid ?? '',
       content_id: event.id,
       artist_id: artistId,
-      ui_source: 'overview_grid',
+      ui_source: source,
     });
   };
 

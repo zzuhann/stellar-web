@@ -241,7 +241,7 @@ const MobileMenu = ({ isOpen, closeMobileMenu }: MobileMenuProps) => {
                     我的投稿
                   </Link>
                   <Link href="/my-favorite" className={mobileMenuButton} onClick={closeMobileMenu}>
-                    我的收藏
+                    我想去
                   </Link>
                   <Link href="/settings" className={mobileMenuButton} onClick={closeMobileMenu}>
                     設定

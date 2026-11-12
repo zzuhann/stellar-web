@@ -204,7 +204,7 @@ const UserDropdownMenu = ({
             我的投稿
           </Link>
           <Link href="/my-favorite" className={menuItem} role="menuitem" onClick={onClose}>
-            我的收藏
+            我想去
           </Link>
           <Link href="/settings" className={menuItem} role="menuitem" onClick={onClose}>
             設定

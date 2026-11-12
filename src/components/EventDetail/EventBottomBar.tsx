@@ -185,7 +185,7 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
             className={actionButton}
             onClick={handleFavoriteClick}
             disabled={isPending}
-            aria-label={isPending ? '處理中' : isFavorited ? '取消收藏' : '收藏此活動'}
+            aria-label={isPending ? '處理中' : isFavorited ? '從「我想去」移除' : '加入「我想去」'}
             aria-pressed={isPending ? undefined : isFavorited}
             aria-busy={isPending}
             type="button"
@@ -202,7 +202,7 @@ export default function EventBottomBar({ event }: EventBottomBarProps) {
                 aria-hidden="true"
               />
             )}
-            <span className={actionLabel}>{isFavorited ? '已收藏' : '收藏'}</span>
+            <span className={actionLabel}>{isFavorited ? '已加入' : '我想去'}</span>
           </button>
         )}
       </div>

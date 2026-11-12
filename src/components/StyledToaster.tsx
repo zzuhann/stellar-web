@@ -8,6 +8,13 @@ const successToast = css({
   color: 'var(--colors-green-800) !important',
 });
 
+const actionButton = css({
+  minHeight: '44px !important',
+  minWidth: '44px !important',
+  flexShrink: 0,
+  '&:focus-visible': { outline: '2px solid', outlineColor: 'color.primary', outlineOffset: '2px' },
+});
+
 const errorToast = css({
   borderColor: 'var(--colors-red-600) !important',
   color: 'var(--colors-red-800) !important',
@@ -36,6 +43,7 @@ const StyledToaster = () => {
         },
         classNames: {
           success: successToast,
+          actionButton,
           error: errorToast,
           warning: warningToast,
         },
