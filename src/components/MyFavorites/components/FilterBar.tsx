@@ -7,16 +7,49 @@ const container = css({
   flexDirection: 'column',
   gap: '0',
   minWidth: 0,
-  '& [role="listbox"]': { maxWidth: '100%' },
-  '& [role="option"]': { whiteSpace: 'normal', overflowWrap: 'anywhere' },
+  '& [role="listbox"]': {
+    width: 'max-content',
+    minWidth: '200px',
+    maxWidth: 'min(320px, calc(100vw - 32px))',
+    padding: '1',
+    borderRadius: 'radius.lg',
+    borderColor: 'color.border.light',
+    boxShadow: 'shadow.md',
+    overflowX: 'hidden',
+  },
+  '& [role="option"]': {
+    position: 'relative',
+    display: 'block',
+    textStyle: 'bodySmall',
+    paddingX: '3',
+    paddingRight: '8',
+    borderRadius: 'radius.sm',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    '&[aria-selected="true"]': {
+      background: 'color.background.secondary',
+      color: 'color.primary',
+      '&::after': {
+        content: '"✓"',
+        position: 'absolute',
+        right: '3',
+        top: '50%',
+        transform: 'translateY(-50%)',
+      },
+    },
+    '&:focus-visible': {
+      outline: '2px solid',
+      outlineColor: 'color.primary',
+      outlineOffset: '-2px',
+    },
+  },
 });
 const toolbar = css({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: '4',
-  borderBottom: '1px solid',
-  borderBottomColor: 'color.border.light',
 });
 const artistControl = css({
   minWidth: '0',
@@ -33,6 +66,7 @@ const artistControl = css({
 const sortControl = css({
   width: '120px',
   flexShrink: '0',
+  '& [role="listbox"]': { left: 'auto', right: '0', minWidth: '180px' },
   '& > div > button': {
     border: 'none',
     paddingX: '0',
