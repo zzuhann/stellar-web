@@ -9,11 +9,20 @@ const successToast = css({
 });
 
 const actionButton = css({
-  '&:hover': { background: 'color.primaryHover !important' },
-  '&:active': { background: 'color.primaryActive !important' },
+  position: 'relative',
+  // Keep a 44px touch target without making the notification taller.
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: '-8px',
+    bottom: '-8px',
+    left: 0,
+    right: 0,
+  },
+  '&:hover, &:active': { background: 'color.background.secondary !important' },
   '&:focus-visible': {
     outline: '2px solid !important',
-    outlineColor: 'color.primary !important',
+    outlineColor: 'currentColor !important',
     outlineOffset: '2px',
     boxShadow: 'none !important',
   },
@@ -48,15 +57,17 @@ const StyledToaster = () => {
           fontSize: '14px',
         },
         actionButtonStyle: {
-          background: 'var(--colors-color-primary)',
-          color: 'var(--colors-gray-0)',
-          height: '44px',
-          minWidth: '64px',
-          padding: '0 12px',
+          background: 'transparent',
+          color: 'inherit',
+          height: '28px',
+          minWidth: '44px',
+          padding: '0 8px',
           borderRadius: 'var(--radii-radius-md)',
           fontFamily: 'inherit',
           fontSize: '14px',
           fontWeight: 500,
+          textDecoration: 'underline',
+          textUnderlineOffset: '3px',
           lineHeight: '20px',
           display: 'inline-flex',
           alignItems: 'center',
