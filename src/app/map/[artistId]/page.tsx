@@ -4,6 +4,7 @@ import { HydrationBoundary, QueryClient, dehydrate } from '@tanstack/react-query
 import { Artist } from '@/types';
 import { artistsApi, eventsApi } from '@/lib/api';
 import MapPageClient from '@/components/map/MapPage';
+import queryKey from '@/hooks/queryKey';
 
 export const revalidate = 86400; // ISR: 24 hours
 
@@ -102,7 +103,7 @@ export default async function MapPage({ params }: MapPageProps) {
     // Prefetch events in parallel with SSR — eliminates the client-side waterfall
     // (artist fetch → resolve Firestore ID → events fetch)
     await queryClient.prefetchQuery({
-      queryKey: ['map-data', { status: 'all', search: '', artistId: artist.id }],
+      queryKey: queryKey.mapData({ artistId: artist.id }),
       queryFn: () => eventsApi.getMapData({ status: 'all', artistId: artist.id }),
       staleTime: 1000 * 60 * 5,
     });

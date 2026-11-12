@@ -1,4 +1,26 @@
+interface MapDataKeyOptions {
+  status?: 'active' | 'upcoming' | 'all';
+  bounds?: string;
+  center?: string;
+  zoom?: number;
+  search?: string;
+  artistId?: string;
+  region?: string;
+}
+
+// Single normalization for the cache key and the API request: defaults filled,
+// undefined dropped (an explicit `status: undefined` must not beat the default), search trimmed
+export function normalizeMapDataOptions(options: MapDataKeyOptions): MapDataKeyOptions {
+  const defined = Object.fromEntries(
+    Object.entries(options).filter(([, value]) => value !== undefined)
+  ) as MapDataKeyOptions;
+  return { status: 'all', ...defined, search: defined.search?.trim() ?? '' };
+}
+
 const queryKey = {
+  // Shared by map page prefetch, useMapData and the overview page: a mismatch silently
+  // leaves the server HTML without cards while the page still looks fine
+  mapData: (options: MapDataKeyOptions) => ['map-data', normalizeMapDataOptions(options)],
   birthdayArtists: (startDate: string, endDate: string) => ['birthday-artists', startDate, endDate],
   weeklyEvents: (startDate: string, endDate: string) => ['weekly-events', startDate, endDate],
   trendingEvents: (limit: number) => ['trending-events', limit],

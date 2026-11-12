@@ -29,10 +29,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       venueApi.getVenues({ status: 'active', limit: 1000 }),
     ]);
 
-    const artistRoutes: MetadataRoute.Sitemap = artists.map((artist) => ({
-      url: `${BASE_URL}/map/${artist.slug ?? artist.id}`,
-      lastModified: tsToDate(artist.updatedAt),
-    }));
+    const artistRoutes: MetadataRoute.Sitemap = artists.flatMap((artist) => {
+      const mapUrl = `${BASE_URL}/map/${artist.slug ?? artist.id}`;
+      const lastModified = tsToDate(artist.updatedAt);
+      return [
+        { url: mapUrl, lastModified },
+        { url: `${mapUrl}/overview`, lastModified },
+      ];
+    });
 
     const events = eventsResponse?.events ?? [];
     const eventRoutes: MetadataRoute.Sitemap = events.map((event) => ({

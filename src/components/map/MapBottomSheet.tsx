@@ -6,11 +6,12 @@ const useClientLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : 
 import { sendGAEvent } from '@next/third-parties/google';
 import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
-import { ArrowUpOnSquareIcon, CalendarDaysIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { ArrowUpOnSquareIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAuth } from '@/lib/auth-context';
 import { useWebShare } from '@/hooks/useWebShare';
 import { useShare } from '@/context/ShareContext';
 import EventCarousel from './EventCarousel';
+import MapEmptyState from './MapEmptyState';
 import { useBottomSheet } from './hooks/useBottomSheet';
 import Skeleton from '@/components/ui/Skeleton';
 
@@ -182,29 +183,6 @@ const emptyHandleBar = css({
   background: 'color.border.medium',
   marginTop: '4',
   marginBottom: '5',
-});
-
-const emptyContent = css({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: '2',
-});
-
-const emptyIcon = css({
-  color: 'color.text.disabled',
-});
-
-const emptyTitle = css({
-  textStyle: 'bodyStrong',
-  color: 'color.text.primary',
-});
-
-const emptyDesc = css({
-  textStyle: 'bodySmall',
-  color: 'color.text.secondary',
-  textAlign: 'center',
-  whiteSpace: 'pre-line',
 });
 
 const skeletonCarouselCard = css({
@@ -394,11 +372,7 @@ const MapBottomSheet = ({
     return (
       <div className={emptyPanel}>
         <div className={emptyHandleBar} />
-        <div className={emptyContent}>
-          <CalendarDaysIcon width={32} height={32} className={emptyIcon} />
-          <p className={emptyTitle}>目前沒有生日應援活動</p>
-          <p className={emptyDesc}>這位藝人目前還沒有生日應援，{'\n'}等活動上架後再來看看吧！</p>
-        </div>
+        <MapEmptyState />
       </div>
     );
   }
