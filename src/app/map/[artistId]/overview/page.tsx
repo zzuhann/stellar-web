@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: MapOverviewPageProps): Promis
 
     const displayName = artist.stageNameZh ?? artist.stageName;
     const title = `${displayName} 生咖總覽 | STELLAR`;
-    const description = `一頁看完 ${displayName} 在台灣各地的生咖（生日應援）活動，截圖分享給朋友一起討論。`;
+    const description = `在 STELLAR 上查看 ${displayName} 在台灣即將到來的生咖（生日應援）活動吧！`;
     const resolvedArtistId = artist.slug ?? artistId;
     // Must differ from the map page canonical, or the two pages are treated as duplicates
     const canonicalUrl = `${SITE_URL}/map/${resolvedArtistId}/overview`;

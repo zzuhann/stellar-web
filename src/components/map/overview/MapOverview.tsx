@@ -9,6 +9,8 @@ import OverviewEventCard from './OverviewEventCard';
 
 // Header is fixed at 70px
 const page = css({
+  display: 'flex',
+  flexDirection: 'column',
   maxWidth: '600px',
   minHeight: '100dvh',
   mx: 'auto',
@@ -42,8 +44,12 @@ const gridItem = css({
   minWidth: '0',
 });
 
+// Fills the space below the switch so the message sits in the middle of the screen
 const emptyArea = css({
-  paddingY: '10',
+  flex: '1',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
   paddingX: '4',
 });
 
