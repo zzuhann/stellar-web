@@ -171,10 +171,10 @@ describe('MapOverview edge cases', () => {
   it('does not truncate the date while title and venue are ellipsized', () => {
     renderOverview([e3]);
     const date = screen.getByText('10/10 - 12/31');
-    expect(date.className).not.toContain('text-overflow_ellipsis');
+    expect(date.className).not.toContain('tov_ellipsis');
     expect(date.className).not.toContain('white-space_nowrap');
     // Positive control: the same class check does detect truncation on the title
-    expect(screen.getByText('丙').className).toContain('text-overflow_ellipsis');
+    expect(screen.getByText('丙').className).toContain('tov_ellipsis');
   });
 
   // TC-014
