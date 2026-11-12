@@ -7,13 +7,13 @@ const inlineNav = css({
   justifyContent: 'center',
 });
 
-// Above Leaflet controls (z-index 1000) so it stays tappable over the map
+// Above the map (.leaflet-container is z-index 1 in globals.css), below the bottom sheet and locate button (10)
 const floatingNav = css({
   position: 'absolute',
   top: '82px',
   left: '50%',
   transform: 'translateX(-50%)',
-  zIndex: '1100',
+  zIndex: '5',
 });
 
 const group = css({
