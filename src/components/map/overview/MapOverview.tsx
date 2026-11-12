@@ -85,7 +85,7 @@ export default function MapOverview({ artistId }: MapOverviewProps) {
                 <li key={event.id} className={gridItem}>
                   <OverviewEventCard
                     event={event}
-                    artistId={artistData?.id ?? artistId}
+                    artistId={artistId}
                     priority={index < PRIORITY_COUNT}
                   />
                 </li>

@@ -250,7 +250,7 @@ describe('MapOverview tracking and header', () => {
       event_page: '/map/[artistId]/overview',
       user_id: 'user-1',
       content_id: 'ev-1',
-      artist_id: 'a1',
+      artist_id: 'rm',
       ui_source: 'overview_grid',
     });
   });

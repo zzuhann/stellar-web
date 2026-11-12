@@ -352,10 +352,10 @@
 | event_page | `/map/[artistId]`              | `/map/[artistId]/overview` | `/venues/[id]`   |
 | user_id    | 用戶 UID                       | 用戶 UID                   | 用戶 UID         |
 | content_id | eventId                        | eventId                    | eventId          |
-| artist_id  | 網址參數（slug 或 id）         | 藝人 Firestore id          | -                |
+| artist_id  | 網址參數（slug 或 id）         | 網址參數（slug 或 id）     | -                |
 | ui_source  | `map_single_card` / `carousel` | `overview_grid`            | -                |
 
-兩頁的 `artist_id` 取值不同（地圖頁是網址參數，可能是 slug；總覽頁是解析後的 Firestore id），跨頁合併時要先對應。
+兩頁的 `artist_id` 取值一致，都是網址參數（有 slug 時為 slug，否則為 id）。
 
 注意：參數名不可用 `source`，GA4 會把它當流量來源覆蓋 session 歸因（2026-10 起改名為 `ui_source`，與 `resolve_venue_geolocation` 共用同一個自訂維度）。
 
