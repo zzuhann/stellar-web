@@ -259,18 +259,6 @@ export default function AboutPage() {
 
         <hr className={divider} />
 
-        <FadeIn delay={100}>
-          <div className={manifestoSection}>
-            <h2 className={tagline}>生咖 × 地圖 × 應援</h2>
-            <p className={taglineDesc}>
-              從搜尋、地圖瀏覽到活動細節，STELLAR
-              把散落各處的資訊整合成一個平台，讓每一場心意都能被更多人看見。
-            </p>
-          </div>
-        </FadeIn>
-
-        <hr className={divider} />
-
         <section className={featuresSection} aria-label="主要功能">
           <h2 className={featuresSectionLabel}>Features</h2>
           {features.map((feature, i) => (
