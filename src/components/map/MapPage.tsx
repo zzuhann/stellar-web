@@ -12,8 +12,7 @@ import useMapPageData from '@/components/map/hook/useMapPageData';
 import useMapNewLocation from './hooks/useMapNewLocation';
 import { useMapNewState } from './hooks/useMapNewState';
 import { useMapStateStorage } from './hooks/useMapStateStorage';
-import { useHeaderTitleStore } from '@/store/useHeaderTitleStore';
-import { buildMapHeaderTitle, MAP_HEADER_TITLE } from './utils/buildMapHeaderTitle';
+import useMapHeaderTitle from './hook/useMapHeaderTitle';
 import MapBottomSheet from './MapBottomSheet';
 import MapSingleEventCard from './MapSingleEventCard';
 import { MapEvent } from '@/types';
@@ -131,15 +130,7 @@ export default function MapPage({ artistId }: MapPageProps) {
     }
   }, [isMapLoading, isArtistLoading, artistData, router]);
 
-  const headerEyebrow = buildMapHeaderTitle(artistData?.stageName, artistData?.stageNameZh);
-
-  // Feed the artist name into the global Header title; clear on unmount to avoid stale title on other pages
-  const setHeaderTitle = useHeaderTitleStore((state) => state.setTitle);
-  useEffect(() => {
-    if (!headerEyebrow) return;
-    setHeaderTitle(MAP_HEADER_TITLE, headerEyebrow);
-    return () => setHeaderTitle(null);
-  }, [headerEyebrow, setHeaderTitle]);
+  useMapHeaderTitle(artistData);
 
   if (!isMapLoading && !isArtistLoading && !artistData) return null;
 

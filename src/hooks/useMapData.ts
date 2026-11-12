@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { eventsApi } from '@/lib/api';
 import { MapEvent } from '@/types';
+import queryKey from './queryKey';
 
 interface MapDataOptions {
   status?: 'active' | 'upcoming' | 'all';
@@ -22,7 +23,7 @@ interface MapDataResponse {
 export function useMapData(options: MapDataOptions = {}) {
   const { enabled = true, ...queryOptions } = options;
   return useQuery({
-    queryKey: ['map-data', queryOptions],
+    queryKey: queryKey.mapData(queryOptions),
     queryFn: async (): Promise<MapDataResponse> => {
       return eventsApi.getMapData({
         status: queryOptions.status,
