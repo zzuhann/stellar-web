@@ -15,11 +15,8 @@ export const eventSubmissionSchema = z
       .min(1, '請選擇開始日期')
       .regex(/^\d{4}-\d{2}-\d{2}$/, '請選擇有效的開始日期')
       .refine((date) => isValidCalendarDateString(date), '請選擇有效的開始日期'),
-    endDate: z
-      .string()
-      .min(1, '請選擇結束日期')
-      .regex(/^\d{4}-\d{2}-\d{2}$/, '請選擇有效的結束日期')
-      .refine((date) => isValidCalendarDateString(date), '請選擇有效的結束日期'),
+    // Validated below so untilGone can skip it (the end date field is hidden then)
+    endDate: z.string(),
     addressName: z.string().min(1, '請輸入地點').max(200, '地址不能超過200個字'),
     instagram: z.string().optional().or(z.literal('')),
     threads: z.string().optional().or(z.literal('')),
@@ -30,8 +27,22 @@ export const eventSubmissionSchema = z
     reservationTime: z.string().optional().or(z.literal('')),
     untilGone: z.boolean().optional(),
   })
+  .refine((data) => data.untilGone === true || !!data.endDate, {
+    message: '請選擇結束日期',
+    path: ['endDate'],
+    // Run even when other fields fail, like a field-level rule would
+    when: () => true,
+  })
+  .refine(
+    (data) =>
+      data.untilGone === true ||
+      !data.endDate ||
+      (/^\d{4}-\d{2}-\d{2}$/.test(data.endDate) && isValidCalendarDateString(data.endDate)),
+    { message: '請選擇有效的結束日期', path: ['endDate'], when: () => true }
+  )
   .refine(
     (data) => {
+      if (data.untilGone) return true;
       const startDate = new Date(data.startDate);
       const endDate = new Date(data.endDate);
       return endDate >= startDate;

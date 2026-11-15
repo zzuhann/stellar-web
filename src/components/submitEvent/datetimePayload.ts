@@ -1,7 +1,7 @@
 import { EventSubmissionFormData } from '@/lib/validations';
 import { taipeiDateTimeToTimestamp } from '@/utils';
 
-// 領完為止沒有結束日，datetime.end 只當下架時間：沿用管理員至今「開始日 + 7 天」的做法
+// untilGone has no end date; datetime.end is only the takedown time (start + 7 days, the admins' existing practice)
 export const UNTIL_GONE_DAYS = 7;
 
 export const buildDatetimePayload = (

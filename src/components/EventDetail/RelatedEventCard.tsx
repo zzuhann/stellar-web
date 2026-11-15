@@ -7,13 +7,14 @@ import { css } from '@/styled-system/css';
 import { MapEvent } from '@/types';
 import { useAuth } from '@/lib/auth-context';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
+import { untilGoneText } from '@/utils';
 
 const fmt = (d: Date) => `${d.getMonth() + 1}/${String(d.getDate()).padStart(2, '0')}`;
 
 function formatDateRange(start: string, end: string, untilGone?: boolean): string {
   const s = new Date(start);
   const e = new Date(end);
-  if (untilGone) return `${fmt(s)} 起・領完為止`;
+  if (untilGone) return untilGoneText(fmt(s));
   return s.toDateString() === e.toDateString() ? fmt(s) : `${fmt(s)} - ${fmt(e)}`;
 }
 

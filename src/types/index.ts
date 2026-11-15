@@ -66,7 +66,7 @@ export interface CoffeeEvent {
     url?: string;
     startAt?: FirebaseTimestamp;
   };
-  untilGone?: boolean; // 領完為止：datetime.end 只是下架時間，不顯示
+  untilGone?: boolean; // datetime.end is only the takedown time; never display it
 }
 
 export interface TrendingEventsResponse {

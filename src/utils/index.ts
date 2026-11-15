@@ -114,8 +114,8 @@ export const getTaipeiToday = (): Date => {
   return taipeiDateStringToLocalDate(dateToTaipeiDateString(new Date()));
 };
 
-// 領完為止的活動不顯示結束日：datetime.end 只是下架時間
-const untilGoneText = (start: string) => `${start} 起・領完為止`;
+// untilGone events hide the end date: datetime.end is only the takedown date
+export const untilGoneText = (start: string) => `${start} 起・領完為止`;
 
 // 日期範圍格式化 (YYYY/M/D - YYYY/M/D)
 export const formatDateRange = (

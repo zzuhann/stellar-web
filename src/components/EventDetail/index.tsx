@@ -353,7 +353,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
               href={generateGoogleCalendarUrl({
                 title: event.title,
                 startDate: event.datetime.start,
-                // 領完為止只排開始日當天，不讓行事曆佔滿系統下架前的一週
+                // untilGone: book only the start day, not the whole takedown window
                 endDate: event.untilGone ? event.datetime.start : event.datetime.end,
                 location: `${event.location.name} ${event.location.address}`,
                 eventSlugOrId: event.slug ?? event.id,

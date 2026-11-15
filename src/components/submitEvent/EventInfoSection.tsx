@@ -23,6 +23,7 @@ import PlaceAutocomplete from '../forms/PlaceAutocomplete';
 import MultiImageUpload from '../images/MultiImageUpload';
 import Switch from '../ui/Switch';
 import SocialAccountRows from './SocialAccountRows';
+import { UNTIL_GONE_DAYS } from './datetimePayload';
 import { Control, FieldErrors, UseFormRegister, UseFormSetValue, useWatch } from 'react-hook-form';
 import { ReactNode, useState } from 'react';
 import { EventSubmissionFormData } from '@/lib/validations';
@@ -292,7 +293,7 @@ const EventInfoSection = ({
           </label>
           <p id="untilGone-hint" className={helperText}>
             {untilGone
-              ? '前台會顯示「開始日起・領完為止」，系統在開始日 7 天後自動下架'
+              ? `前台會顯示「開始日起・領完為止」，系統在開始日 ${UNTIL_GONE_DAYS} 天後自動下架`
               : '沒有公布結束日期、發完即結束才勾選；有明確結束日期請直接填寫'}
           </p>
         </div>

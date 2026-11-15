@@ -225,7 +225,12 @@ function EventSubmissionForm({
           description: existingEvent.description,
           addressName: existingEvent.location.name,
           startDate: dateToTaipeiDateString(firebaseTimestampToDate(existingEvent.datetime.start)),
-          endDate: dateToTaipeiDateString(firebaseTimestampToDate(existingEvent.datetime.end)),
+          // The stored end of an untilGone event is a synthetic takedown date, not a real end date
+          endDate: dateToTaipeiDateString(
+            firebaseTimestampToDate(
+              existingEvent.untilGone ? existingEvent.datetime.start : existingEvent.datetime.end
+            )
+          ),
           instagram: existingEvent.socialMedia.instagram || '',
           threads: existingEvent.socialMedia.threads || '',
           mainImage: existingEvent.mainImage || '',
