@@ -202,7 +202,7 @@ describe('EventInfoSection 領完為止', () => {
 
     expect(screen.getByLabelText('選擇結束日期')).toBeTruthy();
     expect((screen.getByLabelText('領完為止') as HTMLInputElement).checked).toBe(false);
-    expect(screen.getByText(/沒有公布結束日期、發完即結束才勾選/)).toBeTruthy();
+    expect(screen.getByText(/沒有結束日期、發完就結束的活動請勾選/)).toBeTruthy();
   });
 
   it('勾選後隱藏結束日期欄位，送出資料帶 untilGone: true', async () => {

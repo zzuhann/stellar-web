@@ -294,7 +294,7 @@ const EventInfoSection = ({
           <p id="untilGone-hint" className={helperText}>
             {untilGone
               ? `開始日 ${UNTIL_GONE_DAYS} 天後會視為已結束，不再顯示在地圖和活動列表上`
-              : '沒有公布結束日期、發完即結束才勾選；有明確結束日期請直接填寫'}
+              : '沒有結束日期、發完就結束的活動請勾選'}
           </p>
         </div>
       </div>
