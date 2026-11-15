@@ -114,8 +114,15 @@ export const getTaipeiToday = (): Date => {
   return taipeiDateStringToLocalDate(dateToTaipeiDateString(new Date()));
 };
 
+// untilGone events hide the end date: datetime.end is only the takedown date
+export const untilGoneText = (start: string) => `${start} 起・領完為止`;
+
 // 日期範圍格式化 (YYYY/M/D - YYYY/M/D)
-export const formatDateRange = (startDate: Date | string, endDate: Date | string): string => {
+export const formatDateRange = (
+  startDate: Date | string,
+  endDate: Date | string,
+  untilGone = false
+): string => {
   const formatSingleDate = (date: Date | string): string => {
     const dateObj = typeof date === 'string' ? new Date(date) : date;
     const formatter = new Intl.DateTimeFormat('zh-TW', {
@@ -128,11 +135,16 @@ export const formatDateRange = (startDate: Date | string, endDate: Date | string
   };
 
   const startDateStr = formatSingleDate(startDate);
+  if (untilGone) return untilGoneText(startDateStr);
   const endDateStr = formatSingleDate(endDate);
   return startDateStr === endDateStr ? startDateStr : `${startDateStr} - ${endDateStr}`;
 };
 
-export const formatEventDate = (startDate: FirebaseTimestamp, endDate: FirebaseTimestamp) => {
+export const formatEventDate = (
+  startDate: FirebaseTimestamp,
+  endDate: FirebaseTimestamp,
+  untilGone = false
+) => {
   const start = firebaseTimestampToDate(startDate);
   const end = firebaseTimestampToDate(endDate);
 
@@ -144,6 +156,7 @@ export const formatEventDate = (startDate: FirebaseTimestamp, endDate: FirebaseT
   });
 
   const startStr = formatter.format(start);
+  if (untilGone) return untilGoneText(startStr);
   const endStr = formatter.format(end);
 
   // 如果同一天就只顯示一天
@@ -175,7 +188,8 @@ export const formatReservationDateTime = (startAt: FirebaseTimestamp): string =>
 // 接受 FirebaseTimestamp 或 ISO 字串：GET /events 已改回傳 ISO 字串，其他呼叫端仍是舊格式
 export const formatEventDateShort = (
   start: FirebaseTimestamp | string,
-  end: FirebaseTimestamp | string
+  end: FirebaseTimestamp | string,
+  untilGone = false
 ): string => {
   const toDate = (value: FirebaseTimestamp | string): Date =>
     typeof value === 'string' ? new Date(value) : firebaseTimestampToDate(value);
@@ -198,6 +212,7 @@ export const formatEventDateShort = (
   const sParts = getParts(s);
   const eParts = getParts(e);
   const fmt = (parts: { month: string; day: string }) => `${parts.month}/${parts.day}`;
+  if (untilGone) return untilGoneText(fmt(sParts));
 
   // 同一個 Taipei 日曆日才視為單日活動；只比 month/day 會讓跨年同月同日誤判為同一天，故連 year 一起比
   const isSameDay =

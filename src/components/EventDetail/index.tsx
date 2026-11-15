@@ -351,7 +351,8 @@ const EventDetail = ({ event }: EventDetailProps) => {
               href={generateGoogleCalendarUrl({
                 title: event.title,
                 startDate: event.datetime.start,
-                endDate: event.datetime.end,
+                // untilGone: book only the start day, not the whole takedown window
+                endDate: event.untilGone ? event.datetime.start : event.datetime.end,
                 location: `${event.location.name} ${event.location.address}`,
                 eventSlugOrId: event.slug ?? event.id,
               })}
@@ -371,7 +372,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
               </div>
               <div className={detailContent}>
                 <div className={detailValue}>
-                  {formatEventDate(event.datetime.start, event.datetime.end)}
+                  {formatEventDate(event.datetime.start, event.datetime.end, event.untilGone)}
                 </div>
                 <div className={addToCalendarHint}>
                   加入行事曆

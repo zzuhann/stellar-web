@@ -124,7 +124,7 @@ const EventCard = ({ event }: EventCardProps) => {
               style={{ width: '16px', height: '16px', flexShrink: 0, marginTop: '2px' }}
             />
             <div className={description}>
-              {formatDateRange(event.datetime.start, event.datetime.end)}
+              {formatDateRange(event.datetime.start, event.datetime.end, event.untilGone)}
             </div>
           </div>
           <div className={descriptionContainer}>

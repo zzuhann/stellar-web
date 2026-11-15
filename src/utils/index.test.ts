@@ -576,3 +576,27 @@ describe('splitGroupNames', () => {
     expect(splitGroupNames('SEVENTEEN、、BSS、')).toEqual(['SEVENTEEN', 'BSS']);
   });
 });
+
+describe('formatters with untilGone', () => {
+  // 2026/1/27 00:00:00 → 2026/2/3 23:59:59 (Asia/Taipei)
+  const start = { _seconds: 1769443200, _nanoseconds: 0 };
+  const end = { _seconds: 1770134399, _nanoseconds: 0 };
+
+  it('formatEventDate 只顯示開始日＋領完為止', () => {
+    expect(formatEventDate(start, end, true)).toBe('2026/1/27 起・領完為止');
+  });
+
+  it('formatDateRange 只顯示開始日＋領完為止', () => {
+    expect(formatDateRange('2026-01-26T16:00:00.000Z', '2026-02-03T15:59:59.000Z', true)).toBe(
+      '2026/1/27 起・領完為止'
+    );
+  });
+
+  it('formatEventDateShort 只顯示開始日＋領完為止', () => {
+    expect(formatEventDateShort(start, end, true)).toBe('1/27 起・領完為止');
+  });
+
+  it('untilGone 未傳時維持原本的日期範圍', () => {
+    expect(formatEventDate(start, end)).toBe('2026/1/27 - 2026/2/3');
+  });
+});

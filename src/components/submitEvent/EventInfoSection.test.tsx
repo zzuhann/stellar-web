@@ -196,6 +196,40 @@ describe('EventInfoSection 預約開關', () => {
   });
 });
 
+describe('EventInfoSection 領完為止', () => {
+  it('預設未勾選：顯示結束日期欄位與勾選說明', () => {
+    render(<Harness onSubmit={vi.fn()} />);
+
+    expect(screen.getByLabelText('選擇結束日期')).toBeTruthy();
+    expect((screen.getByLabelText('領完為止') as HTMLInputElement).checked).toBe(false);
+    expect(screen.getByText(/沒有結束日期、發完就結束的活動請勾選/)).toBeTruthy();
+  });
+
+  it('勾選後隱藏結束日期欄位，送出資料帶 untilGone: true', async () => {
+    const onSubmit = vi.fn();
+    render(<Harness onSubmit={onSubmit} />);
+
+    fireEvent.click(screen.getByLabelText('領完為止'));
+    expect(screen.queryByLabelText('選擇結束日期')).toBeNull();
+    expect(screen.getByText(/7 天後會視為已結束/)).toBeTruthy();
+
+    fireEvent.click(screen.getByText('送出'));
+    await vi.waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+    expect((onSubmit.mock.calls[0][0] as EventSubmissionFormData).untilGone).toBe(true);
+  });
+
+  it('編輯既有領完為止活動：預設勾選；取消勾選後結束日期欄位回來', () => {
+    render(<Harness initialValues={{ untilGone: true }} onSubmit={vi.fn()} />);
+
+    const checkbox = screen.getByLabelText('領完為止') as HTMLInputElement;
+    expect(checkbox.checked).toBe(true);
+    expect(screen.queryByLabelText('選擇結束日期')).toBeNull();
+
+    fireEvent.click(checkbox);
+    expect(screen.getByLabelText('選擇結束日期')).toBeTruthy();
+  });
+});
+
 describe('EventInfoSection 主辦社群多列輸入', () => {
   it('編輯模式帶入逗號分隔字串時，正確 split 顯示成多列並各自帶入正確值', () => {
     render(

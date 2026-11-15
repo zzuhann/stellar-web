@@ -47,7 +47,8 @@ function buildEventJsonLd(event: CoffeeEvent) {
     name: event.title,
     description: buildEventDescription(event),
     startDate: tsToIso(event.datetime.start),
-    endDate: tsToIso(event.datetime.end),
+    // untilGone has no announced end; datetime.end is only the takedown date
+    ...(!event.untilGone && { endDate: tsToIso(event.datetime.end) }),
     location: {
       '@type': 'Place',
       name: event.location.name,

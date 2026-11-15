@@ -109,7 +109,7 @@ interface WeekEventCardProps {
 
 export default function WeekEventCard({ event, isFirst }: WeekEventCardProps) {
   const { user } = useAuth();
-  const dateRange = formatEventDateShort(event.datetime.start, event.datetime.end);
+  const dateRange = formatEventDateShort(event.datetime.start, event.datetime.end, event.untilGone);
   const href = `/event/${event.slug ?? event.id}`;
 
   const handleClick = () => {

@@ -116,6 +116,39 @@ describe('eventSubmissionSchema', () => {
     });
   });
 
+  describe('領完為止', () => {
+    it('untilGone 時結束日期空白也通過（欄位被隱藏，送出時改用開始日 + 7 天）', () => {
+      expect(
+        eventSubmissionSchema.safeParse({ ...validData, endDate: '', untilGone: true }).success
+      ).toBe(true);
+    });
+
+    it('untilGone 時結束日期早於開始日期也通過', () => {
+      expect(
+        eventSubmissionSchema.safeParse({ ...validData, endDate: '2025-06-01', untilGone: true })
+          .success
+      ).toBe(true);
+    });
+
+    it('未勾選時結束日期空白，跟其他欄位錯誤同時回報', () => {
+      const result = eventSubmissionSchema.safeParse({ ...validData, title: '', endDate: '' });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const messages = result.error.issues.map((i) => `${i.path.join('.')}:${i.message}`);
+        expect(messages).toContain('title:請輸入標題');
+        expect(messages).toContain('endDate:請選擇結束日期');
+      }
+    });
+
+    it('未勾選時結束日期格式錯誤，回報「請選擇有效的結束日期」', () => {
+      const result = eventSubmissionSchema.safeParse({ ...validData, endDate: '2026-04-31' });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0].message).toBe('請選擇有效的結束日期');
+      }
+    });
+  });
+
   describe('預約資訊', () => {
     it('三個預約欄位皆未填時通過驗證', () => {
       const result = eventSubmissionSchema.safeParse(validData);

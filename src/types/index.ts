@@ -66,6 +66,7 @@ export interface CoffeeEvent {
     url?: string;
     startAt?: FirebaseTimestamp;
   };
+  untilGone?: boolean; // datetime.end is only the takedown time; never display it
 }
 
 export interface TrendingEventsResponse {
@@ -137,6 +138,7 @@ export interface MapEvent {
     end: string;
   };
   slug?: string;
+  untilGone?: boolean;
 }
 
 // 地圖資料回應格式
@@ -217,6 +219,7 @@ export interface CreateEventRequest {
     url?: string;
     startAt?: FirebaseTimestamp;
   };
+  untilGone?: boolean;
 }
 
 // 藝人編輯請求格式
@@ -273,6 +276,7 @@ export interface UpdateEventRequest {
     url?: string;
     startAt?: FirebaseTimestamp;
   } | null;
+  untilGone?: boolean;
 }
 
 // 用戶收藏
@@ -350,6 +354,7 @@ export interface VenueEventCard {
   coverImage: string;
   slug: string | null;
   timeStatus?: VenueEventTimeStatus | null;
+  untilGone?: boolean;
 }
 
 // ─── Venue tags (venue-tags) ────────────────────────────────────────────────

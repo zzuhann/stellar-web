@@ -23,6 +23,7 @@ import PlaceAutocomplete from '../forms/PlaceAutocomplete';
 import MultiImageUpload from '../images/MultiImageUpload';
 import Switch from '../ui/Switch';
 import SocialAccountRows from './SocialAccountRows';
+import { UNTIL_GONE_DAYS } from './datetimePayload';
 import { Control, FieldErrors, UseFormRegister, UseFormSetValue, useWatch } from 'react-hook-form';
 import { ReactNode, useState } from 'react';
 import { EventSubmissionFormData } from '@/lib/validations';
@@ -73,6 +74,17 @@ const characterCount = cva({
       },
     },
   },
+});
+
+const checkRow = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '2',
+  minHeight: '44px',
+  textStyle: 'bodySmall',
+  color: 'color.text.primary',
+  cursor: 'pointer',
+  '& input': { width: '18px', height: '18px', accentColor: 'color.primary', flexShrink: 0 },
 });
 
 const gridContainer = css({
@@ -132,6 +144,7 @@ const EventInfoSection = ({
 
   const startDate = useWatch({ control, name: 'startDate' }) ?? '';
   const endDate = useWatch({ control, name: 'endDate' }) ?? '';
+  const untilGone = useWatch({ control, name: 'untilGone' }) ?? false;
   const addressName = useWatch({ control, name: 'addressName' }) ?? '';
   const description = useWatch({ control, name: 'description' }) ?? '';
   const instagram = useWatch({ control, name: 'instagram' }) ?? '';
@@ -237,32 +250,52 @@ const EventInfoSection = ({
         </div>
 
         <div className={formGroup} ref={setFieldRef('endDate')}>
-          <label className={label} htmlFor="endDate">
-            <div>
-              結束日期<span aria-hidden="true">*</span>
-              <span className="sr-only">（必填）</span>
-            </div>
-          </label>
-          <DatePicker
-            value={endDate}
-            onChange={handleChangeEndDate}
-            min={startDate}
-            placeholder="選擇結束日期"
-            disabled={isPending || !startDate}
-            error={!!errors.endDate}
-          />
-          {!startDate && (
-            <p className={helperTextWarning} role="alert">
-              <ExclamationTriangleIcon style={{ width: '14px', height: '14px', flexShrink: 0 }} />
-              請先選擇開始日期
-            </p>
+          {!untilGone && (
+            <>
+              <label className={label} htmlFor="endDate">
+                <div>
+                  結束日期<span aria-hidden="true">*</span>
+                  <span className="sr-only">（必填）</span>
+                </div>
+              </label>
+              <DatePicker
+                value={endDate}
+                onChange={handleChangeEndDate}
+                min={startDate}
+                placeholder="選擇結束日期"
+                disabled={isPending || !startDate}
+                error={!!errors.endDate}
+              />
+              {!startDate && (
+                <p className={helperTextWarning} role="alert">
+                  <ExclamationTriangleIcon
+                    style={{ width: '14px', height: '14px', flexShrink: 0 }}
+                  />
+                  請先選擇開始日期
+                </p>
+              )}
+              {errors.endDate && (
+                <p id="endDate-error" className={errorText} role="alert">
+                  {errors.endDate.message}
+                </p>
+              )}
+            </>
           )}
           <input type="hidden" {...register('endDate')} aria-hidden="true" />
-          {errors.endDate && (
-            <p id="endDate-error" className={errorText} role="alert">
-              {errors.endDate.message}
-            </p>
-          )}
+          <label className={checkRow}>
+            <input
+              type="checkbox"
+              {...register('untilGone')}
+              disabled={isPending}
+              aria-describedby="untilGone-hint"
+            />
+            領完為止
+          </label>
+          <p id="untilGone-hint" className={helperText}>
+            {untilGone
+              ? `開始日 ${UNTIL_GONE_DAYS} 天後會視為已結束，不再顯示在地圖和活動列表上`
+              : '沒有結束日期、發完就結束的活動請勾選'}
+          </p>
         </div>
       </div>
 
