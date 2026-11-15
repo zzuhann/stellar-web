@@ -211,7 +211,7 @@ describe('EventInfoSection 領完為止', () => {
 
     fireEvent.click(screen.getByLabelText('領完為止'));
     expect(screen.queryByLabelText('選擇結束日期')).toBeNull();
-    expect(screen.getByText(/7 天後自動下架/)).toBeTruthy();
+    expect(screen.getByText(/7 天後會視為已結束/)).toBeTruthy();
 
     fireEvent.click(screen.getByText('送出'));
     await vi.waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
