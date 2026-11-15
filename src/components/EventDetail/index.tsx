@@ -341,9 +341,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
               style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }}
               aria-hidden="true"
             />
-            {event.untilGone
-              ? '數量有限，發完即結束，出發前請至主辦社群帳號確認是否還有。'
-              : '活動資訊可能隨時更新，出發前建議至主辦社群帳號確認最新消息。'}
+            活動資訊可能隨時更新，出發前建議至主辦社群帳號確認最新消息。
           </p>
 
           {/* 活動詳情 */}
