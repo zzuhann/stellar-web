@@ -10,9 +10,10 @@ import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
 const fmt = (d: Date) => `${d.getMonth() + 1}/${String(d.getDate()).padStart(2, '0')}`;
 
-function formatDateRange(start: string, end: string): string {
+function formatDateRange(start: string, end: string, untilGone?: boolean): string {
   const s = new Date(start);
   const e = new Date(end);
+  if (untilGone) return `${fmt(s)} 起・領完為止`;
   return s.toDateString() === e.toDateString() ? fmt(s) : `${fmt(s)} - ${fmt(e)}`;
 }
 
@@ -110,7 +111,7 @@ const RelatedEventCard = ({ event, eventPage, contentId }: RelatedEventCardProps
 
   const dateRange =
     event.datetime?.start && event.datetime?.end
-      ? formatDateRange(event.datetime.start, event.datetime.end)
+      ? formatDateRange(event.datetime.start, event.datetime.end, event.untilGone)
       : '';
 
   const handleClick = () => {

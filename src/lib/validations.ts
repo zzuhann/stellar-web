@@ -28,6 +28,7 @@ export const eventSubmissionSchema = z
     reservationUrl: z.string().trim().optional().or(z.literal('')),
     reservationDate: z.string().optional().or(z.literal('')),
     reservationTime: z.string().optional().or(z.literal('')),
+    untilGone: z.boolean().optional(),
   })
   .refine(
     (data) => {

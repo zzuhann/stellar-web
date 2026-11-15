@@ -75,6 +75,17 @@ const characterCount = cva({
   },
 });
 
+const checkRow = css({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '2',
+  minHeight: '44px',
+  textStyle: 'bodySmall',
+  color: 'color.text.primary',
+  cursor: 'pointer',
+  '& input': { width: '18px', height: '18px', accentColor: 'color.primary', flexShrink: 0 },
+});
+
 const gridContainer = css({
   display: 'grid',
   gridTemplateColumns: '1fr',
@@ -132,6 +143,7 @@ const EventInfoSection = ({
 
   const startDate = useWatch({ control, name: 'startDate' }) ?? '';
   const endDate = useWatch({ control, name: 'endDate' }) ?? '';
+  const untilGone = useWatch({ control, name: 'untilGone' }) ?? false;
   const addressName = useWatch({ control, name: 'addressName' }) ?? '';
   const description = useWatch({ control, name: 'description' }) ?? '';
   const instagram = useWatch({ control, name: 'instagram' }) ?? '';
@@ -237,32 +249,52 @@ const EventInfoSection = ({
         </div>
 
         <div className={formGroup} ref={setFieldRef('endDate')}>
-          <label className={label} htmlFor="endDate">
-            <div>
-              結束日期<span aria-hidden="true">*</span>
-              <span className="sr-only">（必填）</span>
-            </div>
-          </label>
-          <DatePicker
-            value={endDate}
-            onChange={handleChangeEndDate}
-            min={startDate}
-            placeholder="選擇結束日期"
-            disabled={isPending || !startDate}
-            error={!!errors.endDate}
-          />
-          {!startDate && (
-            <p className={helperTextWarning} role="alert">
-              <ExclamationTriangleIcon style={{ width: '14px', height: '14px', flexShrink: 0 }} />
-              請先選擇開始日期
-            </p>
+          {!untilGone && (
+            <>
+              <label className={label} htmlFor="endDate">
+                <div>
+                  結束日期<span aria-hidden="true">*</span>
+                  <span className="sr-only">（必填）</span>
+                </div>
+              </label>
+              <DatePicker
+                value={endDate}
+                onChange={handleChangeEndDate}
+                min={startDate}
+                placeholder="選擇結束日期"
+                disabled={isPending || !startDate}
+                error={!!errors.endDate}
+              />
+              {!startDate && (
+                <p className={helperTextWarning} role="alert">
+                  <ExclamationTriangleIcon
+                    style={{ width: '14px', height: '14px', flexShrink: 0 }}
+                  />
+                  請先選擇開始日期
+                </p>
+              )}
+              {errors.endDate && (
+                <p id="endDate-error" className={errorText} role="alert">
+                  {errors.endDate.message}
+                </p>
+              )}
+            </>
           )}
           <input type="hidden" {...register('endDate')} aria-hidden="true" />
-          {errors.endDate && (
-            <p id="endDate-error" className={errorText} role="alert">
-              {errors.endDate.message}
-            </p>
-          )}
+          <label className={checkRow}>
+            <input
+              type="checkbox"
+              {...register('untilGone')}
+              disabled={isPending}
+              aria-describedby="untilGone-hint"
+            />
+            領完為止
+          </label>
+          <p id="untilGone-hint" className={helperText}>
+            {untilGone
+              ? '前台會顯示「開始日起・領完為止」，系統在開始日 7 天後自動下架'
+              : '沒有公布結束日期、發完即結束才勾選；有明確結束日期請直接填寫'}
+          </p>
         </div>
       </div>
 

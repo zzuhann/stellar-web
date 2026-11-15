@@ -391,7 +391,7 @@ export default function EventPreviewModal({ event, isOpen, onClose }: EventPrevi
               </div>
               <div className={detailContent}>
                 <div className={detailValue}>
-                  {formatEventDate(event.datetime.start, event.datetime.end)}
+                  {formatEventDate(event.datetime.start, event.datetime.end, event.untilGone)}
                 </div>
               </div>
             </div>

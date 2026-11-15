@@ -278,7 +278,9 @@ export default function PastEventsStrip({ events }: PastEventsStripProps) {
                 <div className={cardBody}>
                   <h3 className={cardTitle}>{event.title}</h3>
                   <div className={cardMeta}>{event.artistName}</div>
-                  <div className={cardMeta}>{formatDateRange(event.startDate, event.endDate)}</div>
+                  <div className={cardMeta}>
+                    {formatDateRange(event.startDate, event.endDate, event.untilGone)}
+                  </div>
                 </div>
               </Link>
             </div>

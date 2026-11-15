@@ -11,14 +11,10 @@ import ConfirmModal from '@/components/ui/ConfirmModal';
 import { useRouter } from 'next/navigation';
 import { CreateEventRequest, UpdateEventRequest, Artist, CoffeeEvent } from '@/types';
 import showToast from '@/lib/toast';
-import {
-  firebaseTimestampToDate,
-  dateToTaipeiDateString,
-  dateToTaipeiTimeString,
-  taipeiDateTimeToTimestamp,
-} from '@/utils';
+import { firebaseTimestampToDate, dateToTaipeiDateString, dateToTaipeiTimeString } from '@/utils';
 import { scrollToFirstErrorField } from '@/utils/formHelpers';
 import { buildReservationPayload } from './reservationPayload';
+import { buildDatetimePayload } from './datetimePayload';
 import { EVENT_FORM_FIELD_ORDER } from './fieldOrder';
 import StepIndicator from './StepIndicator';
 import ChooseArtistSection from './ChooseArtistSection';
@@ -246,6 +242,7 @@ function EventSubmissionForm({
           reservationTime: existingEvent.reservation?.startAt
             ? dateToTaipeiTimeString(firebaseTimestampToDate(existingEvent.reservation.startAt))
             : '',
+          untilGone: !!existingEvent.untilGone,
         }
       : undefined,
   });
@@ -463,10 +460,8 @@ function EventSubmissionForm({
         title: data.title,
         artistIds: selectedArtists.map((artist) => artist.id),
         description: data.description || '',
-        datetime: {
-          start: taipeiDateTimeToTimestamp(data.startDate, '00:00:00'),
-          end: taipeiDateTimeToTimestamp(data.endDate, '23:59:59'),
-        },
+        datetime: buildDatetimePayload(data),
+        untilGone: !!data.untilGone,
         location: {
           name: data.addressName,
           address: locationAddress,
@@ -497,10 +492,8 @@ function EventSubmissionForm({
       const updateData: UpdateEventRequest = {
         title: data.title,
         description: data.description || '',
-        datetime: {
-          start: taipeiDateTimeToTimestamp(data.startDate, '00:00:00'),
-          end: taipeiDateTimeToTimestamp(data.endDate, '23:59:59'),
-        },
+        datetime: buildDatetimePayload(data),
+        untilGone: !!data.untilGone,
         location: {
           name: data.addressName,
           address: locationAddress,

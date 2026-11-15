@@ -163,7 +163,7 @@ const MapSingleEventCard = ({ event, artistId, onDismiss }: MapSingleEventCardPr
 
   const dateRange =
     event.datetime?.start && event.datetime?.end
-      ? formatDateRange(event.datetime.start, event.datetime.end)
+      ? formatDateRange(event.datetime.start, event.datetime.end, event.untilGone)
       : '';
 
   const eventSlug = event.slug || event.id;

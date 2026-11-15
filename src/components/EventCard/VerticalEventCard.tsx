@@ -209,7 +209,7 @@ const VerticalEventCard = ({ event, actionButtons }: VerticalEventCardProps) => 
     : '';
 
   // 如果同一天就只顯示一天
-  const eventDateText = formatEventDate(event.datetime.start, event.datetime.end);
+  const eventDateText = formatEventDate(event.datetime.start, event.datetime.end, event.untilGone);
 
   return (
     <>

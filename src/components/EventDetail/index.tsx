@@ -341,7 +341,9 @@ const EventDetail = ({ event }: EventDetailProps) => {
               style={{ width: '14px', height: '14px', flexShrink: 0, marginTop: '2px' }}
               aria-hidden="true"
             />
-            活動資訊可能隨時更新，出發前建議至主辦社群帳號確認最新消息。
+            {event.untilGone
+              ? '數量有限，發完即結束，出發前請至主辦社群帳號確認是否還有。'
+              : '活動資訊可能隨時更新，出發前建議至主辦社群帳號確認最新消息。'}
           </p>
 
           {/* 活動詳情 */}
@@ -351,7 +353,8 @@ const EventDetail = ({ event }: EventDetailProps) => {
               href={generateGoogleCalendarUrl({
                 title: event.title,
                 startDate: event.datetime.start,
-                endDate: event.datetime.end,
+                // 領完為止只排開始日當天，不讓行事曆佔滿系統下架前的一週
+                endDate: event.untilGone ? event.datetime.start : event.datetime.end,
                 location: `${event.location.name} ${event.location.address}`,
                 eventSlugOrId: event.slug ?? event.id,
               })}
@@ -371,7 +374,7 @@ const EventDetail = ({ event }: EventDetailProps) => {
               </div>
               <div className={detailContent}>
                 <div className={detailValue}>
-                  {formatEventDate(event.datetime.start, event.datetime.end)}
+                  {formatEventDate(event.datetime.start, event.datetime.end, event.untilGone)}
                 </div>
                 <div className={addToCalendarHint}>
                   加入行事曆

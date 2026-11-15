@@ -84,7 +84,7 @@ export default function OverviewEventCard({
   const href = `/event/${event.slug || event.id}`;
   const dateText =
     event.datetime?.start && event.datetime?.end
-      ? formatEventDateShort(event.datetime.start, event.datetime.end)
+      ? formatEventDateShort(event.datetime.start, event.datetime.end, event.untilGone)
       : '';
   const region = event.location?.city ? regionFromCity(event.location.city) : null;
 

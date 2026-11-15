@@ -12,7 +12,7 @@ import ChooseArtistSection from '@/components/submitEvent/ChooseArtistSection';
 import EventInfoSection from '@/components/submitEvent/EventInfoSection';
 import { EVENT_FORM_FIELD_ORDER } from '@/components/submitEvent/fieldOrder';
 import { buildReservationPayload } from '@/components/submitEvent/reservationPayload';
-import { taipeiDateTimeToTimestamp } from '@/utils';
+import { buildDatetimePayload } from '@/components/submitEvent/datetimePayload';
 import { scrollToFirstErrorField } from '@/utils/formHelpers';
 
 import CaptionParseSection from './CaptionParseSection';
@@ -274,12 +274,9 @@ export default function EventImportForm() {
       title: data.title,
       artistIds: selectedArtists.map((a) => a.id),
       description: data.description || '',
-      datetime: {
-        // 比照 EventSubmissionForm 既有作法：固定套用當天 00:00:00 / 23:59:59（Asia/Taipei），
-        // 這個頁面不提供活動時段欄位。
-        start: taipeiDateTimeToTimestamp(data.startDate, '00:00:00'),
-        end: taipeiDateTimeToTimestamp(data.endDate, '23:59:59'),
-      },
+      // 比照 EventSubmissionForm：固定當天 00:00:00 / 23:59:59（Asia/Taipei），不提供活動時段欄位
+      datetime: buildDatetimePayload(data),
+      untilGone: !!data.untilGone,
       location: {
         name: data.addressName,
         address: locationAddress,
