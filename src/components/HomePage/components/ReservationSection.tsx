@@ -70,8 +70,12 @@ const hintIcon = css({ flexShrink: 0, marginTop: '0.5' });
 const listWrapper = css({ marginTop: '2' });
 
 // !important: swiper/css is unlayered and would beat Panda's layered utilities
-const pageSlide = css({ width: `calc(100% - ${PEEK_WIDTH}px) !important` });
-const singlePageSlide = css({ width: '100% !important' });
+// height auto: pages with fewer than 4 rows stretch to the tallest page, so the empty area still swipes
+const pageSlide = css({
+  width: `calc(100% - ${PEEK_WIDTH}px) !important`,
+  height: 'auto !important',
+});
+const singlePageSlide = css({ width: '100% !important', height: 'auto !important' });
 
 const row = css({
   display: 'flex',
@@ -254,7 +258,7 @@ export default function ReservationSection() {
   return (
     <section className={container} aria-labelledby={headingId} aria-busy={readyNow === null}>
       <h2 id={headingId} className={heading}>
-        預約中・即將開放
+        <span aria-hidden="true">⏰ </span>預約中 / 即將開放
       </h2>
       <p className={hint}>
         <InformationCircleIcon className={hintIcon} width={14} height={14} aria-hidden="true" />

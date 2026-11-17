@@ -37,7 +37,7 @@ for (const viewport of [
     await mockReservations(page, 8);
     await page.goto('/');
 
-    const section = page.getByRole('region', { name: '預約中・即將開放' });
+    const section = page.getByRole('region', { name: '預約中 / 即將開放' });
     await expect(section.getByRole('link', { name: /預約活動 1/ })).toBeVisible();
 
     // 從第 1 頁最後一列（第 4 列）再 Tab 一次，焦點會落到第 2 頁第 1 列
@@ -56,14 +56,14 @@ for (const viewport of [
   });
 }
 
-test('TC-017 pages are narrower than the container so the next page peeks 32px (375px)', async ({
+test('TC-017 pages are narrower than the container so the next page peeks about 24px (375px)', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 375, height: 812 });
   await mockReservations(page, 8);
   await page.goto('/');
 
-  const section = page.getByRole('region', { name: '預約中・即將開放' });
+  const section = page.getByRole('region', { name: '預約中 / 即將開放' });
   await expect(section.getByRole('link', { name: /預約活動 1/ })).toBeVisible();
 
   const box = async (selector: string) =>
@@ -82,9 +82,9 @@ test('TC-017 pages are narrower than the container so the next page peeks 32px (
     .evaluate((el) => el.getBoundingClientRect().left);
 
   expect(first).toBeCloseTo(swiper.width - 32, 0);
-  // second page starts inside the container, leaving about 32px of it visible
-  expect(swiper.left + swiper.width - secondLeft).toBeGreaterThan(20);
-  expect(swiper.left + swiper.width - secondLeft).toBeLessThanOrEqual(32);
+  // 32px minus the 8px page gap leaves about 24px of the next page visible
+  expect(swiper.left + swiper.width - secondLeft).toBeGreaterThanOrEqual(22);
+  expect(swiper.left + swiper.width - secondLeft).toBeLessThanOrEqual(26);
 
   await section.locator('.swiper-pagination-bullet').nth(1).click();
   await expect(section.locator('.swiper-slide-active')).toContainText('預約活動 5');
@@ -99,16 +99,6 @@ test('TC-017 pages are narrower than the container so the next page peeks 32px (
     .evaluate((el) => el.getBoundingClientRect().right);
   expect(Math.abs(lastLeft - swiper.left)).toBeLessThan(2);
   expect(prevRight).toBeLessThanOrEqual(swiper.left + 1);
-  console.log(
-    'MEASURE',
-    JSON.stringify({
-      container: swiper.width,
-      firstSlide: first,
-      peek: swiper.left + swiper.width - secondLeft,
-      lastLeft,
-      containerLeft: swiper.left,
-    })
-  );
 });
 
 test('loading skeleton reserves the pagination height so 5+ rows do not jump', async ({ page }) => {
@@ -121,12 +111,11 @@ test('loading skeleton reserves the pagination height so 5+ rows do not jump', a
   });
   await page.goto('/');
 
-  const section = page.getByRole('region', { name: '預約中・即將開放' });
+  const section = page.getByRole('region', { name: '預約中 / 即將開放' });
   await expect(section.getByTestId('reservation-skeleton-row').first()).toBeVisible();
   const loading = (await section.boundingBox())!.height;
   release();
   await expect(section.getByRole('link', { name: /預約活動 1/ })).toBeVisible();
   const loaded = (await section.boundingBox())!.height;
-  console.log('HEIGHT', loading, loaded);
   expect(Math.abs(loaded - loading)).toBeLessThanOrEqual(3);
 });
