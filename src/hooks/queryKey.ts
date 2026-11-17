@@ -25,6 +25,7 @@ const queryKey = {
   birthdayArtists: (startDate: string, endDate: string) => ['birthday-artists', startDate, endDate],
   weeklyEvents: (startDate: string, endDate: string) => ['weekly-events', startDate, endDate],
   trendingEvents: (limit: number) => ['trending-events', limit],
+  reservationEvents: () => ['reservation-events'],
   topArtists: (limit: number) => ['top-artists', limit],
   homeVenues: (limit: number) => ['home-venues', limit],
   adminVenues: (params?: { search?: string; status?: string; page?: number; limit?: number }) =>

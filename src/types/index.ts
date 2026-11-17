@@ -74,6 +74,23 @@ export interface TrendingEventsResponse {
   total: number;
 }
 
+// GET /events/reservations 的白名單欄位（design-backend.md）；slug 舊活動可能為 null
+export interface ReservationEventItem {
+  id: string;
+  slug: string | null;
+  title: string;
+  mainImage?: string;
+  datetime: { start: FirebaseTimestamp; end: FirebaseTimestamp };
+  artists: Array<{ id: string; name: string }>;
+  reservation: { url: string; startAt?: FirebaseTimestamp };
+  untilGone?: boolean; // datetime.end is only the takedown date; never display it
+}
+
+export interface ReservationEventsResponse {
+  events: ReservationEventItem[];
+  total: number;
+}
+
 export interface User {
   id: string;
   email: string;

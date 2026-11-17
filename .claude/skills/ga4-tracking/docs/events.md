@@ -147,6 +147,32 @@
 
 **實作位置：** `src/components/HomePage/components/TrendingEventsSection.tsx`
 
+### click_reservation_section_event
+
+點擊「預約中・即將開放」版位任一列。
+
+| 參數          | 值                               |
+| ------------- | -------------------------------- |
+| event_page    | `/`                              |
+| user_id       | 用戶 UID                         |
+| content_id    | eventId                          |
+| list_position | 全清單位置（1 起算，非頁內位置） |
+
+**實作位置：** `src/components/HomePage/components/ReservationSection.tsx`
+
+### view_reservation_section_page
+
+版位換到第 2 頁以後（滑動、分頁點、Tab 焦點帶動換頁都算）；初始化不送，同一頁每次載入只送一次。
+
+| 參數          | 值                                    |
+| ------------- | ------------------------------------- |
+| event_page    | `/`                                   |
+| user_id       | 用戶 UID                              |
+| content_id    | 空字串                                |
+| list_position | 該頁第一列的全清單位置（第 2 頁 = 5） |
+
+**實作位置：** `src/components/HomePage/components/ReservationSection.tsx`
+
 ### click_top_artist
 
 點擊「擁有最多生咖」區塊的藝人卡片。

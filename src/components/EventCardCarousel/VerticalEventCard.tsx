@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import Skeleton from '@/components/ui/Skeleton';
+import ReservationBadge from '@/components/ReservationBadge';
 
 const verticalEventCardContainer = css({
   display: 'flex',
@@ -193,6 +194,7 @@ const VerticalEventCard = ({ event, onClick, isFirst = false }: VerticalEventCar
                   fetchPriority={isFirst ? 'high' : 'auto'}
                 />
               )}
+              {!isShowSubmissionInfo && <ReservationBadge reservation={event.reservation} />}
               {isShowSubmissionInfo && (
                 <span className={statusBadge({ status: event.status })}>
                   {getStatusText(event.status, event.rejectedReason)}

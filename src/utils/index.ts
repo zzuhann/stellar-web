@@ -163,8 +163,11 @@ export const formatEventDate = (
   return startStr === endStr ? startStr : `${startStr} - ${endStr}`;
 };
 
-// 預約開始時間格式化，含星期，例如 2026/8/20（四）20:00
-export const formatReservationDateTime = (startAt: FirebaseTimestamp): string => {
+// 預約開始時間格式化，含星期，例如 2026/8/20（四）20:00；withYear=false 時為 8/20（四）20:00
+export const formatReservationDateTime = (
+  startAt: FirebaseTimestamp,
+  { withYear = true }: { withYear?: boolean } = {}
+): string => {
   const date = firebaseTimestampToDate(startAt);
   const formatter = new Intl.DateTimeFormat('zh-TW', {
     timeZone: 'Asia/Taipei',
@@ -174,14 +177,16 @@ export const formatReservationDateTime = (startAt: FirebaseTimestamp): string =>
     weekday: 'short',
     hour: '2-digit',
     minute: '2-digit',
-    hour12: false,
+    // hour12:false can print 24:00 at midnight on some ICU builds
+    hourCycle: 'h23',
   });
 
   const parts = formatter.formatToParts(date);
   const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
   const weekday = get('weekday').replace('週', '');
+  const yearPrefix = withYear ? `${get('year')}/` : '';
 
-  return `${get('year')}/${get('month')}/${get('day')}（${weekday}）${get('hour')}:${get('minute')}`;
+  return `${yearPrefix}${get('month')}/${get('day')}（${weekday}）${get('hour')}:${get('minute')}`;
 };
 
 // 簡短日期範圍，格式為「M/D」或「M/D - M/D」，明確使用 Asia/Taipei 時區（不受瀏覽器時區影響）
