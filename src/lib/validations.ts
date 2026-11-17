@@ -125,7 +125,7 @@ export const artistSubmissionSchema = z.object({
     .refine((date) => isValidCalendarDateString(date), '請選擇有效的生日日期'),
   profileImage: z
     .string()
-    .min(1, '請上傳藝人照片')
+    .min(1, '請上傳照片')
     .refine((val) => val === 'pending' || /^https?:\/\//.test(val), '請輸入正確的圖片連結格式'),
 });
 

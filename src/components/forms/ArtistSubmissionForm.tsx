@@ -538,7 +538,9 @@ export default function ArtistSubmissionForm({
     <div className={formContainer}>
       <div className={formHeader}>
         <h2>{mode === 'edit' ? '編輯藝人' : '投稿藝人'}</h2>
-        {mode !== 'edit' && <p>新增藝人到我們的資料庫，審核通過後其他用戶可以為他們建立生日應援</p>}
+        {mode !== 'edit' && (
+          <p>藝人、團體、動漫或遊戲角色都可以投稿，審核通過後其他用戶就能為他們建立生日應援</p>
+        )}
         {mode === 'edit' && (
           <p className={editWarningText} role="alert">
             編輯後的資料將重新進入審核流程
@@ -550,7 +552,7 @@ export default function ArtistSubmissionForm({
         {mode !== 'edit' && (
           <div className={formGroup}>
             <span id={searchEntryLabelId} className={label}>
-              投稿前，先確認你想新增的藝人、團體是否存在
+              投稿前，先確認你想新增的藝人、團體或角色是否已存在
             </span>
             <ArtistSearchEntryButton labelId={searchEntryLabelId} />
           </div>
@@ -699,7 +701,7 @@ export default function ArtistSubmissionForm({
           <div className={formGroup}>
             <label id="profileImage-label" className={label}>
               <div>
-                藝人照片<span aria-hidden="true">*</span>
+                照片<span aria-hidden="true">*</span>
                 <span className="sr-only">（必填）</span>
               </div>
             </label>
@@ -749,7 +751,7 @@ export default function ArtistSubmissionForm({
                   });
                 }
               }}
-              placeholder="點擊上傳藝人照片"
+              placeholder="點擊上傳照片"
               maxSizeMB={5}
               disabled={
                 createArtistMutation.isPending || updateArtistMutation.isPending || isUploadingImage
@@ -806,7 +808,7 @@ export default function ArtistSubmissionForm({
             <li>審核通過後，所有用戶都可以選擇這位藝人來建立生日應援</li>
             <li>請確保藝人資訊的正確性以及照片來源是否可公開使用</li>
             <li className={warningText} role="alert">
-              藝人名字若包含中文，<b>需 100% 為正體字</b>。若非正體字，審核將不會通過
+              名稱若包含中文，<b>需 100% 為正體字</b>。若非正體字，審核將不會通過
             </li>
             <li>資料錯誤、重複的藝人投稿審核不會通過</li>
             <li>若有多人重複投稿藝人，將以投稿時間較早者為準</li>
