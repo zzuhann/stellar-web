@@ -34,7 +34,7 @@ describe('BirthdayTab SearchSection entry point', () => {
     const user = userEvent.setup();
     render(<Wrapper />);
 
-    const button = screen.getByRole('button', { name: '搜尋藝人、團體的生日應援' });
+    const button = screen.getByRole('button', { name: '搜尋藝人、團體、角色的生日應援' });
     await user.click(button);
 
     const state = useSearchModalStore.getState();

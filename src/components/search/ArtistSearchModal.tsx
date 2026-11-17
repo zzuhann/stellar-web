@@ -305,9 +305,9 @@ export default function ArtistSearchModal({
     <CTAButton onClick={onClose}>找不到，繼續填寫表單</CTAButton>
   ) : (
     <CTAButton onClick={handleAddArtistClick}>
-      找不到藝人?
+      找不到嗎？
       <br />
-      點擊前往新增藝人 ✨
+      點擊前往新增 ✨
     </CTAButton>
   );
 
@@ -346,7 +346,11 @@ export default function ArtistSearchModal({
 
         <div className={resultsContainer}>
           {!showResults ? (
-            <EmptyState icon="🔍" title="搜尋藝人" description="輸入藝人名稱來尋找生日應援" />
+            <EmptyState
+              icon="🔍"
+              title="搜尋藝人、團體或角色"
+              description="輸入名稱來尋找生日應援"
+            />
           ) : searchLoading ? (
             <Loading
               description="搜尋中..."
@@ -394,7 +398,7 @@ export default function ArtistSearchModal({
             <>
               <EmptyState
                 icon="😔"
-                title="找不到該藝人"
+                title="找不到符合的結果"
                 description="試試其他關鍵字、檢查拼寫是否正確"
               />
               {bottomCta}

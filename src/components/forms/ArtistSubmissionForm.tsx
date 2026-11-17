@@ -804,14 +804,14 @@ export default function ArtistSubmissionForm({
         <div className={infoBox}>
           <div className="title">投稿說明：</div>
           <ul className={bulletPoint}>
-            <li>投稿的藝人將經過審核</li>
-            <li>審核通過後，所有用戶都可以選擇這位藝人來建立生日應援</li>
-            <li>請確保藝人資訊的正確性以及照片來源是否可公開使用</li>
+            <li>所有投稿都會經過審核</li>
+            <li>審核通過後，所有用戶都可以選擇他們來建立生日應援</li>
+            <li>請確保資料正確，且照片來源可公開使用</li>
             <li className={warningText} role="alert">
               名稱若包含中文，<b>需 100% 為正體字</b>。若非正體字，審核將不會通過
             </li>
-            <li>資料錯誤、重複的藝人投稿審核不會通過</li>
-            <li>若有多人重複投稿藝人，將以投稿時間較早者為準</li>
+            <li>資料錯誤或重複的投稿不會通過審核</li>
+            <li>若有多人重複投稿，以投稿時間較早者為準</li>
           </ul>
         </div>
 

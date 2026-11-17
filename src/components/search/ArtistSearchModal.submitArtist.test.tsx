@@ -168,14 +168,14 @@ describe('ArtistSearchModal entryPoint=submit_artist_page', () => {
 
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(push).not.toHaveBeenCalled();
-    expect(screen.queryByText(/點擊前往新增藝人/)).toBeNull();
+    expect(screen.queryByText(/點擊前往新增/)).toBeNull();
   });
 
   it('TC-006 查無結果時，底部 CTA 同樣只關閉彈窗、不導航', async () => {
     searchResults.length = 0;
     const { user, onClose } = await openAndSearch('submit_artist_page');
 
-    expect(screen.getByText('找不到該藝人')).toBeTruthy();
+    expect(screen.getByText('找不到符合的結果')).toBeTruthy();
     await user.click(screen.getByRole('button', { name: /找不到，繼續填寫表單/ }));
 
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -197,7 +197,7 @@ describe('ArtistSearchModal 其他入口不受客製影響 (TC-009)', () => {
 
     expect(screen.queryByText('查看應援')).toBeNull();
     expect(screen.queryByText('新增應援')).toBeNull();
-    expect(screen.getByText(/點擊前往新增藝人/)).toBeTruthy();
+    expect(screen.getByText(/點擊前往新增/)).toBeTruthy();
     expect(screen.queryByText(/找不到，繼續填寫表單/)).toBeNull();
 
     await user.click(screen.getByText(/ALPHA/));
