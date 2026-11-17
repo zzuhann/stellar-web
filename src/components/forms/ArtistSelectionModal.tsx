@@ -278,7 +278,7 @@ export default function ArtistSelectionModal({
               aria-label="搜尋藝人的英文名稱、中文名稱、本名或團名"
               className={searchInput}
               type="text"
-              placeholder="英文名稱/中文名稱/團名"
+              placeholder="英文名稱/中文名稱/本名/團名"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               autoFocus

@@ -682,10 +682,10 @@ export default function ArtistsTable({
                 />
               </th>
               <th className={th} style={{ minWidth: '120px' }}>
-                藝名（英）
+                英文名稱
               </th>
               <th className={th} style={{ minWidth: '100px' }}>
-                藝名（中）
+                中文名稱
               </th>
               <th className={th} style={{ minWidth: '100px' }}>
                 本名

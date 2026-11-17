@@ -604,7 +604,7 @@ export default function ArtistSubmissionForm({
             }
           />
           <p id="stageNameZh-helper" className={helperText}>
-            以台灣常用的繁體中文名稱為準
+            以台灣常用的繁體中文名稱為準；若無，可不填
           </p>
           {errors.stageNameZh && (
             <p id="stageNameZh-error" className={errorText} role="alert">

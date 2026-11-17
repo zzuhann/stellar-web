@@ -162,7 +162,7 @@ const ChooseArtistSection = ({
                   </div>
                   <div>
                     <span className={artistName}>
-                      {artist.stageName.toUpperCase()} {artist.realName}
+                      {artist.stageName.toUpperCase()} {artist.realName || artist.stageNameZh}
                     </span>
                   </div>
                 </div>
