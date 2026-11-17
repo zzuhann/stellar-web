@@ -122,6 +122,50 @@ describe('載入中 / 空 / 失敗 (TC-011, TC-012)', () => {
   });
 });
 
+describe('TC-026 領完為止', () => {
+  it('untilGone 的列顯示「起・領完為止」，不顯示下架日', async () => {
+    getReservations.mockResolvedValue({
+      events: [makeEvent('ug', { untilGone: true })],
+      total: 1,
+    });
+    renderSection();
+
+    const row = await screen.findByRole('link', { name: /活動 ug/ });
+    expect(within(row).getByText(/起・領完為止・藝人甲/)).toBeTruthy();
+    expect(row.textContent).not.toMatch(/2026\/11\/30/);
+  });
+});
+
+describe('背景重抓失敗', () => {
+  it('已有資料時重抓失敗，版位保留', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    getReservations.mockResolvedValueOnce({ events: makeEvents(2), total: 2 });
+    renderSection(client);
+    await screen.findByRole('link', { name: /活動 e01/ });
+
+    getReservations.mockRejectedValueOnce(new Error('boom'));
+    await client.refetchQueries({ queryKey: ['reservation-events'] });
+
+    await waitFor(() => expect(client.getQueryState(['reservation-events'])?.status).toBe('error'));
+    expect(screen.getByRole('link', { name: /活動 e01/ })).toBeTruthy();
+  });
+});
+
+describe('鍵盤焦點才換頁', () => {
+  it('滑鼠按下露出的下一頁時不換頁', async () => {
+    getReservations.mockResolvedValue({ events: makeEvents(8), total: 8 });
+    const { container } = renderSection();
+    await screen.findAllByRole('link');
+
+    const second = container.querySelectorAll('.swiper-slide')[1] as HTMLElement;
+    // jsdom does not match :focus-visible after a programmatic/mouse focus
+    fireEvent.focus(within(second).getByRole('link', { name: /活動 e05/ }));
+    expect(container.querySelector('.swiper-slide-active')).toBe(
+      container.querySelectorAll('.swiper-slide')[0]
+    );
+  });
+});
+
 describe('連結 (TC-013, TC-014)', () => {
   it('TC-013 整列是連到 /event/[slug] 的 <a>', async () => {
     getReservations.mockResolvedValue({ events: [makeEvent('x', { slug: 'abc' })], total: 1 });
@@ -323,4 +367,14 @@ describe('版位與熱門卡片共用狀態判斷 (TC-009)', () => {
     render(<VerticalEventCard event={trendingEvent(reservation)} />);
     expect(screen.queryByText(/開放預約|開放$/)).toBeNull();
   });
+
+  it.each(['請私訊IG', 'www.foo.com', 'javascript:alert(1)'])(
+    'TC-027 非 http(s) url %j：熱門卡片不出現標籤',
+    (url) => {
+      render(
+        <VerticalEventCard event={trendingEvent({ url, startAt: ts('2026-11-21T06:00:00Z') })} />
+      );
+      expect(screen.queryByText(/開放預約|開放$/)).toBeNull();
+    }
+  );
 });

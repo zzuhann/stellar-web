@@ -83,6 +83,7 @@ export interface ReservationEventItem {
   datetime: { start: FirebaseTimestamp; end: FirebaseTimestamp };
   artists: Array<{ id: string; name: string }>;
   reservation: { url: string; startAt?: FirebaseTimestamp };
+  untilGone?: boolean; // datetime.end is only the takedown date; never display it
 }
 
 export interface ReservationEventsResponse {

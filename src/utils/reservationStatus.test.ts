@@ -131,6 +131,16 @@ describe('buildReservationList (TC-021 的收錄與排序基礎)', () => {
     expect(buildReservationList([bad, makeEvent('ok')], NOW).map((e) => e.id)).toEqual(['ok']);
   });
 
+  it.each([
+    ['請私訊IG', false],
+    ['www.foo.com', false],
+    ['javascript:alert(1)', false],
+    [' https://x ', true],
+  ])('TC-027 url %j 收錄=%s', (url, included) => {
+    const list = buildReservationList([makeEvent('u', { url })], NOW);
+    expect(list.length).toBe(included ? 1 : 0);
+  });
+
   it('最多 20 筆', () => {
     const many = Array.from({ length: 25 }, (_, i) => makeEvent(`e${String(i).padStart(2, '0')}`));
     expect(buildReservationList(many, NOW)).toHaveLength(20);
