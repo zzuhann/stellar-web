@@ -258,7 +258,7 @@ export default function ReservationSection() {
   return (
     <section className={container} aria-labelledby={headingId} aria-busy={readyNow === null}>
       <h2 id={headingId} className={heading}>
-        <span aria-hidden="true">⏰ </span>預約中 / 即將開放
+        <span aria-hidden="true">⏰ </span>即將開放預約
       </h2>
       <p className={hint}>
         <InformationCircleIcon className={hintIcon} width={14} height={14} aria-hidden="true" />

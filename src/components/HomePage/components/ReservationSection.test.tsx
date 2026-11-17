@@ -65,7 +65,7 @@ const renderSection = (
     </QueryClientProvider>
   );
 
-const TITLE = '預約中 / 即將開放';
+const TITLE = '即將開放預約';
 
 // jsdom has no layout; Swiper derives slide counts and snap points from element sizes
 beforeAll(() => {

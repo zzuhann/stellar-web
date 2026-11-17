@@ -37,7 +37,7 @@ for (const viewport of [
     await mockReservations(page, 8);
     await page.goto('/');
 
-    const section = page.getByRole('region', { name: '預約中 / 即將開放' });
+    const section = page.getByRole('region', { name: '即將開放預約' });
     await expect(section.getByRole('link', { name: /預約活動 1/ })).toBeVisible();
 
     // 從第 1 頁最後一列（第 4 列）再 Tab 一次，焦點會落到第 2 頁第 1 列
@@ -63,7 +63,7 @@ test('TC-017 pages are narrower than the container so the next page peeks about 
   await mockReservations(page, 8);
   await page.goto('/');
 
-  const section = page.getByRole('region', { name: '預約中 / 即將開放' });
+  const section = page.getByRole('region', { name: '即將開放預約' });
   await expect(section.getByRole('link', { name: /預約活動 1/ })).toBeVisible();
 
   const box = async (selector: string) =>
@@ -111,7 +111,7 @@ test('loading skeleton reserves the pagination height so 5+ rows do not jump', a
   });
   await page.goto('/');
 
-  const section = page.getByRole('region', { name: '預約中 / 即將開放' });
+  const section = page.getByRole('region', { name: '即將開放預約' });
   await expect(section.getByTestId('reservation-skeleton-row').first()).toBeVisible();
   const loading = (await section.boundingBox())!.height;
   release();
