@@ -47,5 +47,9 @@ for (const viewport of [
     const fifth = section.getByRole('link', { name: /預約活動 5/ });
     await expect(fifth).toBeFocused();
     await expect(fifth).toBeInViewport({ ratio: 0.99 });
+    // Native focus scrolling alone can reveal the row; Swiper must also have moved to page 2
+    await expect(
+      section.locator('.swiper-slide-active').getByRole('link', { name: /預約活動 5/ })
+    ).toBeVisible();
   });
 }

@@ -2,6 +2,7 @@ import { useId, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import type { Swiper as SwiperType } from 'swiper';
 import { A11y, Pagination } from 'swiper/modules';
 import { InformationCircleIcon } from '@heroicons/react/24/outline';
 import { sendGAEvent } from '@next/third-parties/google';
@@ -19,7 +20,7 @@ import 'swiper/css/pagination';
 
 const PAGE_SIZE = 4;
 // Space left of the next page's edge so users can tell the list swipes
-const PEEK_WIDTH = '32px';
+const PEEK_WIDTH = 32;
 
 const container = css({
   marginTop: '5',
@@ -68,7 +69,7 @@ const hintIcon = css({ flexShrink: 0, marginTop: '0.5' });
 
 const listWrapper = css({ marginTop: '2' });
 
-const pageSlide = css({ width: `calc(100% - ${PEEK_WIDTH})` });
+const pageSlide = css({ width: `calc(100% - ${PEEK_WIDTH}px)` });
 const singlePageSlide = css({ width: '100%' });
 
 const row = css({
@@ -197,6 +198,7 @@ export default function ReservationSection() {
   const { data, isLoading, isError } = useReservationEventsQuery();
   // Pages already reported this load; the page view is sent once per page
   const reportedPages = useRef(new Set<number>());
+  const swiperRef = useRef<SwiperType | null>(null);
 
   if (isError) return null;
 
@@ -208,6 +210,17 @@ export default function ReservationSection() {
     events.slice(i * PAGE_SIZE, (i + 1) * PAGE_SIZE)
   );
   const isSinglePage = pages.length <= 1;
+
+  // Tabbing into an off-screen page: the browser scrolls the clipped wrapper natively, so reset it
+  // and let Swiper move to that page
+  const focusPage = (pageIndex: number) => {
+    const swiper = swiperRef.current;
+    if (!swiper || swiper.activeIndex === pageIndex) return;
+    swiper.slideTo(pageIndex, 0);
+    requestAnimationFrame(() => {
+      swiper.el.scrollLeft = 0;
+    });
+  };
 
   const track = (name: string, contentId: string, listPosition: number) => {
     sendGAEvent('event', name, {
@@ -235,6 +248,8 @@ export default function ReservationSection() {
           <Swiper
             modules={[A11y, Pagination]}
             a11y={{
+              // Own focus handler below: Swiper's skips pages in this layout
+              scrollOnFocus: false,
               slideLabelMessage: '第 {{index}} 頁，共 {{slidesLength}} 頁',
               paginationBulletMessage: '前往第 {{index}} 頁',
             }}
@@ -242,6 +257,9 @@ export default function ReservationSection() {
             slidesPerView="auto"
             spaceBetween={8}
             allowTouchMove={!isSinglePage}
+            onSwiper={(swiper) => {
+              swiperRef.current = swiper;
+            }}
             onSlideChange={(swiper) => {
               const page = swiper.activeIndex;
               // Init/resize can emit slide changes; only pages after the first count as views
@@ -254,6 +272,7 @@ export default function ReservationSection() {
               <SwiperSlide
                 key={pageEvents[0].id}
                 className={isSinglePage ? singlePageSlide : pageSlide}
+                onFocusCapture={() => focusPage(pageIndex)}
               >
                 {pageEvents.map((event, rowIndex) => (
                   <ReservationRow
