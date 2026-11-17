@@ -556,11 +556,11 @@ export default function ArtistSubmissionForm({
           </div>
         )}
 
-        {/* 英文藝名 */}
+        {/* 英文名稱 */}
         <div className={formGroup}>
           <label className={label} htmlFor="stageName">
             <div>
-              藝名（請填寫官方正名的英文名稱）<span aria-hidden="true">*</span>
+              英文名稱<span aria-hidden="true">*</span>
             </div>
             <span className="sr-only">（必填）</span>
           </label>
@@ -568,13 +568,18 @@ export default function ArtistSubmissionForm({
             className={input}
             id="stageName"
             type="text"
-            placeholder="例：S.COUPS、Riku、RIWOO"
+            placeholder="例：S.COUPS、Satoru Gojo"
             {...register('stageName')}
             required
             aria-required="true"
             aria-invalid={!!errors.stageName}
-            aria-describedby={errors.stageName ? 'stageName-error' : undefined}
+            aria-describedby={
+              errors.stageName ? 'stageName-helper stageName-error' : 'stageName-helper'
+            }
           />
+          <p id="stageName-helper" className={helperText}>
+            請填官方英文名稱；沒有的話填羅馬拼音
+          </p>
           {errors.stageName && (
             <p id="stageName-error" className={errorText} role="alert">
               {errors.stageName.message}
@@ -582,20 +587,25 @@ export default function ArtistSubmissionForm({
           )}
         </div>
 
-        {/* 中文藝名 */}
+        {/* 中文名稱 */}
         <div className={formGroup}>
           <label className={label} htmlFor="stageNameZh">
-            藝名（中文）
+            中文名稱
           </label>
           <input
             className={input}
             id="stageNameZh"
             type="text"
-            placeholder="例：泰山、李涵（沒有可不填）"
+            placeholder="例：泰山、五條悟"
             {...register('stageNameZh')}
             aria-invalid={!!errors.stageNameZh}
-            aria-describedby={errors.stageNameZh ? 'stageNameZh-error' : undefined}
+            aria-describedby={
+              errors.stageNameZh ? 'stageNameZh-helper stageNameZh-error' : 'stageNameZh-helper'
+            }
           />
+          <p id="stageNameZh-helper" className={helperText}>
+            以台灣常用的繁體中文名稱為準
+          </p>
           {errors.stageNameZh && (
             <p id="stageNameZh-error" className={errorText} role="alert">
               {errors.stageNameZh.message}
@@ -612,11 +622,16 @@ export default function ArtistSubmissionForm({
             className={input}
             id="realName"
             type="text"
-            placeholder="例：漢東旼、明宰鉉、崔勝哲"
+            placeholder="例：崔勝哲、李相赫"
             {...register('realName')}
             aria-invalid={!!errors.realName}
-            aria-describedby={errors.realName ? 'realName-error' : undefined}
+            aria-describedby={
+              errors.realName ? 'realName-helper realName-error' : 'realName-helper'
+            }
           />
+          <p id="realName-helper" className={helperText}>
+            若無，可不填
+          </p>
           {errors.realName && (
             <p id="realName-error" className={errorText} role="alert">
               {errors.realName.message}

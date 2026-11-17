@@ -123,8 +123,8 @@ const TopArtistCard = ({ artist, onClick, isFirst = false }: TopArtistCardProps)
         <p className={artistName} title={artist.stageName}>
           {artist.stageName}
         </p>
-        <p className={artistName} title={artist.realName}>
-          {artist.realName}
+        <p className={artistName} title={artist.realName || artist.stageNameZh}>
+          {artist.realName || artist.stageNameZh}
         </p>
       </div>
       <div className={eventCountStyle}>

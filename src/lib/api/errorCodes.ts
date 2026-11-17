@@ -36,7 +36,7 @@ export const ERROR_CODE_MESSAGES: Record<string, string> = {
 
 export const FIELD_LABELS: Record<string, string> = {
   displayName: '顯示名稱',
-  stageName: '藝名',
+  stageName: '英文名稱',
   title: '活動標題',
   eventId: '活動',
   artistIds: '藝人',

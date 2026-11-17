@@ -150,7 +150,7 @@ describe('SubmitArtistClient 搜尋入口', () => {
   it('TC-006 查無結果按「找不到，繼續填寫表單」：彈窗關閉、不導航、表單內容保留', async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.type(screen.getByLabelText(/藝名（請填寫官方正名的英文名稱）/), 'MYSTAR');
+    await user.type(screen.getByLabelText(/英文名稱/), 'MYSTAR');
 
     await user.click(screen.getByRole('button', { name: ENTRY_NAME }));
     await user.type(await screen.findByRole('textbox', { name: '搜尋藝人' }), 'zzz');
@@ -158,23 +158,19 @@ describe('SubmitArtistClient 搜尋入口', () => {
 
     expect(useSearchModalStore.getState().isOpen).toBe(false);
     expect(push).not.toHaveBeenCalled();
-    expect(
-      (screen.getByLabelText(/藝名（請填寫官方正名的英文名稱）/) as HTMLInputElement).value
-    ).toBe('MYSTAR');
+    expect((screen.getByLabelText(/英文名稱/) as HTMLInputElement).value).toBe('MYSTAR');
   });
 
   it('TC-007 右上角 X 關閉彈窗，表單內容保留', async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.type(screen.getByLabelText(/藝名（請填寫官方正名的英文名稱）/), 'MYSTAR');
+    await user.type(screen.getByLabelText(/英文名稱/), 'MYSTAR');
 
     await user.click(screen.getByRole('button', { name: ENTRY_NAME }));
     await user.click(await screen.findByRole('button', { name: '關閉搜尋' }));
 
     expect(useSearchModalStore.getState().isOpen).toBe(false);
-    expect(
-      (screen.getByLabelText(/藝名（請填寫官方正名的英文名稱）/) as HTMLInputElement).value
-    ).toBe('MYSTAR');
+    expect((screen.getByLabelText(/英文名稱/) as HTMLInputElement).value).toBe('MYSTAR');
   });
 
   it.each([

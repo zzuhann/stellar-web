@@ -332,7 +332,7 @@ export default function ArtistSearchModal({
               ref={searchInputRef}
               className={searchInput}
               type="text"
-              placeholder="藝名(英文)/本名(中文)/團名"
+              placeholder="英文名稱/中文名稱/團名"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               autoFocus

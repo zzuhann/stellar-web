@@ -78,7 +78,7 @@ test('待審藝人可編輯後設定團名並通過', async ({ page }) => {
   await page.goto('/admin-new/review?tab=artists');
 
   await page.getByRole('button', { name: '編輯' }).click();
-  await page.getByLabel('藝名（英文）').fill('ONE EDITED');
+  await page.getByLabel('英文名稱').fill('ONE EDITED');
   await page.getByRole('button', { name: '儲存' }).click();
   await expect(page.getByText('ONE EDITED')).toBeVisible();
 
