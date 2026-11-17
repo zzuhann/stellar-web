@@ -161,7 +161,7 @@ interface ReservationRowProps {
 }
 
 function ReservationRow({ event, now, isLastInPage, onClick }: ReservationRowProps) {
-  const { kind, text } = getReservationLabel(event.reservation.startAt, now, 'section');
+  const { kind, text } = getReservationLabel(event.reservation.startAt, now);
   const dateText = formatDateRange(
     firebaseTimestampToDate(event.datetime.start),
     firebaseTimestampToDate(event.datetime.end),

@@ -16,19 +16,18 @@ describe('getReservationLabel (TC-008)', () => {
   const upcoming = ts('2026-11-21T06:00:00Z'); // Taipei 11/21（六）14:00
 
   it.each([
-    ['未來', upcoming, '11/21（六）14:00 開放', '11/21（六）14:00 開放預約'],
-    ['等於 now', { _seconds: NOW.getTime() / 1000, _nanoseconds: 0 }, '已開放預約', '已開放預約'],
-    ['過去', ts('2026-11-19T00:00:00Z'), '已開放預約', '已開放預約'],
-    ['未填', undefined, '已開放預約', '已開放預約'],
-  ])('%s', (_name, startAt, section, card) => {
-    expect(getReservationLabel(startAt, NOW, 'section').text).toBe(section);
-    expect(getReservationLabel(startAt, NOW, 'card').text).toBe(card);
-    expect(section + card).not.toMatch(/可預約/);
+    ['未來', upcoming, '11/21（六）14:00 開放預約'],
+    ['等於 now', { _seconds: NOW.getTime() / 1000, _nanoseconds: 0 }, '已開放預約'],
+    ['過去', ts('2026-11-19T00:00:00Z'), '已開放預約'],
+    ['未填', undefined, '已開放預約'],
+  ])('%s', (_name, startAt, expected) => {
+    expect(getReservationLabel(startAt, NOW).text).toBe(expected);
+    expect(expected).not.toMatch(/可預約/);
   });
 
   it('kind 區分即將開放與已開放', () => {
-    expect(getReservationLabel(upcoming, NOW, 'section').kind).toBe('upcoming');
-    expect(getReservationLabel(undefined, NOW, 'section').kind).toBe('open');
+    expect(getReservationLabel(upcoming, NOW).kind).toBe('upcoming');
+    expect(getReservationLabel(undefined, NOW).kind).toBe('open');
   });
 });
 
@@ -62,12 +61,12 @@ describe('非法 startAt 視為未填 (TC-023)', () => {
     ['seconds 為字串', { _seconds: 'abc', _nanoseconds: 0 }],
     ['超出範圍', { _seconds: 1e20, _nanoseconds: 0 }],
   ])('%s 不拋錯、回已開放預約', (_name, startAt) => {
-    expect(() => getReservationLabel(startAt, NOW, 'section')).not.toThrow();
-    expect(getReservationLabel(startAt, NOW, 'section')).toEqual({
+    expect(() => getReservationLabel(startAt, NOW)).not.toThrow();
+    expect(getReservationLabel(startAt, NOW)).toEqual({
       kind: 'open',
       text: '已開放預約',
     });
-    expect(getReservationLabel(startAt, NOW, 'card').text).toBe('已開放預約');
+    expect(getReservationLabel(startAt, NOW).text).toBe('已開放預約');
   });
 });
 

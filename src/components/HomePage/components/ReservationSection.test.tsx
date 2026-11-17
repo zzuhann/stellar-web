@@ -304,7 +304,7 @@ describe('時間以載入當下為準 (TC-021)', () => {
 
     const first = renderSection(client);
     await screen.findByRole('link', { name: /活動 opens-soon/ });
-    expect(screen.getByText('11/20（五）12:30 開放')).toBeTruthy();
+    expect(screen.getByText('11/20（五）12:30 開放預約')).toBeTruthy();
     expect(screen.getByRole('link', { name: /活動 ends-soon/ })).toBeTruthy();
     first.unmount();
 
@@ -342,7 +342,7 @@ describe('版位與熱門卡片共用狀態判斷 (TC-009)', () => {
   });
 
   it.each([
-    ['2026-11-21T06:00:00Z', '11/21（六）14:00 開放', '11/21（六）14:00 開放預約'],
+    ['2026-11-21T06:00:00Z', '11/21（六）14:00 開放預約', '11/21（六）14:00 開放預約'],
     ['2026-11-19T00:00:00Z', '已開放預約', '已開放預約'],
   ])('startAt=%s：版位「%s」、卡片「%s」', async (startAtIso, sectionText, cardText) => {
     getReservations.mockResolvedValue({

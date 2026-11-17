@@ -35,7 +35,7 @@ export default function ReservationBadge({ reservation }: ReservationBadgeProps)
 
   if (!reservation || !getReservationUrl(reservation) || !now) return null;
 
-  const { kind, text } = getReservationLabel(reservation.startAt, now, 'card');
+  const { kind, text } = getReservationLabel(reservation.startAt, now);
   const isUpcoming = kind === 'upcoming';
 
   return (

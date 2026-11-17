@@ -1,8 +1,6 @@
 import { firebaseTimestampToDate, formatReservationDateTime, isHttpUrl } from '@/utils';
 import type { FirebaseTimestamp, ReservationEventItem } from '@/types';
 
-export type ReservationLabelVariant = 'section' | 'card';
-
 export interface ReservationLabel {
   kind: 'upcoming' | 'open';
   text: string;
@@ -32,15 +30,10 @@ export function getReservationUrl(reservation?: { url?: string } | null): string
 }
 
 // Strictly in the future counts as upcoming; equal to now is already open (matches the backend)
-export function getReservationLabel(
-  startAt: unknown,
-  now: Date,
-  variant: ReservationLabelVariant
-): ReservationLabel {
+export function getReservationLabel(startAt: unknown, now: Date): ReservationLabel {
   const date = parseTimestamp(startAt);
   if (date && date.getTime() > now.getTime()) {
-    const suffix = variant === 'card' ? '開放預約' : '開放';
-    return { kind: 'upcoming', text: `${formatReservationOpenTime(startAt)} ${suffix}` };
+    return { kind: 'upcoming', text: `${formatReservationOpenTime(startAt)} 開放預約` };
   }
   return { kind: 'open', text: '已開放預約' };
 }
