@@ -69,8 +69,9 @@ const hintIcon = css({ flexShrink: 0, marginTop: '0.5' });
 
 const listWrapper = css({ marginTop: '2' });
 
-const pageSlide = css({ width: `calc(100% - ${PEEK_WIDTH}px)` });
-const singlePageSlide = css({ width: '100%' });
+// !important: swiper/css is unlayered and would beat Panda's layered utilities
+const pageSlide = css({ width: `calc(100% - ${PEEK_WIDTH}px) !important` });
+const singlePageSlide = css({ width: '100% !important' });
 
 const row = css({
   display: 'flex',
@@ -82,6 +83,8 @@ const row = css({
   borderColor: 'color.border.subtle',
   color: 'inherit',
   textDecoration: 'none',
+  // Swiper clips overflow, so draw the focus ring inside the row
+  _focusVisible: { outlineOffset: '-2px' },
 });
 
 const lastRow = css({ borderBottom: 'none' });
@@ -120,6 +123,9 @@ const ellipsis = css({
 
 const titleText = css({ textStyle: 'bodyStrong', color: 'color.text.primary' });
 const metaText = css({ textStyle: 'bodySmall', color: 'color.text.secondary' });
+
+// Same height as the pagination block, so 5+ rows do not shift the page when they load
+const skeletonPaginationSpacer = css({ height: '27px' });
 
 const skeletonRow = css({
   display: 'flex',
@@ -196,6 +202,7 @@ function SkeletonRows() {
           </div>
         </div>
       ))}
+      <div className={skeletonPaginationSpacer} />
     </div>
   );
 }

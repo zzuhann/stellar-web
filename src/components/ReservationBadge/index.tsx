@@ -1,3 +1,5 @@
+'use client';
+
 import { ClockIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { useClientNow } from '@/hooks/useClientNow';
