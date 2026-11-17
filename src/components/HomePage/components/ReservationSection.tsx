@@ -11,7 +11,7 @@ import Skeleton from '@/components/ui/Skeleton';
 import { useAuth } from '@/lib/auth-context';
 import { useClientNow } from '@/hooks/useClientNow';
 import { useReservationEventsQuery } from '@/components/HomePage/hook/useReservationEvents';
-import { firebaseTimestampToDate, formatDateRange } from '@/utils';
+import { formatEventDateShort } from '@/utils';
 import { buildReservationList, getReservationLabel } from '@/utils/reservationStatus';
 import type { ReservationEventItem } from '@/types';
 
@@ -162,11 +162,8 @@ interface ReservationRowProps {
 
 function ReservationRow({ event, now, isLastInPage, onClick }: ReservationRowProps) {
   const { kind, text } = getReservationLabel(event.reservation.startAt, now);
-  const dateText = formatDateRange(
-    firebaseTimestampToDate(event.datetime.start),
-    firebaseTimestampToDate(event.datetime.end),
-    event.untilGone
-  );
+  // No year: it pushed the artist name out of the row on narrow phones
+  const dateText = formatEventDateShort(event.datetime.start, event.datetime.end, event.untilGone);
   const artistNames = event.artists.map((artist) => artist.name).join('、');
 
   return (

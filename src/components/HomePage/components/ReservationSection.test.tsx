@@ -136,6 +136,17 @@ describe('TC-026 領完為止', () => {
   });
 });
 
+describe('列的日期', () => {
+  it('不顯示年份，藝人名稱留在同一行', async () => {
+    getReservations.mockResolvedValue({ events: [makeEvent('d1')], total: 1 });
+    renderSection();
+
+    const row = await screen.findByRole('link', { name: /活動 d1/ });
+    expect(within(row).getByText('11/25 - 11/30・藝人甲')).toBeTruthy();
+    expect(row.textContent).not.toMatch(/2026\//);
+  });
+});
+
 describe('背景重抓失敗', () => {
   it('已有資料時重抓失敗，版位保留', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
