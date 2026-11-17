@@ -108,7 +108,7 @@ describe('ArtistSearchModal -> AuthModal focus handoff (未登入點「新增藝
     render(<Wrapper />);
 
     await user.type(screen.getByRole('textbox', { name: '搜尋藝人' }), '查無此人');
-    await user.click(screen.getByText(/點擊前往新增藝人/));
+    await user.click(screen.getByText(/點擊前往新增/));
 
     const authDialog = screen.getByRole('dialog', { name: '登入' });
     await waitFor(() => expect(authDialog.contains(document.activeElement)).toBe(true));

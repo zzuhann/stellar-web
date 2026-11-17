@@ -275,10 +275,10 @@ export default function ArtistSelectionModal({
           <div className={searchInputContainer}>
             <UserIcon aria-hidden="true" />
             <input
-              aria-label="搜尋藝人的藝名、本名或團名"
+              aria-label="搜尋藝人的英文名稱、中文名稱、本名或團名"
               className={searchInput}
               type="text"
-              placeholder="藝名(英文)/本名(中文)/團名"
+              placeholder="英文名稱/中文名稱/本名/團名"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               autoFocus
@@ -318,16 +318,16 @@ export default function ArtistSelectionModal({
                   </button>
                 ))}
                 <EmptyState
-                  title="找不到藝人嗎？"
+                  title="找不到嗎？"
                   description={
                     <>
                       <p>試試其他關鍵字、檢查拼寫是否正確</p>
-                      <p>也可能是系統中還沒有你藝人的個人檔案 ⬇️</p>
+                      <p>也可能是系統中還沒有這筆資料 ⬇️</p>
                     </>
                   }
                   cta={
                     <button className={ctaButton} onClick={() => router.push('/submit-artist')}>
-                      點擊前往新增藝人 ✨<p>點擊後，將會跳轉至新增藝人頁面</p>
+                      點擊前往新增 ✨<p>點擊後，將會跳轉至新增藝人頁面</p>
                     </button>
                   }
                 />
@@ -335,16 +335,16 @@ export default function ArtistSelectionModal({
             ) : (
               <EmptyState
                 icon="😔"
-                title="找不到該藝人"
+                title="找不到符合的結果"
                 description={
                   <>
                     <p>試試其他關鍵字、檢查拼寫是否正確</p>
-                    <p>也可能是系統中還沒有你藝人的個人檔案 ⬇️</p>
+                    <p>也可能是系統中還沒有這筆資料 ⬇️</p>
                   </>
                 }
                 cta={
                   <button className={ctaButton} onClick={() => router.push('/submit-artist')}>
-                    點擊前往新增藝人 ✨<p>點擊後，將會跳轉至新增藝人頁面</p>
+                    點擊前往新增 ✨<p>點擊後，將會跳轉至新增藝人頁面</p>
                   </button>
                 }
               />
@@ -375,7 +375,7 @@ export default function ArtistSelectionModal({
               ))}
             </div>
           ) : (
-            <EmptyState description="在上方輸入藝人名稱來搜尋並選擇 ✨" />
+            <EmptyState description="在上方輸入名稱來搜尋並選擇 ✨" />
           )}
         </div>
       </div>

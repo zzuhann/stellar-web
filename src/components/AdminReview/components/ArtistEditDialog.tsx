@@ -244,8 +244,8 @@ export default function ArtistEditDialog({ artist, busy, onClose, onSave }: Arti
           }}
         >
           <div className={formGrid}>
-            {field('stageName', '藝名（英文）')}
-            {field('stageNameZh', '藝名（中文）')}
+            {field('stageName', '英文名稱')}
+            {field('stageNameZh', '中文名稱')}
             {field('realName', '本名')}
             {field('birthday', '生日', 'date')}
             <div className={spanTwo}>{field('groupNames', '團名（多個請用頓號分隔）')}</div>

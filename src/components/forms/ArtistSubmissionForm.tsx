@@ -538,7 +538,9 @@ export default function ArtistSubmissionForm({
     <div className={formContainer}>
       <div className={formHeader}>
         <h2>{mode === 'edit' ? '編輯藝人' : '投稿藝人'}</h2>
-        {mode !== 'edit' && <p>新增藝人到我們的資料庫，審核通過後其他用戶可以為他們建立生日應援</p>}
+        {mode !== 'edit' && (
+          <p>藝人、團體、動漫或遊戲角色都可以投稿，審核通過後其他用戶就能為他們建立生日應援</p>
+        )}
         {mode === 'edit' && (
           <p className={editWarningText} role="alert">
             編輯後的資料將重新進入審核流程
@@ -550,17 +552,17 @@ export default function ArtistSubmissionForm({
         {mode !== 'edit' && (
           <div className={formGroup}>
             <span id={searchEntryLabelId} className={label}>
-              投稿前，先確認你想新增的藝人、團體是否存在
+              投稿前，先確認你想新增的藝人、團體或角色是否已存在
             </span>
             <ArtistSearchEntryButton labelId={searchEntryLabelId} />
           </div>
         )}
 
-        {/* 英文藝名 */}
+        {/* 英文名稱 */}
         <div className={formGroup}>
           <label className={label} htmlFor="stageName">
             <div>
-              藝名（請填寫官方正名的英文名稱）<span aria-hidden="true">*</span>
+              英文名稱<span aria-hidden="true">*</span>
             </div>
             <span className="sr-only">（必填）</span>
           </label>
@@ -568,13 +570,18 @@ export default function ArtistSubmissionForm({
             className={input}
             id="stageName"
             type="text"
-            placeholder="例：S.COUPS、Riku、RIWOO"
+            placeholder="例：S.COUPS、Satoru Gojo"
             {...register('stageName')}
             required
             aria-required="true"
             aria-invalid={!!errors.stageName}
-            aria-describedby={errors.stageName ? 'stageName-error' : undefined}
+            aria-describedby={
+              errors.stageName ? 'stageName-helper stageName-error' : 'stageName-helper'
+            }
           />
+          <p id="stageName-helper" className={helperText}>
+            請填官方英文名稱；沒有的話填羅馬拼音
+          </p>
           {errors.stageName && (
             <p id="stageName-error" className={errorText} role="alert">
               {errors.stageName.message}
@@ -582,20 +589,25 @@ export default function ArtistSubmissionForm({
           )}
         </div>
 
-        {/* 中文藝名 */}
+        {/* 中文名稱 */}
         <div className={formGroup}>
           <label className={label} htmlFor="stageNameZh">
-            藝名（中文）
+            中文名稱
           </label>
           <input
             className={input}
             id="stageNameZh"
             type="text"
-            placeholder="例：泰山、李涵（沒有可不填）"
+            placeholder="例：泰山、五條悟"
             {...register('stageNameZh')}
             aria-invalid={!!errors.stageNameZh}
-            aria-describedby={errors.stageNameZh ? 'stageNameZh-error' : undefined}
+            aria-describedby={
+              errors.stageNameZh ? 'stageNameZh-helper stageNameZh-error' : 'stageNameZh-helper'
+            }
           />
+          <p id="stageNameZh-helper" className={helperText}>
+            以台灣常用的繁體中文名稱為準；若無，可不填
+          </p>
           {errors.stageNameZh && (
             <p id="stageNameZh-error" className={errorText} role="alert">
               {errors.stageNameZh.message}
@@ -612,11 +624,16 @@ export default function ArtistSubmissionForm({
             className={input}
             id="realName"
             type="text"
-            placeholder="例：漢東旼、明宰鉉、崔勝哲"
+            placeholder="例：崔勝哲、李相赫"
             {...register('realName')}
             aria-invalid={!!errors.realName}
-            aria-describedby={errors.realName ? 'realName-error' : undefined}
+            aria-describedby={
+              errors.realName ? 'realName-helper realName-error' : 'realName-helper'
+            }
           />
+          <p id="realName-helper" className={helperText}>
+            若無，可不填
+          </p>
           {errors.realName && (
             <p id="realName-error" className={errorText} role="alert">
               {errors.realName.message}
@@ -684,7 +701,7 @@ export default function ArtistSubmissionForm({
           <div className={formGroup}>
             <label id="profileImage-label" className={label}>
               <div>
-                藝人照片<span aria-hidden="true">*</span>
+                照片<span aria-hidden="true">*</span>
                 <span className="sr-only">（必填）</span>
               </div>
             </label>
@@ -734,7 +751,7 @@ export default function ArtistSubmissionForm({
                   });
                 }
               }}
-              placeholder="點擊上傳藝人照片"
+              placeholder="點擊上傳照片"
               maxSizeMB={5}
               disabled={
                 createArtistMutation.isPending || updateArtistMutation.isPending || isUploadingImage
@@ -787,14 +804,14 @@ export default function ArtistSubmissionForm({
         <div className={infoBox}>
           <div className="title">投稿說明：</div>
           <ul className={bulletPoint}>
-            <li>投稿的藝人將經過審核</li>
-            <li>審核通過後，所有用戶都可以選擇這位藝人來建立生日應援</li>
-            <li>請確保藝人資訊的正確性以及照片來源是否可公開使用</li>
+            <li>所有投稿都會經過審核</li>
+            <li>審核通過後，所有用戶都可以選擇他們來建立生日應援</li>
+            <li>請確保資料正確，且照片來源可公開使用</li>
             <li className={warningText} role="alert">
-              藝人名字若包含中文，<b>需 100% 為正體字</b>。若非正體字，審核將不會通過
+              名稱若包含中文，<b>需 100% 為正體字</b>。若非正體字，審核將不會通過
             </li>
-            <li>資料錯誤、重複的藝人投稿審核不會通過</li>
-            <li>若有多人重複投稿藝人，將以投稿時間較早者為準</li>
+            <li>資料錯誤或重複的投稿不會通過審核</li>
+            <li>若有多人重複投稿，以投稿時間較早者為準</li>
           </ul>
         </div>
 

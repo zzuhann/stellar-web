@@ -106,8 +106,8 @@ export type EventSubmissionFormData = z.infer<typeof eventSubmissionSchema>;
 
 // 藝人投稿表單驗證
 export const artistSubmissionSchema = z.object({
-  stageName: z.string().min(1, '請輸入英文藝名').max(50, '英文藝名不能超過50個字元'),
-  stageNameZh: z.string().max(50, '中文藝名不能超過50個字元').optional().or(z.literal('')),
+  stageName: z.string().min(1, '請輸入英文名稱').max(50, '英文名稱不能超過50個字元'),
+  stageNameZh: z.string().max(50, '中文名稱不能超過50個字元').optional().or(z.literal('')),
   realName: z.string().max(50, '本名不能超過50個字元').optional().or(z.literal('')),
   // Admin-only field; limits mirror the backend artist schema
   groupNames: z
@@ -125,7 +125,7 @@ export const artistSubmissionSchema = z.object({
     .refine((date) => isValidCalendarDateString(date), '請選擇有效的生日日期'),
   profileImage: z
     .string()
-    .min(1, '請上傳藝人照片')
+    .min(1, '請上傳照片')
     .refine((val) => val === 'pending' || /^https?:\/\//.test(val), '請輸入正確的圖片連結格式'),
 });
 

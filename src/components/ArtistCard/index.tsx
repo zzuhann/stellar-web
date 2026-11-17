@@ -146,7 +146,7 @@ const ArtistCard = ({ artist, isPending, hideEventCount, actions }: ArtistCardPr
 
       <div className={artistInfo}>
         <h3 className={artistName}>
-          {artist.stageName?.toUpperCase()} {artist.realName}
+          {artist.stageName?.toUpperCase()} {artist.realName || artist.stageNameZh}
         </h3>
         <div className={artistBirthday}>
           <span className={srOnly}>生日</span>

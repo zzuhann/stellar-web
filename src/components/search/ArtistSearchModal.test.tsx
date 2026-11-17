@@ -303,7 +303,7 @@ describe('ArtistSearchModal', () => {
 
     render(<ArtistSearchModal isOpen={true} onClose={onClose} entryPoint="header" />);
     await user.type(screen.getByRole('textbox', { name: '搜尋藝人' }), '任一藝人');
-    await user.click(screen.getByText(/點擊前往新增藝人/));
+    await user.click(screen.getByText(/點擊前往新增/));
 
     expect(onClose).toHaveBeenCalledTimes(1);
     // AuthModal opens after the search modal's own exit transition, not in the same tick.
@@ -318,7 +318,7 @@ describe('ArtistSearchModal', () => {
 
     render(<ArtistSearchModal isOpen={true} onClose={onClose} entryPoint="header" />);
     await user.type(screen.getByRole('textbox', { name: '搜尋藝人' }), '任一藝人');
-    await user.click(screen.getByText(/點擊前往新增藝人/));
+    await user.click(screen.getByText(/點擊前往新增/));
 
     expect(onClose).toHaveBeenCalledTimes(1);
     expect(push).toHaveBeenCalledWith('/submit-artist');
@@ -331,7 +331,7 @@ describe('ArtistSearchModal', () => {
 
     render(<ArtistSearchModal isOpen={true} onClose={onClose} entryPoint="header" />);
     await user.type(screen.getByRole('textbox', { name: '搜尋藝人' }), '查無此人');
-    await user.click(screen.getByText(/點擊前往新增藝人/));
+    await user.click(screen.getByText(/點擊前往新增/));
 
     expect(onClose).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(toggleAuthModal).toHaveBeenCalledWith('/submit-artist'));
@@ -350,7 +350,7 @@ describe('ArtistSearchModal', () => {
       fireEvent.change(screen.getByRole('textbox', { name: '搜尋藝人' }), {
         target: { value: '任一藝人' },
       });
-      fireEvent.click(screen.getByText(/點擊前往新增藝人/));
+      fireEvent.click(screen.getByText(/點擊前往新增/));
 
       unmount();
       vi.advanceTimersByTime(300);
@@ -375,7 +375,7 @@ describe('ArtistSearchModal', () => {
       fireEvent.change(screen.getByRole('textbox', { name: '搜尋藝人' }), {
         target: { value: '任一藝人' },
       });
-      fireEvent.click(screen.getByText(/點擊前往新增藝人/));
+      fireEvent.click(screen.getByText(/點擊前往新增/));
 
       mockPathname = '/map/other-artist';
       rerender(<ArtistSearchModal isOpen={true} onClose={onClose} entryPoint="header" />);
@@ -398,7 +398,7 @@ describe('ArtistSearchModal', () => {
       fireEvent.change(screen.getByRole('textbox', { name: '搜尋藝人' }), {
         target: { value: '任一藝人' },
       });
-      const cta = screen.getByText(/點擊前往新增藝人/);
+      const cta = screen.getByText(/點擊前往新增/);
       fireEvent.click(cta);
       fireEvent.click(cta);
 
@@ -421,7 +421,7 @@ describe('ArtistSearchModal', () => {
     fireEvent.change(screen.getByRole('textbox', { name: '搜尋藝人' }), {
       target: { value: '任一藝人' },
     });
-    const cta = screen.getByText(/點擊前往新增藝人/);
+    const cta = screen.getByText(/點擊前往新增/);
     fireEvent.click(cta);
     fireEvent.click(cta);
 
@@ -435,7 +435,7 @@ describe('ArtistSearchModal', () => {
     const { rerender } = render(
       <ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />
     );
-    expect(screen.getByText('搜尋藝人')).toBeTruthy();
+    expect(screen.getByText('搜尋藝人、團體或角色')).toBeTruthy();
 
     await user.type(screen.getByRole('textbox', { name: '搜尋藝人' }), 'abc');
 
@@ -445,6 +445,6 @@ describe('ArtistSearchModal', () => {
 
     searchLoading = false;
     rerender(<ArtistSearchModal isOpen={true} onClose={vi.fn()} entryPoint="header" />);
-    expect(screen.getByText('找不到該藝人')).toBeTruthy();
+    expect(screen.getByText('找不到符合的結果')).toBeTruthy();
   });
 });

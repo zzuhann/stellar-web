@@ -55,7 +55,7 @@ export default function ArtistSearchEntryButton({ labelId }: ArtistSearchEntryBu
       onClick={() => open('submit_artist_page', buttonRef)}
     >
       <MagnifyingGlassIcon aria-hidden="true" />
-      <span id={textId}>搜尋藝人、團體</span>
+      <span id={textId}>搜尋藝人、團體或角色</span>
     </button>
   );
 }

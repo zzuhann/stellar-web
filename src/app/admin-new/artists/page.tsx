@@ -100,7 +100,7 @@ const searchInputStyle = css({
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SEARCH_PLACEHOLDER: Record<SearchField, string> = {
-  name: '搜尋藝名...',
+  name: '搜尋名稱...',
   slug: '搜尋 slug（精確比對）',
   id: '搜尋 ID（精確比對）',
 };
@@ -197,7 +197,7 @@ function AdminArtistsInner() {
             <SearchFieldDropdown
               value={field}
               onChange={handleFieldChange}
-              labels={{ name: '名稱（藝名／本名）' }}
+              labels={{ name: '名稱（英文／中文／本名）' }}
             />
             <div className={searchWrapper}>
               <MagnifyingGlassIcon className={searchIcon} aria-hidden="true" />

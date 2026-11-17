@@ -204,7 +204,7 @@ const VerticalArtistCard = ({
           }}
         >
           <h3 className={artistName}>
-            {artist.stageName.toUpperCase()} {artist.realName}
+            {artist.stageName.toUpperCase()} {artist.realName || artist.stageNameZh}
           </h3>
 
           {birthdayText && (

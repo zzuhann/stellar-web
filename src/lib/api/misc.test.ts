@@ -29,7 +29,7 @@ describe('handleApiError', () => {
       handleApiError(
         apiError({ error: 'Stage name is required', code: 'VALIDATION_ERROR', field: 'stageName' })
       )
-    ).toBe('藝名格式不正確，請確認後再試');
+    ).toBe('英文名稱格式不正確，請確認後再試');
   });
 
   it('shows the Chinese backend reason with the field label', () => {

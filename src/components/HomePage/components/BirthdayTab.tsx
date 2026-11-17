@@ -68,7 +68,7 @@ export default function BirthdayTab({
         <EmptyState
           icon="🎂"
           title="當週沒有壽星"
-          description="可以切換查看其他週的壽星，或直接搜尋藝人、團體"
+          description="可以切換查看其他週的壽星，或直接搜尋藝人、團體或角色"
         />
       )}
     </>
