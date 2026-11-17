@@ -1,11 +1,6 @@
 import { css } from '@/styled-system/css';
 import StatCounter from './StatCounter';
 import FadeIn from '@/components/ui/FadeIn';
-import {
-  STELLAR_INSTAGRAM_URL,
-  STELLAR_SPONSOR_URL,
-  STELLAR_THREADS_URL,
-} from '@/constants/stellarSocial';
 
 const features = [
   {
@@ -31,19 +26,6 @@ const features = [
   {
     title: '生咖場地',
     description: '依地區與標籤找適合辦生咖的咖啡廳與空間，查看場地資訊並直接聯絡場地。',
-  },
-];
-
-const roles = [
-  {
-    title: 'UI/UX 設計師',
-    description:
-      '和我們一起規劃新功能的使用流程與介面，從需求討論、使用者流程到設計稿都會參與，設計稿會由我們實作上線，再一起看使用數據調整。適合想累積真實上線作品、對粉絲文化有感覺的你。',
-  },
-  {
-    title: '品牌／社群經營',
-    description:
-      '和我們一起經營 IG 與 Threads：除了每週生咖整理，也一起發想粉絲會想分享的內容、觀察數據調整方向，並思考 STELLAR 的品牌語氣與視覺，讓更多粉絲和主辦認識這個平台。適合本身有在追星、熟悉粉圈社群生態的你。',
   },
 ];
 
@@ -175,37 +157,6 @@ const paragraphGap = css({
   '& > p + p': { marginTop: '4' },
 });
 
-const roleList = css({
-  listStyle: 'none',
-  padding: '0',
-  marginY: '6',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '5',
-});
-
-const inlineLink = css({
-  color: 'color.link',
-  textDecoration: 'underline',
-  textUnderlineOffset: '2px',
-  _hover: { color: 'color.linkHover' },
-});
-
-const sponsorButton = css({
-  display: 'inline-block',
-  marginTop: '6',
-  paddingY: '3',
-  paddingX: '8',
-  borderRadius: 'radius.lg',
-  textStyle: 'button',
-  fontWeight: 'semibold',
-  background: 'color.primary',
-  color: 'white',
-  textDecoration: 'none',
-  transition: 'background 0.2s ease',
-  _hover: { background: 'color.primaryHover' },
-});
-
 export default function AboutPage() {
   return (
     <main id="main-content" className={pageContainer}>
@@ -276,77 +227,6 @@ export default function AboutPage() {
             </FadeIn>
           ))}
         </section>
-
-        <hr className={divider} />
-
-        <FadeIn delay={100}>
-          <section className={manifestoSection} aria-labelledby="about-join">
-            <h2 id="about-join" className={tagline}>
-              一起讓 STELLAR 變成更好的平台！
-            </h2>
-            <p className={taglineDesc}>
-              STELLAR 目前是一個我們下班後共同經營的 side
-              project，沒有營收、目前沒有商業模式，正在找想讓 STELLAR 變得更好的夥伴！
-            </p>
-            <ul className={roleList}>
-              {roles.map((role) => (
-                <li key={role.title}>
-                  <h3 className={featureTitle}>{role.title}</h3>
-                  <p className={featureDesc}>{role.description}</p>
-                </li>
-              ))}
-            </ul>
-            <p className={taglineDesc}>
-              有興趣歡迎寄信到{' '}
-              <a href="mailto:stellar.taiwan.2025@gmail.com" className={inlineLink}>
-                stellar.taiwan.2025@gmail.com
-              </a>
-              ，或私訊{' '}
-              <a
-                href={STELLAR_INSTAGRAM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={inlineLink}
-              >
-                IG
-              </a>
-              ／
-              <a
-                href={STELLAR_THREADS_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={inlineLink}
-              >
-                Threads
-              </a>{' '}
-              @_stellar.tw 聊聊～
-            </p>
-          </section>
-        </FadeIn>
-
-        {STELLAR_SPONSOR_URL && (
-          <>
-            <hr className={divider} />
-            <FadeIn delay={100}>
-              <section className={manifestoSection} aria-labelledby="about-sponsor">
-                <h2 id="about-sponsor" className={tagline}>
-                  贊助 STELLAR
-                </h2>
-                <p className={taglineDesc}>
-                  如果 STELLAR 曾經幫你找到生咖，也可以請我們喝杯咖啡，支持網站的營運費用。
-                </p>
-                <a
-                  href={STELLAR_SPONSOR_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={sponsorButton}
-                >
-                  請我們喝杯咖啡 ☕
-                </a>
-              </section>
-            </FadeIn>
-          </>
-        )}
       </div>
     </main>
   );
