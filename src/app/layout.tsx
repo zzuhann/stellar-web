@@ -17,6 +17,7 @@ import ServiceWorkerRegistration from '@/components/pwa/ServiceWorkerRegistratio
 import { ShareProvider } from '@/context/ShareContext';
 import ClarityInit from '@/components/ClarityInit';
 import SoftNavigationPageView from '@/components/SoftNavigationPageView';
+import { STELLAR_INSTAGRAM_URL, STELLAR_THREADS_URL } from '@/constants/stellarSocial';
 
 const GA_ID = 'G-4HGC08K6JK';
 
@@ -33,13 +34,13 @@ export const metadata: Metadata = {
     template: '%s | STELLAR 台灣生咖、生日應援地圖',
   },
   description:
-    '生咖（生日咖啡廳）是粉絲為喜歡的偶像、團體舉辦的生日應援活動。STELLAR 收錄台灣各地生咖地圖，快速找到你附近的生咖活動！',
+    '生咖（生日咖啡廳）是粉絲為喜歡的藝人、團體或角色舉辦的生日應援活動。STELLAR 收錄台灣各地生咖地圖，快速找到你附近的生咖活動！',
   keywords: ['生日應援', 'K-POP', '生日咖啡廳', '應援', 'idol', 'PWA', '生咖', 'STELLAR'],
   openGraph: {
     type: 'website',
     title: 'STELLAR 台灣生咖地圖 | 生咖、生日應援活動資訊',
     description:
-      '生咖（生日咖啡廳）是粉絲為喜歡的偶像、團體舉辦的生日應援活動。STELLAR 收錄台灣各地生咖地圖，快速找到你附近的生咖活動！',
+      '生咖（生日咖啡廳）是粉絲為喜歡的藝人、團體或角色舉辦的生日應援活動。STELLAR 收錄台灣各地生咖地圖，快速找到你附近的生咖活動！',
     images: [{ url: 'https://cdn.stellar-zone.com/images/og-image.png' }],
   },
   icons: {
@@ -81,7 +82,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'STELLAR 台灣生咖地圖 | 生咖、生日應援活動資訊',
     description:
-      '生咖（生日咖啡廳）是粉絲為喜歡的偶像、團體舉辦的生日應援活動。STELLAR 收錄台灣各地生咖地圖，快速找到你附近的生咖活動！',
+      '生咖（生日咖啡廳）是粉絲為喜歡的藝人、團體或角色舉辦的生日應援活動。STELLAR 收錄台灣各地生咖地圖，快速找到你附近的生咖活動！',
     images: [{ url: 'https://cdn.stellar-zone.com/images/og-image.png' }],
     creator: '@STELLAR_TW',
   },
@@ -133,10 +134,7 @@ export default function RootLayout({
               name: 'STELLAR',
               url: 'https://www.stellar-zone.com',
               logo: 'https://cdn.stellar-zone.com/images/og-image.png',
-              sameAs: [
-                'https://www.instagram.com/stellar_tw',
-                'https://www.threads.com/@stellar_tw',
-              ],
+              sameAs: [STELLAR_INSTAGRAM_URL, STELLAR_THREADS_URL],
             }),
           }}
         />

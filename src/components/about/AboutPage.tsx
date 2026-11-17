@@ -5,7 +5,7 @@ import FadeIn from '@/components/ui/FadeIn';
 const features = [
   {
     title: '尋找壽星',
-    description: '透過當週壽星名單或搜尋功能，快速找到你喜歡的藝人或團體的生咖、應援活動。',
+    description: '透過當週壽星名單或搜尋功能，快速找到你喜歡的藝人、團體或角色的生咖、應援活動。',
   },
   {
     title: '壽星地圖頁',
@@ -20,8 +20,12 @@ const features = [
     description: '主辦、店家可以直接投稿活動，讓更多人快速找到你的活動。',
   },
   {
-    title: '投稿藝人、團體',
-    description: '協助維護平台上的偶像與團體資訊，讓 STELLAR 更加完整豐富。',
+    title: '投稿藝人、團體、角色',
+    description: '協助維護平台上的藝人、團體與角色資訊，讓 STELLAR 更加完整豐富。',
+  },
+  {
+    title: '生咖場地',
+    description: '依地區與標籤找適合辦生咖的咖啡廳與空間，查看場地資訊並直接聯絡場地。',
   },
 ];
 
@@ -149,6 +153,10 @@ const featureDesc = css({
   lineHeight: '1.75',
 });
 
+const paragraphGap = css({
+  '& > p + p': { marginTop: '4' },
+});
+
 export default function AboutPage() {
   return (
     <main id="main-content" className={pageContainer}>
@@ -158,7 +166,7 @@ export default function AboutPage() {
             <h1 className={heroTitle}>STELLAR 台灣生咖地圖平台</h1>
             <p className={heroDesc}>
               STELLAR
-              是台灣生咖、生日應援地圖平台，透過社群的力量，由主辦、店家自主投稿，讓粉絲們可以透過地圖瀏覽的方式找到附近的生咖與生日應援、也讓主辦的心意能讓更多人看見。
+              是台灣生咖、生日應援地圖平台，透過社群的力量，由主辦、店家自主投稿，讓粉絲們可以透過地圖瀏覽的方式找到附近的生咖與生日應援、也讓主辦的心意能讓更多人看見。主辦也能在這裡找到適合辦生咖的場地。
             </p>
           </FadeIn>
         </section>
@@ -167,8 +175,8 @@ export default function AboutPage() {
 
         <FadeIn delay={100}>
           <div className={statsRow} aria-label="平台統計">
-            <StatCounter target={300} suffix="+" label="藝人・團體" />
-            <StatCounter target={300} suffix="+" label="收錄活動" />
+            <StatCounter target={300} suffix="+" label="收錄壽星" />
+            <StatCounter target={600} suffix="+" label="收錄活動" />
             <div className={staticStat}>
               <span className={staticStatNumber}>2025</span>
               <span className={staticStatLabel}>Est.</span>
@@ -179,13 +187,25 @@ export default function AboutPage() {
         <hr className={divider} />
 
         <FadeIn delay={100}>
-          <div className={manifestoSection}>
-            <h2 className={tagline}>生咖 × 地圖 × 應援</h2>
-            <p className={taglineDesc}>
-              從搜尋、地圖瀏覽到活動細節，STELLAR
-              把散落各處的資訊整合成一個平台，讓每一場心意都能被更多人看見。
-            </p>
-          </div>
+          <section className={manifestoSection} aria-labelledby="about-origin">
+            <h2 id="about-origin" className={tagline}>
+              為什麼會有 STELLAR
+            </h2>
+            <div className={paragraphGap}>
+              <p className={taglineDesc}>
+                開始追星之後，每到喜歡的成員生日，就會想去他的生咖。感受他被愛著的氛圍，也認識同樣喜歡他的人。
+              </p>
+              <p className={taglineDesc}>
+                但生咖資訊總是散落在 Threads 各處，常常翻了半天還在想：「台北真的沒有 XXX
+                的生咖嗎？」，或只能等熱心的人跳出來整理。
+              </p>
+              <p className={taglineDesc}>
+                後來看到其他國家有由粉絲共同維護的生咖
+                app，覺得台灣如果也有自己的生咖地圖，就更好了！2025 年 8 月，STELLAR
+                上線了。我們希望，讓想去生咖的人不再錯過，也能讓主辦用心準備的每一份心意都能被看見。
+              </p>
+            </div>
+          </section>
         </FadeIn>
 
         <hr className={divider} />
