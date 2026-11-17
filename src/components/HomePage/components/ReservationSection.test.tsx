@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import ReservationSection from './ReservationSection';
 import VerticalEventCard from '@/components/EventCardCarousel/VerticalEventCard';
 import { eventsApi } from '@/lib/api';
@@ -66,6 +66,26 @@ const renderSection = (
   );
 
 const TITLE = '預約中・即將開放';
+
+// jsdom has no layout; Swiper derives slide counts and snap points from element sizes
+beforeAll(() => {
+  const style = document.createElement('style');
+  style.textContent = '.swiper-slide { width: 300px; }';
+  document.head.appendChild(style);
+  const size = (el: HTMLElement) => (el.classList.contains('swiper-slide') ? 300 : 332);
+  Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
+    configurable: true,
+    get() {
+      return size(this);
+    },
+  });
+  Object.defineProperty(HTMLElement.prototype, 'clientWidth', {
+    configurable: true,
+    get() {
+      return size(this);
+    },
+  });
+});
 
 beforeEach(() => {
   vi.useFakeTimers({ toFake: ['Date'] });

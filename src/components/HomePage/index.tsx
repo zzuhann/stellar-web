@@ -11,6 +11,7 @@ import useWeeklyEvents from './hook/useWeeklyEvents';
 import useBirthdayArtists from './hook/useBirthdayArtists';
 import { css } from '@/styled-system/css';
 import TrendingEventsSection from '@/components/HomePage/components/TrendingEventsSection';
+import ReservationSection from '@/components/HomePage/components/ReservationSection';
 import TopArtistsSection from '@/components/HomePage/components/TopArtistsSection';
 import HomeVenuesSection from '@/components/HomePage/components/HomeVenuesSection';
 import useSearchSectionEntry from './hook/useSearchSectionEntry';
@@ -83,6 +84,9 @@ function HomePageContent() {
         <section className={contentWrapper} aria-label="首頁">
           {/* 熱門生咖、生日應援 */}
           <TrendingEventsSection />
+
+          {/* 預約中・即將開放（client 端依當下時間重算） */}
+          <ReservationSection />
 
           {/* 擁有最多生咖的藝人 */}
           <TopArtistsSection />
