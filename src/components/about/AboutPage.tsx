@@ -5,7 +5,7 @@ import FadeIn from '@/components/ui/FadeIn';
 const features = [
   {
     title: '尋找壽星',
-    description: '透過當週壽星名單或搜尋功能，快速找到你喜歡的藝人或團體的生咖、應援活動。',
+    description: '透過當週壽星名單或搜尋功能，快速找到你喜歡的藝人、團體或角色的生咖、應援活動。',
   },
   {
     title: '壽星地圖頁',
@@ -20,8 +20,8 @@ const features = [
     description: '主辦、店家可以直接投稿活動，讓更多人快速找到你的活動。',
   },
   {
-    title: '投稿藝人、團體',
-    description: '協助維護平台上的偶像與團體資訊，讓 STELLAR 更加完整豐富。',
+    title: '投稿藝人、團體、角色',
+    description: '協助維護平台上的藝人、團體與角色資訊，讓 STELLAR 更加完整豐富。',
   },
   {
     title: '生咖場地',
@@ -175,7 +175,7 @@ export default function AboutPage() {
 
         <FadeIn delay={100}>
           <div className={statsRow} aria-label="平台統計">
-            <StatCounter target={300} suffix="+" label="藝人・團體" />
+            <StatCounter target={300} suffix="+" label="收錄壽星" />
             <StatCounter target={600} suffix="+" label="收錄活動" />
             <div className={staticStat}>
               <span className={staticStatNumber}>2025</span>
