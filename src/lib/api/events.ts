@@ -8,6 +8,7 @@ import {
   UpdateEventRequest,
   RejectRequest,
   TrendingEventsResponse,
+  ReservationEventsResponse,
 } from '@/types';
 import api from './client';
 
@@ -111,6 +112,12 @@ export const eventsApi = {
     const response = await api.get<TrendingEventsResponse>('/events/trending', {
       params: { limit },
     });
+    return response.data;
+  },
+
+  // 取得預約中・即將開放的活動（最多 20 筆，免登入）
+  getReservations: async (): Promise<ReservationEventsResponse> => {
+    const response = await api.get<ReservationEventsResponse>('/events/reservations');
     return response.data;
   },
 
