@@ -1,7 +1,7 @@
 import { ClockIcon } from '@heroicons/react/24/outline';
 import { css } from '@/styled-system/css';
 import { useClientNow } from '@/hooks/useClientNow';
-import { getReservationLabel } from '@/utils/reservationStatus';
+import { getReservationLabel, getReservationUrl } from '@/utils/reservationStatus';
 import type { CoffeeEvent } from '@/types';
 
 const badge = css({
@@ -31,7 +31,7 @@ interface ReservationBadgeProps {
 export default function ReservationBadge({ reservation }: ReservationBadgeProps) {
   const now = useClientNow();
 
-  if (!reservation?.url?.trim() || !now) return null;
+  if (!reservation || !getReservationUrl(reservation) || !now) return null;
 
   const { kind, text } = getReservationLabel(reservation.startAt, now, 'card');
   const isUpcoming = kind === 'upcoming';

@@ -1,4 +1,4 @@
-import { useId, useRef } from 'react';
+import { useId, useRef, type FocusEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -135,6 +135,14 @@ const skeletonLines = css({
   flex: 1,
 });
 
+function isKeyboardFocus(target: EventTarget): boolean {
+  try {
+    return (target as Element).matches(':focus-visible');
+  } catch {
+    return false;
+  }
+}
+
 interface ReservationRowProps {
   event: ReservationEventItem;
   now: Date;
@@ -146,7 +154,8 @@ function ReservationRow({ event, now, isLastInPage, onClick }: ReservationRowPro
   const { kind, text } = getReservationLabel(event.reservation.startAt, now, 'section');
   const dateText = formatDateRange(
     firebaseTimestampToDate(event.datetime.start),
-    firebaseTimestampToDate(event.datetime.end)
+    firebaseTimestampToDate(event.datetime.end),
+    event.untilGone
   );
   const artistNames = event.artists.map((artist) => artist.name).join('、');
 
@@ -200,11 +209,13 @@ export default function ReservationSection() {
   const reportedPages = useRef(new Set<number>());
   const swiperRef = useRef<SwiperType | null>(null);
 
-  if (isError) return null;
+  // Keep showing cached rows when a background refetch fails
+  if (isError && !data) return null;
 
-  const isReady = !isLoading && now !== null;
-  const events = isReady ? buildReservationList(data ?? [], now) : [];
-  if (isReady && events.length === 0) return null;
+  // Single source for "can render the list": data settled and the client clock is available
+  const readyNow = isLoading ? null : now;
+  const events = readyNow ? buildReservationList(data ?? [], readyNow) : [];
+  if (readyNow && events.length === 0) return null;
 
   const pages = Array.from({ length: Math.ceil(events.length / PAGE_SIZE) }, (_, i) =>
     events.slice(i * PAGE_SIZE, (i + 1) * PAGE_SIZE)
@@ -213,9 +224,11 @@ export default function ReservationSection() {
 
   // Tabbing into an off-screen page: the browser scrolls the clipped wrapper natively, so reset it
   // and let Swiper move to that page
-  const focusPage = (pageIndex: number) => {
+  const focusPage = (event: FocusEvent<HTMLElement>, pageIndex: number) => {
     const swiper = swiperRef.current;
     if (!swiper || swiper.activeIndex === pageIndex) return;
+    // Mouse/touch presses on the peeking next page must stay clicks, not page jumps
+    if (!isKeyboardFocus(event.target)) return;
     swiper.slideTo(pageIndex, 0);
     requestAnimationFrame(() => {
       swiper.el.scrollLeft = 0;
@@ -232,7 +245,7 @@ export default function ReservationSection() {
   };
 
   return (
-    <section className={container} aria-labelledby={headingId} aria-busy={!isReady}>
+    <section className={container} aria-labelledby={headingId} aria-busy={readyNow === null}>
       <h2 id={headingId} className={heading}>
         預約中・即將開放
       </h2>
@@ -241,7 +254,7 @@ export default function ReservationSection() {
         預約名額可能隨時額滿，最新資訊請前往主辦／店家社群帳號確認
       </p>
 
-      {!isReady || now === null ? (
+      {readyNow === null ? (
         <SkeletonRows />
       ) : (
         <div className={listWrapper}>
@@ -271,14 +284,16 @@ export default function ReservationSection() {
             {pages.map((pageEvents, pageIndex) => (
               <SwiperSlide
                 key={pageEvents[0].id}
-                className={isSinglePage ? singlePageSlide : pageSlide}
-                onFocusCapture={() => focusPage(pageIndex)}
+                className={
+                  isSinglePage || pageIndex === pages.length - 1 ? singlePageSlide : pageSlide
+                }
+                onFocusCapture={(event) => focusPage(event, pageIndex)}
               >
                 {pageEvents.map((event, rowIndex) => (
                   <ReservationRow
                     key={event.id}
                     event={event}
-                    now={now}
+                    now={readyNow}
                     isLastInPage={rowIndex === pageEvents.length - 1}
                     onClick={() =>
                       track(

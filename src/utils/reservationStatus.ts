@@ -1,4 +1,5 @@
-import type { ReservationEventItem } from '@/types';
+import { firebaseTimestampToDate, formatReservationDateTime, isHttpUrl } from '@/utils';
+import type { FirebaseTimestamp, ReservationEventItem } from '@/types';
 
 export type ReservationLabelVariant = 'section' | 'card';
 
@@ -14,29 +15,20 @@ function parseTimestamp(value: unknown): Date | null {
   if (typeof value !== 'object' || value === null) return null;
   const seconds = (value as { _seconds?: unknown })._seconds;
   if (typeof seconds !== 'number' || !Number.isFinite(seconds)) return null;
-  const date = new Date(seconds * 1000);
+  const date = firebaseTimestampToDate(value as FirebaseTimestamp);
   return Number.isNaN(date.getTime()) ? null : date;
 }
-
-const openTimeFormatter = new Intl.DateTimeFormat('zh-TW', {
-  timeZone: 'Asia/Taipei',
-  month: 'numeric',
-  day: 'numeric',
-  weekday: 'short',
-  hour: '2-digit',
-  minute: '2-digit',
-  // hour12:false can print 24:00 at midnight on some ICU builds
-  hourCycle: 'h23',
-});
 
 // e.g. 11/21（六）14:00, always Asia/Taipei
 export function formatReservationOpenTime(startAt: unknown): string {
   const date = parseTimestamp(startAt);
-  if (!date) return '';
-  const parts = openTimeFormatter.formatToParts(date);
-  const get = (type: string) => parts.find((part) => part.type === type)?.value ?? '';
-  const weekday = get('weekday').replace('週', '');
-  return `${get('month')}/${get('day')}（${weekday}）${get('hour')}:${get('minute')}`;
+  return date ? formatReservationDateTime(startAt as FirebaseTimestamp, { withYear: false }) : '';
+}
+
+// Same standard as the event page: only http(s) urls make a usable reservation link
+export function getReservationUrl(reservation?: { url?: string } | null): string | null {
+  const url = reservation?.url?.trim();
+  return url && isHttpUrl(url) ? url : null;
 }
 
 // Strictly in the future counts as upcoming; equal to now is already open (matches the backend)
@@ -64,7 +56,7 @@ export function buildReservationList(
     const start = parseTimestamp(event.datetime?.start);
     const end = parseTimestamp(event.datetime?.end);
     if (!start || !end || end.getTime() <= nowMs) return [];
-    if (!event.reservation?.url?.trim()) return [];
+    if (!getReservationUrl(event.reservation)) return [];
     const openAt = parseTimestamp(event.reservation.startAt);
     const openAtMs = openAt && openAt.getTime() > nowMs ? openAt.getTime() : null;
     return [{ event, startMs: start.getTime(), openAtMs }];
