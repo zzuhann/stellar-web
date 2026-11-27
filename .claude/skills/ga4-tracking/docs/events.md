@@ -10,6 +10,7 @@
    - **GA 後台「加強型評估 → 網頁瀏覽 → 根據瀏覽器記錄事件變更網頁」必須關閉**：開啟會讓每次網址參數更新都算一次瀏覽（`/venues` 換篩選、首頁切 tab／換週都會灌水），也會跟 `SoftNavigationPageView` 重複。
    - **之後**：分頁面用 `pagePath`（例：開頭 `/map/`），不再有 `event_page`/`content_id`/`user_id`。網址裡是 slug 不是 id（活動頁 `/event/{slug 或 id}`、地圖頁 `/map/{artist slug 或 id}`），跟 Firestore id 交叉比對（例：event-reservation 曝光數）要先用 slug 對回 id；場地頁 `/venues/{id}` 是 id，跟其他場地事件的 `content_id` 串接時要補 `venue_` 前綴。
    - **之前**：原生（硬載入）與自訂版同名並存，GA 內建「瀏覽量」重複計算。看 2026-10-14 以前的單頁瀏覽量要篩 `event_page != (not set)`。
+     - **10-14 以前用 `pagePath` 算的「頁面使用者」也不可信（會低估）**：站內換頁沒有帶到 pagePath。例：地圖頁 W37 `click_event_detail` 123 人 > 地圖頁使用者 116 人。跨 10-14 比轉換率會誤判（地圖→活動用前期算 41.9%，逐週其實 29–33%），一律只用逐週、且只看 10-14 之後。
    - **跨日比較**：上線當天起 GA 內建瀏覽量會下降（重複計算消失），不是流量下滑。各 `specs/features/*/tracking.md` 寫「`page_view`(event_page=X)」的公式，之後一律改讀成「`page_view`(pagePath 對應 X)」。
    - **標題與來源**：站內換頁延後一格畫面才送，`page_title` 讀新頁標題、`page_referrer` 帶站內前一頁網址。標題若仍有誤以 `pagePath` 為準。用戶端重新導向（例：錯誤的地圖網址被導回首頁）會算一次導向後頁面的瀏覽。
 2. **`click_event_detail` 混了兩個頁面**：地圖頁（帶 `artist_id`、`ui_source`）與場地詳情頁（`/venues/[id]`，不帶 `artist_id`）。算轉換率先用 `event_page` 拆開。
